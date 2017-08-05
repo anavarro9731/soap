@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Clients\Palmtree.ApiPlatform.Endpoint.Clients.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.EndpointTests.Infrastructure\Palmtree.ApiPlatform.EndpointTests.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Models\Palmtree.Sample.Api.Domain.Models.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Messages\Palmtree.Sample.Api.Domain.Messages.csproj" />
+  </ItemGroup>
+
+</Project>

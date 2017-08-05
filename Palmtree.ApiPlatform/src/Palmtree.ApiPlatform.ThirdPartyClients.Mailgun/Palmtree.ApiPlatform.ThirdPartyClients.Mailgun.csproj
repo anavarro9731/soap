@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Service API Mailgun Service</Description>
+    <TargetFramework>net461</TargetFramework>
+    <Version>2.0.2</Version>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DataStore.Impl.DocumentDb" Version="3.6.3" />
+    <PackageReference Include="Mailer.NET" Version="1.4.0.32494" />
+    <PackageReference Include="NServiceBus" Version="6.2.0" />
+  </ItemGroup>
+</Project>

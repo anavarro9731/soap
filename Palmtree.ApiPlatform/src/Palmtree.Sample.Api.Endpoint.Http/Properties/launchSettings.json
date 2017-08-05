@@ -1,0 +1,11 @@
+{  
+  "profiles": {
+    "Palmtree.Sample.Api.Endpoint.Http": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Palmtree.ApiPlatform.HostingEnvironment": "Development"
+      },
+      "applicationUrl": "http://localhost:5055"
+    }
+  }
+}

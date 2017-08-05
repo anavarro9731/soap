@@ -1,0 +1,7 @@
+﻿if you want to create an aggregate you will just duplicate the fields, or place the object
+as a child of this class, so why not make it generic and avoid all those classes. 
+
+There is no impedance mismatch between
+the contexts in the case of CRUD operations (the source of any change to the aggregate model
+would always imply a change to the command) therefore this is a safe design and it encourages
+a clear separation of concerns in the developers mind between CRUD operations and behavioural ones.

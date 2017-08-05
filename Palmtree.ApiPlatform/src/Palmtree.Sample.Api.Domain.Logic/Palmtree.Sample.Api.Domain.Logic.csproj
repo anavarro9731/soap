@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DataStore.Impl.SqlServer" Version="1.6.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Infrastructure\Palmtree.ApiPlatform.Endpoint.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.MessagePipeline\Palmtree.ApiPlatform.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.ThirdPartyClients.Mailgun\Palmtree.ApiPlatform.ThirdPartyClients.Mailgun.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Models\Palmtree.Sample.Api.Domain.Models.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Messages\Palmtree.Sample.Api.Domain.Messages.csproj" />
+
+  </ItemGroup>
+</Project>

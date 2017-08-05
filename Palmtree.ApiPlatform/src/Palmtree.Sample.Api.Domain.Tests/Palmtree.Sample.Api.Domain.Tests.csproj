@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>    
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.2.0" />
+    <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />    
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Logic\Palmtree.Sample.Api.Domain.Logic.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.DomainTests.Infrastructure\Palmtree.ApiPlatform.DomainTests.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Http.Infrastructure\Palmtree.ApiPlatform.Endpoint.Http.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Endpoint.Http\Palmtree.Sample.Api.Endpoint.Http.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Endpoint.Msmq\Palmtree.Sample.Api.Endpoint.Msmq.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

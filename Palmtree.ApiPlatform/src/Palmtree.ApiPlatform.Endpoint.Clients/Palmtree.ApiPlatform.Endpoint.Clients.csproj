@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <Version>1.0.0</Version>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Used to access another services endpoints</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="6.0.8" />
+    <PackageReference Include="NServiceBus" Version="6.1.4" />
+    <PackageReference Include="Rebus" Version="3.1.5" />
+    <PackageReference Include="Rebus.Msmq" Version="3.0.0" />
+    <PackageReference Include="Rebus.Serilog" Version="3.0.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Interfaces\Palmtree.ApiPlatform.Interfaces.csproj" />
+  </ItemGroup>
+</Project>

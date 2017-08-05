@@ -1,0 +1,4 @@
+﻿The classes in this assembly are lowlevel, they are used by Domain.Models which is shared
+across many services. All contracts MUST be backwards compatible due to multiple versions
+of this assembly ending up in the same class. And the classes that are put in here should be
+simple utilities unlikely to change due to any refactoring of the other ServiceApi projects.

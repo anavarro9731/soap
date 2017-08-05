@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Palmtree.Sample.Api.Endpoint.Msmq": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Palmtree.ApiPlatform.HostingEnvironment": "Development"
+      }
+    }
+  }
+}
