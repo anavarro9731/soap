@@ -17,29 +17,35 @@ Function Increment-Version ($projectFile, $major, $minor) {
     return $buildnumber
 }
 
+#set script vars
 [string] $nugetLocalDirPath = "C:\Nuget.Local"
 [string] $configuration = "Debug"
 [string] $major = "keep";
 [string] $minor = "keep";
 
+$packages = @(
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Endpoint.Clients",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Endpoint.Infrastructure",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.DomainTests.Infrastructure",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.EndpointTests.Infrastructure",$true),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.MessagesSharedWithClients", $true)
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Infrastructure",$false),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.MessagePipeline", $false),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Utility", $false),
+	[System.Tuple]::Create("Palmtree.ApiPlatform.Interfaces", $false)
+)
+
+#create local nuget directory, if not exist
 if (!(Test-Path -Path $nugetLocalDirPath -PathType Container)) {
 	New-Item -Path $nugetLocalDirPath -ItemType Directory
 }
 
-$packages = @(
-	"Palmtree.ApiPlatform.Endpoint.Clients",
-	"Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
-	"Palmtree.ApiPlatform.Endpoint.Infrastructure",
-	"Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
-	"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
-	"Palmtree.ApiPlatform.DomainTests.Infrastructure",
-	"Palmtree.ApiPlatform.EndpointTests.Infrastructure",
-	"Palmtree.ApiPlatform.MessagesSharedWithClients"
-)
-
 $bumpversions = {
-	$confirmation = Read-Host "Do you want to bump the version numbers? Responding [no] will clear your nuget cache [y/n]"
-	if ($confirmation -eq 'y') {
+	$confirmation = Read-Host "Do you want to bump the version numbers? (responding no will clear your nuget cache) [y/n]? [Enter]=yes"
+	if (($confirmation -eq 'y') -or ($confirmation -eq "")) {
 		$script:major = Read-Host "Enter new Major Version or [Enter] to keep the same"
 		$script:minor = Read-Host "Enter new Minor Version or [Enter] to keep the same"	
 	} elseif ($confirmation -eq 'n') {
@@ -52,14 +58,12 @@ $bumpversions = {
 }
 &$bumpversions
 
-Write-Host "major: $major"
-Write-Host "minor: $minor"
-
-
+Write-Host "Major Version: $(if ($major) {$major} else {"unchanged"})" -foregroundcolor green -backgroundcolor black
+Write-Host "Minor Version: $(if ($minor) {$minor} else {"unchanged"})" -foregroundcolor green -backgroundcolor black
 
 $publishtomyget = {
-	$confirmation = Read-Host "Do you want to publish to myget? [y/n]"
-	if ($confirmation -eq 'y') {
+	$confirmation = Read-Host "Do you want to publish to myget? [y/n] [Enter=yes]"
+	if (($confirmation -eq 'y') -or ($confirmation -eq "")) {
 		$script:publishyn = $true;
 	} elseif ($confirmation -eq 'n') {
 		$script:publishyn = $false;
@@ -67,41 +71,49 @@ $publishtomyget = {
 		&$publishtomyget	
 	}
 }
+
 &$publishtomyget
 
 
 foreach ($package in $packages) {
+    
+    [string] $packageDirPath = "$(Split-Path $MyInvocation.MyCommand.Path)\$($package.Item1)"
+    [string] $packageName = $($package.Item1)
+    [bool] $isUnlisted = $(!$package.Item2)
 
-    [string] $packageDirPath = "$pwd\$package"
-
-	$buildnumber = Increment-Version "$packageDirPath\$package.csproj" $major $minor
-
+	$buildnumber = Increment-Version "$packageDirPath\$($packageName).csproj" $major $minor
+    
     if (Test-Path -Path "$packageDirPath\bin\$configuration\*.nupkg" -PathType Leaf) {
 	    # Purge old packages
 	    $command = "Remove-Item -Path '$packageDirPath\bin\$configuration\*.nupkg'"
-	    Write-Host "`r`nPURGE PREVIOUS $package NUGET PACKAGES --> $command`r`n"  -foregroundcolor darkgreen -backgroundcolor black
+	    Write-Host "`r`nPURGE PREVIOUS $($packageName) NUGET PACKAGES --> $command`r`n"  -foregroundcolor darkgreen -backgroundcolor black
 	    iex $command
     }
 	
 	# Pack project
-	$command = "dotnet pack $packageDirPath\$package.csproj --configuration $configuration --include-symbols"
-	Write-Host "`r`nPACK $package VS PROJECT --> $command`r`n"  -foregroundcolor darkgreen -backgroundcolor black
+	$command = "dotnet pack $packageDirPath\$packageName.csproj --configuration $configuration --include-symbols"
+	Write-Host "`r`nPACK $packageName VS PROJECT --> $command`r`n"  -foregroundcolor green -backgroundcolor black
 	iex $command
 	
 	# Copy nuget packages to local folder
 	$command = "Copy-Item -Path '$packageDirPath\bin\$configuration\*.nupkg' -Destination '$nugetLocalDirPath' -Force -PassThru"
-	Write-Host "`r`nCOPY $package NUGET PACKAGES TO $nugetLocalDirPath --> $command`r`n"  -foregroundcolor darkgreen -backgroundcolor black
+	Write-Host "`r`nCOPY $packageName NUGET PACKAGES TO $nugetLocalDirPath --> $command`r`n"  -foregroundcolor green -backgroundcolor black
 	iex $command
     
     #publish to myget
     if ($script:publishyn) {
 
-        $command = "nuget push $nugetLocalDirPath\$package.$buildnumber.nupkg b29d9be5-2784-44be-affe-027352486826 -Source https://www.myget.org/F/trace-one/api/v2/package"
+        $command = "$packageDirPath\..\..\tools\nuget push $nugetLocalDirPath\$packageName.$buildnumber.nupkg 7cde1967-fe13-4672-91ef-f1deb3543e78 -Source https://www.myget.org/F/anavarro9731/api/v2/package"
         iex $command
-        
-        $command = "nuget push $nugetLocalDirPath\$package.$buildnumber.symbols.nupkg b29d9be5-2784-44be-affe-027352486826 -Source https://www.myget.org/F/trace-one/symbols/api/v2/package"
+
+        if ($isUnlisted) {
+            $command = "$packageDirPath\..\..\tools\nuget delete $packageName $buildNumber -Source https://www.myget.org/F/anavarro9731/api/v2/package -ApiKey 7cde1967-fe13-4672-91ef-f1deb3543e78"
+            iex $command
+        }
+        $command = "$packageDirPath\..\..\tools\nuget push $nugetLocalDirPath\$packageName.$buildnumber.symbols.nupkg 7cde1967-fe13-4672-91ef-f1deb3543e78 -Source https://www.myget.org/F/anavarro9731/symbols/api/v2/package"
         iex $command
     }
 }
 
 Write-Host "Done."
+
