@@ -3,7 +3,7 @@
     using System;
     using System.Linq;
     using Palmtree.ApiPlatform.DomainTests.Infrastructure;
-    using Palmtree.ApiPlatform.Infrastructure.Messages.Generic;
+    using Palmtree.Sample.Api.Domain.Messages.Commands;
     using Palmtree.Sample.Api.Domain.Models.Aggregates;
     using Xunit;
 
@@ -26,7 +26,7 @@
             };
             this.endPoint.AddToDatabase(thing);
 
-            var deleteThing = DeleteAggregate<Thing>.Create(this.thingId);
+            var deleteThing = new DeleteThing(this.thingId);
 
             //act
             this.result = (Thing)this.endPoint.HandleCommand(deleteThing, TestData.User1);

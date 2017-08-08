@@ -2,14 +2,15 @@
 {
     using System;
     using System.Linq;
+    using DataStore.Models.PureFunctions.Extensions;
     using Palmtree.ApiPlatform.DomainTests.Infrastructure;
-    using Palmtree.ApiPlatform.Infrastructure.Messages.Generic;
+    using Palmtree.Sample.Api.Domain.Messages.Commands;
     using Palmtree.Sample.Api.Domain.Models.Aggregates;
     using Xunit;
 
     public class WhenAddingAThing
     {
-        private readonly CreateAggregate<Thing> command;
+        private readonly CreateThing command;
 
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
@@ -20,13 +21,11 @@
             //arrange            
             this.endPoint.AddToDatabase(TestData.User1);
 
-            var newThing = new Thing
-            {
-                id = Guid.NewGuid(),
-                NameOfThing = "Some Thing"
-            };
 
-            this.command = CreateAggregate<Thing>.Create(newThing);
+            this.command = new CreateThing("Some Thing")
+            {
+                ThingId = Guid.NewGuid()
+            };
 
             //act
             this.result = (Thing)this.endPoint.HandleCommand(this.command, TestData.User1);
@@ -35,7 +34,7 @@
         [Fact]
         public void ItShouldAddTheThingToTheDatabase()
         {
-            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.id == this.command.Model.id)).Result.SingleOrDefault();
+            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.id == this.command.ThingId)).Result.SingleOrDefault();
             Assert.NotNull(thing);
         }
 
@@ -43,7 +42,7 @@
         public void ItShouldReturnTheNewThing()
         {
             Assert.NotNull(this.result);
-            Assert.Equal(this.command.Model.id, this.result.id);
+            Assert.Equal(this.command.ThingId, this.result.id);
         }
     }
 }

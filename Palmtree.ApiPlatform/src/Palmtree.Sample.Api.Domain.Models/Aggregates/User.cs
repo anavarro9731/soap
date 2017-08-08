@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
     using Destructurama.Attributed;
+    using Newtonsoft.Json;
     using ServiceApi.Interfaces.LowLevel.Permissions;
     using Palmtree.ApiPlatform.Utility;
     using Palmtree.Sample.Api.Domain.Models.Entities;

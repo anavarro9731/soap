@@ -2,13 +2,13 @@
 {
     using System.Threading.Tasks;
     using ServiceApi.Interfaces.LowLevel.Permissions;
-    using Palmtree.ApiPlatform.Infrastructure.Messages.Generic;
     using Palmtree.ApiPlatform.Infrastructure.Models;
     using Palmtree.ApiPlatform.Infrastructure.ProcessesAndOperations;
     using Palmtree.Sample.Api.Domain.Logic.Operations;
+    using Palmtree.Sample.Api.Domain.Messages.Commands;
     using Palmtree.Sample.Api.Domain.Models.Aggregates;
 
-    public class UserAddsThingProcess : Process<UserAddsThingProcess>, IBeginProcess<CreateAggregate<Thing>, Thing>
+    public class UserAddsThingProcess : Process<UserAddsThingProcess>, IBeginProcess<CreateThing, Thing>
     {
         private readonly ThingOperations thingOperations;
 
@@ -20,7 +20,7 @@
             this.userOperations = userOperations;
         }
 
-        public async Task<Thing> BeginProcess(CreateAggregate<Thing> message, ApiMessageMeta meta)
+        public async Task<Thing> BeginProcess(CreateThing message, ApiMessageMeta meta)
         {
             {
                 var newThing = await AddThingToDatabase();

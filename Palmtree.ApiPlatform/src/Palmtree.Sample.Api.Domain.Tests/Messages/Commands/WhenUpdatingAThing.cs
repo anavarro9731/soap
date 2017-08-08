@@ -3,8 +3,8 @@
     using System;
     using System.Linq;
     using Palmtree.ApiPlatform.DomainTests.Infrastructure;
-    using Palmtree.ApiPlatform.Infrastructure.Messages.Generic;
     using Palmtree.ApiPlatform.Utility.PureFunctions.Extensions;
+    using Palmtree.Sample.Api.Domain.Messages.Commands;
     using Palmtree.Sample.Api.Domain.Models.Aggregates;
     using Xunit;
 
@@ -29,9 +29,7 @@
 
             this.endPoint.AddToDatabase(thing);
 
-            var changedThing = thing.Clone().Op(t => t.NameOfThing = "Some Thing");
-
-            var changeThing = UpdateAggregate<Thing>.Create(changedThing);
+            var changeThing = new UpdateNameOfThing(this.thingId,"Some Thing");
 
             //act
             this.result = (Thing)this.endPoint.HandleCommand(changeThing, TestData.User1);

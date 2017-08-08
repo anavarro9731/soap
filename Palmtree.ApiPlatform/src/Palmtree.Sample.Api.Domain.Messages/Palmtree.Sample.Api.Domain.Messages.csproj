@@ -9,5 +9,9 @@
     <PackageReference Include="FluentValidation" Version="6.4.1" />
 
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Models\Palmtree.Sample.Api.Domain.Models.csproj" />
+  </ItemGroup>
   
 </Project>
