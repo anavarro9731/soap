@@ -37,7 +37,7 @@
             async Task<User> FindDefaultUser()
             {
                 var userId = HardCodedMasterData.RootUser.UserId;
-                var users = await DataStore.Read<User>(q => q.Where(u => u.id == userId));
+                var users = await DataStoreReadOnly.Read<User>(q => q.Where(u => u.id == userId));
                 var user = users.FirstOrDefault();
                 return user;
             }

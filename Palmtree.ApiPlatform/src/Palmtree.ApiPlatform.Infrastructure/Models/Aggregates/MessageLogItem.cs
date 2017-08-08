@@ -5,9 +5,9 @@
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Palmtree.ApiPlatform.Interfaces;
     using Palmtree.ApiPlatform.Utility;
+    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
 
     public class MessageLogItem : Aggregate
     {

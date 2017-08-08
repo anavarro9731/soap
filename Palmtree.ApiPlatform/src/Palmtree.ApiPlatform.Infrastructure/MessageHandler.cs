@@ -2,15 +2,19 @@
 {
     using System.Threading.Tasks;
     using System.Transactions;
+    using DataStore.Interfaces;
     using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Palmtree.ApiPlatform.Infrastructure.Models;
     using Palmtree.ApiPlatform.Infrastructure.PureFunctions;
+    using Palmtree.ApiPlatform.Interfaces;
+    using Serilog;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
 
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
     ///     TransactionScopeAsyncFlowOption.Enabled is requried to use tx with async/await
     /// </summary>
-    public abstract class MessageHandler : ApiMessageContext
+    public abstract class MessageHandler 
     {
         public abstract Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta);
 
@@ -30,6 +34,23 @@
                     $"MessgeLogItem record for message with id {message.MessageId} not found while attempting to update it with a successful result. Pausing for {250}ms and will try again. {attempts - j} tries remaining.");
                 await Task.Delay(millisecondsDelay).ConfigureAwait(false);
             }
+        }
+
+
+        protected IDataStore DataStore { get; private set; }
+
+        protected ILogger Logger { get; private set; }
+
+        protected IMessageAggregator MessageAggregator { get; private set; }
+
+        protected IUnitOfWork UnitOfWork { get; private set; }
+
+        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        {
+            UnitOfWork = uow;
+            Logger = logger;
+            MessageAggregator = messageAggregator;
+            DataStore = dataStore;
         }
     }
 

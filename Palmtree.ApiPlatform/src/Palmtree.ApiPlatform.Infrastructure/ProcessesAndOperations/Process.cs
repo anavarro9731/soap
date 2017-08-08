@@ -2,13 +2,13 @@
 {
     using System.Threading.Tasks;
     using DataStore.Interfaces;
-    using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Palmtree.ApiPlatform.Infrastructure.Messages.ProcessMessages;
     using Palmtree.ApiPlatform.Infrastructure.Models;
     using Palmtree.ApiPlatform.Interfaces;
     using Palmtree.ApiPlatform.Utility.PureFunctions;
+    using Serilog;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
 
     /// <summary>
     ///     represents a stateless multi-step process which occurs in a single unit of work
@@ -22,8 +22,16 @@
         //used to support accessing specific derived type by base class
     }
 
-    public abstract class Process : ApiMessageContext
+    public abstract class Process
     {
+        protected IDataStoreQueryCapabilities DataStoreReadOnly { get; private set; }
+
+        protected ILogger Logger { get; private set; }
+
+        protected IMessageAggregator MessageAggregator { get; private set; }
+
+        protected IUnitOfWork UnitOfWork { get; private set; }
+
         public async Task BeginProcess<TMessage>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand
         {
             var process = this as IBeginProcess<TMessage>;
@@ -52,9 +60,12 @@
             return result;
         }
 
-        public new void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
         {
-            base.SetDependencies(dataStore, uow, logger, messageAggregator);
+            UnitOfWork = uow;
+            Logger = logger;
+            MessageAggregator = messageAggregator;
+            DataStoreReadOnly = dataStore.AsReadOnly();
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

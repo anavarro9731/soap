@@ -46,7 +46,7 @@
                 new RegisterUserValidator().Validate(command);
 
                 Guard.Against(
-                    () => { return DataStore.Read<User>(q => q.Where(u => u.Email == command.Email)).Result.SingleOrDefault() != null; },
+                    () => { return DataStoreReadOnly.Read<User>(q => q.Where(u => u.Email == command.Email)).Result.SingleOrDefault() != null; },
                     "User Already Exists");
             }
 

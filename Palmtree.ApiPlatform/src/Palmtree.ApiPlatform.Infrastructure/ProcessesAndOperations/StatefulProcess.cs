@@ -3,27 +3,37 @@ namespace Palmtree.ApiPlatform.Infrastructure.ProcessesAndOperations
     using System;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
-    using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Palmtree.ApiPlatform.Infrastructure.Messages.ProcessMessages;
     using Palmtree.ApiPlatform.Infrastructure.Models;
     using Palmtree.ApiPlatform.Interfaces;
     using Palmtree.ApiPlatform.Utility;
     using Palmtree.ApiPlatform.Utility.PureFunctions;
+    using Serilog;
+    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>
     {
         //used to support accessing specific derived type by base class
     }
 
-    public abstract class StatefulProcess : ApiMessageContext
+    public abstract class StatefulProcess
     {
         private ProcessState processState;
+
+        protected IDataStoreQueryCapabilities DataStoreReadOnly { get; private set; }
+
+        protected ILogger Logger { get; private set; }
+
+        protected IMessageAggregator MessageAggregator { get; private set; }
 
         protected Guid ProcessId => this.processState.id;
 
         protected dynamic References => this.processState.References;
+
+        protected IUnitOfWork UnitOfWork { get; private set; }
+
+        private IDataStore DataStore { get; set; }
 
         public async Task BeginProcess<TMessage>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand
         {
@@ -97,9 +107,13 @@ namespace Palmtree.ApiPlatform.Infrastructure.ProcessesAndOperations
             return result;
         }
 
-        public new void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
         {
-            base.SetDependencies(dataStore, uow, logger, messageAggregator);
+            UnitOfWork = uow;
+            Logger = logger;
+            MessageAggregator = messageAggregator;
+            DataStore = dataStore;
+            DataStoreReadOnly = dataStore.AsReadOnly();
         }
 
         protected async Task AddState(Enum additionalStatus)
