@@ -5,22 +5,18 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="PureFunctions\**" />
-    <EmbeddedResource Remove="PureFunctions\**" />
-    <None Remove="PureFunctions\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="MessagePipeline\MessagePipeline.Constants.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="6.0.8" />
+    <PackageReference Include="Serilog" Version="2.5.0" />
     <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
     <PackageReference Include="DataStore" Version="3.6.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Palmtree.ApiPlatform.Infrastructure\Palmtree.ApiPlatform.Infrastructure.csproj" />
     <ProjectReference Include="..\Palmtree.ApiPlatform.Interfaces\Palmtree.ApiPlatform.Interfaces.csproj" />
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Utility\Palmtree.ApiPlatform.Utility.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Transactions" />

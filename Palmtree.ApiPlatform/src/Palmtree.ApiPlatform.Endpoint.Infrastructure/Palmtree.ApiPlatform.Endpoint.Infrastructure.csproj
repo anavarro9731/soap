@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>1.2.1</Version>
@@ -7,9 +7,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.2.0" />
+    <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Palmtree.ApiPlatform.Infrastructure\Palmtree.ApiPlatform.Infrastructure.csproj" />
     <ProjectReference Include="..\Palmtree.ApiPlatform.MessagePipeline\Palmtree.ApiPlatform.MessagePipeline.csproj" />
   </ItemGroup>
 </Project>
