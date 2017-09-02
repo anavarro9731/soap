@@ -10,8 +10,6 @@
     {
         private readonly Guid pingCommandId = Guid.NewGuid();
 
-        private string password;
-
         private Guid userId;
 
         public WhenSendingInvalidPingCommand()
@@ -19,7 +17,6 @@
             var apiClient = new RebusApiClient("serviceapi");
 
             this.userId = Guid.NewGuid();
-            this.password = "password";
 
             apiClient.SendCommand(
                          new PingCommand("OtherSpecialInvalidParamSeeCodeInHandler")
