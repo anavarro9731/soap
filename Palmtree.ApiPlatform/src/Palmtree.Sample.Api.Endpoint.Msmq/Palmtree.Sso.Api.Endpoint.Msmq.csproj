@@ -26,8 +26,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Infrastructure\Palmtree.ApiPlatform.Endpoint.Infrastructure.csproj" />
-    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Logic\Palmtree.Sample.Api.Domain.Logic.csproj" />
-    <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure\Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure.csproj" />    
+    <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure\Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Logic\Palmtree.Sso.Api.Domain.Logic.csproj" />    
   </ItemGroup>
 
   <ItemGroup>
