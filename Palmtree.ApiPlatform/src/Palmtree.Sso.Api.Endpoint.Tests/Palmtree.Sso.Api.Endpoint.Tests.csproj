@@ -12,8 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Palmtree.ApiPlatform.Endpoint.Clients\Palmtree.ApiPlatform.Endpoint.Clients.csproj" />
     <ProjectReference Include="..\Palmtree.ApiPlatform.EndpointTests.Infrastructure\Palmtree.ApiPlatform.EndpointTests.Infrastructure.csproj" />
-    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Messages\Palmtree.Sso.Api.Domain.Messages.csproj" />
-    <ProjectReference Include="..\Palmtree.Sample.Api.Domain.Models\Palmtree.Sso.Api.Domain.Models.csproj" />
+    <ProjectReference Include="..\Palmtree.Sso.Api.Domain.Messages\Palmtree.Sso.Api.Domain.Messages.csproj" />
+    <ProjectReference Include="..\Palmtree.Sso.Api.Domain.Models\Palmtree.Sso.Api.Domain.Models.csproj" />
   </ItemGroup>
 
 </Project>

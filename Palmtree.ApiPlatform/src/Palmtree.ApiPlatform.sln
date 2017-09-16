@@ -5,20 +5,22 @@ VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PalmTree.Sso", "PalmTree.Sso", "{3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Models", "Palmtree.Sample.Api.Domain.Models\Palmtree.Sso.Api.Domain.Models.csproj", "{E705ED43-E6F4-47BD-AD7D-F7433FDA1961}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Models", "Palmtree.Sso.Api.Domain.Models\Palmtree.Sso.Api.Domain.Models.csproj", "{E705ED43-E6F4-47BD-AD7D-F7433FDA1961}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Tests", "Palmtree.Sample.Api.Domain.Tests\Palmtree.Sso.Api.Domain.Tests.csproj", "{16FE3DA0-6C3D-42CD-9D3D-0554B2FBCF00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Tests", "Palmtree.Sso.Api.Domain.Tests\Palmtree.Sso.Api.Domain.Tests.csproj", "{16FE3DA0-6C3D-42CD-9D3D-0554B2FBCF00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Http", "Palmtree.Sample.Api.Endpoint.Http\Palmtree.Sso.Api.Endpoint.Http.csproj", "{FCEBE061-EA0F-4C29-BE11-52AE91C63F95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Http", "Palmtree.Sso.Api.Endpoint.Http\Palmtree.Sso.Api.Endpoint.Http.csproj", "{FCEBE061-EA0F-4C29-BE11-52AE91C63F95}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.Endpoint.Clients", "Palmtree.ApiPlatform.Endpoint.Clients\Palmtree.ApiPlatform.Endpoint.Clients.csproj", "{63D24F25-443F-4160-8A36-D997729A2B60}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C1A4DFD1-4FD0-473C-9B27-F7EEB6886CFD}"
 	ProjectSection(SolutionItems) = preProject
-		pack-publish.ps1 = pack-publish.ps1
+		buildserver.build-and-test.ps1 = buildserver.build-and-test.ps1
+		buildserver.pack-and-publish.ps1 = buildserver.pack-and-publish.ps1
+		prepare-new-version.ps1 = prepare-new-version.ps1
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Tests", "Palmtree.Sample.Api.Endpoint.Tests\Palmtree.Sso.Api.Endpoint.Tests.csproj", "{6CE493FD-5086-4E5E-832D-9CCD9C18691A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Tests", "Palmtree.Sso.Api.Endpoint.Tests\Palmtree.Sso.Api.Endpoint.Tests.csproj", "{6CE493FD-5086-4E5E-832D-9CCD9C18691A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure", "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure\Palmtree.ApiPlatform.Endpoint.Http.Infrastructure.csproj", "{1021FDEE-0ECE-415D-B4AF-714DBB68BDEB}"
 EndProject
@@ -26,7 +28,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.Endpoi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.Endpoint.Infrastructure", "Palmtree.ApiPlatform.Endpoint.Infrastructure\Palmtree.ApiPlatform.Endpoint.Infrastructure.csproj", "{BE6E588F-A801-4ED8-9DE9-D44C4A559F0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Msmq", "Palmtree.Sample.Api.Endpoint.Msmq\Palmtree.Sso.Api.Endpoint.Msmq.csproj", "{A26EC955-9AC6-4289-92F3-5726E3FEC93A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Endpoint.Msmq", "Palmtree.Sso.Api.Endpoint.Msmq\Palmtree.Sso.Api.Endpoint.Msmq.csproj", "{A26EC955-9AC6-4289-92F3-5726E3FEC93A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api Infrastructure Assemblies", "Api Infrastructure Assemblies", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
 EndProject
@@ -48,11 +50,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core Nuget Packages", "Core
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun", "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun\Palmtree.ApiPlatform.ThirdPartyClients.Mailgun.csproj", "{2D6584B2-4AEE-43A4-B018-5684555CBE3D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Logic", "Palmtree.Sample.Api.Domain.Logic\Palmtree.Sso.Api.Domain.Logic.csproj", "{427569EA-995A-43B9-9B9D-F4480525B2CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Logic", "Palmtree.Sso.Api.Domain.Logic\Palmtree.Sso.Api.Domain.Logic.csproj", "{427569EA-995A-43B9-9B9D-F4480525B2CF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party Clients", "3rd Party Clients", "{C31DA2D2-D541-49E5-8FB4-1A91EAC23435}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Messages", "Palmtree.Sample.Api.Domain.Messages\Palmtree.Sso.Api.Domain.Messages.csproj", "{47DA2D0D-22B6-42DC-AB16-75413122F7C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Sso.Api.Domain.Messages", "Palmtree.Sso.Api.Domain.Messages\Palmtree.Sso.Api.Domain.Messages.csproj", "{47DA2D0D-22B6-42DC-AB16-75413122F7C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
