@@ -32,15 +32,19 @@
 
         private static string GetMessageSchemaFromHandlerTypes(IEnumerable<Type> handlerTypes)
         {
-            var schema = new StringBuilder();
-
             {
-                handlerTypes.ToList().ForEach(BuildSchemaForMessageHandlerType);
 
+                var schema = new StringBuilder();
+
+                foreach (var type in handlerTypes.ToList())
+                {
+                    BuildSchemaForMessageHandlerType(type, schema);
+                }
+                
                 return schema.ToString();
             }
 
-            void BuildSchemaForMessageHandlerType(Type messageHandlerType)
+            void BuildSchemaForMessageHandlerType(Type messageHandlerType, StringBuilder schema)
             {
                 {
                     var reqType = messageHandlerType.BaseType?.GenericTypeArguments[0];
@@ -177,7 +181,7 @@
                 var border = string.Empty.PadRight(title.Length, '=');
 
                 var schemaText = GetMessageSchemaFromHandlerTypes(handlerTypes);
-
+                
                 if (string.IsNullOrWhiteSpace(schemaText)) schemaText = "No supported API Messages";
 
                 return new StringBuilder().AppendLine(border).AppendLine(title).AppendLine(border).AppendLine().AppendLine(schemaText).ToString();
