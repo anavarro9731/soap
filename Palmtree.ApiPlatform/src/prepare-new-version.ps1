@@ -10,97 +10,53 @@ If you don't commit right away you might pollute the commit.)
 See Readme - Versioning Semantics for more details
 #>
 
+Param(
+    $projects = @(
+        "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
 
-enum VersionAction {
-    ReleaseHotfixCommit
-    ReleaseStableCommit
-    ReleaseTestCommit
-}
+        "Palmtree.ApiPlatform.Interfaces",
+	    "Palmtree.ApiPlatform.MessagePipeline",
+	    "Palmtree.ApiPlatform.Utility",
 
-class EditableVersion {
-	[int] $Major
-	[int] $Minor
-    [int] $Patch
-
-    [string] ToString() { 
-        return "$($this.Major).$($this.Minor).$($this.Patch)"
-    }
-
-    EditableVersion ([EditableVersion] $version) {
-        $this.Major = $version.Major
-        $this.Minor = $version.Minor
-        $this.Patch = $version.Patch
-    }
-
-    EditableVersion([version] $version) {
-        $this.Major = $version.Major
-        $this.Minor = $version.Minor
-        $this.Patch = $version.Build
-    }
-}
-
-function GetScriptFolder {
-    function GetScriptPath {
-        $path = $MyInvocation.MyCommand.Path
-        if ($path) {
-            return $path
-        } else {
-            $path = $MyInvocation.ScriptName
-            if ($path) {
-                return $path
-            } else {
-                throw "Cannot determine script path"
-            }
-        }    
-    }
-    $scriptFolder = Split-Path $(GetScriptPath)
+        "Palmtree.ApiPlatform.DomainTests.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Clients",
+	    "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
+	    "Palmtree.ApiPlatform.EndpointTests.Infrastructure",
+        "Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
+    ),
     
-    return $scriptFolder
+    $vstsCredentials = @("anavarro9731", "VST`"04`"supremus")   
+)
+
+function ImportModules {
+  
+    Write-Host "Importing Custom Modules"
+
+    $modules = @(
+        "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath=build.psm1"
+    )
+
+    # Base64-encodes the Personal Access Token (PAT) appropriately
+    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $vstsCredentials[0],$vstsCredentials[1])))
+       
+    foreach ($module in $modules) {
+        $moduleFilename = $module.split("=") | Select-Object -Last 1            
+        Invoke-RestMethod -Uri $module -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile $moduleFilename
+        Import-Module ".\$moduleFilename" -Verbose -Global -Force
+        Remove-Item ".\$moduleFilename" -Verbose -Force
+    }       
 }
-
-function WriteHost {
-
-	Param ([string] $msg)
-
-	Write-Host $msg -foregroundcolor green
-}
-
-function WriteHostStep {
-
-	Param ([string] $msg)
-
-	Write-Host $msg -foregroundcolor cyan -backgroundcolor black
-}
-
-function AskYesNo {
-
-	Param ($question)
-
-    Write-Host "QUESTION" -foregroundcolor yellow -backgroundcolor black
-	$confirmation = Read-Host "$question [y/n]?" 
-
-	while($confirmation -ne "y" -and $confirmation -ne "n")
-	{
-        Write-Host "QUESTION" -foregroundcolor yellow -backgroundcolor black
-		$confirmation = Read-Host "$question [y/n]"  
-	}
-
-	if ($confirmation -eq "y") {
-        return $true
-    } else {
-        return $false
-    }
-}
-
 
 function CalcVersionAction {
 
 	function CalcVersionActionInner {
-        if (AskYesNo("Is this a hotfix?") -eq $true) {
+        if (Ask-YesNo("Is this a hotfix?") -eq $true) {
             return [VersionAction]::ReleaseHotfixCommit
         }
 
-        if (AskYesNo("Is this version stable and ready for public release?") -eq $true) {
+        if (Ask-YesNo("Is this version stable and ready for public release?") -eq $true) {
             return [VersionAction]::ReleaseStableCommit
         }
         return [VersionAction]::ReleaseTestCommit
@@ -111,68 +67,32 @@ function CalcVersionAction {
     return $action
 }
 
-function GetProjectVersion {
+function ModifyProjectVersions {
 
-    Param([string] $scriptFolder, [string] $project)
-
-    [string] $projectFile = "$scriptFolder\$($project)\$($project).csproj"
+	Param ([array]$projects, [EditableVersion]$newVersion)
         
-	$xml=New-Object XML
-	$xml.Load($projectFile)
-
-	$currentVersion = [version]$xml.Project.PropertyGroup.Version
-
-    return [EditableVersion]::new($currentVersion)
-
-}
-
-function SetWorkingDirectory {
-
-    $folder = GetScriptFolder    
-    Push-Location $folder 
-    [Environment]::CurrentDirectory = $folder #not set by push-location
-
-    WriteHost "Working Directory set to $folder"
-
-}
-
-function VerifyIndexAndTreeIsClean {
-
-    WriteHostStep "Verify there are no outstanding change on this branch..."
-
-    $check = "git status --porcelain"
-    $result = iex $check
-    WriteHost $result
-    if (![string]::IsNullOrEmpty($result)) { throw "You cannot have outstanding changes on your currenct git branch if you want to run this script." }
-}
-
-function VerifyVersionsInSync {
-    
-    Param ([array]$projects)
-
-    WriteHostStep "Verifying Versions..."
-
-    $scriptFolder = GetScriptFolder
-
-    $projectZeroVersion = GetProjectVersion $scriptFolder $projects[0]
-
     foreach ($project in $projects) {
-        $projectIVersion = GetProjectVersion $scriptFolder $project
-        if ([string]$projectIVersion -ne [string]$projectZeroVersion) {
-            throw "Not all project versions are in sync. $($project) [$projectIVersion] does not match $($projects[0]) [$projectZeroVersion]."
-        }
-    }
 
-    WriteHost "All projects in sync at version $projectZeroVersion"
+	    $xml=New-Object XML
 
-    return $projectZeroVersion
+        $scriptFolder = $PSScriptRoot
+
+        [string] $projectFile = "$scriptFolder\$($project)\$($project).csproj"
+
+	    $xml.Load($projectFile)
+  
+        $xml.Project.PropertyGroup.Version = "$newVersion"
+
+        $xml.Save($projectFile)
+
+    }    
 }
 
 function CalcNewVersion {
     
     Param([EditableVersion] $currentVersion)
 
-    WriteHostStep "Calculating New Version..."
+    Log-Step "Calculating New Version..."
 
     $calcVersionAction = CalcVersionAction
 
@@ -194,51 +114,9 @@ function CalcNewVersion {
         throw "Could not calculate new version. Cannot determine use case."
     }
     
-    WriteHost "Version $currentVersion will be changed to $newVersion"
+    Log "Version $currentVersion will be changed to $newVersion"
 
     return $newVersion
-}
-
-
-function ModifyProjectVersions {
-
-	Param ([array]$projects, [EditableVersion]$newVersion)
-        
-    foreach ($project in $projects) {
-
-	    $xml=New-Object XML
-
-        $scriptFolder = GetScriptFolder
-
-        [string] $projectFile = "$scriptFolder\$($project)\$($project).csproj"
-
-	    $xml.Load($projectFile)
-  
-        $xml.Project.PropertyGroup.Version = "$newVersion"
-
-        $xml.Save($projectFile)
-
-    }
-    
-}
-
-function Commit {
-    
-    Param([EditableVersion]$newVersion)
-
-    WriteHostStep "Committing Project Files and Tagging Commit..."
-
-    git commit -am "Updated Project Versions to $newVersion"
-}
-
-function Push { 
-
-    Param([string] $repoPath)
-
-    if (AskYesNo("Push Changes?") -eq $true) {
-        git push --porcelain 
-        #see https://stackoverflow.com/questions/12751261/powershell-displays-some-git-command-results-as-error-in-console-even-though-ope for --porcelain switch
-    }
 }
 
 
@@ -248,37 +126,24 @@ function Push {
 #entry method
 function Main {
 
-    $projects = @(
-        "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
+    ImportModules
 
-        "Palmtree.ApiPlatform.Interfaces",
-	    "Palmtree.ApiPlatform.MessagePipeline",
-	    "Palmtree.ApiPlatform.Utility",
+    Set-WorkingDirectory $PsScriptRoot
 
-        "Palmtree.ApiPlatform.DomainTests.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Clients",
-	    "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
-	    "Palmtree.ApiPlatform.EndpointTests.Infrastructure",
-        "Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
-    )
-    
-    SetWorkingDirectory
+    Git-VerifyIndexAndWorkingTreeIsClean
 
-    VerifyIndexAndTreeIsClean
-
-    $currentVersion = VerifyVersionsInSync $projects
+    $currentVersion = Verify-ProjectVersionsInSync $projects
 
     $newVersion = CalcNewVersion $currentVersion
 
     ModifyProjectVersions $projects $newVersion
 
-    Commit $newVersion
+    Git-Commit $newVersion
 
-    Push
-        
-    Write-Host "Done."        
+    Git-PushCurrentBranch
+      
+    Log "Done."
+    
 }
 
 #go

@@ -8,6 +8,13 @@ runs domain tests against all test projects
 
 #>
 
+Param(
+    $testPackages = @(
+        "Palmtree.ApiPlatform.Tests",
+        "Palmtree.Sso.Api.Domain.Tests"         	         	    
+    )
+)
+
 function SetWorkingDirectory {
 
     $folder = GetScriptFolder    
@@ -99,10 +106,6 @@ function RunDomainTests {
 #entry method
 function Main {
 
-    $testPackages = @(
-        "Palmtree.ApiPlatform.Tests",
-        "Palmtree.Sso.Api.Domain.Tests"         	         	    
-    )
     
 
     SetWorkingDirectory

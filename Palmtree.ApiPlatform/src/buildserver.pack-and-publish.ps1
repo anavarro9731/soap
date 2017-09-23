@@ -7,6 +7,36 @@ packages and publishes all public assemblies
 #>
 
 
+Param(
+
+	[string[]] $projectsToPublish = @(
+        "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
+
+        "Palmtree.ApiPlatform.Interfaces",
+	    "Palmtree.ApiPlatform.MessagePipeline",
+	    "Palmtree.ApiPlatform.Utility",
+
+        "Palmtree.ApiPlatform.DomainTests.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Clients",
+	    "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Infrastructure",
+	    "Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
+	    "Palmtree.ApiPlatform.EndpointTests.Infrastructure",
+        "Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
+    ),
+    
+	[string[]] $unlistedProjects = @(
+        "Palmtree.ApiPlatform.Interfaces",
+	    "Palmtree.ApiPlatform.MessagePipeline",
+	    "Palmtree.ApiPlatform.Utility"
+    ),
+
+    #Myget Feed details
+    [string] $mygetFeedUri = "https://www.myget.org/F/anavarro9731/api/v2/package",
+    [string] $mygetSymbolFeedUri = "https://www.myget.org/F/anavarro9731/symbols/api/v2/package",
+    [string] $mygetApiKey = "7cde1967-fe13-4672-91ef-f1deb3543e78"
+)
+
 		
 class EditableVersion {
 	[int] $Major
@@ -170,7 +200,6 @@ function PublishProjects {
 function CheckForPublishTag {
 
     $message = git log -1 --pretty=%B    
-    #$message = $(Build.SOURCEVERSIONMESSAGE)
 
 	$result = "$message" -match "Updated Project Versions to";
 
@@ -181,9 +210,18 @@ function TagCommitAsPublished {
 
     Param([EditableVersion] $latestVersion)
 
+    #see https://stackoverflow.com/questions/38670306/executing-git-commands-inside-a-build-job-in-visual-studio-team-services-was-vs
+    
     WriteHostStep "Tagging Commit with version $latestVersion"
-    git tag published-as-version-$latestVersion
-    git push --porcelain 
+
+    $commithash = git log -1 --pretty=%h
+
+    $tagname = published-as-version-$latestVersion
+
+    git tag $tagname  $commithash
+
+    git push origin $tagname --porcelain 
+
     #see https://stackoverflow.com/questions/12751261/powershell-displays-some-git-command-results-as-error-in-console-even-though-ope for --porcelain switch
 
     }
@@ -193,32 +231,7 @@ function TagCommitAsPublished {
 #entry method
 function Main {
 
-	$projectsToPublish = @(
-        "Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
 
-        "Palmtree.ApiPlatform.Interfaces",
-	    "Palmtree.ApiPlatform.MessagePipeline",
-	    "Palmtree.ApiPlatform.Utility",
-
-        "Palmtree.ApiPlatform.DomainTests.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Clients",
-	    "Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Infrastructure",
-	    "Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
-	    "Palmtree.ApiPlatform.EndpointTests.Infrastructure",
-        "Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
-    )
-    
-	$unlistedProjects = @(
-        "Palmtree.ApiPlatform.Interfaces",
-	    "Palmtree.ApiPlatform.MessagePipeline",
-	    "Palmtree.ApiPlatform.Utility"
-    )
-
-    #Myget Feed details
-    $mygetFeedUri = "https://www.myget.org/F/anavarro9731/api/v2/package"
-    $mygetSymbolFeedUri = "https://www.myget.org/F/anavarro9731/symbols/api/v2/package"
-    $mygetApiKey = "7cde1967-fe13-4672-91ef-f1deb3543e78"
 
 	SetWorkingDirectory
 
