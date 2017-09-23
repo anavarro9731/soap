@@ -10,6 +10,7 @@ It will update the version, commit the change, and push the commit to the origin
 If you don't commit right away you might pollute the commit.)
 
 See Readme - Versioning Semantics for more details
+
 #>
 
 Param(
@@ -100,16 +101,12 @@ function CalcNewVersion {
     return $newVersion
 }
 
-
-
-#START
-
 #entry method
 function Main {
 
     Set-WorkingDirectory $PsScriptRoot
 
-    #Git-VerifyIndexAndWorkingTreeIsClean
+    Git-VerifyIndexAndWorkingTreeIsClean
 
     $currentVersion = Verify-ProjectVersionsInSync $projects
 

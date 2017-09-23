@@ -1,9 +1,7 @@
 <#
 
 restore depdendent nuget packages
-
 builds solution
-
 runs domain tests against all test projects 
 
 #>
@@ -105,9 +103,7 @@ function RunDomainTests {
 
 #entry method
 function Main {
-
-    
-
+  
     SetWorkingDirectory
 
     RestoreNugetPackages

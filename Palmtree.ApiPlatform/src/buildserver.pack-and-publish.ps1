@@ -1,7 +1,6 @@
 <#
 
 runs validation checks
-
 packages and publishes all public assemblies
 
 #>
