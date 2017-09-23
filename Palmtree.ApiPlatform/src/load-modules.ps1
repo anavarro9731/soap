@@ -14,4 +14,5 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 foreach ($module in $modules) {
  Invoke-RestMethod -Uri "$moduleRootUri$module" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile $module
  Import-Module ".\$module" -Verbose -Global -Force
+ #make sure to .gitgnore .psm1 files as we don't remove this because it is needed by 'Using' statements in other scripts which may also commit changes
 }
