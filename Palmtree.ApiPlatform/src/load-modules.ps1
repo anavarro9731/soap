@@ -1,7 +1,10 @@
+
 $vstsCredentials = @("anavarro9731","VST`"04`"supremus")
 $moduleRootUri = "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath="
 $modules = @(
- "build.psm1"
+ "build.psm1",
+ "prepare-new-version.psm1",
+ "build-and-test.psm1"
 )
 
 Push-Location $PSScriptRoot
