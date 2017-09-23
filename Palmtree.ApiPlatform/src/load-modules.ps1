@@ -19,3 +19,34 @@ foreach ($module in $modules) {
  Import-Module ".\$module" -Verbose -Global -Force
  #make sure to .gitgnore .psm1 files as we don't remove this because it is needed by 'Using' statements in other scripts which may also commit changes
 }
+
+function global:Run {
+
+	Param(
+		[switch]$Prepare,
+		[switch]$Build,
+		[switch]$Publish
+	)
+	
+	if ($Prepare) {
+		Prepare-NewVersion -projects @(
+			"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
+			"Palmtree.ApiPlatform.Interfaces",
+			"Palmtree.ApiPlatform.MessagePipeline",
+			"Palmtree.ApiPlatform.Utility",
+			"Palmtree.ApiPlatform.DomainTests.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Clients",
+			"Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
+			"Palmtree.ApiPlatform.EndpointTests.Infrastructure",
+			"Palmtree.ApiPlatform.MessagesSharedWithClients")
+	}
+
+	if ($Build) {
+		Build-And-Test -testPackages @(
+			"Palmtree.ApiPlatform.Tests",
+			"Palmtree.Soo.Api.Domain.Tests"
+		)
+	}
+}
