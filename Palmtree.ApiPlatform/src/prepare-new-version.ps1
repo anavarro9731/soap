@@ -1,3 +1,5 @@
+Using module '.\build.psm1'
+
 <# 
 
 This script is for versioning the package before publishing.
@@ -25,29 +27,8 @@ Param(
 	    "Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
 	    "Palmtree.ApiPlatform.EndpointTests.Infrastructure",
         "Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
-    ),
-    
-    $vstsCredentials = @("anavarro9731", "VST`"04`"supremus")   
+    )       
 )
-
-function ImportModules {
-  
-    Write-Host "Importing Custom Modules"
-
-    $modules = @(
-        "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath=build.psm1"
-    )
-
-    # Base64-encodes the Personal Access Token (PAT) appropriately
-    $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $vstsCredentials[0],$vstsCredentials[1])))
-       
-    foreach ($module in $modules) {
-        $moduleFilename = $module.split("=") | Select-Object -Last 1            
-        Invoke-RestMethod -Uri $module -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile $moduleFilename
-        Import-Module ".\$moduleFilename" -Verbose -Global -Force
-        Remove-Item ".\$moduleFilename" -Verbose -Force
-    }       
-}
 
 function CalcVersionAction {
 
@@ -126,11 +107,9 @@ function CalcNewVersion {
 #entry method
 function Main {
 
-    ImportModules
-
     Set-WorkingDirectory $PsScriptRoot
 
-    Git-VerifyIndexAndWorkingTreeIsClean
+    #Git-VerifyIndexAndWorkingTreeIsClean
 
     $currentVersion = Verify-ProjectVersionsInSync $projects
 
