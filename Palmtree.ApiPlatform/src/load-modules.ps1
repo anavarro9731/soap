@@ -23,12 +23,12 @@ foreach ($module in $modules) {
 function global:Run {
 
 	Param(
-		[switch]$Prepare,
-		[switch]$Build,
-		[switch]$Publish
+		[switch]$PrepareNewVersion,
+		[switch]$BuildAndTest,
+		[switch]$PackAndPublish
 	)
 	
-	if ($Prepare) {
+	if ($PrepareNewVersion) {
 		Prepare-NewVersion -projects @(
 			"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
 			"Palmtree.ApiPlatform.Interfaces",
@@ -43,10 +43,30 @@ function global:Run {
 			"Palmtree.ApiPlatform.MessagesSharedWithClients")
 	}
 
-	if ($Build) {
+	if ($BuildAndTest) {
 		Build-And-Test -testPackages @(
 			"Palmtree.ApiPlatform.Tests",
-			"Palmtree.Soo.Api.Domain.Tests"
+			"Palmtree.Sso.Api.Domain.Tests"
 		)
 	}
+
+    if ($PackAndPublish) {
+        Pack-And-Publish -projectsToPublish @(
+			"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
+			"Palmtree.ApiPlatform.Interfaces",
+			"Palmtree.ApiPlatform.MessagePipeline",
+			"Palmtree.ApiPlatform.Utility",
+			"Palmtree.ApiPlatform.DomainTests.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Clients",
+			"Palmtree.ApiPlatform.Endpoint.Http.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Infrastructure",
+			"Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
+			"Palmtree.ApiPlatform.EndpointTests.Infrastructure",
+			"Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
+		) -unlistedProjects @(
+			"Palmtree.ApiPlatform.Interfaces",
+			"Palmtree.ApiPlatform.MessagePipeline",
+			"Palmtree.ApiPlatform.Utility"
+		) -mygetFeedUri = "https://www.myget.org/F/anavarro9731/api/v2/package" -mygetSymbolFeedUri = "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" -mygetApiKey = "7cde1967-fe13-4672-91ef-f1deb3543e78"
+    }
 }
