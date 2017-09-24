@@ -1,4 +1,3 @@
-
 $vstsCredentials = @("anavarro9731","VST`"04`"supremus")
 $vstsRootUri = "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath="
 $modules = @(
@@ -8,6 +7,8 @@ $modules = @(
  "pack-and-publish"
 )
 
+# Set Project Root Folder
+$global:projectRoot = $PSScriptRoot
 Push-Location $PSScriptRoot
 
 Write-Host "Importing Custom Modules"
@@ -15,13 +16,20 @@ Write-Host "Importing Custom Modules"
 # Base64-encodes the Personal Access Token (PAT) appropriately
 $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $vstsCredentials[0],$vstsCredentials[1])))
 
-New-Item ".\.psModules\" -ItemType Directory -Verbose
+# Set Modules Path for Session
+$env:PSModulePath = $env:PSModulePath + ";$PSScriptRoot\.psModules\"
+
+# Download and Import all Modules
 foreach ($module in $modules) {
- Invoke-RestMethod -Uri "$vstsRootUri$file" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile ".\.psModules\$module\$module.psm1"
+ New-Item ".\.psModules\$module\" -ItemType Directory -Verbose
+ Invoke-RestMethod -Uri "$vstsRootUri$module.psm1" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile ".\.psModules\$module\$module.psm1"
  Import-Module $module -Verbose -Global -Force
- #make sure to .gitgnore .psm1 files as we don't remove this because it is needed by 'Using' statements in other scripts which may also commit changes
 }
 
+#Remove folder once modules are loaded
+Remove-Item ".\.psModules\" -Verbose -Recurse
+
+#expose this function like a CmdLet
 function global:Run {
 
 
