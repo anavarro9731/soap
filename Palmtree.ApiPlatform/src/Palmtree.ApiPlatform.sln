@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PalmTree.Sso", "PalmTree.Sso", "{3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}"
 EndProject
@@ -15,9 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.ApiPlatform.Endpoi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C1A4DFD1-4FD0-473C-9B27-F7EEB6886CFD}"
 	ProjectSection(SolutionItems) = preProject
-		buildserver.build-and-test.ps1 = buildserver.build-and-test.ps1
-		buildserver.pack-and-publish.ps1 = buildserver.pack-and-publish.ps1
-		prepare-new-version.ps1 = prepare-new-version.ps1
+		load-modules.ps1 = load-modules.ps1
 		readme.md = readme.md
 	EndProjectSection
 EndProject
@@ -318,5 +316,8 @@ Global
 		{2D6584B2-4AEE-43A4-B018-5684555CBE3D} = {C31DA2D2-D541-49E5-8FB4-1A91EAC23435}
 		{427569EA-995A-43B9-9B9D-F4480525B2CF} = {3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}
 		{47DA2D0D-22B6-42DC-AB16-75413122F7C9} = {3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2E270405-DA3C-4A1A-826A-F993DF136CAA}
 	EndGlobalSection
 EndGlobal
