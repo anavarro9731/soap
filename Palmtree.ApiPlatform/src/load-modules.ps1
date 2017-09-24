@@ -46,7 +46,7 @@ function global:Run {
 	}
 
 	if ($BuildAndTest) {
-		.\build-and.test.ps1 -testPackages @(
+		.\build-and-test.ps1 -testPackages @(
 			"Palmtree.ApiPlatform.Tests",
 			"Palmtree.Sso.Api.Domain.Tests"
 		)
