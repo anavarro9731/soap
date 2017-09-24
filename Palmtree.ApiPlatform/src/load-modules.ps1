@@ -65,6 +65,10 @@ function global:Run {
 			"Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
 			"Palmtree.ApiPlatform.EndpointTests.Infrastructure",
 			"Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
-		) -mygetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" -mygetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" -mygetApiKey "7cde1967-fe13-4672-91ef-f1deb3543e78"
+		) -unlistedProjects = @(
+            "Palmtree.ApiPlatform.Interfaces",
+			"Palmtree.ApiPlatform.MessagePipeline",
+			"Palmtree.ApiPlatform.Utility"			
+        )-mygetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" -mygetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" -mygetApiKey "7cde1967-fe13-4672-91ef-f1deb3543e78"
     }
 }
