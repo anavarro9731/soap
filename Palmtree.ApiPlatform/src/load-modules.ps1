@@ -2,9 +2,10 @@
 $vstsCredentials = @("anavarro9731","VST`"04`"supremus")
 $moduleRootUri = "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath="
 $modules = @(
- "build.psm1",
- "prepare-new-version.psm1",
- "build-and-test.psm1"
+ "build.psm1"
+ "prepare-new-version.ps1",
+ "build-and-test.ps1",
+ "pack-and-publish.ps1"
 )
 
 Push-Location $PSScriptRoot
@@ -16,11 +17,12 @@ $base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0
 
 foreach ($module in $modules) {
  Invoke-RestMethod -Uri "$moduleRootUri$module" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile $module
- Import-Module ".\$module" -Verbose -Global -Force
+ #Import-Module ".\$module" -Verbose -Global -Force
  #make sure to .gitgnore .psm1 files as we don't remove this because it is needed by 'Using' statements in other scripts which may also commit changes
 }
 
 function global:Run {
+
 
 	Param(
 		[switch]$PrepareNewVersion,
@@ -29,7 +31,7 @@ function global:Run {
 	)
 	
 	if ($PrepareNewVersion) {
-		Prepare-NewVersion -projects @(
+		.\prepare-new-version.ps1 -projects @(
 			"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
 			"Palmtree.ApiPlatform.Interfaces",
 			"Palmtree.ApiPlatform.MessagePipeline",
@@ -44,14 +46,14 @@ function global:Run {
 	}
 
 	if ($BuildAndTest) {
-		Build-And-Test -testPackages @(
+		.\build-and.test.ps1 -testPackages @(
 			"Palmtree.ApiPlatform.Tests",
 			"Palmtree.Sso.Api.Domain.Tests"
 		)
 	}
 
     if ($PackAndPublish) {
-        Pack-And-Publish -projectsToPublish @(
+        .\pack-and-publish.ps1 -projectsToPublish @(
 			"Palmtree.ApiPlatform.ThirdPartyClients.Mailgun",
 			"Palmtree.ApiPlatform.Interfaces",
 			"Palmtree.ApiPlatform.MessagePipeline",
@@ -63,10 +65,6 @@ function global:Run {
 			"Palmtree.ApiPlatform.Endpoint.Msmq.Infrastructure",
 			"Palmtree.ApiPlatform.EndpointTests.Infrastructure",
 			"Palmtree.ApiPlatform.MessagesSharedWithClients"	         	    
-		) -unlistedProjects @(
-			"Palmtree.ApiPlatform.Interfaces",
-			"Palmtree.ApiPlatform.MessagePipeline",
-			"Palmtree.ApiPlatform.Utility"
-		) -mygetFeedUri = "https://www.myget.org/F/anavarro9731/api/v2/package" -mygetSymbolFeedUri = "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" -mygetApiKey = "7cde1967-fe13-4672-91ef-f1deb3543e78"
+		) -mygetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" -mygetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" -mygetApiKey "7cde1967-fe13-4672-91ef-f1deb3543e78"
     }
 }
