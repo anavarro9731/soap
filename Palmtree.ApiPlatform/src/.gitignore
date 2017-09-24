@@ -3,6 +3,9 @@
 
 #powershell
 *.psm1
+build-and-test.ps1
+pack-and-publish.ps1
+prepare-new-version.ps1
 
 # User-specific files
 *.suo
