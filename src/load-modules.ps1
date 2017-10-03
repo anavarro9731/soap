@@ -69,8 +69,8 @@ function global:Run {
 
 	if ($BuildAndTest) {
 		Build-And-Test -testPackages @(
-			"Soap.Tests",
-			"Palmtree.Sso.Api.Domain.Tests"
+			"Soap.Tests"
+			#"Palmtree.Sso.Api.Domain.Tests"
 		)
 	}
 
