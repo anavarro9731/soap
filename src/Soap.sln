@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Endpoint.Infrastructur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Endpoint.Msmq", "Palmtree.Api.Sso.Endpoint.Msmq\Palmtree.Api.Sso.Endpoint.Msmq.csproj", "{A26EC955-9AC6-4289-92F3-5726E3FEC93A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api Infrastructure Assemblies", "Api Infrastructure Assemblies", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api Infrastructure", "Api Infrastructure", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.DomainTests.Infrastructure", "Soap.DomainTests.Infrastructure\Soap.DomainTests.Infrastructure.csproj", "{B1ED247D-AC57-4E18-B688-A762CBE3FBD1}"
 EndProject
@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Tests", "Soap.Tests\So
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Utility", "Soap.Utility\Soap.Utility.csproj", "{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core Nuget Packages", "Core Nuget Packages", "{865DCEFC-8653-4674-9F03-611EDD30CAB5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api Platform", "Api Platform", "{865DCEFC-8653-4674-9F03-611EDD30CAB5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.ThirdPartyClients.Mailgun", "Soap.ThirdPartyClients.Mailgun\Soap.ThirdPartyClients.Mailgun.csproj", "{2D6584B2-4AEE-43A4-B018-5684555CBE3D}"
 EndProject
