@@ -1,4 +1,4 @@
-﻿namespace Soap.Infrastructure.Models
+﻿namespace Soap.MessagePipeline.Models
 {
     using System.Linq;
     using Newtonsoft.Json;

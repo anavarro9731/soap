@@ -1,8 +1,7 @@
 ﻿namespace Soap.ThirdPartyClients.Mailgun
 {
-
     using System.Collections.Generic;
-    using DataStore.Models.PureFunctions;
+    using Soap.Utility.PureFunctions;
 
     public class MailgunEmailSenderSettings
     {

@@ -4,12 +4,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using DataStore.Models.PureFunctions;
     using Mailer.NET.Mailer;
     using Mailer.NET.Mailer.Response;
     using Mailer.NET.Mailer.Transport;
     using ServiceApi.Interfaces.LowLevel.MessageAggregator;
     using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using Soap.Utility.PureFunctions;
 
     public class EmailSender
     {

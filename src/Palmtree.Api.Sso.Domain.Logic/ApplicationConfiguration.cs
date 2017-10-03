@@ -1,6 +1,5 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic
 {
-    using DataStore.Impl.DocumentDb.Config;
     using DataStore.Impl.SqlServer;
     using Newtonsoft.Json;
     using Soap.Interfaces;
@@ -13,7 +12,6 @@
             string environmentName,
             IApiServerSettings apiServerSettings,
             SqlServerDbSettings sqlServerDbSettings,
-            FileStorageSettings fileStorageSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries,
             string defaultExceptionMessage,
@@ -23,7 +21,6 @@
             EnvironmentName = environmentName;
             ApiServerSettings = apiServerSettings;
             SqlServerDbSettings = sqlServerDbSettings;
-            FileStorageSettings = fileStorageSettings;
             MailgunEmailSenderSettings = mailgunEmailSenderSettings;
             NumberOfApiMessageRetries = numberOfApiMessageRetries;
             DefaultExceptionMessage = defaultExceptionMessage;
@@ -39,8 +36,6 @@
 
         public string EnvironmentName { get; }
 
-        public FileStorageSettings FileStorageSettings { get; }
-
         public MailgunEmailSenderSettings MailgunEmailSenderSettings { get; }
 
         public byte NumberOfApiMessageRetries { get; set; }
@@ -53,7 +48,6 @@
             string environmentName,
             IApiServerSettings apiServerSettings,
             SqlServerDbSettings sqlServerDbSettings,
-            FileStorageSettings fileStorageSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries = 1,
             string unexpectedExceptionMessage = "An Error Has Occurred",
@@ -64,7 +58,6 @@
                 environmentName,
                 apiServerSettings,
                 sqlServerDbSettings,
-                fileStorageSettings,
                 mailgunEmailSenderSettings,
                 numberOfApiMessageRetries,
                 unexpectedExceptionMessage,

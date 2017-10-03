@@ -2,7 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Reflection;
-    using DataStore.Impl.DocumentDb.Config;
     using DataStore.Impl.SqlServer;
     using Palmtree.Api.Sso.Domain.Logic;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
@@ -32,7 +31,6 @@
                 numberOfApiMessageRetries: 3,
                 apiServerSettings: ApiServerSettings.Create("httpUrl", "msmqAddress"),
                 sqlServerDbSettings: SqlServerDbSettings.Create("serverInstance", "database", "userId", "password", "tableName"),
-                fileStorageSettings: FileStorageSettings.Create("connString", "storagePrefix"),
                 mailgunEmailSenderSettings: MailgunEmailSenderSettings.Create("im@mycomputer.com", "apiKey", "domain"));
 
             var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(domainLogicAssembly, domainModelsAssembly, handlerAssemblies, applicationConfig).Start();

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using DataStore.Impl.DocumentDb.Config;
     using DataStore.Impl.SqlServer;
     using Microsoft.AspNetCore.Cors.Infrastructure;
     using Palmtree.Api.Sso.Domain.Logic;
@@ -20,9 +19,6 @@
             nameof(Development),
             ApiServerSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
             SqlServerDbSettings.Create("anavarro9731-sqlserver.database.windows.net", "serviceapi", "anavarro9731", "qtPn8aLGXcv3pVZs", "Aggregates"),
-            FileStorageSettings.Create(
-                "DefaultEndpointsProtocol=https;AccountName=anavarro9731serviceapi;AccountKey=vZ3Rp3+wUrbdNQxTDaf+Za4XoiUtXeQ5GxWQU+WphJ9SdZWohA9ceCnbIlyI+y6Fehq8PZc8340fuqZoV+2jDw==;BlobEndpoint=https://anavarro9731Soap.blob.core.windows.net/;",
-                string.Empty),
             MailgunEmailSenderSettings.Create(
                 "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",
                 "key-101c1b392bb95000da55a349848aacd0",

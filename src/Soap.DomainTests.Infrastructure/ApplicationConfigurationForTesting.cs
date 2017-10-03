@@ -4,7 +4,7 @@ namespace Soap.DomainTests.Infrastructure
 
     public class ApplicationConfigurationForTesting : IApplicationConfig
     {
-        public IApiServerSettings ApiServerSettings { get; set; } = Soap.Infrastructure.Models.ApiServerSettings.Create(
+        public IApiServerSettings ApiServerSettings { get; set; } = MessagePipeline.Models.ApiServerSettings.Create(
             "http://dev.Soap.http/endpoint/testing",
             "dev.service.api.msmq.endpoint.testing@machinename");
 

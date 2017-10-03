@@ -1,4 +1,4 @@
-namespace Soap.Api.Sample.Domain.Models.ValueObjects
+namespace Palmtree.Api.Sso.Domain.Models.ValueObjects
 {
     using System;
     using Destructurama.Attributed;
@@ -43,7 +43,7 @@ namespace Soap.Api.Sample.Domain.Models.ValueObjects
                 var hashDetails = tokenString.Substring(0, endOfHash);
                 var hashParts = hashDetails.Split(":".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 var encryptedMessage = tokenString.Substring(endOfHash + 1);
-                if (Utility.SecureHmacHash.CreateFrom(encryptedMessage, int.Parse(hashParts[2]), hashParts[0]).HexHash != hashParts[1])
+                if (Soap.Utility.SecureHmacHash.CreateFrom(encryptedMessage, int.Parse(hashParts[2]), hashParts[0]).HexHash != hashParts[1])
                 {
                     throw new Exception("Hashes don't match. Token may have been tampered with.");
                 }
