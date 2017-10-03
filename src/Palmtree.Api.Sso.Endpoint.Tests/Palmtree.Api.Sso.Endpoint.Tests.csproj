@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Endpoint.Clients.csproj" />
+    <ProjectReference Include="..\Soap.EndpointTests.Infrastructure\Soap.EndpointTests.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Messages\Palmtree.Api.Sso.Domain.Messages.csproj" />
+    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
+  </ItemGroup>
+
+</Project>

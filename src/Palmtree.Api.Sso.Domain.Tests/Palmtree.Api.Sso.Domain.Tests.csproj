@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>    
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.2.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />    
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.DomainTests.Infrastructure\Soap.DomainTests.Infrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Endpoint.Http.Infrastructure.csproj" />
+    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />
+    <ProjectReference Include="..\Palmtree.Api.Sso.Endpoint.Http\Palmtree.Api.Sso.Endpoint.Http.csproj" />
+    <ProjectReference Include="..\Palmtree.Api.Sso.Endpoint.Msmq\Palmtree.Api.Sso.Endpoint.Msmq.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

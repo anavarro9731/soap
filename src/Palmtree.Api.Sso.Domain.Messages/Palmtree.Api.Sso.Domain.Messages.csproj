@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="4.1.6" />
+    <PackageReference Include="FluentValidation" Version="6.4.1" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
+  </ItemGroup>
+  
+</Project>
