@@ -86,11 +86,14 @@ function global:Run {
 			"Soap.Endpoint.Infrastructure",
 			"Soap.Endpoint.Msmq.Infrastructure",
 			"Soap.EndpointTests.Infrastructure",
-			"Soap.MessagesSharedWithClients"	         	    			
-        ) -unlistedProjects @(
+			"Soap.MessagesSharedWithClients") `
+        -unlistedProjects @(
             "Soap.Interfaces",
 			"Soap.MessagePipeline",
 			"Soap.Utility") `
+        -octopusProjects @(
+            "Palmtree.Api.Sso.Endpoint.Http",
+			"Palmtree.Api.Sso.Endpoint.Msmq") `
         -nugetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" `
         -nugetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" `
         -nugetApiKey $nugetApiKey 
