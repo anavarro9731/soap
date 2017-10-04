@@ -86,7 +86,9 @@ function global:Run {
 			"Soap.Endpoint.Infrastructure",
 			"Soap.Endpoint.Msmq.Infrastructure",
 			"Soap.EndpointTests.Infrastructure",
-			"Soap.MessagesSharedWithClients") `
+			"Soap.MessagesSharedWithClients",
+            "Palmtree.Api.Sso.Endpoint.Http",
+			"Palmtree.Api.Sso.Endpoint.Msmq") `
         -unlistedProjects @(
             "Soap.Interfaces",
 			"Soap.MessagePipeline",
