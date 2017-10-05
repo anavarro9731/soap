@@ -5,6 +5,8 @@
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
+    using Serilog;
+    using Serilog.Core;
     using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.DomainTests.Infrastructure;
@@ -42,11 +44,10 @@
         [Fact]
         public void ItShouldNotLogTheSensitiveUserDetails()
         {
+            Log.CloseAndFlush(); //make sure all entries are accounted for
+
             var logEntries = this.endPoint.MessageAggregator.LogEntries;
-
-            Assert.Equal(1, logEntries.Count());
-
-            var logEntry = logEntries.Single();
+            var logEntry = logEntries.Single(l => l.Text.Contains(this.getUserById.MessageId.ToString()));
 
             Assert.False(logEntry.Text.Contains($"\"{Objects.GetPropertyName<User>(type => type.PasswordDetails)}\":"));
             Assert.False(logEntry.Text.Contains($"\"{Objects.GetPropertyName<AccountHistory>(type => type.PasswordLastChanged)}\":"));
