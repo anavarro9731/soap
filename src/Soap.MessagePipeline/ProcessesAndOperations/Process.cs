@@ -1,11 +1,11 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Messages.ProcessMessages;
     using Soap.MessagePipeline.Models;
     using Soap.Utility.PureFunctions;

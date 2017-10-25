@@ -1,6 +1,6 @@
 ﻿namespace Soap.MessagesSharedWithClients.Commands
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class CreateThing : ApiCommand
     {

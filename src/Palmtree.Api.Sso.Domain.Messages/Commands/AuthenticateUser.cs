@@ -1,7 +1,7 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class AuthenticateUser : ApiCommand
     {

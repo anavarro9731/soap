@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public sealed class GetMessageLogItemsQuery : ApiQuery
     {

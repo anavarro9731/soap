@@ -1,7 +1,7 @@
 namespace Soap.MessagePipeline.Messages
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.Messages;
 
     public class LogMessageWithMeta : ILogMessage
     {

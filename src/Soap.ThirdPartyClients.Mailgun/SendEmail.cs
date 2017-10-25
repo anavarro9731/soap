@@ -1,7 +1,7 @@
 ﻿namespace Soap.ThirdPartyClients.Mailgun
 {
     using Mailer.NET.Mailer;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class SendEmail : ApiCommand
     {
@@ -13,4 +13,3 @@
         public Email Message { get; }
     }
 }
-

@@ -1,8 +1,8 @@
 namespace Soap.MessagePipeline.MessageAggregator
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
 
     public class GatedMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {

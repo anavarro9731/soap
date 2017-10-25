@@ -2,7 +2,7 @@
 {
     using System;
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class ConfirmEmail : ApiCommand
     {

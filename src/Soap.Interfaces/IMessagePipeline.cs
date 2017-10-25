@@ -1,7 +1,7 @@
 namespace Soap.Interfaces
 {
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public interface IMessagePipeline
     {

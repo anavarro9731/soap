@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
@@ -6,10 +6,16 @@
     <Description>Used to create a Domain Logic assembly</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.2.0" />
+    <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="2.5.0" />
+    <PackageReference Include="Serilog.Sinks.ColoredConsole" Version="3.0.1" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="3.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Configuration" />
   </ItemGroup>
 </Project>

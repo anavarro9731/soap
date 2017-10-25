@@ -130,7 +130,7 @@
 
             async Task<User> FindUserWithMatchingUsername()
             {
-                var matchingUsers = await DataStoreRead.ReadActive<User>(x => x.Where(u => u.UserName == command.Credentials.Username));
+                var matchingUsers = await DataStoreRead.ReadActive<User>(u => u.UserName == command.Credentials.Username);
 
                 return matchingUsers.SingleOrDefault();
             }
@@ -198,7 +198,7 @@
             string response;
 
             {
-                var user = (await DataStoreRead.ReadActive<User>(x => x.Where(u => u.Email == requestPasswordReset.Email))).SingleOrDefault();
+                var user = (await DataStoreRead.ReadActive<User>(u => u.Email == requestPasswordReset.Email)).SingleOrDefault();
 
                 Validate(user);
 
@@ -266,7 +266,7 @@
             {
                 new SetNewPasswordValidator().ValidateAndThrow(command);
 
-                var requestingUser = (await DataStoreRead.Read<User>(q => q.Where(user => user.UserName == command.Username))).SingleOrDefault();
+                var requestingUser = (await DataStoreRead.Read<User>(user => user.UserName == command.Username)).SingleOrDefault();
 
                 Guard.Against(() => requestingUser == null, "Request failed", "User does not exist");
 

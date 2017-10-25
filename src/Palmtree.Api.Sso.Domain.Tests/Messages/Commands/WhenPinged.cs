@@ -111,7 +111,7 @@
             }
             catch (Exception e)
             {
-                Assert.True(e.Message.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID));
+                Assert.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID, e.Message);
             }
         }
     }
@@ -147,7 +147,7 @@
             }
             catch (Exception e)
             {
-                Assert.True(e.Message.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID));
+                Assert.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID, e.Message);
             }
         }
     }
@@ -198,7 +198,7 @@
         [Fact]
         public void ItShouldSendAMaxFailedMessageOnTheLastIteration()
         {
-            Assert.Equal(1, this.endpoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>().Count());
+            Assert.Single(this.endpoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>());
         }
 
         [Fact]
@@ -210,7 +210,7 @@
             }
             catch (Exception e)
             {
-                Assert.True(e.Message.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID));
+                Assert.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID, e.Message);
             }
         }
     }
@@ -266,7 +266,7 @@
         {
             //have to check NSB directly because this is sent outside of the UnitOfWork
             //and for now there is no message in the aggregator showing this took place
-            Assert.Equal(1, this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>().Count());
+            Assert.Single(this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>());
         }
 
         [Fact]
@@ -278,7 +278,7 @@
             }
             catch (Exception e)
             {
-                Assert.True(e.Message.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID));
+                Assert.StartsWith(PipelineExceptionMessages.CodePrefixes.INVALID, e.Message);
             }
         }
     }
@@ -311,7 +311,7 @@
         {
             var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
 
-            Assert.Equal(1, logItemResult.FailedAttempts.Count);
+            Assert.Single(logItemResult.FailedAttempts);
         }
 
         [Fact]

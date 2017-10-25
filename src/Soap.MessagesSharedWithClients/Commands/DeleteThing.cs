@@ -2,16 +2,16 @@
 {
     using System;
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class DeleteThing : ApiCommand
     {
-        public Guid ThingId { get; set; }
-
         public DeleteThing(Guid thingId)
         {
             ThingId = thingId;
         }
+
+        public Guid ThingId { get; set; }
     }
 
     public class DeleteThingValidator : AbstractValidator<DeleteThing>

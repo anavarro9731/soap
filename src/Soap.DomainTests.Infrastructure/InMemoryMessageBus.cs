@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using CircuitBoard.Messages;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class InMemoryMessageBus : IBusContext
     {

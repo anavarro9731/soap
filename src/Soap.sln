@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PalmTree.Sso", "PalmTree.Sso", "{3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}"
 EndProject
@@ -35,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.DomainTests.Infrastruc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.EndpointTests.Infrastructure", "Soap.EndpointTests.Infrastructure\Soap.EndpointTests.Infrastructure.csproj", "{CFC3F5FE-90F1-4799-8A6B-5E788C73F506}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.MessagesSharedWithClients", "Soap.MessagesSharedWithClients\Soap.MessagesSharedWithClients.csproj", "{4166375E-EE3E-4473-9126-7BB0B28AC0D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.AbstractMessages", "Soap.MessagesSharedWithClients\Soap.AbstractMessages.csproj", "{4166375E-EE3E-4473-9126-7BB0B28AC0D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces", "Soap.Interfaces\Soap.Interfaces.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
 EndProject
@@ -47,11 +47,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Utility", "Soap.Utilit
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api Platform", "Api Platform", "{865DCEFC-8653-4674-9F03-611EDD30CAB5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.ThirdPartyClients.Mailgun", "Soap.ThirdPartyClients.Mailgun\Soap.ThirdPartyClients.Mailgun.csproj", "{2D6584B2-4AEE-43A4-B018-5684555CBE3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Integrations.Mailgun", "Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj", "{2D6584B2-4AEE-43A4-B018-5684555CBE3D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Domain.Logic", "Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj", "{427569EA-995A-43B9-9B9D-F4480525B2CF}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rd Party Clients", "3rd Party Clients", "{C31DA2D2-D541-49E5-8FB4-1A91EAC23435}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3p Integration Libraries", "3p Integration Libraries", "{C31DA2D2-D541-49E5-8FB4-1A91EAC23435}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Domain.Messages", "Palmtree.Api.Sso.Domain.Messages\Palmtree.Api.Sso.Domain.Messages.csproj", "{47DA2D0D-22B6-42DC-AB16-75413122F7C9}"
 EndProject
@@ -309,7 +309,7 @@ Global
 		{A26EC955-9AC6-4289-92F3-5726E3FEC93A} = {3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}
 		{B1ED247D-AC57-4E18-B688-A762CBE3FBD1} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
 		{CFC3F5FE-90F1-4799-8A6B-5E788C73F506} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
-		{4166375E-EE3E-4473-9126-7BB0B28AC0D1} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
+		{4166375E-EE3E-4473-9126-7BB0B28AC0D1} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{2DC299E9-04A1-4911-AB92-9989E23C4D53} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{8CCDE971-2027-4033-91D8-72A5ED9A789A} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}

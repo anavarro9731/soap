@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
+    using CircuitBoard.Permissions;
 
     /// <summary>
     ///     a way to pull the derived class out of the container, rathen than using the base class

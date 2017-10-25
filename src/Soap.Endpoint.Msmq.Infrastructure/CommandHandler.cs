@@ -2,8 +2,8 @@
 {
     using System.Threading.Tasks;
     using Rebus.Handlers;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class CommandHandler : IHandleMessages<IApiCommand>
     {

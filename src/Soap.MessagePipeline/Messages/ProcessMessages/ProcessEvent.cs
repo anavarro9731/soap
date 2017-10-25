@@ -1,6 +1,6 @@
 namespace Soap.MessagePipeline.Messages.ProcessMessages
 {
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard.Messages;
 
     public class ProcessEvent : IMessage
     {

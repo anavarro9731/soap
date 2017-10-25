@@ -20,7 +20,6 @@
             //arrange            
             this.endPoint.AddToDatabase(TestData.User1);
 
-
             this.command = new CreateThing("Some Thing")
             {
                 ThingId = Guid.NewGuid()

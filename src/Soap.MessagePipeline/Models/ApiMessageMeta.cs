@@ -1,7 +1,7 @@
 ﻿namespace Soap.MessagePipeline.Models
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
+    using CircuitBoard.Permissions;
     using Soap.MessagePipeline.Models.Aggregates;
 
     public class ApiMessageMeta

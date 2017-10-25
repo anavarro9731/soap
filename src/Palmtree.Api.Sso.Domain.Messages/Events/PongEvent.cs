@@ -1,7 +1,7 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Messages.Events
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class PongEvent : ApiEvent
     {

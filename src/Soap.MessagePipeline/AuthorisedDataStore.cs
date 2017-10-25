@@ -1,12 +1,8 @@
 ﻿namespace Soap.MessagePipeline
 {
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Security;
     using System.Threading.Tasks;
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces;
-    using DataStore.Interfaces.LowLevel;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
 
     /// <summary>
     ///     A Datastore that is user context aware and will check if the users permissions have matching
@@ -32,39 +28,39 @@
         // an aggregates scope is a collection of id of other objects and possibly itself in cases where
         // you want to control access to a single aggrgate on a per user basis as opposed to giving access via
         // another aggregate such as "Department, Customer, Role, etc).
-        public static void AuthorizeDataAccess(IUserWithPermissions user, IDataPermission permission, IEnumerable<IHaveScope> objectsBeingAuthorized)
-        {
-            if (user.HasPermission(permission)) //if the user has the permission in question
-            {
-                foreach (var objectQueried in objectsBeingAuthorized)
-                {
-                    //if the object queried is not scope, return it, it is unsecured
-                    if (objectQueried.ScopeReferences == null || objectQueried.ScopeReferences.Count == 0) continue;
+        //public static void AuthorizeDataAccess(IUserWithPermissions user, IDataPermission permission, IEnumerable<IHaveScope> objectsBeingAuthorized)
+        //{
+        //    if (user.HasPermission(permission)) //if the user has the permission in question
+        //    {
+        //        foreach (var objectQueried in objectsBeingAuthorized)
+        //        {
+        //            //if the object queried is not scope, return it, it is unsecured
+        //            if (objectQueried.ScopeReferences == null || objectQueried.ScopeReferences.Count == 0) continue;
 
-                    //if the user's permission is scoped to the same scope as the object being queried allow it.
-                    var usersScopedPermission = (IDataPermission)user.Permissions.Single(x => Equals(x, permission));
-                    if (usersScopedPermission.PermissionScope.Intersect(objectQueried.ScopeReferences).Any()) continue;
+        //            //if the user's permission is scoped to the same scope as the object being queried allow it.
+        //            var usersScopedPermission = (IDataPermission)user.Permissions.Single(x => Equals(x, permission));
+        //            if (usersScopedPermission.PermissionScope.Intersect(objectQueried.ScopeReferences).Any()) continue;
 
-                    //otherwise don't!
-                    throw new SecurityException(
-                        "User not authorized to perform this action. You require the " + permission.PermissionName
-                        + " permission scoped to one of the following which objects you do not have: " + objectQueried
-                            .ScopeReferences.Select(s => $"{s.ScopeObjectType} - {s.ScopeObjectId}")
-                            .Aggregate((a, b) => $"[{a}] [{b}]"));
-                }
-            }
-        }
-
-        public static void AuthorizeDataAccess(IUserWithPermissions user, IDataPermission permission, IHaveScope objectBeingAuthorized)
-        {
-            AuthorizeDataAccess(
-                user,
-                permission,
-                new[]
-                {
-                    objectBeingAuthorized
-                });
-        }
+        //            //otherwise don't!
+        //            throw new SecurityException(
+        //                "User not authorized to perform this action. You require the " + permission.PermissionName
+        //                + " permission scoped to one of the following which objects you do not have: " + objectQueried
+        //                    .ScopeReferences.Select(s => $"{s.ScopeObjectType} - {s.ScopeObjectId}")
+        //                    .Aggregate((a, b) => $"[{a}] [{b}]"));
+        //        }
+        //    }
+        //}
+        //TODO:fix later
+        //public static void AuthorizeDataAccess(IUserWithPermissions user, IDataPermission permission, IHaveScope objectBeingAuthorized)
+        //{
+        //    AuthorizeDataAccess(
+        //        user,
+        //        permission,
+        //        new[]
+        //        {
+        //            objectBeingAuthorized
+        //        });
+        //}
 
         public async Task CommitChanges()
         {

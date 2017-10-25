@@ -2,9 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
     using DataStore.Interfaces;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
     using Soap.Interfaces;
 
     /// <summary>

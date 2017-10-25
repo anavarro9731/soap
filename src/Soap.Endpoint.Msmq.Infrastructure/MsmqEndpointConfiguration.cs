@@ -7,10 +7,10 @@
     using Autofac;
     using DataStore.Interfaces;
     using Serilog;
-    using Topshelf;
     using Soap.Endpoint.Infrastructure;
     using Soap.Interfaces;
     using Soap.MessagePipeline.MessageAggregator;
+    using Topshelf;
 
     public class MsmqEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {

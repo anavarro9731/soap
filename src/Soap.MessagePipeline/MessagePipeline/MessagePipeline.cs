@@ -5,16 +5,15 @@
     using System.Linq;
     using System.Threading.Tasks;
     using System.Transactions;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
     using DataStore.Interfaces;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Messages;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.MessagePipeline.PureFunctions;
     using Soap.Utility.PureFunctions;
     using Soap.Utility.PureFunctions.Extensions;
 

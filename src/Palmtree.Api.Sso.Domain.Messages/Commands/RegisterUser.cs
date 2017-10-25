@@ -2,7 +2,7 @@ namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
     using System;
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class RegisterUser : ApiCommand
     {

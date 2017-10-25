@@ -6,8 +6,8 @@
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Endpoint.Clients;
+    using Soap.Interfaces.Messages;
     using Soap.MessagesSharedWithClients.Queries;
 
     public static class TestUtils

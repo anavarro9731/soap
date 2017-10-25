@@ -1,7 +1,7 @@
 ﻿namespace Soap.MessagePipeline.MessageAggregator
 {
     using System.Collections.Generic;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
+    using CircuitBoard.MessageAggregator;
 
     public class ValueReturner : IValueReturner
     {

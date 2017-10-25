@@ -2,10 +2,10 @@
 {
     using System;
     using System.Linq;
+    using CircuitBoard.Permissions;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.Utility;
 
     public static class TestData

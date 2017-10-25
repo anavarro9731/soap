@@ -1,7 +1,8 @@
 ﻿namespace Soap.MessagePipeline.MessageAggregator
 {
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
 
     public class MessageAggregator : IMessageAggregator
     {

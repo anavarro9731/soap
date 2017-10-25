@@ -2,14 +2,15 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Linq;
     using System.Reflection;
     using Autofac;
+    using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
     using Soap.Interfaces;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessagePipeline;
@@ -159,11 +160,11 @@
 
         public static IEnvironmentSpecificConfig GetConfiguration()
         {
-            const string EnvironmentVariable = "Soap.HostingEnvironment";
+            const string EnvironmentVariable = "Soap.Environment";
 
-            var currentEnvironment = Environment.GetEnvironmentVariable(EnvironmentVariable);
+            var currentEnvironment = ConfigurationManager.AppSettings["Soap.Environment"];
 
-            if (currentEnvironment == null)
+            if (string.IsNullOrEmpty(currentEnvironment))
             {
                 throw new Exception(
                     "No environment variable defined. " + $"You must add a '{EnvironmentVariable}' system environment variable whose value matches a class "

@@ -1,6 +1,6 @@
 namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class RevokeAllAuthTokens : ApiCommand
     {

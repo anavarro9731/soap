@@ -2,22 +2,37 @@
 {
     using System.Threading.Tasks;
     using System.Transactions;
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.MessagePipeline.PureFunctions;
 
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
     ///     TransactionScopeAsyncFlowOption.Enabled is requried to use tx with async/await
     /// </summary>
-    public abstract class MessageHandler 
+    public abstract class MessageHandler
     {
+        protected IDataStore DataStore { get; private set; }
+
+        protected ILogger Logger { get; private set; }
+
+        protected IMessageAggregator MessageAggregator { get; private set; }
+
+        protected IUnitOfWork UnitOfWork { get; private set; }
+
         public abstract Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta);
+
+        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        {
+            UnitOfWork = uow;
+            Logger = logger;
+            MessageAggregator = messageAggregator;
+            DataStore = dataStore;
+        }
 
         protected async Task TimingHack(IApiMessage message)
         {
@@ -35,23 +50,6 @@
                     $"MessgeLogItem record for message with id {message.MessageId} not found while attempting to update it with a successful result. Pausing for {250}ms and will try again. {attempts - j} tries remaining.");
                 await Task.Delay(millisecondsDelay).ConfigureAwait(false);
             }
-        }
-
-
-        protected IDataStore DataStore { get; private set; }
-
-        protected ILogger Logger { get; private set; }
-
-        protected IMessageAggregator MessageAggregator { get; private set; }
-
-        protected IUnitOfWork UnitOfWork { get; private set; }
-
-        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
-        {
-            UnitOfWork = uow;
-            Logger = logger;
-            MessageAggregator = messageAggregator;
-            DataStore = dataStore;
         }
     }
 

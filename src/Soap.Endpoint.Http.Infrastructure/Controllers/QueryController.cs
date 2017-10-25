@@ -4,8 +4,8 @@
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json.Linq;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessagePipeline;
 

@@ -1,6 +1,6 @@
 ﻿namespace Soap.MessagePipeline.PureFunctions
 {
-    using ServiceApi.Interfaces.LowLevel.Permissions;
+    using CircuitBoard.Permissions;
     using Soap.Utility.PureFunctions;
 
     public static class PermissionsGuard

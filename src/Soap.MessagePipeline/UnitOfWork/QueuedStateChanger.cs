@@ -3,8 +3,8 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
 
     /// <summary>
     ///     Executes queued changes via a closure.

@@ -2,8 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
 
     public class MessageAggregatorForTestingWithOnlyGatedFunctions : MessageAggregatorForTestingBase, IMessageAggregator, IMockGatedFunctions
     {

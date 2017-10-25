@@ -1,6 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.Messages;
 
     public interface IBusOperation : IChangeState
     {

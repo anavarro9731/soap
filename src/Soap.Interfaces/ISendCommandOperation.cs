@@ -1,6 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public interface ISendCommandOperation : IBusOperation
     {

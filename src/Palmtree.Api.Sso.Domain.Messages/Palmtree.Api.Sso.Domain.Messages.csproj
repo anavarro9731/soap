@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="4.1.6" />
-    <PackageReference Include="FluentValidation" Version="6.4.1" />
+    <PackageReference Include="FluentValidation" Version="7.2.0" />
 
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
+    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
   
 </Project>

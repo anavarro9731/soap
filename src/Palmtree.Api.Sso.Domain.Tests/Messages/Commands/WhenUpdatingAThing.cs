@@ -28,7 +28,7 @@
 
             this.endPoint.AddToDatabase(thing);
 
-            var changeThing = new UpdateNameOfThing(this.thingId,"Some Thing");
+            var changeThing = new UpdateNameOfThing(this.thingId, "Some Thing");
 
             //act
             this.result = (Thing)this.endPoint.HandleCommand(changeThing, TestData.User1);

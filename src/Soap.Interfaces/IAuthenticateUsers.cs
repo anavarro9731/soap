@@ -1,7 +1,7 @@
 ﻿namespace Soap.Interfaces
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
+    using CircuitBoard.Permissions;
+    using Soap.Interfaces.Messages;
 
     /// <summary>
     ///     allows people to write their own method of authenticating a user from a message

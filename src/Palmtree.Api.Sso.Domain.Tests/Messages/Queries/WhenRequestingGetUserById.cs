@@ -1,15 +1,14 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Tests.Messages.Queries
 {
     using System.Linq;
+    using CircuitBoard.Permissions;
     using Palmtree.Api.Sso.Domain.Messages.Queries;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Serilog;
-    using Serilog.Core;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.DomainTests.Infrastructure;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Models.Aggregates;
     using Soap.Utility.PureFunctions.Extensions;
     using Xunit;
@@ -49,9 +48,9 @@
             var logEntries = this.endPoint.MessageAggregator.LogEntries;
             var logEntry = logEntries.Single(l => l.Text.Contains(this.getUserById.MessageId.ToString()));
 
-            Assert.False(logEntry.Text.Contains($"\"{Objects.GetPropertyName<User>(type => type.PasswordDetails)}\":"));
-            Assert.False(logEntry.Text.Contains($"\"{Objects.GetPropertyName<AccountHistory>(type => type.PasswordLastChanged)}\":"));
-            Assert.False(logEntry.Text.Contains($"\"{Objects.GetPropertyName<SecurityToken>(type => type.SecureHmacHash)}\":"));
+            Assert.DoesNotContain($"\"{Objects.GetPropertyName<User>(type => type.PasswordDetails)}\":", logEntry.Text);
+            Assert.DoesNotContain($"\"{Objects.GetPropertyName<AccountHistory>(type => type.PasswordLastChanged)}\":", logEntry.Text);
+            Assert.DoesNotContain($"\"{Objects.GetPropertyName<SecurityToken>(type => type.SecureHmacHash)}\":", logEntry.Text);
         }
 
         [Fact]

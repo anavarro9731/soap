@@ -11,8 +11,8 @@
     using Rebus.Routing.TypeBased;
     using Rebus.TransactionScopes;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class RebusBusContext : IBusContext
     {

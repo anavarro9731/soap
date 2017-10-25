@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
@@ -8,11 +8,9 @@
     <None Include="MessagePipeline\MessagePipeline.Constants.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="6.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="Serilog" Version="2.5.0" />
-    <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.3.0" />
-    <PackageReference Include="DataStore" Version="3.6.3" />
+    <PackageReference Include="DataStore" Version="4.8.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />

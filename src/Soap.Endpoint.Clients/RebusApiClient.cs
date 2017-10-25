@@ -8,8 +8,8 @@
     using Rebus.Bus;
     using Rebus.Config;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class RebusApiClient : IBusContext
     {

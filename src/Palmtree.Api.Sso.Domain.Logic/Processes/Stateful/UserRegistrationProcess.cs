@@ -45,9 +45,7 @@
             {
                 new RegisterUserValidator().Validate(command);
 
-                Guard.Against(
-                    () => { return DataStoreReadOnly.Read<User>(q => q.Where(u => u.Email == command.Email)).Result.SingleOrDefault() != null; },
-                    "User Already Exists");
+                Guard.Against(() => { return DataStoreReadOnly.Read<User>(u => u.Email == command.Email).Result.SingleOrDefault() != null; }, "User Already Exists");
             }
 
             async Task<User> AddPartiallyRegisteredUser()

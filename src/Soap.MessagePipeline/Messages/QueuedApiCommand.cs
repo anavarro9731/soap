@@ -1,8 +1,8 @@
 ﻿namespace Soap.MessagePipeline.Messages
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class QueuedApiCommand : QueuedStateChange
     {

@@ -1,8 +1,9 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Models.ValueObjects
 {
+    using System.Collections.Generic;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces.LowLevel;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
 
     public class UserPermission
     {
@@ -17,6 +18,6 @@
 
         public IApplicationPermission Permission { get; set; }
 
-        public System.Collections.Generic.IReadOnlyList<IScopeReference> PermissionScope { get; set; }
+        public IReadOnlyList<IScopeReference> PermissionScope { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿  <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
@@ -8,9 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Endpoint.Infrastructure.csproj" />
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
-    <ProjectReference Include="..\Soap.ThirdPartyClients.Mailgun\Soap.ThirdPartyClients.Mailgun.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Messages\Palmtree.Api.Sso.Domain.Messages.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
-
+    <ProjectReference Include="..\Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj" />
   </ItemGroup>
 </Project>

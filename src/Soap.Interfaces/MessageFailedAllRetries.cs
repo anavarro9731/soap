@@ -1,7 +1,7 @@
 ﻿namespace Soap.Interfaces
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class MessageFailedAllRetries<T> : ApiCommand, IMessageFailedAllRetries where T : IApiMessage
     {

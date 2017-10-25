@@ -2,8 +2,8 @@
 {
     using System;
     using FluentValidation;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.PureFunctions;
 
     public class PipelineExceptionMessages

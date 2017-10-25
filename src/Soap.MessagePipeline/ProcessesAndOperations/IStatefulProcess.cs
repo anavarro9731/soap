@@ -1,7 +1,7 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Models;
 
     /// <summary>

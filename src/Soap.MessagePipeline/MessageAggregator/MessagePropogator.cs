@@ -2,9 +2,8 @@ namespace Soap.MessagePipeline.MessageAggregator
 {
     using System;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
     using Soap.Utility.PureFunctions;
 
     public class MessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage

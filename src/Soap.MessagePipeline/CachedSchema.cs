@@ -8,8 +8,8 @@
     using System.Reflection;
     using System.Text;
     using DataStore.Models.PureFunctions.Extensions;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class CachedSchema
     {
@@ -32,14 +32,10 @@
         private static string GetMessageSchemaFromHandlerTypes(IEnumerable<Type> handlerTypes)
         {
             {
-
                 var schema = new StringBuilder();
 
-                foreach (var type in handlerTypes.ToList())
-                {
-                    BuildSchemaForMessageHandlerType(type, schema);
-                }
-                
+                foreach (var type in handlerTypes.ToList()) BuildSchemaForMessageHandlerType(type, schema);
+
                 return schema.ToString();
             }
 
@@ -180,7 +176,7 @@
                 var border = string.Empty.PadRight(title.Length, '=');
 
                 var schemaText = GetMessageSchemaFromHandlerTypes(handlerTypes);
-                
+
                 if (string.IsNullOrWhiteSpace(schemaText)) schemaText = "No supported API Messages";
 
                 return new StringBuilder().AppendLine(border).AppendLine(title).AppendLine(border).AppendLine().AppendLine(schemaText).ToString();

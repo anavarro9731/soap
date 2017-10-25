@@ -2,11 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces.LowLevel;
     using Destructurama.Attributed;
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.Utility;
 
     public class User : Aggregate, IUserWithPermissions

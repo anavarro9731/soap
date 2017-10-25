@@ -1,9 +1,9 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
     using Soap.Interfaces;
 
     public class Operations<T> : Operations where T : class, IAggregate, new()

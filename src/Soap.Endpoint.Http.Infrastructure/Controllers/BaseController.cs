@@ -4,8 +4,8 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json.Linq;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.Utility.PureFunctions;
     using Soap.Utility.PureFunctions.Extensions;

@@ -5,7 +5,7 @@
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public class HttpApiClient
     {
@@ -28,7 +28,7 @@
         public async Task SendCommand(IApiCommand command)
         {
             IApiCommand wrappedMessage;
-            if (command.GetType().IsSubclassOfRawGeneric(typeof(ForwardMessageToQueue<>)))
+            if (command.GetType().IsSubclassOfRawGeneric(typeof(ForwardCommandToQueue<>)))
             {
                 wrappedMessage = command;
             }
@@ -36,7 +36,7 @@
             {
                 if (command.MessageId == Guid.Empty) command.MessageId = Guid.NewGuid();
 
-                var closedGenericType = typeof(ForwardMessageToQueue<>).MakeGenericType(command.GetType());
+                var closedGenericType = typeof(ForwardCommandToQueue<>).MakeGenericType(command.GetType());
                 wrappedMessage = (IApiCommand)Activator.CreateInstance(closedGenericType, command);
             }
 

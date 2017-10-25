@@ -1,6 +1,6 @@
 ﻿namespace Soap.Endpoint.Clients
 {
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
+    using Soap.Interfaces.Messages;
 
     public interface IRoutingDefinition
     {

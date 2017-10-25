@@ -1,8 +1,8 @@
 ﻿namespace Soap.Endpoint.Clients
 {
     using System;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class SendCommandOperation : ISendCommandOperation
     {

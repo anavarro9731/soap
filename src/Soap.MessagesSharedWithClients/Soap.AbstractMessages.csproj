@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
@@ -6,7 +6,9 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="6.4.1" />
-    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="4.1.6" />
+    <PackageReference Include="FluentValidation" Version="7.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
 </Project>

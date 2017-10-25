@@ -2,10 +2,10 @@
 {
     using System;
     using System.IO;
+    using CircuitBoard.MessageAggregator;
     using Serilog.Core;
     using Serilog.Events;
     using Serilog.Formatting.Json;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
     using Soap.MessagePipeline.Messages;
 
     public class MessageAggregatorSink : ILogEventSink

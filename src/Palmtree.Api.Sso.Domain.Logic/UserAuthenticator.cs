@@ -1,11 +1,11 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic
 {
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.PureFunctions;
 
     public class UserAuthenticator : IAuthenticateUsers

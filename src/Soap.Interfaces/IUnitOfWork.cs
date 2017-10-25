@@ -2,8 +2,8 @@
 {
     using System;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.Messages;
+    using Soap.Interfaces.Messages;
 
     /// <summary>
     ///     this interface allows people to write a version of the UnitOfWork which

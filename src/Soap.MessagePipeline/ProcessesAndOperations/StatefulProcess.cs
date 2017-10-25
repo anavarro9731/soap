@@ -1,12 +1,13 @@
 namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Messages.ProcessMessages;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.Models.Aggregates;
@@ -140,7 +141,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
             RecordCompleted(username);
         }
 
-        protected System.Collections.Generic.IReadOnlyList<TState> GetState<TState>() where TState : IConvertible
+        protected IReadOnlyList<TState> GetState<TState>() where TState : IConvertible
         {
             Guard.Against(this.processState == null, "This saga is not stateful.");
 

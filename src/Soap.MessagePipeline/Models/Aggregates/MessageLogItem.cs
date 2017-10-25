@@ -5,8 +5,8 @@
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility;
 
     public class MessageLogItem : Aggregate

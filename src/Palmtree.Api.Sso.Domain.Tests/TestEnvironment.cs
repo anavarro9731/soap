@@ -8,9 +8,9 @@
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Endpoint.Http.Handlers.Queries;
     using Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.DomainTests.Infrastructure;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Models;
     using Soap.ThirdPartyClients.Mailgun;
 

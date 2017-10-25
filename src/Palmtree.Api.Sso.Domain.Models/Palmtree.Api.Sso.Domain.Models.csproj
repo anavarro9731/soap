@@ -1,12 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
-    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="1.6.0" />
-    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="4.1.6" />
+    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="4.0.5" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
+    <PackageReference Include="CircuitBoard" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

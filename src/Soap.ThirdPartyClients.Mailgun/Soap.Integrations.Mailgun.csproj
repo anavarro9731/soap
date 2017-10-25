@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Service API Mailgun Service</Description>
     <TargetFramework>net461</TargetFramework>
@@ -6,10 +6,15 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Mailer.NET" Version="1.4.0.32494" />
-    <PackageReference Include="ServiceApi.Interfaces.LowLevel" Version="4.1.6" />
+    <PackageReference Include="Mailer.NET" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CircuitBoard">
+      <HintPath>C:\Users\aaron.navarro\.nuget\packages\circuitboard\1.0.1\lib\net40\CircuitBoard.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

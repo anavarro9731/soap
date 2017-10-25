@@ -8,7 +8,7 @@
 
         public static Thing Create(string nameOfThing)
         {
-            return new Thing()
+            return new Thing
             {
                 NameOfThing = nameOfThing
             };

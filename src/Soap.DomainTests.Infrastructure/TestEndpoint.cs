@@ -6,12 +6,12 @@
     using System.Reflection;
     using System.Threading.Tasks;
     using Autofac;
+    using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.MessagePipeline.MessagePipeline;
 

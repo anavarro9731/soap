@@ -11,8 +11,8 @@
     {
         protected override async Task<MessageFailedAllRetriesLogItem> Handle(GetMessageFailedAllRetriesLogItem message, ApiMessageMeta meta)
         {
-            return (await DataStore.ReadActive<MessageFailedAllRetriesLogItem>(
-                        query => query.Where(m => m.IdOfMessageThatFailed == message.IdOfMessageYouWantResultsFor))).SingleOrDefault();
+            return (await DataStore.ReadActive<MessageFailedAllRetriesLogItem>(m => m.IdOfMessageThatFailed == message.IdOfMessageYouWantResultsFor))
+                .SingleOrDefault();
         }
     }
 }

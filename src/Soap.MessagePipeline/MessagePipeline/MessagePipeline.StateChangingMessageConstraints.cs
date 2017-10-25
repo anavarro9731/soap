@@ -6,8 +6,8 @@
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
     using Serilog;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.Models.Aggregates;
     using Soap.Utility;

@@ -1,7 +1,7 @@
 ﻿namespace Soap.MessagePipeline.MessageAggregator
 {
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
 
     public class MessageAggregatorForTestingWithoutGatedFunctions : MessageAggregatorForTestingBase, IMessageAggregator
     {

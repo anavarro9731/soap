@@ -15,7 +15,7 @@
         {
             this.thingOperations = thingOperations;
         }
-        
+
         protected override async Task<Thing> Handle(UpdateNameOfThing message, ApiMessageMeta meta)
         {
             return await this.thingOperations.UpdateName(message);

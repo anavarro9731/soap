@@ -1,8 +1,8 @@
 ﻿namespace Soap.MessagePipeline.Permissions
 {
     using System;
+    using CircuitBoard.Permissions;
     using Newtonsoft.Json;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.Utility.PureFunctions;
 
     public class ApplicationPermission : IEquatable<ApplicationPermission>, IApplicationPermission

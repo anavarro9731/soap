@@ -1,10 +1,10 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic.Processes
 {
     using System.Threading.Tasks;
+    using CircuitBoard.Permissions;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using ServiceApi.Interfaces.LowLevel.Permissions;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.ProcessesAndOperations;
 

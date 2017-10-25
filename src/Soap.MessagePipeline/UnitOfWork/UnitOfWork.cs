@@ -2,10 +2,10 @@
 {
     using System;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.MessageAggregator;
-    using ServiceApi.Interfaces.LowLevel.Messages.InterService;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Messages;
     using Soap.Utility.PureFunctions;
 

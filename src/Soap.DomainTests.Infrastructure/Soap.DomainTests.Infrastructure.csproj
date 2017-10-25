@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
@@ -6,9 +6,8 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.3" />
-    <PackageReference Include="Serilog.Exceptions" Version="2.5.0" />
-    <PackageReference Include="Serilog.Sinks.ColoredConsole" Version="3.0.1" />
+    <PackageReference Include="Autofac" Version="4.6.2" />
+    <PackageReference Include="FluentAssertions" Version="4.19.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />

@@ -2,7 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
-    using ServiceApi.Interfaces.LowLevel.Messages.IntraService;
+    using CircuitBoard.Messages;
 
     public class QueuedStateChange : IQueuedStateChange
     {
