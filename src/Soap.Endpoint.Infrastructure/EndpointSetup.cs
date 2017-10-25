@@ -160,15 +160,15 @@
 
         public static IEnvironmentSpecificConfig GetConfiguration()
         {
-            const string EnvironmentVariable = "Soap.Environment";
+            const string AppSettingKey = "Soap.Environment";
 
             var currentEnvironment = ConfigurationManager.AppSettings["Soap.Environment"];
 
             if (string.IsNullOrEmpty(currentEnvironment))
             {
                 throw new Exception(
-                    "No environment variable defined. " + $"You must add a '{EnvironmentVariable}' system environment variable whose value matches a class "
-                    + "in your endpoint which implements IEnvironmentSpecificConfig.");
+                    "No startup configuration defined. " + $"You must add an App.Config file with an <appSetting> element whose key is '{AppSettingKey}' and whose value matches a class "
+                    + "in the endpoint which implements IEnvironmentSpecificConfig.");
             }
 
             var environmentConfigClasses = Assembly.GetEntryAssembly()
