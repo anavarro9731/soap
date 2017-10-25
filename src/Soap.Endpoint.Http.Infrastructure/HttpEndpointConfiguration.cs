@@ -13,8 +13,10 @@
     using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json.Serialization;
     using Serilog;
+    using Soap.Endpoint.Clients;
     using Soap.Endpoint.Infrastructure;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
 
     public class HttpEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
@@ -36,6 +38,8 @@
         private static Assembly domainModelsAssembly;
 
         private static ILogger logger;
+
+        private static IApiCommand startupCommand;
 
         public HttpEndpointConfiguration(
             Assembly domainLogicAssembly,
@@ -74,18 +78,18 @@
 
         public HttpEndpointConfiguration<TUserAuthenticator> ConfigureContainer(Action<ContainerBuilder> configureContainerAction)
         {
-            if (configureContainerAction != null)
-            {
-                containerActions.Add(configureContainerAction);
-            }
+            if (configureContainerAction != null) containerActions.Add(configureContainerAction);
+
             return this;
         }
 
-        public void Start()
+        public void Start(IApiCommand startupCommand = null)
         {
             {
                 try
                 {
+                    if (startupCommand != null) HttpEndpointConfiguration<TUserAuthenticator>.startupCommand = startupCommand;
+
                     if (Environment.UserInteractive) Console.Title = EnvironmentConfig.Variables.ApplicationName;
 
                     var apiHttpUrl = EnvironmentConfig.Variables.ApiServerSettings.HttpEndpointUrl;
@@ -135,6 +139,8 @@
                     ConfigureWebServer(applicationBuilder);
 
                     LogEndpointReady();
+
+                    if (startupCommand != null) SendStartupCommand();
                 }
 
                 void LogEndpointReady()
@@ -156,7 +162,15 @@
                     appBuilder.UseDeveloperExceptionPage();
 #endif
                 }
+
+                void SendStartupCommand()
+                {
+                    var bus = rootLifetimeScope.Resolve<IBusContext>();
+                    bus.SendLocal(new SendCommandOperation(startupCommand));
+                }
             }
+
+
 
             /* This method gets called by the runtime. Order #1
              * Use this method to add "services" to the built-in aspnetContainer
@@ -222,8 +236,8 @@
                                    .AddJsonOptions(
                                        options =>
                                            {
-                                           // force WebApi to serialise in camelCase
-                                           options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                                               // force WebApi to serialise in camelCase
+                                               options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                                            });
                 }
             }

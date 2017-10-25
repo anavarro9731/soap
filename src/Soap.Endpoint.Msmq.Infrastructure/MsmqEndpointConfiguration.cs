@@ -9,7 +9,9 @@
     using Serilog;
     using Soap.Endpoint.Infrastructure;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
+    using Soap.MessagePipeline.Messages;
     using Topshelf;
 
     public class MsmqEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
@@ -56,7 +58,7 @@
             return this;
         }
 
-        public void Start(MsmqEndpointWindowsServiceSettings serviceSettings)
+        public void Start(MsmqEndpointWindowsServiceSettings serviceSettings, IApiCommand startupCommand = null)
         {
             {
                 try
@@ -64,31 +66,31 @@
                     HostFactory.Run(
                         x =>
                             {
-                            x.UseSerilog(Log.Logger);
+                                x.UseSerilog(Log.Logger);
 
-                            x.OnException(exception => { this.logger.Error("Unhandled exception", exception); });
+                                x.OnException(exception => { this.logger.Error("Unhandled exception", exception); });
 
-                            x.Service<Startup>(
-                                s =>
-                                    {
-                                    s.ConstructUsing(() => this.service);
-                                    s.WhenStarted(tc => tc.Start());
-                                    s.WhenStopped(tc => tc.Stop());
-                                    });
-                            x.RunAsLocalSystem();
+                                x.Service<Startup>(
+                                    s =>
+                                        {
+                                            s.ConstructUsing(() => this.service);
+                                            s.WhenStarted(tc => tc.Start(startupCommand));
+                                            s.WhenStopped(tc => tc.Stop());
+                                        });
+                                x.RunAsLocalSystem();
 
-                            x.SetDescription(serviceSettings.Description);
-                            x.SetDisplayName(serviceSettings.DisplayName);
-                            x.SetServiceName(serviceSettings.Name);
+                                x.SetDescription(serviceSettings.Description);
+                                x.SetDisplayName(serviceSettings.DisplayName);
+                                x.SetServiceName(serviceSettings.Name);
 
-                            if (serviceSettings.StartAutomatically)
-                            {
-                                x.StartAutomatically();
-                            }
-                            else
-                            {
-                                x.StartManually();
-                            }
+                                if (serviceSettings.StartAutomatically)
+                                {
+                                    x.StartAutomatically();
+                                }
+                                else
+                                {
+                                    x.StartManually();
+                                }
                             });
                 }
                 catch (Exception ex)
@@ -135,7 +137,7 @@
                 this.domainModelsAssembly = domainModelsAssembly;
             }
 
-            public void Start()
+            public void Start(IApiCommand startupCommand)
             {
                 var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
                     new ContainerBuilder(),
@@ -157,6 +159,14 @@
                 this.addBusToContainerFunc(this.container); //will update
 
                 Log.Logger.Information("Ready to receive messages");
+
+                if (startupCommand != null) SendStartupMessage();
+
+                void SendStartupMessage()
+                {
+                    this.container.Resolve<IBusContext>().SendLocal(new SendCommandOperation(startupCommand));
+                }
+
             }
 
             public void Stop()
