@@ -30,7 +30,7 @@
             0,
             "An error has occurred.",
             true,
-            "Trace One API - HTTP");
+            "PalmTree SSO - HTTP");
 
         public void DefineCorsPolicyPerEnvironment(CorsPolicyBuilder policyBuilder)
         {

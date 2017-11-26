@@ -29,7 +29,7 @@
             1,
             "An error has occurred.",
             true,
-            "Trace One API - MSMQ");
+            "PalmTree SSO - MSMQ");
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {
