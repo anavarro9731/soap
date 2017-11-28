@@ -7,6 +7,8 @@ namespace Soap.DomainTests.Infrastructure
         public IApiEndpointSettings ApiEndpointSettings { get; set; } =
             MessagePipeline.Models.ApiEndpointSettings.Create("http://dev.Soap.http/endpoint/testing", "dev.service.api.msmq.endpoint.testing@machinename");
 
+        public string ApplicationVersion { get; }
+
         public string ApplicationName { get; set; } = "Development Endpoint Tests";
 
         public string DefaultExceptionMessage { get; set; } = "Unexpected server error.";

@@ -101,7 +101,15 @@
                 {
                     CreateMeta(messageLogItem, out meta);
 
-                    FindHandlerOrThrow(out MessageHandler handler);
+                    FindHandlers(out List<MessageHandler> matchingHandlers);
+
+                    if (MessageIsFailedAllRetriesMessageWithoutAHandler(matchingHandlers))
+                    {
+                        LogSuccessfulMessage(message, meta, null);
+                        return null;
+                    }
+
+                    FindHandlerOrThrow(matchingHandlers, out MessageHandler handler);
 
                     Guard.Against(
                         message.MessageId == Constants.ForceFailBeforeMessageCompletesId
@@ -173,27 +181,36 @@
                 };
             }
 
-            void FindHandlerOrThrow(out MessageHandler handler)
+            void FindHandlerOrThrow(List<MessageHandler> matchingHandlers, out MessageHandler handler)
             {
-                //find handler without regard to return type, which is the second generic type param
-                //MessageHandler<INCOMINGMESSAGE,RETURNTYPE>
-                //MessageHandler<INCOMINGMESSAGE>
-                var baseTypeString = $"{nameof(MessageHandler)}<{message.GetType().ToGenericTypeString()}";
-
-                var matchingHandlers = this.handlers.Where(
-                                               h =>
-                                                   {
-                                                   var handlerTypeString = h.GetType().BaseType.ToGenericTypeString();
-                                                   return handlerTypeString.StartsWith(baseTypeString);
-                                                   })
-                                           .ToList();
-
                 Guard.Against(matchingHandlers.Count() > 1, $"Could not map message {message.MessageId} to handler, as more than one exists for this message type.");
 
                 Guard.Against(!matchingHandlers.Any(), $"Could not map message {message.MessageId} to handler, as none exists for this message type.");
 
                 handler = matchingHandlers.Single();
             }
+
+            void FindHandlers(out List<MessageHandler> matchingHandlers)
+            {
+                //find handler without regard to return type, which is the second generic type param
+                //MessageHandler<INCOMINGMESSAGE,RETURNTYPE>
+                //MessageHandler<INCOMINGMESSAGE>
+                var baseTypeString = $"{nameof(MessageHandler)}<{message.GetType().ToGenericTypeString()}";
+
+                matchingHandlers = this.handlers.Where(
+                                               h =>
+                                                   {
+                                                   var handlerTypeString = h.GetType().BaseType.ToGenericTypeString();
+                                                   return handlerTypeString.StartsWith(baseTypeString);
+                                                   })
+                                           .ToList();
+            }
+
+            bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<MessageHandler> matchingHandlers)
+            {
+                return (message is IMessageFailedAllRetries && matchingHandlers.Count == 0);
+
+            }                       
         }
 
         private object CreateProfilingData(ApiMessageMeta meta)
