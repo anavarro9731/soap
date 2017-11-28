@@ -37,7 +37,7 @@
             this.domainLogicAssembly = domainLogicAssembly;
             this.domainModelsAssembly = domainModelsAssembly;
             this.endpointAssemblies = endpointAssemblies;
-            this.applicationConfig = applicationConfig ?? new ApplicationConfigurationForTesting();
+            this.applicationConfig = applicationConfig;
         }
 
         public TestEndpointConfiguration<TUserAuthenticator> ConfigureApplicationConfig(Action<IApplicationConfig> configureApplicationConfigurationAction)

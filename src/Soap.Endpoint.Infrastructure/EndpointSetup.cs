@@ -171,7 +171,7 @@
                     + "in the endpoint which implements IEnvironmentSpecificConfig.");
             }
 
-            var environmentConfigClasses = Assembly.GetEntryAssembly()
+            var environmentConfigClasses = (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly()) //unit tests 
                                                    .GetTypes()
                                                    .Where(t => t.InheritsOrImplements(typeof(IEnvironmentSpecificConfig)) && !t.IsInterface && !t.IsAbstract);
 

@@ -36,7 +36,7 @@
             Assembly domainLogicAssembly,
             Assembly domainModelsAssembly,
             IEnumerable<Assembly> handlerAssemblies,
-            IApplicationConfig applicationConfig = null) where TUserAuthenticator : IAuthenticateUsers
+            IApplicationConfig applicationConfig) where TUserAuthenticator : IAuthenticateUsers
         {
             return new TestEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainModelsAssembly, handlerAssemblies, applicationConfig);
         }
