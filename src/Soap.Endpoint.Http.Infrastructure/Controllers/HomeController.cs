@@ -114,8 +114,7 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
         {
             {
                 var appConfig = (IApplicationConfig)HttpContext.RequestServices.GetService(typeof(IApplicationConfig));
-                var seqLogsConfig = (ISeqLoggingConfig)HttpContext.RequestServices.GetService(typeof(ISeqLoggingConfig));
-                var docsConfig = (IDocumentationConfig)HttpContext.RequestServices.GetService(typeof(IDocumentationConfig));
+                var seqLogsConfig = (SeqLoggingConfig)HttpContext.RequestServices.GetService(typeof(SeqLoggingConfig));
 
                 var getHealthCheckUrl = Url.Link(nameof(GetHealthCheck), null);
                 var getCommandSchemaUrl = Url.Link(nameof(CommandController.GetCommandSchema), null);
@@ -125,7 +124,6 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
                                               .Append(GetEndpointDetailsSectionHtml(appConfig))
                                               .Append(BuildHealthCheckSectionHtml(getHealthCheckUrl))
                                               .Append(BuildLogsSectionHtml(seqLogsConfig))
-                                              .Append(BuildDocumentationSectionHtml(docsConfig))
                                               .Append(BuildMessageSchemaSectionHtml(getCommandSchemaUrl, getQuerySchemaUrl))
                                               .Append(BuildFooterSectionHtml())
                                               .ToString();
@@ -164,26 +162,16 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
     </p>";
             }
 
-            string BuildLogsSectionHtml(ISeqLoggingConfig seqLogsConfig)
+            string BuildLogsSectionHtml(SeqLoggingConfig seqLogsConfig)
             {
                 return seqLogsConfig == null
                            ? string.Empty
                            : $@"
     <p>
-        Logs: <strong><a href='{seqLogsConfig.SeqLogsServerUrl}' target='_blank'>{seqLogsConfig.SeqLogsServerUrl}</a></strong>
+        Logs: <strong><a href='{seqLogsConfig.ServerUrl}' target='_blank'>{seqLogsConfig.ServerUrl}</a></strong>
     </p>";
             }
-
-            string BuildDocumentationSectionHtml(IDocumentationConfig docsConfig)
-            {
-                return docsConfig == null
-                           ? string.Empty
-                           : $@"
-    <p>
-        Documentation: <strong><a href='{docsConfig.DocumentationUrl}' target='_blank'>{docsConfig.DocumentationUrl}</a></strong>
-    </p>";
-            }
-
+            
             string BuildMessageSchemaSectionHtml(string getCommandSchemaUrl, string getQuerySchemaUrl)
             {
                 return $@"

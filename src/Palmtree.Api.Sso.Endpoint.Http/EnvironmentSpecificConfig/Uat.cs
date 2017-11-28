@@ -24,11 +24,16 @@
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {
-            loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", "Development")
-                                                           .Enrich.WithProperty("Application", Variables.ApplicationName)
-                                                           .Enrich.WithExceptionDetails()
-                                                           .WriteTo.ColoredConsole()
-                                                           .WriteTo.Seq("http://13.81.4.220", apiKey: "1OSAbhW4o6ekOctXiwyk");
+            loggerConfiguration = new LoggerConfiguration()
+                .Enrich.WithProperty("Environment", nameof(Uat))
+                .Enrich.WithProperty("Application", Variables.ApplicationName)
+                .Enrich.WithExceptionDetails();
+
+            var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingConfig;
+            if (seqConfig != null)
+            {
+                loggerConfiguration.WriteTo.Seq(seqConfig.ServerUrl, apiKey: seqConfig.ApiKey);
+            }
 
             SelfLog.Enable(msg => Trace.TraceError(msg)); //when seq connection fails azure trace logs will pick this up
         }

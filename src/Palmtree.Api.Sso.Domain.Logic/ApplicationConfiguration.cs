@@ -2,6 +2,7 @@
 {
     using DataStore.Impl.SqlServer;
     using Newtonsoft.Json;
+    using Soap.Endpoint.Infrastructure;
     using Soap.Interfaces;
     using Soap.ThirdPartyClients.Mailgun;
 
@@ -16,7 +17,8 @@
             byte numberOfApiMessageRetries,
             string defaultExceptionMessage,
             bool returnExplicitErrorMessages,
-            string applicationName)
+            string applicationName,
+            SeqLoggingConfig seqLoggingConfig)
         {
             EnvironmentName = environmentName;
             ApiServerSettings = apiServerSettings;
@@ -26,6 +28,7 @@
             DefaultExceptionMessage = defaultExceptionMessage;
             ReturnExplicitErrorMessages = returnExplicitErrorMessages;
             ApplicationName = applicationName;
+            SeqLoggingConfig = seqLoggingConfig;
         }
 
         public IApiServerSettings ApiServerSettings { get; }
@@ -42,6 +45,8 @@
 
         public bool ReturnExplicitErrorMessages { get; }
 
+        public SeqLoggingConfig SeqLoggingConfig { get; }
+
         public SqlServerDbSettings SqlServerDbSettings { get; }
 
         public static ApplicationConfiguration Create(
@@ -52,7 +57,8 @@
             byte numberOfApiMessageRetries = 1,
             string unexpectedExceptionMessage = "An Error Has Occurred",
             bool returnExplicitErrorMessages = false,
-            string applicationName = null)
+            string applicationName = null,
+            SeqLoggingConfig seqLoggingConfig = null)
         {
             return new ApplicationConfiguration(
                 environmentName,
@@ -62,7 +68,8 @@
                 numberOfApiMessageRetries,
                 unexpectedExceptionMessage,
                 returnExplicitErrorMessages,
-                applicationName);
+                applicationName,
+                seqLoggingConfig);
         }
     }
 }

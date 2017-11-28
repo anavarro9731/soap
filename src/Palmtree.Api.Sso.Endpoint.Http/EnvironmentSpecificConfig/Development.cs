@@ -9,6 +9,7 @@
     using Serilog.Debugging;
     using Serilog.Exceptions;
     using Soap.Endpoint.Http.Infrastructure;
+    using Soap.Endpoint.Infrastructure;
     using Soap.Interfaces;
     using Soap.MessagePipeline.Models;
     using Soap.ThirdPartyClients.Mailgun;
@@ -18,7 +19,7 @@
         public IApplicationConfig Variables => ApplicationConfiguration.Create(
             nameof(Development),
             ApiServerSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
-            SqlServerDbSettings.Create("anavarro9731-sqlserver.database.windows.net", "serviceapi", "anavarro9731", "qtPn8aLGXcv3pVZs", "Aggregates"),
+            SqlServerDbSettings.Create(".", "soap", "sa", "SuperDuper", "Aggregates"),
             MailgunEmailSenderSettings.Create(
                 "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",
                 "key-101c1b392bb95000da55a349848aacd0",
@@ -30,7 +31,9 @@
             0,
             "An error has occurred.",
             true,
-            "PalmTree SSO - HTTP");
+            "PalmTree SSO - HTTP",
+            SeqLoggingConfig.Create("http://localhost:5341/")
+            );
 
         public void DefineCorsPolicyPerEnvironment(CorsPolicyBuilder policyBuilder)
         {
@@ -42,8 +45,13 @@
             loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", nameof(Development))
                                                            .Enrich.WithProperty("Application", Variables.ApplicationName)
                                                            .Enrich.WithExceptionDetails()
-                                                           .WriteTo.ColoredConsole()
-                                                           .WriteTo.Seq("http://13.81.4.220", apiKey: "1OSAbhW4o6ekOctXiwyk");
+                                                           .WriteTo.ColoredConsole();
+
+            var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingConfig;
+            if (seqConfig != null)
+            {
+                loggerConfiguration.WriteTo.Seq(seqConfig.ServerUrl, apiKey: seqConfig.ApiKey);
+            }
 
             SelfLog.Enable(Console.Error); //when seq connection fails write to console
         }
