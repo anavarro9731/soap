@@ -28,11 +28,11 @@
         {
             var rebus = Configure.With(new AutofacContainerAdapter(autofacContainer))
                                  .Logging(l => l.Serilog(Log.Logger))
-                                 .Transport(t => t.UseMsmq(appConfig.ApiServerSettings.MsmqEndpointAddress))
+                                 .Transport(t => t.UseMsmq(appConfig.ApiEndpointSettings.MsmqEndpointAddress))
                                  .Routing(
                                      r => r.TypeBased()
-                                           .MapAssemblyOf<TSampleDomainMessage>(appConfig.ApiServerSettings.MsmqEndpointAddress)
-                                           .MapAssemblyOf<IMessageFailedAllRetries>(appConfig.ApiServerSettings.MsmqEndpointAddress))
+                                           .MapAssemblyOf<TSampleDomainMessage>(appConfig.ApiEndpointSettings.MsmqEndpointAddress)
+                                           .MapAssemblyOf<IMessageFailedAllRetries>(appConfig.ApiEndpointSettings.MsmqEndpointAddress))
                                  .Options(
                                      o =>
                                          {
@@ -44,7 +44,7 @@
                                          o.HandleMessagesInsideTransactionScope();
 
                                          o.SimpleRetryStrategy(
-                                             $"{appConfig.ApiServerSettings.MsmqEndpointName}.error",
+                                             $"{appConfig.ApiEndpointSettings.MsmqEndpointName}.error",
                                              appConfig.NumberOfApiMessageRetries + 1,
                                              false);
 

@@ -1,6 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
-    public interface IApiServerSettings
+    public interface IApiEndpointSettings
     {
         string HttpEndpointUrl { get; }
 

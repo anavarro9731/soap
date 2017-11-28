@@ -4,15 +4,15 @@
     using Newtonsoft.Json;
     using Soap.Interfaces;
 
-    public class ApiServerSettings : IApiServerSettings
+    public class ApiEndpointSettings : IApiEndpointSettings
     {
-        public ApiServerSettings(string httpEndpointUrl, string msmqEndpointAddress)
+        public ApiEndpointSettings(string httpEndpointUrl, string msmqEndpointAddress)
             : this(httpEndpointUrl, msmqEndpointAddress?.Split('@').ElementAtOrDefault(0), msmqEndpointAddress?.Split('@').ElementAtOrDefault(1))
         {
         }
 
         [JsonConstructor]
-        public ApiServerSettings(string httpEndpointUrl, string msmqEndpointName, string msmqEndpointHost)
+        public ApiEndpointSettings(string httpEndpointUrl, string msmqEndpointName, string msmqEndpointHost)
         {
             HttpEndpointUrl = httpEndpointUrl;
             MsmqEndpointName = msmqEndpointName;
@@ -27,9 +27,9 @@
 
         public string MsmqEndpointName { get; }
 
-        public static IApiServerSettings Create(string httpEndpointUrl, string msmqEndpointAddress)
+        public static IApiEndpointSettings Create(string httpEndpointUrl, string msmqEndpointAddress)
         {
-            return new ApiServerSettings(httpEndpointUrl, msmqEndpointAddress);
+            return new ApiEndpointSettings(httpEndpointUrl, msmqEndpointAddress);
         }
     }
 }

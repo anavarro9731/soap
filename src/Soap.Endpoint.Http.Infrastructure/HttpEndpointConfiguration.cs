@@ -92,7 +92,7 @@
 
                     if (Environment.UserInteractive) Console.Title = EnvironmentConfig.Variables.ApplicationName;
 
-                    var apiHttpUrl = EnvironmentConfig.Variables.ApiServerSettings.HttpEndpointUrl;
+                    var apiHttpUrl = EnvironmentConfig.Variables.ApiEndpointSettings.HttpEndpointUrl;
 
                     var builder = new WebHostBuilder().UseKestrel()
                                                       .UseContentRoot(Directory.GetCurrentDirectory())

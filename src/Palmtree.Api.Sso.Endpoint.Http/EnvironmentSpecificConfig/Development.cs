@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
     using DataStore.Impl.SqlServer;
     using Microsoft.AspNetCore.Cors.Infrastructure;
     using Palmtree.Api.Sso.Domain.Logic;
@@ -16,9 +17,9 @@
 
     public class Development : IHttpEnvironmentSpecificConfiguration
     {
-        public IApplicationConfig Variables => ApplicationConfiguration.Create(
-            nameof(Development),
-            ApiServerSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
+        public IApplicationConfig Variables => ApplicationConfiguration.Create(nameof(Development), 
+            Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
+            ApiEndpointSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
             SqlServerDbSettings.Create(".", "soap", "sa", "SuperDuper", "Aggregates"),
             MailgunEmailSenderSettings.Create(
                 "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",

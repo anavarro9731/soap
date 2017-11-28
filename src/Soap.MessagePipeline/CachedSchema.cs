@@ -171,7 +171,7 @@
         private static string GetSchemaOutput(IApplicationConfig applicationConfig, IEnumerable<Type> handlerTypes)
         {
             {
-                var title = $"API Schema | {applicationConfig.ApplicationName} | {Assembly.GetEntryAssembly().GetName().Version.ToString(3)}";
+                var title = $"API Schema | {applicationConfig.ApplicationName} | {applicationConfig.ApplicationVersion}";
 
                 var border = string.Empty.PadRight(title.Length, '=');
 

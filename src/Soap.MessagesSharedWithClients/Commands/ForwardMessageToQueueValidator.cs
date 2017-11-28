@@ -10,6 +10,8 @@
             RuleFor(cmd => cmd.MessageId).NotEmpty();
 
             RuleFor(cmd => cmd.Command).NotEmpty();
+
+
         }
 
         public static ForwardMessageToQueueValidator<TApiCommand> Default { get; } = new ForwardMessageToQueueValidator<TApiCommand>();

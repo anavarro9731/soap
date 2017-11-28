@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection;
     using DataStore.Impl.SqlServer;
     using Palmtree.Api.Sso.Domain.Logic;
     using Serilog;
@@ -16,7 +17,8 @@
     {
         public IApplicationConfig Variables => ApplicationConfiguration.Create(
             nameof(Development),
-            ApiServerSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
+            ApiEndpointSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
+            Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
             SqlServerDbSettings.Create(".", "soap", "sa", "SuperDuper", "Aggregates"),
             MailgunEmailSenderSettings.Create(
                 "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",

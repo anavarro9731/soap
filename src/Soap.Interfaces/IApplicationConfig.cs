@@ -2,7 +2,9 @@
 {
     public interface IApplicationConfig
     {
-        IApiServerSettings ApiServerSettings { get; }
+        IApiEndpointSettings ApiEndpointSettings { get; }
+
+        string ApplicationVersion { get; }
 
         string ApplicationName { get; }
 

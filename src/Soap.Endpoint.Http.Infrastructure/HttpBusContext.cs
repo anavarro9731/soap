@@ -12,7 +12,7 @@
             var endpointClient = new RebusApiClient(
                 new List<IRoutingDefinition>
                 {
-                    new MessageAssemblyRoutingDefinition(domainModelsAssembly, appConfig.ApiServerSettings.MsmqEndpointAddress)
+                    new MessageAssemblyRoutingDefinition(domainModelsAssembly, appConfig.ApiEndpointSettings.MsmqEndpointAddress)
                 });
 
             endpointClient.Start().Wait();

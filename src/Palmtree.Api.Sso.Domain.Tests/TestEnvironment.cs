@@ -27,9 +27,10 @@
             };
             IApplicationConfig applicationConfig = ApplicationConfiguration.Create(
                 "Testing",
+                Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
                 returnExplicitErrorMessages: true,
                 numberOfApiMessageRetries: 3,
-                apiServerSettings: ApiServerSettings.Create("httpUrl", "msmqAddress"),
+                apiEndpointSettings: ApiEndpointSettings.Create("httpUrl", "msmqAddress"),
                 sqlServerDbSettings: SqlServerDbSettings.Create("serverInstance", "database", "userId", "password", "tableName"),
                 mailgunEmailSenderSettings: MailgunEmailSenderSettings.Create("im@mycomputer.com", "apiKey", "domain"));
 

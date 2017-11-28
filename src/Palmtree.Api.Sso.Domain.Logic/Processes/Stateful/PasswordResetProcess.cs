@@ -64,7 +64,7 @@
                                     Email = to
                                 }
                             },
-                            Message = $"Please click this link to reset your password: {this.config.ApiServerSettings.HttpEndpointUrl}/resetpassword/{ProcessId}",
+                            Message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}",
                             Subject = "Password Reset Requested"
                         }));
             }

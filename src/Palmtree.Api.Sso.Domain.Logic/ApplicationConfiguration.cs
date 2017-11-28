@@ -11,7 +11,8 @@
         [JsonConstructor]
         private ApplicationConfiguration(
             string environmentName,
-            IApiServerSettings apiServerSettings,
+            string applicationVersion,
+            IApiEndpointSettings apiEndpointSettings,
             SqlServerDbSettings sqlServerDbSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries,
@@ -21,7 +22,7 @@
             SeqLoggingConfig seqLoggingConfig)
         {
             EnvironmentName = environmentName;
-            ApiServerSettings = apiServerSettings;
+            ApiEndpointSettings = apiEndpointSettings;
             SqlServerDbSettings = sqlServerDbSettings;
             MailgunEmailSenderSettings = mailgunEmailSenderSettings;
             NumberOfApiMessageRetries = numberOfApiMessageRetries;
@@ -31,7 +32,9 @@
             SeqLoggingConfig = seqLoggingConfig;
         }
 
-        public IApiServerSettings ApiServerSettings { get; }
+        public IApiEndpointSettings ApiEndpointSettings { get; }
+
+        public string ApplicationVersion { get; }
 
         public string ApplicationName { get; }
 
@@ -51,7 +54,8 @@
 
         public static ApplicationConfiguration Create(
             string environmentName,
-            IApiServerSettings apiServerSettings,
+            string applicationVersion,
+            IApiEndpointSettings apiEndpointSettings,
             SqlServerDbSettings sqlServerDbSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries = 1,
@@ -62,7 +66,8 @@
         {
             return new ApplicationConfiguration(
                 environmentName,
-                apiServerSettings,
+                applicationVersion,
+                apiEndpointSettings,
                 sqlServerDbSettings,
                 mailgunEmailSenderSettings,
                 numberOfApiMessageRetries,

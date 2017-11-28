@@ -146,11 +146,12 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
                 return $@"
     <p>
         Application Name: <strong>{appConfig.ApplicationName}</strong> <br />
+        Application Version: <strong>{appConfig.ApplicationVersion}</strong> <br />
         Version: <strong>{this._version}</strong> <br />
         Machine Name: <strong>{Environment.MachineName}</strong> <br />
         IP Address: <strong>{this._ipAddress}</strong> <br />
-        HTTP API Endpoint: <strong>{appConfig.ApiServerSettings.HttpEndpointUrl}</strong> <br />
-        MSMQ API Endpoint: <strong>{appConfig.ApiServerSettings.MsmqEndpointAddress}</strong> <br />
+        HTTP API Endpoint: <strong>{appConfig.ApiEndpointSettings.HttpEndpointUrl}</strong> <br />
+        MSMQ API Endpoint: <strong>{appConfig.ApiEndpointSettings.MsmqEndpointAddress}</strong> <br />
     </p>";
             }
 
