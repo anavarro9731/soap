@@ -44,7 +44,7 @@
                                          o.HandleMessagesInsideTransactionScope();
 
                                          o.SimpleRetryStrategy(
-                                             $"{appConfig.ApiServerSettings.MsmqEndpointAddress}.error",
+                                             $"{appConfig.ApiServerSettings.MsmqEndpointName}.error",
                                              appConfig.NumberOfApiMessageRetries + 1,
                                              false);
 
