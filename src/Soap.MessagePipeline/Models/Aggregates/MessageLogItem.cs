@@ -79,6 +79,7 @@
         {
             messageLogItem.FailedAttempts.Insert(
                 0,
+                //TODO: should be changed to use .Create and set fields like timestamp during creation
                 new MessageLogItem.FailedMessageResult
                 {
                     Errors = errors
