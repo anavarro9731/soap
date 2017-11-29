@@ -6,5 +6,7 @@
     public interface IMessageFailedAllRetries : IApiCommand
     {
         Guid IdOfMessageThatFailed { get; set; }
+
+        Guid? StatefulProcessIdOfMessageThatFailed { get; set; }
     }
 }

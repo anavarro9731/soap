@@ -7,9 +7,13 @@
     {
         public MessageFailedAllRetries(Guid idOfMessageThatFailed)
         {
-            IdOfMessageThatFailed = idOfMessageThatFailed;
+            IdOfMessageThatFailed = idOfMessageThatFailed;            
         }
 
         public Guid IdOfMessageThatFailed { get; set; }
+
+        public Guid? StatefulProcessIdOfMessageThatFailed { get; set; }
     }
+
+    //TODO: add validation, check that if incoming message has stateful process id that this one does as well
 }

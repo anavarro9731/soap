@@ -417,6 +417,11 @@
                 instanceOfMesageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
                 instanceOfMesageFailedAllRetries.IdOfMessageThatFailed = message.MessageId;
 
+                if (message is IApiCommand command)
+                {
+                    instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
+                }
+
                 await this.busContext.SendLocal(new SendCommandOperation(instanceOfMesageFailedAllRetries)).ConfigureAwait(false);
             }
         }
