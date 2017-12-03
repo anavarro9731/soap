@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.If.MessagePipeline
 {
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;

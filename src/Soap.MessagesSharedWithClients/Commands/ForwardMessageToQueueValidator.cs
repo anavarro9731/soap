@@ -1,7 +1,7 @@
-﻿namespace Soap.AbstractMessages.Commands
+﻿namespace Soap.Pf.ClientServerMessaging.Commands
 {
     using FluentValidation;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class ForwardMessageToQueueValidator<TApiCommand> : AbstractValidator<ForwardCommandToQueue<TApiCommand>> where TApiCommand : ApiCommand
     {

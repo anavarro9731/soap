@@ -1,13 +1,13 @@
-namespace Soap.MessagePipeline.MessageAggregator
+namespace Soap.If.MessagePipeline.MessageAggregator
 {
     using System.Linq;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     public abstract class MessageAggregatorForTestingBase
     {

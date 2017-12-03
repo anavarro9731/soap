@@ -11,7 +11,7 @@
     <PackageReference Include="DataStore.Impl.SqlServer" Version="1.6.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Endpoint.Http.Infrastructure.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
 </Project>

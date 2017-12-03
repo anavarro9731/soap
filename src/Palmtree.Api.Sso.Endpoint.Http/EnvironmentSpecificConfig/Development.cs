@@ -9,11 +9,11 @@
     using Serilog;
     using Serilog.Debugging;
     using Serilog.Exceptions;
-    using Soap.Endpoint.Http.Infrastructure;
-    using Soap.Endpoint.Infrastructure;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline.Models;
     using Soap.Integrations.Mailgun;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline.Models;
+    using Soap.Pf.EndpointInfrastructure;
+    using Soap.Pf.HttpEndpointBase;
 
     public class Development : IHttpEnvironmentSpecificConfiguration
     {

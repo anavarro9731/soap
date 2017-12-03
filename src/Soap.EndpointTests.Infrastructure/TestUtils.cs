@@ -1,4 +1,4 @@
-﻿namespace Soap.EndpointTests.Infrastructure
+﻿namespace Soap.Pf.EndpointTestsBase
 {
     using System;
     using System.Configuration;
@@ -6,9 +6,9 @@
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Soap.AbstractMessages.Queries;
-    using Soap.Endpoint.Clients;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
+    using Soap.Pf.ClientServerMessaging.Queries;
+    using Soap.Pf.EndpointClients;
 
     public static class TestUtils
     {

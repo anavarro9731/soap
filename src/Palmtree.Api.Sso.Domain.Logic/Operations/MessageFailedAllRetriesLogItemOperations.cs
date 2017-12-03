@@ -3,7 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
 
     public class MessageFailedAllRetriesLogItemOperations : Operations<MessageFailedAllRetriesLogItem>
     {

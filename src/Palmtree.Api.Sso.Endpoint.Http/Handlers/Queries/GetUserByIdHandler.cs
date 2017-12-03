@@ -3,8 +3,8 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Messages.Queries;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
 
     public class GetUserByIdHandler : MessageHandler<GetUserById, User>
     {

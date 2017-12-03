@@ -1,4 +1,4 @@
-namespace Soap.MessagePipeline.ProcessesAndOperations
+namespace Soap.If.MessagePipeline.ProcessesAndOperations
 {
     using System;
     using System.Collections.Generic;
@@ -6,13 +6,13 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Messages.ProcessMessages;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.Utility;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Messages.ProcessMessages;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.Utility;
+    using Soap.If.Utility.PureFunctions;
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>
     {

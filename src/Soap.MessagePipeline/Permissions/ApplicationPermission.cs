@@ -1,9 +1,9 @@
-﻿namespace Soap.MessagePipeline.Permissions
+﻿namespace Soap.If.MessagePipeline.Permissions
 {
     using System;
     using CircuitBoard.Permissions;
     using Newtonsoft.Json;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions;
 
     public class ApplicationPermission : IEquatable<ApplicationPermission>, IApplicationPermission
     {

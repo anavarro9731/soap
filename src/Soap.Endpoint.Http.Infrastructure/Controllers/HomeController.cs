@@ -1,4 +1,4 @@
-namespace Soap.Endpoint.Http.Infrastructure.Controllers
+namespace Soap.Pf.HttpEndpointBase.Controllers
 {
     using System;
     using System.Collections.Generic;
@@ -13,8 +13,8 @@ namespace Soap.Endpoint.Http.Infrastructure.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class HomeController : Controller
     {

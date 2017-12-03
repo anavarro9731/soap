@@ -8,8 +8,8 @@
     using Serilog;
     using Serilog.Debugging;
     using Serilog.Exceptions;
-    using Soap.Endpoint.Http.Infrastructure;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
+    using Soap.Pf.HttpEndpointBase;
 
     public class Uat : IHttpEnvironmentSpecificConfiguration
     {

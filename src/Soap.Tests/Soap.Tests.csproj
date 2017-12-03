@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
+    <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
   </ItemGroup>
 
 </Project>

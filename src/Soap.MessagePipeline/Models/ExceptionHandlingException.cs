@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Models
+﻿namespace Soap.If.MessagePipeline.Models
 {
     using System;
 

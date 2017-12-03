@@ -1,11 +1,11 @@
-﻿namespace Soap.Endpoint.Clients
+﻿namespace Soap.Pf.EndpointClients
 {
     using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class HttpApiClient
     {

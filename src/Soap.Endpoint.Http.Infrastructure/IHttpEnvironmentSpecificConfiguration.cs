@@ -1,7 +1,7 @@
-﻿namespace Soap.Endpoint.Http.Infrastructure
+﻿namespace Soap.Pf.HttpEndpointBase
 {
     using Microsoft.AspNetCore.Cors.Infrastructure;
-    using Soap.Endpoint.Infrastructure;
+    using Soap.Pf.EndpointInfrastructure;
 
     public interface IHttpEnvironmentSpecificConfiguration : IEnvironmentSpecificConfig
     {

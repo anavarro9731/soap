@@ -1,9 +1,9 @@
-﻿namespace Soap.Endpoint.Msmq.Infrastructure
+﻿namespace Soap.Pf.MsmqEndpointBase
 {
     using System.Threading.Tasks;
     using Rebus.Handlers;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class CommandHandler : IHandleMessages<IApiCommand>
     {

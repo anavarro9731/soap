@@ -4,8 +4,8 @@
     using System.Linq;
     using Mailer.NET.Mailer;
     using Mailer.NET.Mailer.Response;
-    using Soap.DomainTests.Infrastructure;
     using Soap.Integrations.Mailgun;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenSendingAnEmail

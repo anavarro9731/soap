@@ -5,8 +5,8 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using Soap.DomainTests.Infrastructure;
-    using Soap.Utility;
+    using Soap.If.Utility;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenDisablingAUser

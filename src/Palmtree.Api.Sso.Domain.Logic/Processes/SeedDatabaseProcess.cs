@@ -5,9 +5,9 @@
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class SeedDatabaseProcess : Process<SeedDatabaseProcess>, IBeginProcess<SeedDatabase>
     {

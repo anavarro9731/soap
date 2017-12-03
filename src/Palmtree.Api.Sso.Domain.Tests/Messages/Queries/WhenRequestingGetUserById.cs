@@ -7,10 +7,10 @@
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Serilog;
-    using Soap.DomainTests.Infrastructure;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenRequestingGetUserById

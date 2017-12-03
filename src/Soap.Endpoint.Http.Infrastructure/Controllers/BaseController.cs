@@ -1,14 +1,14 @@
-namespace Soap.Endpoint.Http.Infrastructure.Controllers
+namespace Soap.Pf.HttpEndpointBase.Controllers
 {
     using System;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json.Linq;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.Utility.PureFunctions;
-    using Soap.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     public abstract class BaseController : Controller
     {

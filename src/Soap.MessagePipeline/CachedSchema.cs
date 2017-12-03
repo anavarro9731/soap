@@ -1,15 +1,14 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.If.MessagePipeline
 {
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Linq;
-    using System.Reflection;
     using System.Text;
     using DataStore.Models.PureFunctions.Extensions;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class CachedSchema
     {

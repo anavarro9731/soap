@@ -4,9 +4,9 @@
     using Palmtree.Api.Sso.Domain.Logic.Processes;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
 
     public class AddAThingHandler : MessageHandler<CreateThing, Thing>
     {

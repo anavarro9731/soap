@@ -2,9 +2,9 @@
 {
     using System.Linq;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.DomainTests.Infrastructure;
+    using Soap.If.MessagePipeline.Messages.ProcessMessages;
     using Soap.Integrations.Mailgun;
-    using Soap.MessagePipeline.Messages.ProcessMessages;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenResettingPassword

@@ -2,9 +2,9 @@
 {
     using DataStore.Impl.SqlServer;
     using Newtonsoft.Json;
-    using Soap.Endpoint.Infrastructure;
+    using Soap.If.Interfaces;
     using Soap.Integrations.Mailgun;
-    using Soap.Interfaces;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class ApplicationConfiguration : IApplicationConfig
     {

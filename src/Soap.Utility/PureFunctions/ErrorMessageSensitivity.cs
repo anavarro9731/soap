@@ -1,4 +1,4 @@
-﻿namespace Soap.Utility.PureFunctions
+﻿namespace Soap.If.Utility.PureFunctions
 {
     public enum ErrorMessageSensitivity
     {

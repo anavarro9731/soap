@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     public partial class MessagePipeline
     {

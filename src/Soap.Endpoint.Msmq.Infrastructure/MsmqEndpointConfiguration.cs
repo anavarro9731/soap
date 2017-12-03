@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Msmq.Infrastructure
+﻿namespace Soap.Pf.MsmqEndpointBase
 {
     using System;
     using System.Collections.Generic;
@@ -7,11 +7,11 @@
     using Autofac;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessageAggregator;
-    using Soap.MessagePipeline.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.If.MessagePipeline.Messages;
+    using Soap.Pf.EndpointInfrastructure;
     using Topshelf;
 
     public class MsmqEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers

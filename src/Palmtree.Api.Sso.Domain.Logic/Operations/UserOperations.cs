@@ -9,11 +9,11 @@
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.Utility;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.Utility;
+    using Soap.If.Utility.PureFunctions;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class UserOperations : Operations<User>
     {

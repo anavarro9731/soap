@@ -1,7 +1,7 @@
 ﻿namespace Soap.Integrations.Mailgun
 {
     using Mailer.NET.Mailer;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class SendEmail : ApiCommand
     {

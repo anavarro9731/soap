@@ -1,9 +1,9 @@
-﻿namespace Soap.AbstractMessages.Queries
+﻿namespace Soap.Pf.ClientServerMessaging.Queries
 {
     using System;
     using System.Collections.Generic;
     using FluentValidation;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public sealed class GetMessageLogItemQuery : ApiQuery
     {

@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Messages
+﻿namespace Soap.If.MessagePipeline.Messages
 {
     using System;
     using System.Threading.Tasks;

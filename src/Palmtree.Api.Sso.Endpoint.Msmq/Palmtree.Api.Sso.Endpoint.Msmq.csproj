@@ -22,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Endpoint.Infrastructure.csproj" />
-    <ProjectReference Include="..\Soap.Endpoint.Msmq.Infrastructure\Soap.Endpoint.Msmq.Infrastructure.csproj" />
-    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />    
+    <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Msmq.Infrastructure\Soap.Pf.MsmqEndpointBase.csproj" />    
   </ItemGroup>
 
   <ItemGroup>

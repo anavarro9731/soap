@@ -1,13 +1,13 @@
-﻿namespace Soap.MessagePipeline.UnitOfWork
+﻿namespace Soap.If.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Messages;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Messages;
+    using Soap.If.Utility.PureFunctions;
 
     /// <summary>
     ///     this class queues any actions the user performs during a session (message) which

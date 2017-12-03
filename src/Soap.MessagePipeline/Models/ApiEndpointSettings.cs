@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline.Models
+﻿namespace Soap.If.MessagePipeline.Models
 {
     using System.Linq;
     using Newtonsoft.Json;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
 
     public class ApiEndpointSettings : IApiEndpointSettings
     {

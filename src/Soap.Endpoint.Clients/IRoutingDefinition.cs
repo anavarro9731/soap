@@ -1,6 +1,6 @@
-﻿namespace Soap.Endpoint.Clients
+﻿namespace Soap.Pf.EndpointClients
 {
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public interface IRoutingDefinition
     {

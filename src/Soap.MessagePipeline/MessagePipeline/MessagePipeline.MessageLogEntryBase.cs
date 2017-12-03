@@ -1,7 +1,7 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     using System;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public partial class MessagePipeline
     {

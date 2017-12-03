@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Clients
+﻿namespace Soap.Pf.EndpointClients
 {
     using System;
     using Newtonsoft.Json;

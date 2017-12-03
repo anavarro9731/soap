@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Http.Infrastructure
+﻿namespace Soap.Pf.HttpEndpointBase
 {
     using System;
     using System.Collections.Generic;
@@ -13,11 +13,11 @@
     using Microsoft.Extensions.DependencyInjection;
     using Newtonsoft.Json.Serialization;
     using Serilog;
-    using Soap.Endpoint.Clients;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessageAggregator;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.Pf.EndpointClients;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class HttpEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {

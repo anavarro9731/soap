@@ -1,4 +1,4 @@
-﻿namespace Soap.Utility.PureFunctions.Extensions
+﻿namespace Soap.If.Utility.PureFunctions.Extensions
 {
     using System;
     using System.Dynamic;

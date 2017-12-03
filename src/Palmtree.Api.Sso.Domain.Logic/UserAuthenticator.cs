@@ -4,9 +4,9 @@
     using DataStore.Interfaces;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions;
 
     public class UserAuthenticator : IAuthenticateUsers
     {

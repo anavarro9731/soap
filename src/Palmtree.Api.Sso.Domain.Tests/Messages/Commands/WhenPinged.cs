@@ -7,11 +7,11 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Messages.Events;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.DomainTests.Infrastructure;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenPinged

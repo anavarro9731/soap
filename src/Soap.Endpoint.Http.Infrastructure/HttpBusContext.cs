@@ -1,9 +1,9 @@
-﻿namespace Soap.Endpoint.Http.Infrastructure
+﻿namespace Soap.Pf.HttpEndpointBase
 {
     using System.Collections.Generic;
     using System.Reflection;
-    using Soap.Endpoint.Clients;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
+    using Soap.Pf.EndpointClients;
 
     public class HttpBusContext
     {

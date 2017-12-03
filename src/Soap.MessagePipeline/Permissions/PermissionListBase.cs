@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Permissions
+﻿namespace Soap.If.MessagePipeline.Permissions
 {
     using System;
     using System.Collections.Generic;

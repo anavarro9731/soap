@@ -1,7 +1,7 @@
-namespace Soap.Interfaces
+namespace Soap.If.Interfaces
 {
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public interface IMessagePipeline
     {

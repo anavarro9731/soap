@@ -1,6 +1,6 @@
-﻿namespace Soap.Endpoint.Infrastructure
+﻿namespace Soap.Pf.EndpointInfrastructure
 {
-    using Soap.MessagePipeline.Permissions;
+    using Soap.If.MessagePipeline.Permissions;
 
     public class InfrastructurePermissions : PermissionListBase
     {

@@ -1,8 +1,8 @@
-﻿namespace Soap.Endpoint.Clients
+﻿namespace Soap.Pf.EndpointClients
 {
     using System;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class SendCommandOperation : ISendCommandOperation
     {

@@ -2,8 +2,8 @@
 {
     using System;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Endpoint.Clients;
-    using Soap.EndpointTests.Infrastructure;
+    using Soap.Pf.EndpointClients;
+    using Soap.Pf.EndpointTestsBase;
     using Xunit;
 
     public class WhenSendingInvalidPingCommand

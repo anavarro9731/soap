@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     using System;
     using System.Transactions;
@@ -6,12 +6,12 @@
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.Utility;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.Utility;
+    using Soap.If.Utility.PureFunctions;
 
     public partial class MessagePipeline
     {

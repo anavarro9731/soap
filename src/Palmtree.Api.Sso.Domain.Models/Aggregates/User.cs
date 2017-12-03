@@ -7,7 +7,7 @@
     using Destructurama.Attributed;
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using Soap.Utility;
+    using Soap.If.Utility;
 
     public class User : Aggregate, IUserWithPermissions
     {

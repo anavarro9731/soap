@@ -4,8 +4,8 @@
     using Palmtree.Api.Sso.Domain.Logic;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Endpoint.Msmq.Infrastructure;
+    using Soap.Pf.EndpointInfrastructure;
+    using Soap.Pf.MsmqEndpointBase;
 
     public class Program
     {

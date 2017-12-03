@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     using System;
     using System.Collections.Generic;
@@ -9,13 +9,13 @@
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Messages;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.Utility.PureFunctions;
-    using Soap.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Messages;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     /// <summary>
     ///     The jobs of this class is are:

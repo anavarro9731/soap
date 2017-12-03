@@ -8,7 +8,7 @@
     using Mailer.NET.Mailer;
     using Mailer.NET.Mailer.Response;
     using Mailer.NET.Mailer.Transport;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions;
 
     public class EmailSender
     {

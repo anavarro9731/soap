@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline.Models
+﻿namespace Soap.If.MessagePipeline.Models
 {
     using System;
     using CircuitBoard.Permissions;
-    using Soap.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.Models.Aggregates;
 
     public class ApiMessageMeta
     {

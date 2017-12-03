@@ -13,6 +13,6 @@
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
   </ItemGroup>
 </Project>

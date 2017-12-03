@@ -1,10 +1,10 @@
-namespace Soap.Endpoint.Msmq.Infrastructure
+namespace Soap.Pf.MsmqEndpointBase
 {
     using System;
     using System.Reflection;
     using Autofac;
     using DataStore.Interfaces;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
 
     public static class MsmqEndpoint
     {

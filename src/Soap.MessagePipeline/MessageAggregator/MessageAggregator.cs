@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessageAggregator
+﻿namespace Soap.If.MessagePipeline.MessageAggregator
 {
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;

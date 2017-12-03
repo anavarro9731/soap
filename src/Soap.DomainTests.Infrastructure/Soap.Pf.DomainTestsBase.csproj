@@ -10,7 +10,7 @@
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
-    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Endpoint.Infrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
   </ItemGroup>
 </Project>

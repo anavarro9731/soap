@@ -3,8 +3,8 @@ namespace Palmtree.Api.Sso.Domain.Models.ViewModels
     using Newtonsoft.Json;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
-    using Soap.Utility;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility;
+    using Soap.If.Utility.PureFunctions;
 
     public class ClientSecurityContext
     {

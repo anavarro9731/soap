@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Msmq.Infrastructure
+﻿namespace Soap.Pf.MsmqEndpointBase
 {
     using System;
     using System.Threading.Tasks;
@@ -11,8 +11,8 @@
     using Rebus.Routing.TypeBased;
     using Rebus.TransactionScopes;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class RebusBusContext : IBusContext
     {

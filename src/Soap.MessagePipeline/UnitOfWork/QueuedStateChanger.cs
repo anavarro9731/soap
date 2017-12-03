@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.UnitOfWork
+﻿namespace Soap.If.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Linq;

@@ -14,11 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.DomainTests.Infrastructure\Soap.DomainTests.Infrastructure.csproj" />
-    <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Endpoint.Http.Infrastructure.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Endpoint.Http\Palmtree.Api.Sso.Endpoint.Http.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Endpoint.Msmq\Palmtree.Api.Sso.Endpoint.Msmq.csproj" />
+    <ProjectReference Include="..\Soap.DomainTests.Infrastructure\Soap.Pf.DomainTestsBase.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
 
 

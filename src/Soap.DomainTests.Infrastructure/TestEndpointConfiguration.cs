@@ -1,4 +1,4 @@
-﻿namespace Soap.DomainTests.Infrastructure
+﻿namespace Soap.Pf.DomainTestsBase
 {
     using System;
     using System.Collections.Generic;
@@ -9,10 +9,10 @@
     using Destructurama;
     using Serilog;
     using Serilog.Exceptions;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.MessageAggregator;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class TestEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {

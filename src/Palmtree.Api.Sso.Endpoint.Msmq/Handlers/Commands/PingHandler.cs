@@ -6,9 +6,9 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Messages.Events;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.Utility.PureFunctions;
 
     public class PingHandler : MessageHandler<PingCommand, PongViewModel>
     {

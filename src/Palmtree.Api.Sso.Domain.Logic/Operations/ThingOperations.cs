@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
 
     public class ThingOperations : Operations<Thing>
     {

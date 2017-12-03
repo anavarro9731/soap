@@ -1,13 +1,13 @@
-﻿namespace Soap.Endpoint.Http.Infrastructure.Handlers.Queries
+﻿namespace Soap.Pf.HttpEndpointBase.Handlers.Queries
 {
     using System.Linq;
     using System.Threading.Tasks;
     using FluentValidation;
-    using Soap.AbstractMessages.Queries;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.Pf.ClientServerMessaging.Queries;
 
     public class GetMessageLogItemHandler : MessageHandler<GetMessageLogItemQuery, GetMessageLogItemQuery.MessageLogItemViewModel>
     {

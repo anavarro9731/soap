@@ -1,6 +1,6 @@
-namespace Soap.Interfaces
+namespace Soap.If.Interfaces
 {
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public interface IPublishEventOperation : IBusOperation
     {

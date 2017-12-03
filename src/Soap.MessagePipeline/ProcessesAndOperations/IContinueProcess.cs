@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.If.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Models;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Models;
 
     /// <summary>
     ///     a way to enforce the signature for handling a msg

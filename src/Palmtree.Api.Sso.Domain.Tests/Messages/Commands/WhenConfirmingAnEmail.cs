@@ -4,7 +4,7 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.DomainTests.Infrastructure;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenConfirmingAnEmail

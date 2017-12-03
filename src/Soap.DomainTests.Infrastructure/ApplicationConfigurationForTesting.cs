@@ -1,11 +1,11 @@
-namespace Soap.DomainTests.Infrastructure
+namespace Soap.Pf.DomainTestsBase
 {
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
 
     public class ApplicationConfigurationForTesting : IApplicationConfig
     {
         public IApiEndpointSettings ApiEndpointSettings { get; set; } =
-            MessagePipeline.Models.ApiEndpointSettings.Create("http://dev.Soap.http/endpoint/testing", "dev.service.api.msmq.endpoint.testing@machinename");
+            If.MessagePipeline.Models.ApiEndpointSettings.Create("http://dev.Soap.http/endpoint/testing", "dev.service.api.msmq.endpoint.testing@machinename");
 
         public string ApplicationVersion { get; }
 

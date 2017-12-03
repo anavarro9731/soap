@@ -3,9 +3,9 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
 
     internal class PingMessageFailedHandler : MessageHandler<MessageFailedAllRetries<PingCommand>>
     {

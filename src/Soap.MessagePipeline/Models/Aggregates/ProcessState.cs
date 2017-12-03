@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline.Models.Aggregates
+﻿namespace Soap.If.MessagePipeline.Models.Aggregates
 {
     using System.Dynamic;
     using DataStore.Interfaces.LowLevel;
-    using Soap.Utility;
+    using Soap.If.Utility;
 
     /// <summary>
     ///     stores the data for a process instance

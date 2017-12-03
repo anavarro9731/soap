@@ -1,14 +1,14 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.If.MessagePipeline
 {
     using System.Threading.Tasks;
     using System.Transactions;
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.Models.Aggregates;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models.Aggregates;
 
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message

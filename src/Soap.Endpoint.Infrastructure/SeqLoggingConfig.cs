@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Infrastructure
+﻿namespace Soap.Pf.EndpointInfrastructure
 {
     using Newtonsoft.Json;
 

@@ -1,10 +1,10 @@
-﻿namespace Soap.Utility
+﻿namespace Soap.If.Utility
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using Newtonsoft.Json;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions;
 
     public class FlaggedState
     {

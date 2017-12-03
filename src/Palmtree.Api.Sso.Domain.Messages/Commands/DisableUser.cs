@@ -1,7 +1,7 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
     using System;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class DisableUser : ApiCommand
     {

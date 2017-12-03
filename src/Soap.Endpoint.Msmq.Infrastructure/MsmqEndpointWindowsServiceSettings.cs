@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Msmq.Infrastructure
+﻿namespace Soap.Pf.MsmqEndpointBase
 {
     public class MsmqEndpointWindowsServiceSettings
     {

@@ -3,9 +3,9 @@
     using System;
     using Microsoft.AspNetCore.Mvc;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Endpoint.Http.Infrastructure.Controllers;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Pf.HttpEndpointBase.Controllers;
 
     public class StatefulProcessController : BaseController
     {

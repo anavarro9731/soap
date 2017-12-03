@@ -1,7 +1,7 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.If.Interfaces
 {
     using System;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class MessageFailedAllRetries<T> : ApiCommand, IMessageFailedAllRetries where T : IApiMessage
     {

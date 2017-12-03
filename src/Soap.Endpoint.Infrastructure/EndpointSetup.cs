@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Infrastructure
+﻿namespace Soap.Pf.EndpointInfrastructure
 {
     using System;
     using System.Collections.Generic;
@@ -11,12 +11,12 @@
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.MessagePipeline.UnitOfWork;
-    using Soap.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.MessagePipeline.UnitOfWork;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     public static class EndpointSetup
     {

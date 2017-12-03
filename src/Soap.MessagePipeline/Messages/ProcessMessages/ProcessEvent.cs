@@ -1,4 +1,4 @@
-namespace Soap.MessagePipeline.Messages.ProcessMessages
+namespace Soap.If.MessagePipeline.Messages.ProcessMessages
 {
     using CircuitBoard.Messages;
 

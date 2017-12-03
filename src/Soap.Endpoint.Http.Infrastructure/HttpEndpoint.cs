@@ -1,9 +1,9 @@
-namespace Soap.Endpoint.Http.Infrastructure
+namespace Soap.Pf.HttpEndpointBase
 {
     using System;
     using System.Reflection;
     using DataStore.Interfaces;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
 
     public static class HttpEndpoint
     {

@@ -1,9 +1,9 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.If.Interfaces
 {
     using System;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     /// <summary>
     ///     this interface allows people to write a version of the UnitOfWork which

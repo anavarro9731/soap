@@ -1,7 +1,7 @@
 ﻿namespace Soap.Integrations.Mailgun
 {
     using System.Collections.Generic;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions;
 
     public class MailgunEmailSenderSettings
     {

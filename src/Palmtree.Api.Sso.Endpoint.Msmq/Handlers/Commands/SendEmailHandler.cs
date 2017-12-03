@@ -4,9 +4,9 @@
     using System.Threading.Tasks;
     using Mailer.NET.Mailer.Response;
     using Palmtree.Api.Sso.Domain.Logic;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
     using Soap.Integrations.Mailgun;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
 
     public class SendEmailHandler : MessageHandler<SendEmail, List<EmailResponse>>
     {

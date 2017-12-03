@@ -1,13 +1,13 @@
-﻿namespace Soap.Endpoint.Http.Infrastructure.Controllers
+﻿namespace Soap.Pf.HttpEndpointBase.Controllers
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json.Linq;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.MessagePipeline;
 
     public class CommandController : BaseController
     {

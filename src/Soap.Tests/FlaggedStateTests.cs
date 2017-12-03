@@ -2,8 +2,8 @@
 {
     using System;
     using Newtonsoft.Json;
-    using Soap.Utility;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility;
+    using Soap.If.Utility.PureFunctions;
     using Xunit;
 
     public class FlaggedStateTests

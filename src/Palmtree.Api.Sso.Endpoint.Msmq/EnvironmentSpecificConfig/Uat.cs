@@ -7,8 +7,8 @@
     using Serilog;
     using Serilog.Debugging;
     using Serilog.Exceptions;
-    using Soap.Endpoint.Infrastructure;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class Uat : IEnvironmentSpecificConfig
     {

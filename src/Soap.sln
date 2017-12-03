@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Domain.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Endpoint.Http", "Palmtree.Api.Sso.Endpoint.Http\Palmtree.Api.Sso.Endpoint.Http.csproj", "{FCEBE061-EA0F-4C29-BE11-52AE91C63F95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Endpoint.Clients", "Soap.Endpoint.Clients\Soap.Endpoint.Clients.csproj", "{63D24F25-443F-4160-8A36-D997729A2B60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.EndpointClients", "Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj", "{63D24F25-443F-4160-8A36-D997729A2B60}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C1A4DFD1-4FD0-473C-9B27-F7EEB6886CFD}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,32 +21,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Endpoint.Tests", "Palmtree.Api.Sso.Endpoint.Tests\Palmtree.Api.Sso.Endpoint.Tests.csproj", "{6CE493FD-5086-4E5E-832D-9CCD9C18691A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Endpoint.Http.Infrastructure", "Soap.Endpoint.Http.Infrastructure\Soap.Endpoint.Http.Infrastructure.csproj", "{1021FDEE-0ECE-415D-B4AF-714DBB68BDEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.HttpEndpointBase", "Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj", "{1021FDEE-0ECE-415D-B4AF-714DBB68BDEB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Endpoint.Msmq.Infrastructure", "Soap.Endpoint.Msmq.Infrastructure\Soap.Endpoint.Msmq.Infrastructure.csproj", "{15CD06D4-5E54-4FD6-8436-9C939BEBDCB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.MsmqEndpointBase", "Soap.Endpoint.Msmq.Infrastructure\Soap.Pf.MsmqEndpointBase.csproj", "{15CD06D4-5E54-4FD6-8436-9C939BEBDCB2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Endpoint.Infrastructure", "Soap.Endpoint.Infrastructure\Soap.Endpoint.Infrastructure.csproj", "{BE6E588F-A801-4ED8-9DE9-D44C4A559F0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.EndpointInfrastructure", "Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj", "{BE6E588F-A801-4ED8-9DE9-D44C4A559F0C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Endpoint.Msmq", "Palmtree.Api.Sso.Endpoint.Msmq\Palmtree.Api.Sso.Endpoint.Msmq.csproj", "{A26EC955-9AC6-4289-92F3-5726E3FEC93A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
 	ProjectSection(SolutionItems) = preProject
-		README.txt = README.txt
+		Soap.If.Readme = Soap.If.Readme
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.DomainTests.Infrastructure", "Soap.DomainTests.Infrastructure\Soap.DomainTests.Infrastructure.csproj", "{B1ED247D-AC57-4E18-B688-A762CBE3FBD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.DomainTestsBase", "Soap.DomainTests.Infrastructure\Soap.Pf.DomainTestsBase.csproj", "{B1ED247D-AC57-4E18-B688-A762CBE3FBD1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.EndpointTests.Infrastructure", "Soap.EndpointTests.Infrastructure\Soap.EndpointTests.Infrastructure.csproj", "{CFC3F5FE-90F1-4799-8A6B-5E788C73F506}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.EndpointTestsBase", "Soap.EndpointTests.Infrastructure\Soap.Pf.EndpointTestsBase.csproj", "{CFC3F5FE-90F1-4799-8A6B-5E788C73F506}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.AbstractMessages", "Soap.MessagesSharedWithClients\Soap.AbstractMessages.csproj", "{4166375E-EE3E-4473-9126-7BB0B28AC0D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.ClientServerMessaging", "Soap.MessagesSharedWithClients\Soap.Pf.ClientServerMessaging.csproj", "{4166375E-EE3E-4473-9126-7BB0B28AC0D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces", "Soap.Interfaces\Soap.Interfaces.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.If.Interfaces", "Soap.Interfaces\Soap.If.Interfaces.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.MessagePipeline", "Soap.MessagePipeline\Soap.MessagePipeline.csproj", "{8CCDE971-2027-4033-91D8-72A5ED9A789A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.If.MessagePipeline", "Soap.MessagePipeline\Soap.If.MessagePipeline.csproj", "{8CCDE971-2027-4033-91D8-72A5ED9A789A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Tests", "Soap.Tests\Soap.Tests.csproj", "{CB23993A-B893-4883-A520-A770981C3FC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Utility", "Soap.Utility\Soap.Utility.csproj", "{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.If.Utility", "Soap.Utility\Soap.If.Utility.csproj", "{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform", "Platform", "{865DCEFC-8653-4674-9F03-611EDD30CAB5}"
 EndProject
@@ -312,7 +312,7 @@ Global
 		{A26EC955-9AC6-4289-92F3-5726E3FEC93A} = {3B0F27D1-961F-4612-96DA-C4BA2D4C93C9}
 		{B1ED247D-AC57-4E18-B688-A762CBE3FBD1} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
 		{CFC3F5FE-90F1-4799-8A6B-5E788C73F506} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
-		{4166375E-EE3E-4473-9126-7BB0B28AC0D1} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
+		{4166375E-EE3E-4473-9126-7BB0B28AC0D1} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
 		{2DC299E9-04A1-4911-AB92-9989E23C4D53} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{8CCDE971-2027-4033-91D8-72A5ED9A789A} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}

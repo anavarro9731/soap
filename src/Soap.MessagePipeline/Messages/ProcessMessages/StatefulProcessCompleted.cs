@@ -1,6 +1,6 @@
-﻿namespace Soap.MessagePipeline.Messages.ProcessMessages
+﻿namespace Soap.If.MessagePipeline.Messages.ProcessMessages
 {
-    using Soap.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.Models.Aggregates;
 
     public class StatefulProcessCompleted : ProcessCompleted
     {

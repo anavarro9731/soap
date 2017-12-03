@@ -1,14 +1,14 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.If.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Messages.ProcessMessages;
-    using Soap.MessagePipeline.Models;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Messages.ProcessMessages;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.Utility.PureFunctions;
 
     /// <summary>
     ///     represents a stateless multi-step process which occurs in a single unit of work

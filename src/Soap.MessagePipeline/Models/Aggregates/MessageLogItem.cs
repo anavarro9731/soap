@@ -1,13 +1,13 @@
-﻿namespace Soap.MessagePipeline.Models.Aggregates
+﻿namespace Soap.If.MessagePipeline.Models.Aggregates
 {
     using System;
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility;
 
     public class MessageLogItem : Aggregate
     {

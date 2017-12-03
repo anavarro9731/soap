@@ -3,8 +3,8 @@
     using System.Linq;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.DomainTests.Infrastructure;
     using Soap.Integrations.Mailgun;
+    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
     public class WhenRegisteringAUser

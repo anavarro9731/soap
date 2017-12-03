@@ -7,9 +7,8 @@
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
     <PackageReference Include="CircuitBoard" Version="1.0.1" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
+    <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
   </ItemGroup>
 
 </Project>

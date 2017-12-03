@@ -10,7 +10,7 @@
     <PackageReference Include="CircuitBoard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
-    <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
+    <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
   </ItemGroup>
 </Project>

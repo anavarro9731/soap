@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces.Messages
+﻿namespace Soap.If.Interfaces.Messages
 {
     public class ApiQuery : ApiMessage, IApiQuery
     {

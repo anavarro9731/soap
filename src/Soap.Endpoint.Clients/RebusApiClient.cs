@@ -1,4 +1,4 @@
-﻿namespace Soap.Endpoint.Clients
+﻿namespace Soap.Pf.EndpointClients
 {
     using System;
     using System.Collections.Generic;
@@ -8,8 +8,8 @@
     using Rebus.Bus;
     using Rebus.Config;
     using Serilog;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class RebusApiClient : IBusContext
     {

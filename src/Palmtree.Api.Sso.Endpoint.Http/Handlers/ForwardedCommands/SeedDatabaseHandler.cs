@@ -2,9 +2,9 @@
 {
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
 
     public class SeedDatabaseHandler : MessageHandler<ForwardCommandToQueue<SeedDatabase>>
     {

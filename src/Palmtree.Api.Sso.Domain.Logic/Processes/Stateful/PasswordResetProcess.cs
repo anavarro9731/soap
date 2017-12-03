@@ -6,11 +6,11 @@
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
+    using Soap.If.Interfaces;
+    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.If.Utility.PureFunctions;
     using Soap.Integrations.Mailgun;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline.Models;
-    using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.Utility.PureFunctions;
 
     public class PasswordResetProcess : StatefulProcess<PasswordResetProcess>,
                                         IBeginProcess<RequestPasswordReset, string>,

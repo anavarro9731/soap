@@ -2,7 +2,7 @@
 {
     using System;
     using FluentValidation;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     public class PingCommand : ApiCommand
     {

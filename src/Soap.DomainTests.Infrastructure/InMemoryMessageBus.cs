@@ -1,11 +1,11 @@
-﻿namespace Soap.DomainTests.Infrastructure
+﻿namespace Soap.Pf.DomainTestsBase
 {
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class InMemoryMessageBus : IBusContext
     {

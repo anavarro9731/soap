@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessageAggregator
+﻿namespace Soap.If.MessagePipeline.MessageAggregator
 {
     using System;
     using System.Collections.Generic;

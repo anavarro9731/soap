@@ -6,10 +6,10 @@
     <PackageReference Include="DataStore.Impl.SqlServer" Version="1.6.6" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Endpoint.Infrastructure.csproj" />
-    <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Messages\Palmtree.Api.Sso.Domain.Messages.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
     <ProjectReference Include="..\Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj" />
   </ItemGroup>
 </Project>

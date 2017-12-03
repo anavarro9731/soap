@@ -1,4 +1,4 @@
-﻿namespace Soap.DomainTests.Infrastructure
+﻿namespace Soap.Pf.DomainTestsBase
 {
     using System;
     using System.Collections.Generic;
@@ -10,10 +10,10 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessageAggregator;
-    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.If.MessagePipeline.MessagePipeline;
 
     public class TestEndpoint
     {

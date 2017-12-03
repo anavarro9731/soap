@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.If.MessagePipeline
 {
     using System;
     using System.IO;
@@ -6,7 +6,7 @@
     using Serilog.Core;
     using Serilog.Events;
     using Serilog.Formatting.Json;
-    using Soap.MessagePipeline.Messages;
+    using Soap.If.MessagePipeline.Messages;
 
     public class MessageAggregatorSink : ILogEventSink
     {

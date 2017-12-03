@@ -4,8 +4,8 @@
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Models;
+    using Soap.If.MessagePipeline;
+    using Soap.If.MessagePipeline.Models;
 
     public class UpdateNameOfThingHandler : MessageHandler<UpdateNameOfThing, Thing>
     {

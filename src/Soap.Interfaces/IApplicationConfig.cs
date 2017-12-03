@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.If.Interfaces
 {
     public interface IApplicationConfig
     {

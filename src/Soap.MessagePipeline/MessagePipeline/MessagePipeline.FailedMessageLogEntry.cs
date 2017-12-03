@@ -1,6 +1,6 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
-    using Soap.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.Models;
 
     public partial class MessagePipeline
     {

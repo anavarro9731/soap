@@ -1,10 +1,10 @@
-﻿namespace Soap.MessagePipeline.Models
+﻿namespace Soap.If.MessagePipeline.Models
 {
     using System;
     using FluentValidation;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions;
 
     public class PipelineExceptionMessages
     {

@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline.Messages
+﻿namespace Soap.If.MessagePipeline.Messages
 {
     using System;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
 
     public class QueuedApiEvent : QueuedStateChange
     {

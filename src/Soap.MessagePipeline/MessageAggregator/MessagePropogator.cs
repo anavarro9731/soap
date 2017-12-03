@@ -1,10 +1,10 @@
-namespace Soap.MessagePipeline.MessageAggregator
+namespace Soap.If.MessagePipeline.MessageAggregator
 {
     using System;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions;
 
     public class MessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {

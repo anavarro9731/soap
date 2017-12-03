@@ -1,7 +1,7 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.If.Interfaces
 {
     using CircuitBoard.Permissions;
-    using Soap.Interfaces.Messages;
+    using Soap.If.Interfaces.Messages;
 
     /// <summary>
     ///     allows people to write their own method of authenticating a user from a message

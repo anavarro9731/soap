@@ -1,7 +1,7 @@
-﻿namespace Soap.Endpoint.Infrastructure
+﻿namespace Soap.Pf.EndpointInfrastructure
 {
     using Serilog;
-    using Soap.Interfaces;
+    using Soap.If.Interfaces;
 
     public interface IEnvironmentSpecificConfig
     {

@@ -13,7 +13,7 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="3.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />
