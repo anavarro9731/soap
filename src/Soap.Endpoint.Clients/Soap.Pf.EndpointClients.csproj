@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.MessagesSharedWithClients\Soap.Pf.ClientServerMessaging.csproj" />
   </ItemGroup>
 </Project>

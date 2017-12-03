@@ -5,10 +5,11 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.ClientServerMessaging.Commands;
 
-    public class SeedDatabaseHandler : MessageHandler<ForwardCommandToQueue<SeedDatabase>>
+    public class SeedDatabaseHandler : MessageHandler<ForwardCommandFromHttpToMsmq<SeedDatabase>>
     {
-        protected override Task Handle(ForwardCommandToQueue<SeedDatabase> message, ApiMessageMeta meta)
+        protected override Task Handle(ForwardCommandFromHttpToMsmq<SeedDatabase> message, ApiMessageMeta meta)
         {
             UnitOfWork.SendCommand(message.Command);
 
