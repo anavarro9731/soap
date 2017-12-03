@@ -1,4 +1,4 @@
-﻿namespace Soap.ThirdPartyClients.Mailgun
+﻿namespace Soap.Integrations.Mailgun
 {
     using Mailer.NET.Mailer;
     using Soap.Interfaces.Messages;

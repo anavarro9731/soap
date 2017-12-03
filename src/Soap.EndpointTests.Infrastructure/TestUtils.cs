@@ -6,9 +6,9 @@
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using Soap.AbstractMessages.Queries;
     using Soap.Endpoint.Clients;
     using Soap.Interfaces.Messages;
-    using Soap.MessagesSharedWithClients.Queries;
 
     public static class TestUtils
     {

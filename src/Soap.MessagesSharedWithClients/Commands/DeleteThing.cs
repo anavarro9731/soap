@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagesSharedWithClients.Commands
+﻿namespace Soap.AbstractMessages.Commands
 {
     using System;
     using FluentValidation;

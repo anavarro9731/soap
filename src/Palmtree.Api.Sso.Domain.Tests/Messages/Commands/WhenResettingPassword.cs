@@ -3,8 +3,8 @@
     using System.Linq;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Soap.DomainTests.Infrastructure;
+    using Soap.Integrations.Mailgun;
     using Soap.MessagePipeline.Messages.ProcessMessages;
-    using Soap.ThirdPartyClients.Mailgun;
     using Xunit;
 
     public class WhenResettingPassword

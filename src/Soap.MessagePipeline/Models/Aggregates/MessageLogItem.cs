@@ -17,6 +17,10 @@
 
         public int MaxFailedMessages { get; set; }
 
+        /* NOTE: Messagelogitem.Message not generic 
+         * because some clients might not serialise using JSON.NET, 
+         * publicly serialisable classes should not rely on $type
+         * also datastore doesn't support generics*/
         public dynamic Message { get; set; }
 
         public string MessageHash { get; set; }

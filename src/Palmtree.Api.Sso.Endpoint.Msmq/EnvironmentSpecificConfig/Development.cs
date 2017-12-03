@@ -9,9 +9,9 @@
     using Serilog.Debugging;
     using Serilog.Exceptions;
     using Soap.Endpoint.Infrastructure;
+    using Soap.Integrations.Mailgun;
     using Soap.Interfaces;
     using Soap.MessagePipeline.Models;
-    using Soap.ThirdPartyClients.Mailgun;
 
     public class Development : IEnvironmentSpecificConfig
     {

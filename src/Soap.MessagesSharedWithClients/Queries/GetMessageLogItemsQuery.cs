@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagesSharedWithClients.Queries
+﻿namespace Soap.AbstractMessages.Queries
 {
     using System;
     using System.Collections.Generic;

@@ -4,7 +4,7 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Soap.DomainTests.Infrastructure;
-    using Soap.ThirdPartyClients.Mailgun;
+    using Soap.Integrations.Mailgun;
     using Xunit;
 
     public class WhenRegisteringAUser

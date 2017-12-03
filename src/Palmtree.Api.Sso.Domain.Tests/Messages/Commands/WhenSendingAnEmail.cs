@@ -5,7 +5,7 @@
     using Mailer.NET.Mailer;
     using Mailer.NET.Mailer.Response;
     using Soap.DomainTests.Infrastructure;
-    using Soap.ThirdPartyClients.Mailgun;
+    using Soap.Integrations.Mailgun;
     using Xunit;
 
     public class WhenSendingAnEmail

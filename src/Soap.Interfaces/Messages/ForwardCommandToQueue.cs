@@ -1,8 +1,8 @@
 ﻿namespace Soap.Interfaces.Messages
 {
-    public class ForwardCommandToQueue<T> : ApiCommand where T : IApiCommand
+    public class ForwardCommandToQueue<TApiCommand> : ApiCommand where TApiCommand : IApiCommand
     {
-        public ForwardCommandToQueue(IApiCommand command)
+        public ForwardCommandToQueue(TApiCommand command)
         {
             Command = command;
         }

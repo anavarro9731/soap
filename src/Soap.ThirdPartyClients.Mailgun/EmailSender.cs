@@ -1,4 +1,4 @@
-﻿namespace Soap.ThirdPartyClients.Mailgun
+﻿namespace Soap.Integrations.Mailgun
 {
     using System;
     using System.Collections.Generic;

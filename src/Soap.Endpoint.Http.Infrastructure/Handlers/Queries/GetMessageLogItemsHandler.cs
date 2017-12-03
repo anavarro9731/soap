@@ -4,11 +4,11 @@
     using System.Linq;
     using System.Threading.Tasks;
     using FluentValidation;
+    using Soap.AbstractMessages.Queries;
     using Soap.Interfaces;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Models;
     using Soap.MessagePipeline.Models.Aggregates;
-    using Soap.MessagesSharedWithClients.Queries;
 
     public class GetMessageLogItemsHandler : MessageHandler<GetMessageLogItemsQuery, IEnumerable<GetMessageLogItemsQuery.MessageLogItemViewModel>>
     {
