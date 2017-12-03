@@ -7,14 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Mailer.NET" Version="1.5.0" />
+    <PackageReference Include="CircuitBoard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="CircuitBoard">
-      <HintPath>C:\Users\aaron.navarro\.nuget\packages\circuitboard\1.0.1\lib\net40\CircuitBoard.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
