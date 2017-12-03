@@ -30,6 +30,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Palmtree.Api.Sso.Endpoint.Msmq", "Palmtree.Api.Sso.Endpoint.Msmq\Palmtree.Api.Sso.Endpoint.Msmq.csproj", "{A26EC955-9AC6-4289-92F3-5726E3FEC93A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
+	ProjectSection(SolutionItems) = preProject
+		README.txt = README.txt
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.DomainTests.Infrastructure", "Soap.DomainTests.Infrastructure\Soap.DomainTests.Infrastructure.csproj", "{B1ED247D-AC57-4E18-B688-A762CBE3FBD1}"
 EndProject
