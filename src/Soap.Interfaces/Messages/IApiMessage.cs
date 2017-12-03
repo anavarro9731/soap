@@ -12,6 +12,7 @@
         DateTime? TimeOfCreationAtOrigin { get; set; }
     }
 
+    // ReSharper disable once InconsistentNaming
     public static class IApiMessageMaps
     {
         public static bool CanChangeState(this IApiMessage message)
