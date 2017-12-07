@@ -3,11 +3,10 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.MsmqEndpointBase;
 
-    public class UpdateNameOfThingHandler : MessageHandler<UpdateNameOfThing, Thing>
+    public class UpdateNameOfThingHandler : CommandHandler<UpdateNameOfThing>
     {
         private readonly ThingOperations thingOperations;
 
@@ -16,9 +15,9 @@
             this.thingOperations = thingOperations;
         }
 
-        protected override async Task<Thing> Handle(UpdateNameOfThing message, ApiMessageMeta meta)
+        protected override async Task Handle(UpdateNameOfThing message, ApiMessageMeta meta)
         {
-            return await this.thingOperations.UpdateName(message);
+            await this.thingOperations.UpdateName(message);
         }
     }
 }

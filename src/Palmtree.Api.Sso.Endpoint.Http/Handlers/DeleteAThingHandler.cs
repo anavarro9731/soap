@@ -1,13 +1,13 @@
-﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
+﻿namespace Palmtree.Api.Sso.Endpoint.Http.Handlers
 {
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class DeleteAThingHandler : MessageHandler<DeleteThing, Thing>
+    public class DeleteAThingHandler : CommandHandler<DeleteThing, Thing>
     {
         private readonly ThingOperations thingOperations;
 

@@ -1,16 +1,15 @@
 ﻿namespace Soap.Pf.HttpEndpointBase.Handlers.Queries
 {
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using FluentValidation;
     using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.Utility.PureFunctions.Extensions;
     using Soap.Pf.ClientServerMessaging.Queries;
 
-    public class GetMessageLogItemsHandler : MessageHandler<GetMessageLogItemsQuery, IEnumerable<GetMessageLogItemsQuery.MessageLogItemViewModel>>
+    public class GetMessageLogItemsHandler : QueryHandler<GetMessageLogItemsQuery, GetMessageLogItemsQuery.ResponseModel>
     {
         private readonly IApplicationConfig applicationConfig;
 
@@ -19,17 +18,22 @@
             this.applicationConfig = applicationConfig;
         }
 
-        protected override Task<IEnumerable<GetMessageLogItemsQuery.MessageLogItemViewModel>> Handle(GetMessageLogItemsQuery query, ApiMessageMeta meta)
+        protected override Task<GetMessageLogItemsQuery.ResponseModel> Handle(GetMessageLogItemsQuery query, ApiMessageMeta meta)
         {
             {
                 Validate();
 
                 var results = query.MessageIdsOfLogItems.Select(msgId => DataStore.ReadActiveById<MessageLogItem>(msgId).Result)
                                    .Select(msgLogItem => ToViewModel(msgLogItem, this.applicationConfig))
-                                   .ToList()
-                                   .AsEnumerable();
+                                   .ToArray();
 
-                return Task.FromResult(results);
+                var response = results.Map(
+                    r => new GetMessageLogItemsQuery.ResponseModel
+                    {
+                        MessageLogItems = results
+                    });
+
+                return Task.FromResult(response);
             }
 
             void Validate()

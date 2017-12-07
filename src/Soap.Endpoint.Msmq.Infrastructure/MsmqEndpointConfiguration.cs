@@ -5,10 +5,12 @@
     using System.Diagnostics;
     using System.Reflection;
     using Autofac;
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.Messages;
     using Soap.Pf.EndpointInfrastructure;
@@ -105,7 +107,7 @@
             }
         }
 
-        private class Startup
+        public class Startup
         {
             public readonly List<Action<ContainerBuilder>> ContainerActions = new List<Action<ContainerBuilder>>();
 
@@ -139,34 +141,71 @@
 
             public void Start(IApiCommand startupCommand)
             {
-                var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
-                    new ContainerBuilder(),
-                    this.domainLogicAssembly,
-                    this.domainModelsAssembly,
-                    this.handlerAssemblies,
-                    MessageAggregator.Create,
-                    this.documentRepositoryFactory,
-                    this.ContainerActions);
+                {
+                    var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
+                        new ContainerBuilder(),
+                        this.domainLogicAssembly,
+                        this.domainModelsAssembly,
+                        MessageAggregator.Create,
+                        this.documentRepositoryFactory,
+                        this.ContainerActions);
 
-                builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>();
+                    AddHandlers(builder, this.handlerAssemblies);
 
-                builder.RegisterType<CommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
+                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>();
 
-                this.container = builder.Build();
+                    builder.RegisterType<CommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
 
-                EndpointSetup.ValidateContainer(this.container);
+                    this.container = builder.Build();
 
-                this.addBusToContainerFunc(this.container); //will update
+                    EndpointSetup.ValidateContainer(this.container);
 
-                Log.Logger.Information("Ready to receive messages");
+                    this.addBusToContainerFunc(this.container); //will update
 
-                if (startupCommand != null) SendStartupMessage();
+                    Log.Logger.Information("Ready to receive messages");
+
+                    if (startupCommand != null) SendStartupMessage();
+
+                }
 
                 void SendStartupMessage()
                 {
                     this.container.Resolve<IBusContext>().SendLocal(new SendCommandOperation(startupCommand));
                 }
+            }
 
+            public static void AddHandlers(ContainerBuilder builder, IEnumerable<Assembly> handlerAssemblies)
+            {
+                foreach (var handlerAssembly in handlerAssemblies)
+                {
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<>))
+                           .OnActivated(
+                               e =>
+                                   {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                                   })
+                           .InstancePerLifetimeScope();
+
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<,>))
+                           .OnActivated(
+                               e =>
+                                   {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                                   })
+                           .InstancePerLifetimeScope();
+                }
             }
 
             public void Stop()

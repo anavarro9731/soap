@@ -8,12 +8,13 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class CommandController : BaseController
     {
         private readonly CachedSchema cachedSchema;
 
-        public CommandController(IApplicationConfig applicationConfig, MessagePipeline messagePipeline, IList<MessageHandler> handlers)
+        public CommandController(IApplicationConfig applicationConfig, MessagePipeline messagePipeline, IList<IMessageHandler> handlers)
             : base(applicationConfig, messagePipeline)
         {
             this.cachedSchema = BuildCommandSchema(handlers);
@@ -31,7 +32,7 @@
             return await HandleMessage<IApiCommand>(message).ConfigureAwait(false);
         }
 
-        private CachedSchema BuildCommandSchema(IList<MessageHandler> handlers)
+        private CachedSchema BuildCommandSchema(IList<IMessageHandler> handlers)
         {
             return CachedSchema.Create<IApiCommand>(this.ApplicationConfig, handlers);
         }

@@ -4,10 +4,10 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Messages.Queries;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class GetMessageFailedAllRetriesLogItemHandler : MessageHandler<GetMessageFailedAllRetriesLogItem, MessageFailedAllRetriesLogItem>
+    public class GetMessageFailedAllRetriesLogItemHandler : QueryHandler<GetMessageFailedAllRetriesLogItem, MessageFailedAllRetriesLogItem>
     {
         protected override async Task<MessageFailedAllRetriesLogItem> Handle(GetMessageFailedAllRetriesLogItem message, ApiMessageMeta meta)
         {

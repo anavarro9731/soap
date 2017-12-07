@@ -13,7 +13,7 @@
     using Soap.Integrations.Mailgun;
 
     public class PasswordResetProcess : StatefulProcess<PasswordResetProcess>,
-                                        IBeginProcess<RequestPasswordReset, string>,
+                                        IBeginProcess<RequestPasswordReset>,
                                         IContinueProcess<ResetPasswordFromEmail, ClientSecurityContext>
 
     {
@@ -34,21 +34,19 @@
             PasswordReset = 1
         }
 
-        public async Task<string> BeginProcess(RequestPasswordReset command, ApiMessageMeta meta)
+        public async Task BeginProcess(RequestPasswordReset command, ApiMessageMeta meta)
         {
             {
-                var tempToken = await CreateTempCredentials();
+                await SetUserState();
 
                 SendEmailNotification(command.Email);
 
-                await AddState(States.EmailSent);
-
-                return tempToken;
+                await AddState(States.EmailSent);                
             }
 
-            async Task<string> CreateTempCredentials()
+            async Task SetUserState()
             {
-                return await this.userOperations.RequestPasswordReset(command);
+                await this.userOperations.RequestPasswordReset(command, this.ProcessId);
             }
 
             void SendEmailNotification(string to)

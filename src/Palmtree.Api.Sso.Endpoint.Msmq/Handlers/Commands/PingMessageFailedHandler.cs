@@ -4,10 +4,10 @@
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.MsmqEndpointBase;
 
-    internal class PingMessageFailedHandler : MessageHandler<MessageFailedAllRetries<PingCommand>>
+    internal class PingMessageFailedHandler : CommandHandler<MessageFailedAllRetries<PingCommand>>
     {
         private readonly MessageFailedAllRetriesLogItemOperations operations;
 

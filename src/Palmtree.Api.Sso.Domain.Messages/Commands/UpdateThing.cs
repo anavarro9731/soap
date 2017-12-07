@@ -14,5 +14,6 @@
         public string NameOfThing { get; set; }
 
         public Guid ThingId { get; set; }
+        
     }
 }

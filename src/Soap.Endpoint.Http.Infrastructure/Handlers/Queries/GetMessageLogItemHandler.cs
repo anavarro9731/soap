@@ -8,8 +8,9 @@
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.Pf.ClientServerMessaging.Queries;
+    using Soap.Pf.EndpointInfrastructure;
 
-    public class GetMessageLogItemHandler : MessageHandler<GetMessageLogItemQuery, GetMessageLogItemQuery.MessageLogItemViewModel>
+    public class GetMessageLogItemHandler : QueryHandler<GetMessageLogItemQuery, GetMessageLogItemQuery.ResponseModel>
     {
         private readonly IApplicationConfig applicationConfig;
 
@@ -18,7 +19,7 @@
             this.applicationConfig = applicationConfig;
         }
 
-        protected override async Task<GetMessageLogItemQuery.MessageLogItemViewModel> Handle(GetMessageLogItemQuery query, ApiMessageMeta meta)
+        protected override async Task<GetMessageLogItemQuery.ResponseModel> Handle(GetMessageLogItemQuery query, ApiMessageMeta meta)
         {
             {
                 Validate();
@@ -36,11 +37,11 @@
             }
         }
 
-        private static GetMessageLogItemQuery.MessageLogItemViewModel ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)
+        private static GetMessageLogItemQuery.ResponseModel ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)
         {
             if (message == null) return null;
 
-            return new GetMessageLogItemQuery.MessageLogItemViewModel
+            return new GetMessageLogItemQuery.ResponseModel
             {
                 ClrTypeOfMessage = message.ClrTypeOfMessage,
                 Message = message.Message,
@@ -50,24 +51,24 @@
             };
         }
 
-        private static GetMessageLogItemQuery.MessageLogItemViewModel.SuccessMessageResult ToViewModel(MessageLogItem.SuccessMessageResult success)
+        private static GetMessageLogItemQuery.ResponseModel.SuccessMessageResult ToViewModel(MessageLogItem.SuccessMessageResult success)
         {
             if (success == null) return null;
 
-            return new GetMessageLogItemQuery.MessageLogItemViewModel.SuccessMessageResult
+            return new GetMessageLogItemQuery.ResponseModel.SuccessMessageResult
             {
                 ReturnValue = success.ReturnValue,
                 SucceededAt = success.SucceededAt
             };
         }
 
-        private static GetMessageLogItemQuery.MessageLogItemViewModel.FailedMessageResult ToViewModel(
+        private static GetMessageLogItemQuery.ResponseModel.FailedMessageResult ToViewModel(
             MessageLogItem.FailedMessageResult failure,
             IApplicationConfig applicationConfig)
         {
             if (failure == null) return null;
 
-            return new GetMessageLogItemQuery.MessageLogItemViewModel.FailedMessageResult
+            return new GetMessageLogItemQuery.ResponseModel.FailedMessageResult
             {
                 Error = failure.Errors.ToEnvironmentSpecificError(applicationConfig),
                 FailedAt = failure.FailedAt

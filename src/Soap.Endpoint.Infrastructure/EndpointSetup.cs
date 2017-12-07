@@ -24,7 +24,6 @@
             ContainerBuilder builder,
             Assembly domainLogicAssembly,
             Assembly domainModelsAssembly,
-            IEnumerable<Assembly> handlerAssemblies,
             Func<IMessageAggregator> messageAggregatorFactory,
             Func<IDocumentRepository> documentRepositoryFactory,
             List<Action<ContainerBuilder>> containerActions) where TUserAuthenticator : IAuthenticateUsers
@@ -36,7 +35,6 @@
                 AddMessageAuthenticator();
                 AddOperations();
                 AddProcesses();
-                AddHandlers();
                 AddMessagePipeline();
                 ApplyCustomActions();
 
@@ -107,39 +105,7 @@
                        .InstancePerDependency();
             }
 
-            void AddHandlers()
-            {
-                foreach (var handlerAssembly in handlerAssemblies)
-                {
-                    builder.RegisterAssemblyTypes(handlerAssembly)
-                           .As<MessageHandler>()
-                           .AsClosedTypesOf(typeof(MessageHandler<>))
-                           .OnActivated(
-                               e =>
-                                   {
-                                   (e.Instance as MessageHandler).SetDependencies(
-                                       e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
-                                       e.Context.Resolve<ILogger>(),
-                                       e.Context.Resolve<IMessageAggregator>());
-                                   })
-                           .InstancePerLifetimeScope();
-
-                    builder.RegisterAssemblyTypes(handlerAssembly)
-                           .As<MessageHandler>()
-                           .AsClosedTypesOf(typeof(MessageHandler<,>))
-                           .OnActivated(
-                               e =>
-                                   {
-                                   (e.Instance as MessageHandler).SetDependencies(
-                                       e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
-                                       e.Context.Resolve<ILogger>(),
-                                       e.Context.Resolve<IMessageAggregator>());
-                                   })
-                           .InstancePerLifetimeScope();
-                }
-            }
+           
 
             void AddOperations()
             {
@@ -197,7 +163,7 @@
                 {
                     var invalidHandlerTypeNamesListed = string.Join(
                         " | ",
-                        container.Resolve<IList<MessageHandler>>()
+                        container.Resolve<IList<IMessageHandler>>()
                                  .Select(GetMessageHandlerType)
                                  .Where(IsDerivedFromGenericMessageHandlerType)
                                  .GroupBy(GetMessageType)
@@ -220,7 +186,7 @@
                         $"One or more handlers are registered to handler the same message type: {invalidHandlerTypeNamesListed}");
                 }
 
-                Type GetMessageHandlerType(MessageHandler handler)
+                Type GetMessageHandlerType(IMessageHandler handler)
                 {
                     return handler.GetType();
                 }

@@ -6,26 +6,17 @@
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Messages.Events;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.Utility.PureFunctions;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class PingHandler : MessageHandler<PingCommand, PongViewModel>
+    public class PingHandler : CommandHandler<PingCommand, PongViewModel>
     {
         public PongViewModel ProcessPing(PingCommand ping, ApiMessageMeta meta)
         {
             new PingCommandValidator().ValidateAndThrow(ping);
 
-            switch (ping.PingedBy)
-            {
-                case "SpecialInvalidParamSeeCodeInHandler": //fail first time only
-                    Guard.Against(meta.MessageLogItem.FailedAttempts.Count == 0, "Paramater Invalid");
-                    break;
-
-                case "OtherSpecialInvalidParamSeeCodeInHandler": //always fail
-                    Guard.Against(true, "Paramater Invalid");
-                    break;
-            }
+            AssertTestScenarios(ping, meta);
 
             var pong = new PongEvent
             {
@@ -49,6 +40,20 @@
                 PingedBy = ping.PingedBy
             };
             return pong3;
+        }
+
+        private static void AssertTestScenarios(PingCommand ping, ApiMessageMeta meta)
+        {
+            switch (ping.PingedBy)
+            {
+                case "SpecialInvalidParamSeeCodeInHandler": //fail first time only
+                    Guard.Against(meta.MessageLogItem.FailedAttempts.Count == 0, "Paramater Invalid");
+                    break;
+
+                case "OtherSpecialInvalidParamSeeCodeInHandler": //always fail
+                    Guard.Against(true, "Paramater Invalid");
+                    break;
+            }
         }
 
         protected override Task<PongViewModel> Handle(PingCommand message, ApiMessageMeta meta)

@@ -14,7 +14,7 @@
     {
         public static class Assert
         {
-            public static Task<GetMessageLogItemQuery.MessageLogItemViewModel> CommandCompletion(
+            public static Task<GetMessageLogItemQuery.ResponseModel> CommandCompletion(
                 Guid messageId,
                 int timeoutMsec = 15000,
                 int pollIntervalMsec = 1000)
@@ -25,9 +25,9 @@
                     return Task.FromResult(messageResults);
                 }
 
-                Task<GetMessageLogItemQuery.MessageLogItemViewModel> AwaitMessageResults()
+                Task<GetMessageLogItemQuery.ResponseModel> AwaitMessageResults()
                 {
-                    GetMessageLogItemQuery.MessageLogItemViewModel queryResponse = null;
+                    GetMessageLogItemQuery.ResponseModel queryResponse = null;
 
                     try
                     {
@@ -46,7 +46,7 @@
                                             MessageIdOfLogItem = messageId
                                         };
 
-                                        queryResponse = http.SendQuery<GetMessageLogItemQuery.MessageLogItemViewModel>(queryRequest).Result;
+                                        queryResponse = http.SendQuery<GetMessageLogItemQuery.ResponseModel>(queryRequest).Result;
 
                                         if (IsComplete(queryResponse)) break;
 
@@ -84,7 +84,7 @@
                     return Task.FromResult(queryResponse);
                 }
 
-                bool IsComplete(GetMessageLogItemQuery.MessageLogItemViewModel messageLogItem)
+                bool IsComplete(GetMessageLogItemQuery.ResponseModel messageLogItem)
                 {
                     return messageLogItem?.SuccessfulAttempt != null || messageLogItem?.FailedAttempts.Count >= messageLogItem?.MaxFailedMessages;
                 }
@@ -96,16 +96,16 @@
 
                 messageResults.Should()
                               .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.MessageLogItemViewModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 messageResults.SuccessfulAttempt.Should()
                               .BeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.MessageLogItemViewModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
+                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
 
                 messageResults.FailedAttempts?.Count.Should()
                               .Be(
                                   messageResults.MaxFailedMessages,
-                                  $"the {nameof(GetMessageLogItemQuery.MessageLogItemViewModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
+                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
 
                 return Task.CompletedTask;
             }
@@ -116,7 +116,7 @@
 
                 messageResults.Should()
                               .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.MessageLogItemViewModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 if (messageResults.FailedAttempts?.Count >= messageResults.MaxFailedMessages)
                 {
@@ -126,7 +126,7 @@
 
                 messageResults.SuccessfulAttempt.Should()
                               .NotBeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.MessageLogItemViewModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
+                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
 
                 return Task.CompletedTask;
             }

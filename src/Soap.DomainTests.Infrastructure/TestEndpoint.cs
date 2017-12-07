@@ -35,10 +35,11 @@
         public static TestEndpointConfiguration<TUserAuthenticator> Configure<TUserAuthenticator>(
             Assembly domainLogicAssembly,
             Assembly domainModelsAssembly,
-            IEnumerable<Assembly> handlerAssemblies,
+            Assembly msmqEndpointAssembly,
+            Assembly httpEndpointAssembly,
             IApplicationConfig applicationConfig) where TUserAuthenticator : IAuthenticateUsers
         {
-            return new TestEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainModelsAssembly, handlerAssemblies, applicationConfig);
+            return new TestEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainModelsAssembly, msmqEndpointAssembly, httpEndpointAssembly, applicationConfig);
         }
 
         public void AddToDatabase<T>(T aggregate) where T : IAggregate

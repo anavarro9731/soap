@@ -31,15 +31,7 @@
             var changeThing = new UpdateNameOfThing(this.thingId, "Some Thing");
 
             //act
-            this.result = (Thing)this.endPoint.HandleCommand(changeThing, TestData.User1);
-        }
-
-        [Fact]
-        public void ItShouldReturnTheUpdatedThing()
-        {
-            Assert.NotNull(this.result);
-            Assert.Equal(this.result.id, this.thingId);
-            Assert.Equal("Some Thing", this.result.NameOfThing);
+            this.endPoint.HandleCommand(changeThing, TestData.User1);
         }
 
         [Fact]

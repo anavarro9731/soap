@@ -164,7 +164,7 @@
                 user.History.InvalidLoginCount = 0;
                 user.History.LastLoggedIn = DateTime.UtcNow;
                 user.PasswordDetails.PasswordResetTokenExpiry = null;
-                user.PasswordDetails.PasswordResetTokenHash = null;
+                user.PasswordDetails.PasswordResetStatefulProcessId = null;
                 if (!user.ActiveSecurityTokens.Contains(securityToken)) user.ActiveSecurityTokens.Add(securityToken);
             }
         }
@@ -193,20 +193,17 @@
             await DataStore.UpdateById(userId, u => u.Status.RemoveState(User.UserStates.AccountDisabled));
         }
 
-        public async Task<string> RequestPasswordReset(RequestPasswordReset requestPasswordReset)
+        public async Task RequestPasswordReset(RequestPasswordReset requestPasswordReset, Guid passwordResetStatefulProcessId)
         {
-            string response;
-
             {
                 var user = (await DataStoreRead.ReadActive<User>(u => u.Email == requestPasswordReset.Email)).SingleOrDefault();
 
                 Validate(user);
 
-                DetermineChange(user, out Action<User> change);
+                DetermineChange(out Action<User> change);
 
                 await DataStore.UpdateById(user.id, change, true);
 
-                return response;
             }
 
             void Validate(User user)
@@ -218,26 +215,14 @@
                 Guard.Against(() => user == null, "No account is associated with this email address");
             }
 
-            void DetermineChange(User user, out Action<User> change)
+            void DetermineChange(out Action<User> change)
             {
-                var passwordResetToken = GeneratePasswordResetToken();
-                var passwordDetailsPasswordResetTokenHash = SecureHmacHash
-                    .CreateFrom(passwordResetToken, user.PasswordDetails.HashIterations, user.PasswordDetails.HexSalt)
-                    .HexHash;
-
-                response = passwordResetToken;
 
                 change = u =>
                     {
-                    u.PasswordDetails.PasswordResetTokenHash = passwordDetailsPasswordResetTokenHash;
+                    u.PasswordDetails.PasswordResetStatefulProcessId = passwordResetStatefulProcessId;
                     u.PasswordDetails.PasswordResetTokenExpiry = GeneratePasswordResetTokenExpiry();
                     };
-            }
-
-            string GeneratePasswordResetToken()
-            {
-                var guid = Guid.NewGuid().ToString();
-                return guid.Substring(0, 6);
             }
 
             DateTime GeneratePasswordResetTokenExpiry()
@@ -264,7 +249,7 @@
 
             async Task<User> Validate()
             {
-                new SetNewPasswordValidator().ValidateAndThrow(command);
+                new ResetPasswordFromEmailValidator().ValidateAndThrow(command);
 
                 var requestingUser = (await DataStoreRead.Read<User>(user => user.UserName == command.Username)).SingleOrDefault();
 
@@ -274,9 +259,9 @@
 
                 Guard.Against(() => !requestingUser.Active, "Account not found", "Account is deleted");
 
-                Guard.Against(() => requestingUser.PasswordResetTokenHasExpired(), "Temporary Password has expired");
+                Guard.Against(() => requestingUser.PasswordResetRequestHasExpired(), "Temporary Password has expired");
 
-                var tempPasswordIsValid = requestingUser.TempCredentialsMatch(command.Username, command.PasswordResetToken);
+                var tempPasswordIsValid = requestingUser.TempCredentialsMatch(command.Username, command.StatefulProcessId.Value);
 
                 Guard.Against(() => !tempPasswordIsValid, "Request failed", "Credentials provided for password reset invalid");
 
@@ -300,7 +285,7 @@
                     user.PasswordDetails.PasswordHash = newHash.HexHash;
                     user.PasswordDetails.HexSalt = newHash.HexSalt;
                     user.PasswordDetails.HashIterations = newHash.IterationsUsed;
-                    user.PasswordDetails.PasswordResetTokenHash = null;
+                    user.PasswordDetails.PasswordResetStatefulProcessId = null;
                     user.PasswordDetails.PasswordResetTokenExpiry = null;
                     user.History.PasswordLastChanged = DateTime.UtcNow;
                     user.ActiveSecurityTokens = new List<SecurityToken>

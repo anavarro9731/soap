@@ -18,9 +18,10 @@
 
             //act
             var resetPassword = new RequestPasswordReset(TestData.User1.Email);
-            var resetToken = (string)this.endPoint.HandleCommand(resetPassword);
+            this.endPoint.HandleCommand(resetPassword);
 
-            var resetPasswordFromEmail = new ResetPasswordFromEmail(TestData.User1.UserName, resetToken, "new_password");
+
+            var resetPasswordFromEmail = new ResetPasswordFromEmail(TestData.User1.UserName, "new_password");
             resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.id;
             this.endPoint.HandleCommand(resetPasswordFromEmail, TestData.User1);
         }

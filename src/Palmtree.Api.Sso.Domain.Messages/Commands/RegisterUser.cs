@@ -2,9 +2,10 @@ namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
     using System;
     using FluentValidation;
+    using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Interfaces.Messages;
 
-    public class RegisterUser : ApiCommand
+    public class RegisterUser : ApiCommand<RegistrationResult>
     {
         public RegisterUser(string email, string name, string password)
         {

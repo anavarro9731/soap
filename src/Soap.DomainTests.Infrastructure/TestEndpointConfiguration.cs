@@ -13,6 +13,8 @@
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.Pf.EndpointInfrastructure;
+    using Soap.Pf.HttpEndpointBase;
+    using Soap.Pf.MsmqEndpointBase;
 
     public class TestEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {
@@ -26,17 +28,21 @@
 
         private readonly Assembly domainModelsAssembly;
 
-        private readonly IEnumerable<Assembly> endpointAssemblies;
+        private readonly Assembly httpEndpointAssembly;
+
+        private readonly Assembly msmqEndpointAssembly;
 
         public TestEndpointConfiguration(
             Assembly domainLogicAssembly,
             Assembly domainModelsAssembly,
-            IEnumerable<Assembly> endpointAssemblies,
+            Assembly msmqEndpointAssembly,
+            Assembly httpEndpointAssembly,
             IApplicationConfig applicationConfig = null)
         {
             this.domainLogicAssembly = domainLogicAssembly;
             this.domainModelsAssembly = domainModelsAssembly;
-            this.endpointAssemblies = endpointAssemblies;
+            this.msmqEndpointAssembly = msmqEndpointAssembly;
+            this.httpEndpointAssembly = httpEndpointAssembly;
             this.applicationConfig = applicationConfig;
         }
 
@@ -70,7 +76,6 @@
                         builder,
                         this.domainLogicAssembly,
                         this.domainModelsAssembly,
-                        this.endpointAssemblies,
                         () => messageAggregator,
                         () => new InMemoryDocumentRepository(),
                         this.containerActions);
@@ -80,6 +85,19 @@
                     ApplyCustomApplicationConfigActions();
 
                     builder.RegisterInstance(new InMemoryMessageBus()).As<IBusContext>();
+
+                    MsmqEndpointConfiguration<TUserAuthenticator>.Startup.AddHandlers(
+                        builder,
+                        new[]
+                        {
+                            this.msmqEndpointAssembly
+                        });
+                    HttpEndpointConfiguration<TUserAuthenticator>.Startup.AddHandlers(
+                        builder,
+                        new[]
+                        {
+                            this.httpEndpointAssembly
+                        });
 
                     var container = builder.Build();
 

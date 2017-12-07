@@ -1,14 +1,12 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Mailer.NET.Mailer.Response;
     using Palmtree.Api.Sso.Domain.Logic;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.Integrations.Mailgun;
+    using Soap.Pf.MsmqEndpointBase;
 
-    public class SendEmailHandler : MessageHandler<SendEmail, List<EmailResponse>>
+    public class SendEmailHandler : CommandHandler<SendEmail>
     {
         private readonly ApplicationConfiguration applicationConfiguration;
 
@@ -17,15 +15,13 @@
             this.applicationConfiguration = applicationConfiguration;
         }
 
-        protected override Task<List<EmailResponse>> Handle(SendEmail message, ApiMessageMeta meta)
+        protected override Task Handle(SendEmail message, ApiMessageMeta meta)
         {
-            var response = new List<EmailResponse>();
-
             var emailSender = new EmailSender(this.applicationConfiguration.MailgunEmailSenderSettings, MessageAggregator);
 
-            message.Message.To.ForEach(contact => response.Add(emailSender.SendEmail(message.Message.Message, message.Message.Subject, contact.Email)));
+            message.Message.To.ForEach(contact => emailSender.SendEmail(message.Message.Message, message.Message.Subject, contact.Email));
 
-            return Task.FromResult(response);
+            return Task.CompletedTask;
         }
     }
 }

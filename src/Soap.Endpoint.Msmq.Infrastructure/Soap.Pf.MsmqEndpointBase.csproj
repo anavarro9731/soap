@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿  <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
   </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="System.Transactions" />
+    </ItemGroup>
 </Project>

@@ -12,22 +12,22 @@
 
         public DateTime? PasswordResetTokenExpiry { get; set; }
 
-        public string PasswordResetTokenHash { get; set; }
+        public Guid? PasswordResetStatefulProcessId { get; set; }
 
         public static PasswordDetails Create(
             int hashIterations,
             string hexSalt,
             string passwordHash,
-            string passwordResetTokenHash = null,
-            DateTime? passwordResetTokenExpiry = null)
+            Guid? passwordResetStatefulProcessId = null,
+            DateTime? passwordResetRequestExpiry = null)
         {
             return new PasswordDetails
             {
                 HashIterations = hashIterations,
                 HexSalt = hexSalt,
                 PasswordHash = passwordHash,
-                PasswordResetTokenHash = passwordResetTokenHash,
-                PasswordResetTokenExpiry = passwordResetTokenExpiry
+                PasswordResetStatefulProcessId = passwordResetStatefulProcessId,
+                PasswordResetTokenExpiry = passwordResetRequestExpiry
             };
         }
     }

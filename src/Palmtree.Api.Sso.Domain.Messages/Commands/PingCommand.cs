@@ -2,10 +2,13 @@
 {
     using System;
     using FluentValidation;
+    using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Interfaces.Messages;
 
-    public class PingCommand : ApiCommand
+    public class PingCommand : ApiCommand<PongViewModel>
     {
+        public PingCommand() { }
+
         public PingCommand(string pingedBy)
         {
             PingedBy = pingedBy;

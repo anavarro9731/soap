@@ -5,11 +5,11 @@
     using FluentValidation;
     using Soap.If.Interfaces.Messages;
 
-    public sealed class GetMessageLogItemQuery : ApiQuery
+    public sealed class GetMessageLogItemQuery : ApiQuery<GetMessageLogItemQuery.ResponseModel>
     {
         public Guid MessageIdOfLogItem { get; set; }
 
-        public sealed class MessageLogItemViewModel
+        public sealed class ResponseModel
         {
             public string ClrTypeOfMessage { get; set; }
 

@@ -1,14 +1,14 @@
-﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
+﻿namespace Palmtree.Api.Sso.Endpoint.Http.Handlers
 {
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Processes;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class AddAThingHandler : MessageHandler<CreateThing, Thing>
+    public class AddAThingHandler : CommandHandler<CreateThing, Thing>
     {
         private readonly IProcess<UserAddsThingProcess> process;
 

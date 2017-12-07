@@ -1,9 +1,10 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Messages.Commands
 {
     using FluentValidation;
+    using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Interfaces.Messages;
 
-    public class AuthenticateUser : ApiCommand
+    public class AuthenticateUser : ApiCommand<ClientSecurityContext>
     {
         public AuthenticateUser(UserCredentials credentials)
         {

@@ -233,6 +233,11 @@
             return obj;
         }
 
+        public static To Map<T, To>(this T obj, Func<T, To> map)
+        {
+            return map(obj);
+        }
+
         public static T To<T>(this JToken instance)
         {
             var obj = instance.ToString().FromJson<T>();

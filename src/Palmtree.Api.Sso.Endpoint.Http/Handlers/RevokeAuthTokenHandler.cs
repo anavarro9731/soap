@@ -1,12 +1,12 @@
-﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
+﻿namespace Palmtree.Api.Sso.Endpoint.Http.Handlers
 {
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class RevokeAuthTokenHandler : MessageHandler<RevokeAuthToken>
+    public class RevokeAuthTokenHandler : CommandHandler<RevokeAuthToken>
     {
         private readonly UserOperations userOperations;
 

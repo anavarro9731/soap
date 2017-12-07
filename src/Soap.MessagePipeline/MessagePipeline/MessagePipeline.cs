@@ -52,7 +52,7 @@
 
         private readonly IDataStore dataStore;
 
-        private readonly IList<MessageHandler> handlers;
+        private readonly IList<IMessageHandler> handlers;
 
         private readonly ILogger logger;
 
@@ -62,7 +62,7 @@
             IApplicationConfig appConfig,
             ILogger logger,
             IMessageAggregator messageAggregator,
-            IList<MessageHandler> handlers,
+            IList<IMessageHandler> handlers,
             IAuthenticateUsers authenticator,
             IDataStore dataStore,
             IBusContext busContext)
@@ -101,7 +101,7 @@
                 {
                     CreateMeta(messageLogItem, out meta);
 
-                    FindHandlers(out List<MessageHandler> matchingHandlers);
+                    FindHandlers(out List<IMessageHandler> matchingHandlers);
 
                     if (MessageIsFailedAllRetriesMessageWithoutAHandler(matchingHandlers))
                     {
@@ -109,7 +109,7 @@
                         return null;
                     }
 
-                    FindHandlerOrThrow(matchingHandlers, out MessageHandler handler);
+                    FindHandlerOrThrow(matchingHandlers, out IMessageHandler handler);
 
                     Guard.Against(
                         message.MessageId == Constants.ForceFailBeforeMessageCompletesId
@@ -181,7 +181,7 @@
                 };
             }
 
-            void FindHandlerOrThrow(List<MessageHandler> matchingHandlers, out MessageHandler handler)
+            void FindHandlerOrThrow(List<IMessageHandler> matchingHandlers, out IMessageHandler handler)
             {
                 Guard.Against(matchingHandlers.Count() > 1, $"Could not map message {message.MessageId} to handler, as more than one exists for this message type.");
 
@@ -190,23 +190,18 @@
                 handler = matchingHandlers.Single();
             }
 
-            void FindHandlers(out List<MessageHandler> matchingHandlers)
+            void FindHandlers(out List<IMessageHandler> matchingHandlers)
             {
-                //find handler without regard to return type, which is the second generic type param
-                //MessageHandler<INCOMINGMESSAGE,RETURNTYPE>
-                //MessageHandler<INCOMINGMESSAGE>
-                var baseTypeString = $"{nameof(MessageHandler)}<{message.GetType().ToGenericTypeString()}";
-
+                // Handler<T> T should equal message type
                 matchingHandlers = this.handlers.Where(
-                                               h =>
-                                                   {
-                                                   var handlerTypeString = h.GetType().BaseType.ToGenericTypeString();
-                                                   return handlerTypeString.StartsWith(baseTypeString);
-                                                   })
-                                           .ToList();
+                                               h => 
+                                               string.Equals(
+                                               h.GetType().BaseType.GenericTypeArguments.First().FullName,
+                                               message.GetType().FullName)
+                                            ).ToList();
             }
 
-            bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<MessageHandler> matchingHandlers)
+            bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<IMessageHandler> matchingHandlers)
             {
                 return (message is IMessageFailedAllRetries && matchingHandlers.Count == 0);
 

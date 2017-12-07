@@ -7,6 +7,7 @@
     using System.Reflection;
     using Autofac;
     using Autofac.Extensions.DependencyInjection;
+    using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.Pf.EndpointClients;
     using Soap.Pf.EndpointInfrastructure;
@@ -191,10 +193,11 @@
                         builder,
                         domainLogicAssembly,
                         domainModelsAssembly,
-                        handlerAssemblies,
                         MessageAggregator.Create,
                         documentRepositoryFactory,
                         containerActions);
+                    
+                    AddHandlers(builder, handlerAssemblies);
 
                     builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>();
 
@@ -208,6 +211,7 @@
 
                     return AutofacContainerAsIServiceProvider(container);
                 }
+
 
                 IServiceProvider AutofacContainerAsIServiceProvider(IComponentContext container)
                 {
@@ -239,6 +243,55 @@
                                                // force WebApi to serialise in camelCase
                                                options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                                            });
+                }
+            }
+
+
+            public static void AddHandlers(ContainerBuilder builder, IEnumerable<Assembly> handlerAssemblies)
+            {
+                foreach (var handlerAssembly in handlerAssemblies)
+                {
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(QueryHandler<,>))
+                           .OnActivated(
+                               e =>
+                               {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                               })
+                           .InstancePerLifetimeScope();
+
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<>))
+                           .OnActivated(
+                               e =>
+                               {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                               })
+                           .InstancePerLifetimeScope();
+
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<,>))
+                           .OnActivated(
+                               e =>
+                               {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                           e.Context.Resolve<IDataStore>(),
+                                           e.Context.Resolve<IUnitOfWork>(),
+                                           e.Context.Resolve<ILogger>(),
+                                           e.Context.Resolve<IMessageAggregator>());
+                               })
+                           .InstancePerLifetimeScope();
                 }
             }
         }

@@ -1,14 +1,14 @@
-﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
+﻿namespace Palmtree.Api.Sso.Endpoint.Http.Handlers
 {
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Processes.Stateful;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.Pf.HttpEndpointBase;
 
-    public class ResetPasswordFromEmailHandler : MessageHandler<ResetPasswordFromEmail, ClientSecurityContext>
+    public class ResetPasswordFromEmailHandler : CommandHandler<ResetPasswordFromEmail, ClientSecurityContext>
     {
         private readonly IStatefulProcess<PasswordResetProcess> passwordResetProcess;
 

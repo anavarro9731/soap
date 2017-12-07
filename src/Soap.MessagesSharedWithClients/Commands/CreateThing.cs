@@ -2,7 +2,11 @@
 {
     using Soap.If.Interfaces.Messages;
 
-    public class CreateThing : ApiCommand
+    public class CreateThing : ApiCommand<CreateThing.Thing>
     {
+        public class Thing
+        {
+
+        }
     }
 }

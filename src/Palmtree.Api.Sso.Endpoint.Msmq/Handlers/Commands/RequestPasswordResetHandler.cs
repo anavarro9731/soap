@@ -3,11 +3,11 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Processes.Stateful;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
+    using Soap.Pf.MsmqEndpointBase;
 
-    public class RequestPasswordResetHandler : MessageHandler<RequestPasswordReset, string>
+    public class RequestPasswordResetHandler : CommandHandler<RequestPasswordReset>
     {
         private readonly IStatefulProcess<PasswordResetProcess> passwordResetProcess;
 
@@ -16,9 +16,9 @@
             this.passwordResetProcess = passwordResetProcess;
         }
 
-        protected override async Task<string> Handle(RequestPasswordReset message, ApiMessageMeta meta)
+        protected override async Task Handle(RequestPasswordReset message, ApiMessageMeta meta)
         {
-            return await this.passwordResetProcess.BeginProcess<RequestPasswordReset, string>(message, meta);
+            await this.passwordResetProcess.BeginProcess(message, meta);
         }
     }
 }

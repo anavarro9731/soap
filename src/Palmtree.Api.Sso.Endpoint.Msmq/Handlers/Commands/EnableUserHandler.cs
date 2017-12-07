@@ -3,10 +3,10 @@
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.MsmqEndpointBase;
 
-    public class EnableUserHandler : MessageHandler<EnableUser>
+    public class EnableUserHandler : CommandHandler<EnableUser>
     {
         private readonly UserOperations userOperations;
 

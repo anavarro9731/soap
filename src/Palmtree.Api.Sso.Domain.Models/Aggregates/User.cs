@@ -77,7 +77,7 @@
 
         public bool HasRequestedAPasswordReset()
         {
-            return PasswordDetails.PasswordResetTokenHash != null;
+            return PasswordDetails.PasswordResetStatefulProcessId != null;
         }
 
         public bool HasSecurityToken(SecurityToken token)
@@ -91,15 +91,14 @@
                    == SecureHmacHash.CreateFrom(credentials.Password, PasswordDetails.HashIterations, PasswordDetails.HexSalt).HexHash;
         }
 
-        public bool PasswordResetTokenHasExpired()
+        public bool PasswordResetRequestHasExpired()
         {
             return PasswordDetails.PasswordResetTokenExpiry != null && PasswordDetails.PasswordResetTokenExpiry.Value < DateTime.UtcNow;
         }
 
-        public bool TempCredentialsMatch(string username, string passwordResetToken)
+        public bool TempCredentialsMatch(string username, Guid passwordResetStatefulProcessId)
         {
-            return UserName == username && PasswordDetails.PasswordResetTokenHash
-                   == SecureHmacHash.CreateFrom(passwordResetToken, PasswordDetails.HashIterations, PasswordDetails.HexSalt).HexHash;
+            return UserName == username && PasswordDetails.PasswordResetStatefulProcessId == passwordResetStatefulProcessId;
         }
 
         public bool UserAccountIsLocked()

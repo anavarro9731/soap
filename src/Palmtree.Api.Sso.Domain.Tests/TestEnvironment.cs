@@ -6,7 +6,9 @@
     using Palmtree.Api.Sso.Domain.Logic;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
+    using Palmtree.Api.Sso.Endpoint.Http;
     using Palmtree.Api.Sso.Endpoint.Http.Handlers.Queries;
+    using Palmtree.Api.Sso.Endpoint.Msmq;
     using Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
@@ -20,11 +22,7 @@
         {
             var domainLogicAssembly = typeof(ThingOperations).Assembly;
             var domainModelsAssembly = typeof(Thing).Assembly;
-            var handlerAssemblies = new List<Assembly>
-            {
-                typeof(PingHandler).Assembly,
-                typeof(GetMessageFailedAllRetriesLogItemHandler).Assembly
-            };
+
             IApplicationConfig applicationConfig = ApplicationConfiguration.Create(
                 "Testing",
                 Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
@@ -34,7 +32,7 @@
                 sqlServerDbSettings: SqlServerDbSettings.Create("serverInstance", "database", "userId", "password", "tableName"),
                 mailgunEmailSenderSettings: MailgunEmailSenderSettings.Create("im@mycomputer.com", "apiKey", "domain"));
 
-            var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(domainLogicAssembly, domainModelsAssembly, handlerAssemblies, applicationConfig).Start();
+            var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(domainLogicAssembly, domainModelsAssembly, PalmTreeApiSsoEndpointMsmq.GetAssembly, PalmTreeApiSsoEndpointHttp.GetAssembly, applicationConfig).Start();
             return testEndpoint;
         }
 

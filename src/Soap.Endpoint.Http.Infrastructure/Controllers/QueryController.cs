@@ -8,12 +8,13 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Pf.EndpointInfrastructure;
 
     public class QueryController : BaseController
     {
         private readonly CachedSchema cachedSchema;
 
-        public QueryController(IApplicationConfig applicationConfig, MessagePipeline messagePipeline, IList<MessageHandler> handlers)
+        public QueryController(IApplicationConfig applicationConfig, MessagePipeline messagePipeline, IList<IMessageHandler> handlers)
             : base(applicationConfig, messagePipeline)
         {
             this.cachedSchema = BuildQuerySchema(handlers);
@@ -31,7 +32,7 @@
             return await HandleMessage<IApiQuery>(message).ConfigureAwait(false);
         }
 
-        private CachedSchema BuildQuerySchema(IList<MessageHandler> handlers)
+        private CachedSchema BuildQuerySchema(IList<IMessageHandler> handlers)
         {
             return CachedSchema.Create<IApiQuery>(this.ApplicationConfig, handlers);
         }

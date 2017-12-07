@@ -5,5 +5,5 @@
     public interface IApiCommand : IApiMessage
     {
         Guid? StatefulProcessId { get; set; }
-    }
+    }    
 }
