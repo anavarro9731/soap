@@ -138,7 +138,7 @@
 
             public const int LongRunningTimeoutMsec = 120000;
 
-            public static string ApiHostEndpointAddress = ConfigurationManager.AppSettings["Command.ApiHostQueue"]
+            public static string ApiHostEndpointAddress = ConfigurationManager.AppSettings["CommandToForward.ApiHostQueue"]
                                                                               ?.Replace("@localhost", $"@{Environment.MachineName}");
         }
 

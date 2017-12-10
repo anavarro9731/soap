@@ -11,7 +11,7 @@
         [Fact]
         public void ItShouldNotFail()
         {
-            var apiClient = new RebusApiClient("serviceapi");
+            var apiClient = new MsmqApiClient("serviceapi");
 
             {
                 SendOneDbSeedCommand(out Guid message1Id);

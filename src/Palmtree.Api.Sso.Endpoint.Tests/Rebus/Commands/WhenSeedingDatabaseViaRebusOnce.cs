@@ -11,7 +11,7 @@
         [Fact]
         public async void ItShouldNotFail()
         {
-            var apiClient = new RebusApiClient("serviceapi");
+            var apiClient = new MsmqApiClient("serviceapi");
 
             var logItemMessageId = Guid.NewGuid();
 
