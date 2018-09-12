@@ -11,6 +11,7 @@
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.Messages;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
@@ -371,6 +372,7 @@
                             await SendFinalFailureMessage().ConfigureAwait(false);
                         }
 
+                        RemoveQueuedOperations();
                         await AddThisFailureToTheMessageLog().ConfigureAwait(false);
 
                         await this.dataStore.CommitChanges().ConfigureAwait(false);
@@ -383,8 +385,19 @@
                 }
             }
 
+            void RemoveQueuedOperations()
+            {
+                //BUG: circuitboard should really be changed to support queuops
+                //right now this only works on the real messageaggregator not IMessageaggregator
+                //so testing versions of message aggregator will end up committing queuedopertions on a failure
+                //essentially NOT rolling back the code
+                bool MessageIsQueuedStateChange(IMessage m) => m is IQueuedStateChange change && change.Committed == false;
+                (this.messageAggregator as MessageAggregator)?.RemoveWhere(MessageIsQueuedStateChange);
+            }
+
             async Task AddThisFailureToTheMessageLog()
             {
+           
                 await this.dataStore.UpdateById<MessageLogItem>(
                               messageLogItem.id,
                               obj => MessageLogItemOperations.AddFailedMessageResult(obj, pipelineExceptionMessages))
