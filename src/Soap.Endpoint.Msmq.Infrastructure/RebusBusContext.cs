@@ -48,7 +48,7 @@
                                              appConfig.NumberOfApiMessageRetries + 1,
                                              false);
 
-                                         o.SetBackoffTimes(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(10));
+                                         o.SetBackoffTimes(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5));
 
                                          o.SetNumberOfWorkers(1);
                                          o.SetMaxParallelism(1);
