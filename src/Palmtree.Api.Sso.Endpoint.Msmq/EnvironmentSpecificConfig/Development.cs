@@ -51,5 +51,5 @@
 
             SelfLog.Enable(Console.Error); //when seq connection fails write to console
         }
-    }S
+    }
 }

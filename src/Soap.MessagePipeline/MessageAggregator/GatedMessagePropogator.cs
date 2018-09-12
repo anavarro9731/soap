@@ -3,6 +3,7 @@ namespace Soap.If.MessagePipeline.MessageAggregator
     using System;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
+    using DataStore.Models.PureFunctions.Extensions;
 
     public class GatedMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {
@@ -28,18 +29,18 @@ namespace Soap.If.MessagePipeline.MessageAggregator
                 throw new Exception(
                     $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                     But the object you have registered as a return value for this function is of the wrong type. 
-                    You registered a return value of type {this.toReturn.GetType().Name} but the function requires a type of {
-                            typeof(TOut).Name
+                    You registered a return value of type {this.toReturn.GetType().ToGenericTypeString()} but the function requires a type of {
+                            typeof(TOut).ToGenericTypeString()
                         }.                    
                     This could be because you have registered responses in the wrong order. 
                     Or perhaps you forgot to call .AsEnumerable() where the return type is IEnumerable. 
-                    Or perhaps you forgot to wrap your response in a Task<{typeof(TOut).Name}> if its async.",
+                    Or perhaps you forgot to wrap your response in a Task<{typeof(TOut).ToGenericTypeString()}> if its async.",
                     e);
             }
 
             throw new Exception(
                 $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
-                But none has been set. Use the .When<{typeof(TMessage).Name}>({typeof(TOut).Name}) function to set one.");
+                But none has been set. Use the .When<{typeof(TMessage).ToGenericTypeString()}>({typeof(TOut).ToGenericTypeString()}) function to set one.");
         }
     }
 }
