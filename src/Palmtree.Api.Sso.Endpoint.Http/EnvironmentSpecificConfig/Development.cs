@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Reflection;
     using DataStore.Impl.SqlServer;
+    using Destructurama;
     using Microsoft.AspNetCore.Cors.Infrastructure;
     using Palmtree.Api.Sso.Domain.Logic;
     using Serilog;
@@ -46,6 +47,7 @@
             loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", nameof(Development))
                                                            .Enrich.WithProperty("Application", Variables.ApplicationName)
                                                            .Enrich.WithExceptionDetails()
+                                                           .Destructure.UsingAttributes()
                                                            .WriteTo.ColoredConsole();
 
             var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingConfig;

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+    using Destructurama;
     using Microsoft.AspNetCore.Cors.Infrastructure;
     using Newtonsoft.Json;
     using Palmtree.Api.Sso.Domain.Logic;
@@ -24,10 +25,10 @@
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {
-            loggerConfiguration = new LoggerConfiguration()
-                .Enrich.WithProperty("Environment", nameof(Uat))
-                .Enrich.WithProperty("Application", Variables.ApplicationName)
-                .Enrich.WithExceptionDetails();
+            loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", nameof(Uat))
+                                                           .Enrich.WithProperty("Application", Variables.ApplicationName)
+                                                           .Destructure.UsingAttributes()
+                                                           .Enrich.WithExceptionDetails();
 
             var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingConfig;
             if (seqConfig != null)
