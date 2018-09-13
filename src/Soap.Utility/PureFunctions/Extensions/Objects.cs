@@ -1,6 +1,7 @@
 ﻿namespace Soap.If.Utility.PureFunctions.Extensions
 {
     using System;
+    using System.Collections.Generic;
     using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -191,7 +192,7 @@
                 if (parent == currentChild || //this get a direct match 
                     parent == currentChild.BaseType || //this gets a specific generic impl BaseType<SomeType>
                     HasAnyInterfaces(parent, currentChild))
-                    //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
+                //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
                 {
                     return true;
                 }
@@ -244,19 +245,76 @@
             return obj;
         }
 
-        /// <summary>
-        ///     return a generic object type as a string in the format of Type<T1, T2>
-        /// </summary>
-        /// <param name="t"></param>
-        /// <returns></returns>
-        public static string ToGenericTypeString(this Type t)
+        public static string AsTypeNameString(this Type type, bool useFullyQualifiedAssemblyName = false)
         {
-            if (!t.IsGenericType) return t.Name;
+            Dictionary<Type, string> typesToShortNames = new Dictionary<Type, string>
+            {
+                { typeof(string), "string" },
+                { typeof(object), "object" },
+                { typeof(bool), "bool" },
+                { typeof(byte), "byte" },
+                { typeof(char), "char" },
+                { typeof(decimal), "decimal" },
+                { typeof(double), "double" },
+                { typeof(short), "short" },
+                { typeof(int), "int" },
+                { typeof(long), "long" },
+                { typeof(sbyte), "sbyte" },
+                { typeof(float), "float" },
+                { typeof(ushort), "ushort" },
+                { typeof(uint), "uint" },
+                { typeof(ulong), "ulong" },
+                { typeof(void), "void" }
+            };
 
-            var genericTypeName = t.GetGenericTypeDefinition().Name;
-            genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
-            var genericArgs = string.Join(",", t.GetGenericArguments().Select(ta => ToGenericTypeString(ta)).ToArray());
-            return genericTypeName + "<" + genericArgs + ">";
+            if (typesToShortNames.TryGetValue(type, out string nameAsString))
+            {
+                return nameAsString;
+            }
+
+            nameAsString = NameOrFullName(type);
+
+            if (type.IsGenericType)
+            {
+                int backtick = nameAsString.IndexOf('`');
+                if (backtick > 0)
+                {
+                    nameAsString = nameAsString.Remove(backtick);
+                }
+                nameAsString += "<";
+                Type[] typeParameters = type.GetGenericArguments();
+                for (int i = 0; i < typeParameters.Length; i++)
+                {
+                    string typeParamName = typeParameters[i].AsTypeNameString();
+                    nameAsString += (i == 0 ? typeParamName : ", " + typeParamName);
+                }
+                nameAsString += ">";
+            }
+
+            if (type.IsArray)
+            {
+                return type.GetElementType().AsTypeNameString(useFullyQualifiedAssemblyName) + "[]";
+            }
+
+            return nameAsString;
+
+            string NameOrFullName(Type t)
+            {
+                string name = t.Name;
+                if (t.IsNested)
+                {
+                    Type tempT = t;
+
+                    do
+                    {
+                        name = $"{tempT.DeclaringType.Name}+{name}";
+                        tempT = t.DeclaringType;
+                    }
+                    while (tempT != null && tempT.IsNested);
+                }
+
+                return useFullyQualifiedAssemblyName ? $"{t.Namespace}.{name}" : name;
+            }
         }
 
         public static string ToJson(this object instance, Formatting formatting = Formatting.None)
@@ -293,9 +351,9 @@
                         .Any(
                             childInterface =>
                                 {
-                                var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
+                                    var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
 
-                                return currentInterface == parent;
+                                    return currentInterface == parent;
                                 });
         }
 

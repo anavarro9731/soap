@@ -172,9 +172,9 @@
                                      g => g.Select(
                                          handlerType => new
                                          {
-                                             HandlerType = handlerType.ToGenericTypeString(),
-                                             BaseMessageHandlerType = handlerType.BaseType.ToGenericTypeString(),
-                                             MessageType = g.Key.ToGenericTypeString()
+                                             HandlerType = handlerType.AsTypeNameString(),
+                                             BaseMessageHandlerType = handlerType.BaseType.AsTypeNameString(),
+                                             MessageType = g.Key.AsTypeNameString()
                                          }))
                                  .OrderBy(x => x.MessageType)
                                  .ThenBy(x => x.HandlerType)

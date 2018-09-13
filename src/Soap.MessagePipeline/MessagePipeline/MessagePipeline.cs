@@ -95,6 +95,7 @@
 
                 if (message.CanChangeState())
                 {
+                    //todo: create as pipelineexception message
                     StateChangingMessageConstraints.Enforce(this.dataStore, message, this.appConfig, this.logger, out messageLogItem);
                 }
 
@@ -193,20 +194,36 @@
 
             void FindHandlers(out List<IMessageHandler> matchingHandlers)
             {
-                // Handler<T> T should equal message type
+                var messageType = message.GetType().FullName;
+                var messageReturnType = message.GetType().BaseType.GenericTypeArguments.FirstOrDefault()?.FullName;
+
+                // THandler<TMessage,TReturn> == TMessage<TReturn>
                 matchingHandlers = this.handlers.Where(
-                                               h => 
-                                               string.Equals(
-                                               h.GetType().BaseType.GenericTypeArguments.First().FullName,
-                                               message.GetType().FullName)
-                                            ).ToList();
+                                               h =>
+                                                   {
+                                                       Type handlerType = h.GetType();
+
+                                                       bool TypeHasOnlyTheMessageAndOrReturnTypeParams(Type t) => t.IsGenericType &&
+                                                                                                                  t.GenericTypeArguments.Length <= 2;
+
+                                                       while (!TypeHasOnlyTheMessageAndOrReturnTypeParams(handlerType))
+                                                       {
+                                                           handlerType = handlerType.BaseType;
+                                                       }
+
+                                                       var handlerMessageType = handlerType.GenericTypeArguments.First().FullName;
+                                                       var handlerReturnType = handlerType.GenericTypeArguments.Length == 2 ?
+                                                                                   handlerType.GenericTypeArguments[1].FullName : null;
+
+                                                       return messageType == handlerMessageType && messageReturnType == handlerReturnType;
+                                                   }).ToList();
             }
 
             bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<IMessageHandler> matchingHandlers)
             {
                 return (message is IMessageFailedAllRetries && matchingHandlers.Count == 0);
 
-            }                       
+            }
         }
 
         private object CreateProfilingData(ApiMessageMeta meta)
@@ -240,7 +257,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().ToGenericTypeString(),
+                                Name = stateOperation.GetType().AsTypeNameString(),
                                 DataStore = dataStoreOperation.MethodCalled + (dataStoreOperation.TypeName != null ? "<" : "")
                                             + dataStoreOperation.TypeName.SubstringAfterLast('.') + (dataStoreOperation.TypeName != null ? ">" : "")
                             });
@@ -251,7 +268,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().ToGenericTypeString()
+                                Name = stateOperation.GetType().AsTypeNameString()
                             });
                     }
 
@@ -397,7 +414,7 @@
 
             async Task AddThisFailureToTheMessageLog()
             {
-           
+
                 await this.dataStore.UpdateById<MessageLogItem>(
                               messageLogItem.id,
                               obj => MessageLogItemOperations.AddFailedMessageResult(obj, pipelineExceptionMessages))
