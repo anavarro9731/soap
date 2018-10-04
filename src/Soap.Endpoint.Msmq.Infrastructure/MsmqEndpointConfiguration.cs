@@ -70,7 +70,12 @@
                             {
                                 x.UseSerilog(Log.Logger);
 
-                                x.OnException(exception => { this.logger.Error("Unhandled exception", exception); });
+                                x.OnException(
+                                    exception =>
+                                        {
+                                        this.logger.Error(exception, "Unhandled Exception in MSMQ Endpoint Startup {Message}.", exception.Message);
+                                        Log.CloseAndFlush(); //make sur we get the error before the thread dies 
+                                        });
 
                                 x.Service<Startup>(
                                     s =>
@@ -79,6 +84,7 @@
                                             s.WhenStarted(tc => tc.Start(startupCommand));
                                             s.WhenStopped(tc => tc.Stop());
                                         });
+
                                 x.RunAsLocalSystem();
 
                                 x.SetDescription(serviceSettings.Description);
@@ -99,8 +105,10 @@
                 {
                     //add fail-safe sources only                        
                     Trace.TraceError($"Startup Error {ex}");
-                    this.logger.Error(ex, "Startup Error");
 
+                    this.logger.Error(ex, "Startup Error {Message}", ex.Message);
+                    Log.CloseAndFlush(); //make sure we get the error before thread dies
+                    
                     //Prevent the app continuing if the error occurs during startup
                     throw new Exception("Startup Error", ex);
                 }
@@ -150,9 +158,9 @@
                         this.documentRepositoryFactory,
                         this.ContainerActions);
 
-                    AddHandlers(builder, this.handlerAssemblies);
+                    AddHandlers(builder, this.handlerAssemblies); //push down?
 
-                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>();
+                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>(); //push down?
 
                     builder.RegisterType<CommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
 
@@ -161,6 +169,8 @@
                     EndpointSetup.ValidateContainer(this.container);
 
                     this.addBusToContainerFunc(this.container); //will update
+
+                    //event sub and reg
 
                     Log.Logger.Information("Ready to receive messages");
 

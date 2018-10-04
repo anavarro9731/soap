@@ -31,6 +31,7 @@
             {
                 AddLogging();
                 AddMessageAggregator();
+                //adding api messages to find message frm sp controller
                 AddUnitOfWorkAndCoreServices();
                 AddMessageAuthenticator();
                 AddOperations();

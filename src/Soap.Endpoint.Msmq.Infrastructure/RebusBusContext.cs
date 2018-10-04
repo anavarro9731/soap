@@ -41,6 +41,7 @@
                                          //but according to docs i don't think it does
                                          //need to check this and the messageconstraints.enforce
                                          //if it doesnt to ensure right behaviour
+                                         //not used if swapped?
                                          o.HandleMessagesInsideTransactionScope();
 
                                          o.SimpleRetryStrategy(
@@ -60,7 +61,9 @@
             var builder = new ContainerBuilder();
 
             var busContext = new RebusBusContext(rebus);
+            //hotswap tx, ms msg storage
             builder.RegisterInstance(busContext).As<IBusContext>();
+
             builder.Update(autofacContainer);
 
             return busContext;
