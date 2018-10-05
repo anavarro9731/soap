@@ -112,7 +112,7 @@
                 {
                     //add fail-safe sources only                        
                     Trace.TraceError($"Startup Error {ex}");
-                    logger.Error(ex, "Startup Error");
+                    logger.Error(ex, "Startup Error {Message}", ex.Message);
 
                     //Prevent the app continuing if the error occurs during startup
                     throw new Exception("Startup Error", ex);
@@ -240,9 +240,11 @@
                                    .AddJsonOptions(
                                        options =>
                                            {
-                                               // force WebApi to serialise in camelCase
-                                               options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                                           // force WebApi to serialise in camelCase
+                                           options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                                            });
+                    
+
                 }
             }
 

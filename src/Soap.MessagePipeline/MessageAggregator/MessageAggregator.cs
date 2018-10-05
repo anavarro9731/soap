@@ -1,5 +1,6 @@
 ﻿namespace Soap.If.MessagePipeline.MessageAggregator
 {
+    using System;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
@@ -18,6 +19,11 @@
         public void Collect(IMessage message)
         {
             this.allMessages.Add(message);
+        }
+
+        public void RemoveWhere(Predicate<IMessage> predicate)
+        {
+            this.allMessages.RemoveAll(predicate);
         }
 
         public virtual IPropogateMessages<TMessage> CollectAndForward<TMessage>(TMessage message) where TMessage : IMessage

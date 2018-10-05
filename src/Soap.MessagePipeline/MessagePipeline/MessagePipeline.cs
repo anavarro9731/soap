@@ -11,6 +11,7 @@
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.Messages;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
@@ -94,6 +95,7 @@
 
                 if (message.CanChangeState())
                 {
+                    //todo: create as pipelineexception message
                     StateChangingMessageConstraints.Enforce(this.dataStore, message, this.appConfig, this.logger, out messageLogItem);
                 }
 
@@ -192,20 +194,36 @@
 
             void FindHandlers(out List<IMessageHandler> matchingHandlers)
             {
-                // Handler<T> T should equal message type
+                var messageType = message.GetType().FullName;
+                var messageReturnType = message.GetType().BaseType.GenericTypeArguments.FirstOrDefault()?.FullName;
+
+                // THandler<TMessage,TReturn> == TMessage<TReturn>
                 matchingHandlers = this.handlers.Where(
-                                               h => 
-                                               string.Equals(
-                                               h.GetType().BaseType.GenericTypeArguments.First().FullName,
-                                               message.GetType().FullName)
-                                            ).ToList();
+                                               h =>
+                                                   {
+                                                       Type handlerType = h.GetType();
+
+                                                       bool TypeHasOnlyTheMessageAndOrReturnTypeParams(Type t) => t.IsGenericType &&
+                                                                                                                  t.GenericTypeArguments.Length <= 2;
+
+                                                       while (!TypeHasOnlyTheMessageAndOrReturnTypeParams(handlerType))
+                                                       {
+                                                           handlerType = handlerType.BaseType;
+                                                       }
+
+                                                       var handlerMessageType = handlerType.GenericTypeArguments.First().FullName;
+                                                       var handlerReturnType = handlerType.GenericTypeArguments.Length == 2 ?
+                                                                                   handlerType.GenericTypeArguments[1].FullName : null;
+
+                                                       return messageType == handlerMessageType && messageReturnType == handlerReturnType;
+                                                   }).ToList();
             }
 
             bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<IMessageHandler> matchingHandlers)
             {
                 return (message is IMessageFailedAllRetries && matchingHandlers.Count == 0);
 
-            }                       
+            }
         }
 
         private object CreateProfilingData(ApiMessageMeta meta)
@@ -239,7 +257,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().ToGenericTypeString(),
+                                Name = stateOperation.GetType().AsTypeNameString(),
                                 DataStore = dataStoreOperation.MethodCalled + (dataStoreOperation.TypeName != null ? "<" : "")
                                             + dataStoreOperation.TypeName.SubstringAfterLast('.') + (dataStoreOperation.TypeName != null ? ">" : "")
                             });
@@ -250,7 +268,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().ToGenericTypeString()
+                                Name = stateOperation.GetType().AsTypeNameString()
                             });
                     }
 
@@ -371,6 +389,7 @@
                             await SendFinalFailureMessage().ConfigureAwait(false);
                         }
 
+                        RemoveQueuedOperations();
                         await AddThisFailureToTheMessageLog().ConfigureAwait(false);
                         await this.dataStore.CommitChanges().ConfigureAwait(false);
                         scope.Complete();
@@ -382,8 +401,19 @@
                 }
             }
 
+            void RemoveQueuedOperations()
+            {
+                //BUG: circuitboard should really be changed to support queuops
+                //right now this only works on the real messageaggregator not IMessageaggregator
+                //so testing versions of message aggregator will end up committing queuedopertions on a failure
+                //essentially NOT rolling back the code
+                bool MessageIsQueuedStateChange(IMessage m) => m is IQueuedStateChange change && change.Committed == false;
+                (this.messageAggregator as MessageAggregator)?.RemoveWhere(MessageIsQueuedStateChange);
+            }
+
             async Task AddThisFailureToTheMessageLog()
             {
+
                 await this.dataStore.UpdateById<MessageLogItem>(
                               messageLogItem.id,
                               obj => MessageLogItemOperations.AddFailedMessageResult(obj, pipelineExceptionMessages))

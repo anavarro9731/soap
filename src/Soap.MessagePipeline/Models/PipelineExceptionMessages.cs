@@ -37,8 +37,8 @@
             {
                 errorCode = $"{CodePrefixes.DOMAIN}:{((DomainException)exception).ErrorCode}";
                 pipelineExceptionMessages.ErrorCode = errorCode;
-
-                pipelineExceptionMessages.ExternalErrorMessage = $"{errorCode}: {appConfig.DefaultExceptionMessage}";
+                
+                pipelineExceptionMessages.ExternalErrorMessage = exception.Message == "#default-message#" ? appConfig.DefaultExceptionMessage : $"{errorCode}: {appConfig.DefaultExceptionMessage}";
             }
             else if (exception is ExceptionHandlingException)
             {

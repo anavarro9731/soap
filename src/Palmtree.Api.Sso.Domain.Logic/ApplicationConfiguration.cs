@@ -30,6 +30,7 @@
             ReturnExplicitErrorMessages = returnExplicitErrorMessages;
             ApplicationName = applicationName;
             SeqLoggingConfig = seqLoggingConfig;
+            ApplicationVersion = this.GetType().Assembly.GetName().Version.ToString(3);
         }
 
         public IApiEndpointSettings ApiEndpointSettings { get; }

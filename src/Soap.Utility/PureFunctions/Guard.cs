@@ -28,7 +28,7 @@
             if (unacceptable)
             {
                 if (sensitivity == ErrorMessageSensitivity.MessageIsSafeForExternalAndInternalClients) throw new DomainException(errorMessage, code);
-                if (sensitivity == ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly) throw new DomainException(null, new Exception(errorMessage), code);
+                if (sensitivity == ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly) throw new DomainException("#default-message#",new Exception(errorMessage), code);
             }
         }
 

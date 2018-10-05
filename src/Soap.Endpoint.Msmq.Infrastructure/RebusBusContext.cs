@@ -41,6 +41,7 @@
                                          //but according to docs i don't think it does
                                          //need to check this and the messageconstraints.enforce
                                          //if it doesnt to ensure right behaviour
+                                         //not used if swapped?
                                          o.HandleMessagesInsideTransactionScope();
 
                                          o.SimpleRetryStrategy(
@@ -48,7 +49,7 @@
                                              appConfig.NumberOfApiMessageRetries + 1,
                                              false);
 
-                                         o.SetBackoffTimes(TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(200), TimeSpan.FromSeconds(10));
+                                         o.SetBackoffTimes(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5));
 
                                          o.SetNumberOfWorkers(1);
                                          o.SetMaxParallelism(1);
@@ -60,7 +61,9 @@
             var builder = new ContainerBuilder();
 
             var busContext = new RebusBusContext(rebus);
+            //hotswap tx, ms msg storage
             builder.RegisterInstance(busContext).As<IBusContext>();
+
             builder.Update(autofacContainer);
 
             return busContext;

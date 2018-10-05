@@ -83,7 +83,7 @@
                     Command = command
                 });
         }
-
+        //reply via directsend
         public void SetBusContext(IBusContext busContext)
         {
             this.busContext = busContext;
