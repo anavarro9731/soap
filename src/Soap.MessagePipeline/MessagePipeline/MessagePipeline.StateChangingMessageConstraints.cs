@@ -45,6 +45,9 @@
 
                         //top level message raised below should all be safe for the client as this message goes raw to the client
                         throw new Exception(exceptionMessage);
+
+
+                        //TD domain errors might work better here if pushed via pipelineexceptions
                     }
                 }
 
@@ -121,7 +124,7 @@
                     try
                     {
                         //save this immediately outside of the ambient txn so other threads will not get passed duplicate check
-                        using (var tx = new TransactionScope(TransactionScopeOption.Suppress, TransactionScopeAsyncFlowOption.Enabled))
+                        using (var tx = new TransactionScope(TransactionScopeOption.Suppress))
                         {
                             logger.Debug($"Creating record for msg id {message.MessageId}");
 

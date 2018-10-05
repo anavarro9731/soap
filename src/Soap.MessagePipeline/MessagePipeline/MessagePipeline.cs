@@ -372,7 +372,6 @@
                         }
 
                         await AddThisFailureToTheMessageLog().ConfigureAwait(false);
-
                         await this.dataStore.CommitChanges().ConfigureAwait(false);
                         scope.Complete();
                     }
