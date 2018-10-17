@@ -13,7 +13,7 @@
     ///     this class queues any actions the user performs during a session (message) which
     ///     conceptually alter external state (i/o bound operations)
     /// </summary>
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork 
     {
         private readonly IMessageAggregator messageAggregator;
 
@@ -26,12 +26,6 @@
             this.stateChanger = stateChanger;
             this.messageAggregator = messageAggregator;
             TransactionId = Guid.NewGuid();
-        }
-
-        public UnitOfWork(QueuedStateChanger stateChanger, IBusContext busContext, IMessageAggregator messageAggregator)
-            : this(stateChanger, messageAggregator)
-        {
-            this.busContext = busContext;
         }
 
         public Guid TransactionId { get; }

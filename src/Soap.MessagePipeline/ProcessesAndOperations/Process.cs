@@ -8,6 +8,7 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Messages.ProcessMessages;
     using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.If.Utility.PureFunctions;
 
     /// <summary>
@@ -30,7 +31,7 @@
 
         protected IMessageAggregator MessageAggregator { get; private set; }
 
-        protected IUnitOfWork UnitOfWork { get; private set; }
+        protected UnitOfWork UnitOfWork { get; private set; }
 
         public async Task BeginProcess<TMessage>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand
         {
@@ -60,7 +61,7 @@
             return result;
         }
 
-        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        public void SetDependencies(IDataStore dataStore, UnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
         {
             UnitOfWork = uow;
             Logger = logger;

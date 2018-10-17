@@ -11,6 +11,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
     using Soap.If.MessagePipeline.Messages.ProcessMessages;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.If.Utility;
     using Soap.If.Utility.PureFunctions;
 
@@ -33,7 +34,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
         protected dynamic References => this.processState.References;
 
-        protected IUnitOfWork UnitOfWork { get; private set; }
+        protected UnitOfWork UnitOfWork { get; private set; }
 
         private IDataStore DataStore { get; set; }
 
@@ -109,7 +110,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
             return result;
         }
 
-        public void SetDependencies(IDataStore dataStore, IUnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
+        public void SetDependencies(IDataStore dataStore, UnitOfWork uow, ILogger logger, IMessageAggregator messageAggregator)
         {
             UnitOfWork = uow;
             Logger = logger;

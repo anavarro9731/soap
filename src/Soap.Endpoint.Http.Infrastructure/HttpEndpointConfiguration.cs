@@ -18,6 +18,7 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.Pf.EndpointClients;
     using Soap.Pf.EndpointInfrastructure;
 
@@ -261,7 +262,7 @@
                                {
                                    (e.Instance as MessageHandlerBase).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
                                })
@@ -275,7 +276,7 @@
                                {
                                    (e.Instance as MessageHandlerBase).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
                                })
@@ -289,7 +290,7 @@
                                {
                                    (e.Instance as MessageHandlerBase).SetDependencies(
                                            e.Context.Resolve<IDataStore>(),
-                                           e.Context.Resolve<IUnitOfWork>(),
+                                           e.Context.Resolve<UnitOfWork>(),
                                            e.Context.Resolve<ILogger>(),
                                            e.Context.Resolve<IMessageAggregator>());
                                })

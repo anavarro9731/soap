@@ -57,7 +57,7 @@
                 builder.Register(c => documentRepositoryFactory()).AsSelf().As<IDocumentRepository>().InstancePerLifetimeScope();
                 builder.RegisterType<DataStore>().AsSelf().As<IDataStore>().InstancePerLifetimeScope();
                 builder.RegisterType<QueuedStateChanger>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+                builder.RegisterType<UnitOfWork>().As<UnitOfWork>().InstancePerLifetimeScope();
             }
 
             void AddMessageAggregator()
@@ -72,7 +72,7 @@
 
             void AddMessagePipeline()
             {
-                builder.RegisterType<MessagePipeline>().AsSelf().As<IMessagePipeline>();
+                builder.RegisterType<MessagePipeline>().AsSelf().As<MessagePipeline>();
             }
 
             void AddProcesses()
@@ -85,7 +85,7 @@
                                {
                                (e.Instance as Process).SetDependencies(
                                    e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
+                                   e.Context.Resolve<UnitOfWork>(),
                                    e.Context.Resolve<ILogger>(),
                                    e.Context.Resolve<IMessageAggregator>());
                                })
@@ -99,7 +99,7 @@
                                {
                                (e.Instance as StatefulProcess).SetDependencies(
                                    e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
+                                   e.Context.Resolve<UnitOfWork>(),
                                    e.Context.Resolve<ILogger>(),
                                    e.Context.Resolve<IMessageAggregator>());
                                })
@@ -117,7 +117,7 @@
                                {
                                (e.Instance as Operations).SetDependencies(
                                    e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
+                                   e.Context.Resolve<UnitOfWork>(),
                                    e.Context.Resolve<ILogger>(),
                                    e.Context.Resolve<IMessageAggregator>());
                                })

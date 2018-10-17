@@ -43,7 +43,7 @@
     ///     In the event of an exception while handling an exception whether the failed message result
     ///     will be logged to the message log or not is entirely dependent on what the second exception was.
     /// </summary>
-    public partial class MessagePipeline : IMessagePipeline
+    public partial class MessagePipeline 
     {
         private readonly IApplicationConfig appConfig;
 
