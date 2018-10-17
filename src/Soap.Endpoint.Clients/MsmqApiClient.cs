@@ -10,18 +10,19 @@
     using Rebus.Logging;
     using Rebus.Transport;
     using Serilog;
+    using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.Pf.ClientServerMessaging.Routing;
 
-    public abstract class MsmqApiClient : IDisposable
+    public abstract class MsmqApiClient : IDisposable, IBusContext
     {
         private readonly BuiltinHandlerActivator rebusActivator = new BuiltinHandlerActivator();
 
-        private readonly List<MessageRoute_Msmq> routingDefinitions;
+        private readonly List<MsmqMessageRoute> routingDefinitions;
 
         private IBus bus;
 
-        protected MsmqApiClient(IEnumerable<MessageRoute_Msmq> routingDefinitions)
+        protected MsmqApiClient(IEnumerable<MsmqMessageRoute> routingDefinitions)
         {
             this.routingDefinitions = routingDefinitions?.ToList() ?? throw new ArgumentNullException(nameof(routingDefinitions));
         }
@@ -37,6 +38,21 @@
             GC.SuppressFinalize(this);
         }
 
+        public async Task Publish(IPublishEventOperation publishEvent)
+        {
+            await Publish(publishEvent.Event);
+        }
+
+        public async Task Send(ISendCommandOperation sendCommand)
+        {
+            await SendCommand(sendCommand.Command);
+        }
+
+        public async Task SendLocal(ISendCommandOperation sendCommand)
+        {
+            await SendLocal(sendCommand.Command);
+        }
+
         public Task Start()
         {
             StartIfNotStarted();
@@ -44,7 +60,10 @@
             return Task.CompletedTask;
         }
 
-        protected abstract RebusConfigurer ConfigureRebus(RebusConfigurer config);
+        protected virtual RebusConfigurer ConfigureRebus(RebusConfigurer config)
+        {
+            return config;
+        }
 
         protected abstract void ConfigureRebusTransport(StandardConfigurer<ITransport> configurer);
 

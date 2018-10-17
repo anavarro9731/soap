@@ -1,20 +1,19 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+﻿namespace Soap.Pf.ClientServerMessaging.Routing
 {
     using System.Reflection;
     using Soap.If.Interfaces.Messages;
+    using Soap.Pf.ClientServerMessaging.Routing.Addresses;
 
-    public class MessageRoute_MessageAssemblyToHttpEndpoint : MessageRoute_Http
+    public class MessageAssemblyToMsmqEndpointRoute : MsmqMessageRoute
     {
-        protected MessageRoute_MessageAssemblyToHttpEndpoint(Assembly messagesAssembly, string httpEndpointAddress)
+        public MessageAssemblyToMsmqEndpointRoute(Assembly messagesAssembly, string msmqEndpointAddress)
         {
-            EndpointAddressHttp = new EndpointAddress_Http(httpEndpointAddress);
+            MsmqEndpointAddress = new MsmqEndpointAddress(msmqEndpointAddress);
 
             AssemblyName = messagesAssembly.FullName;
         }
 
         public string AssemblyName { get; set; }
-
-        public EndpointAddress_Http EndpointAddressHttp { get; set; }
 
         protected override string From => AssemblyName;
 

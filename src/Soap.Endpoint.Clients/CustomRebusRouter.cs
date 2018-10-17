@@ -13,9 +13,9 @@
 
     public class CustomRebusRouter : IRouter
     {
-        private IEnumerable<MessageRoute_Msmq> routes;
+        private IEnumerable<MsmqMessageRoute> routes;
 
-        public CustomRebusRouter(IEnumerable<MessageRoute_Msmq> routes, IRebusLoggerFactory rebusLoggerFactory)
+        public CustomRebusRouter(IEnumerable<MsmqMessageRoute> routes, IRebusLoggerFactory rebusLoggerFactory)
         {
             {
                 SetRoutes();

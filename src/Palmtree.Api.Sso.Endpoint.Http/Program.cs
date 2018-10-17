@@ -18,7 +18,7 @@
             HttpEndpoint.Configure<UserAuthenticator>(
                             domainLogicAssembly,
                             domainModelsAssembly,
-                            () => HttpBusContext.Create(applicationConfiguration, domainModelsAssembly),
+                            () => RebusBusContext.Create(applicationConfiguration, domainModelsAssembly),
                             () => new SqlServerRepository(applicationConfiguration.SqlServerDbSettings))
                         .Start();
         }

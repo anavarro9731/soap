@@ -1,11 +1,11 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Addresses
 {
     using System;
     using Soap.If.Utility.PureFunctions;
 
-    public class EndpointAddress_Http
+    public class HttpEndpointAddress
     {
-        public EndpointAddress_Http(string endpointAddress)
+        public HttpEndpointAddress(string endpointAddress)
         {
             Guard.Against(!Uri.IsWellFormedUriString(endpointAddress, UriKind.Absolute), $"Endpoint Address {endpointAddress} is not a well-formed URI");
 

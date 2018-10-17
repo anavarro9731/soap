@@ -1,12 +1,12 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Addresses
 {
     using System.Text.RegularExpressions;
     using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
-    public class EndpointAddress_Msmq
+    public class MsmqEndpointAddress
     {
-        public EndpointAddress_Msmq(string msmqEndpointAddress)
+        public MsmqEndpointAddress(string msmqEndpointAddress)
         {
             Guard.Against(
                 !Regex.IsMatch(msmqEndpointAddress, "^\\w+@\\w+$"),

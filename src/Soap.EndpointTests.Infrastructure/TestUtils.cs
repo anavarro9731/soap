@@ -8,6 +8,7 @@
     using FluentAssertions;
     using Soap.If.Interfaces.Messages;
     using Soap.Pf.ClientServerMessaging.Queries;
+    using Soap.Pf.ClientServerMessaging.Routing;
     using Soap.Pf.EndpointClients;
 
     public static class TestUtils
@@ -37,7 +38,10 @@
                             var listener = Task.Factory.StartNew(
                                 () =>
                                     {
-                                    var http = new HttpApiClient(Query.ApiHostUri);
+                                    var http = new HttpApiClient(new []
+                                    {
+                                        new MessageTypeToHttpEndpointRoute(typeof(GetMessageLogItemQuery), Query.ApiHostUri.OriginalString), 
+                                    });
 
                                     while (true)
                                     {

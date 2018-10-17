@@ -16,9 +16,9 @@
     {
         private readonly HttpClient http = new HttpClient();
 
-        private readonly IEnumerable<MessageRoute_Http> httpRoutes;
+        private readonly IEnumerable<HttpMessageRoute> httpRoutes;
 
-        public HttpApiClient(IEnumerable<MessageRoute_Http> httpRoutes, TimeSpan? httpRequestTimeout = null)
+        public HttpApiClient(IEnumerable<HttpMessageRoute> httpRoutes, TimeSpan? httpRequestTimeout = null)
         {
             this.httpRoutes = httpRoutes;
             

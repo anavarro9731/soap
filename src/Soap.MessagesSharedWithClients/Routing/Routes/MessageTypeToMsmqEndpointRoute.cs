@@ -2,19 +2,18 @@ namespace Soap.Pf.ClientServerMessaging.Routing
 {
     using System;
     using Soap.If.Interfaces.Messages;
+    using Soap.Pf.ClientServerMessaging.Routing.Addresses;
 
-    public class MessageRoute_MessageTypeToMsmqEndpoint : MessageRoute_Msmq
+    public class MessageTypeToMsmqEndpointRoute : MsmqMessageRoute
     {
-        protected MessageRoute_MessageTypeToMsmqEndpoint(Type messageType, string msmqEndpointAddress)
+        public MessageTypeToMsmqEndpointRoute(Type messageType, string msmqEndpointAddress)
         {
-            MsmqEndpointAddress = new EndpointAddress_Msmq(msmqEndpointAddress);
+            MsmqEndpointAddress = new MsmqEndpointAddress(msmqEndpointAddress);
 
             MessageTypeName = messageType.AssemblyQualifiedName;
         }
 
         public string MessageTypeName { get; set; }
-
-        public EndpointAddress_Msmq MsmqEndpointAddress { get; set; }
 
         protected override string From => MessageTypeName;
 

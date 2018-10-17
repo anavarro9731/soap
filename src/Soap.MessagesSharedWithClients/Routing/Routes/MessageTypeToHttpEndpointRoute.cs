@@ -2,17 +2,16 @@ namespace Soap.Pf.ClientServerMessaging.Routing
 {
     using System;
     using Soap.If.Interfaces.Messages;
+    using Soap.Pf.ClientServerMessaging.Routing.Addresses;
 
-    public class MessageRoute_MessageTypeToHttpEndpoint : MessageRoute_Http
+    public class MessageTypeToHttpEndpointRoute : HttpMessageRoute
     {
-        protected MessageRoute_MessageTypeToHttpEndpoint(Type messageType, string httpEndpointAddress)
+        public MessageTypeToHttpEndpointRoute(Type messageType, string httpEndpointAddress)
         {
-            EndpointAddressHttp = new EndpointAddress_Http(httpEndpointAddress);
+            EndpointAddressHttp = new HttpEndpointAddress(httpEndpointAddress);
 
             MessageTypeName = messageType.AssemblyQualifiedName;
         }
-
-        public EndpointAddress_Http EndpointAddressHttp { get; set; }
 
         public string MessageTypeName { get; set; }
 
