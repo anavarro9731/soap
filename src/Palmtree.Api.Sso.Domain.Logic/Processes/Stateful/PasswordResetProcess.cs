@@ -14,7 +14,7 @@
 
     public class PasswordResetProcess : StatefulProcess<PasswordResetProcess>,
                                         IBeginProcess<RequestPasswordReset>,
-                                        IContinueProcess<ResetPasswordFromEmail, ClientSecurityContext>
+                                        IContinueProcess<ResetPasswordFromEmail, ResetPasswordFromEmail.ClientSecurityContext>
 
     {
         private readonly IApplicationConfig config;
@@ -68,7 +68,7 @@
             }
         }
 
-        public async Task<ClientSecurityContext> ContinueProcess(ResetPasswordFromEmail command, ApiMessageMeta meta)
+        public async Task<ResetPasswordFromEmail.ClientSecurityContext> ContinueProcess(ResetPasswordFromEmail command, ApiMessageMeta meta)
         {
             {
                 Validate();

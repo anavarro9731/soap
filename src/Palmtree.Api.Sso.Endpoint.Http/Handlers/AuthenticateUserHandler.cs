@@ -7,7 +7,7 @@
     using Soap.If.MessagePipeline.Models;
     using Soap.Pf.HttpEndpointBase;
 
-    public class AuthenticateUserHandler : CommandHandler<AuthenticateUser, ClientSecurityContext>
+    public class AuthenticateUserHandler : CommandHandler<AuthenticateUser, ResetPasswordFromEmail.ClientSecurityContext>
     {
         private readonly UserOperations userOperations;
 
@@ -16,7 +16,7 @@
             this.userOperations = userOperations;
         }
 
-        protected override async Task<ClientSecurityContext> Handle(AuthenticateUser message, ApiMessageMeta meta)
+        protected override async Task<ResetPasswordFromEmail.ClientSecurityContext> Handle(AuthenticateUser message, ApiMessageMeta meta)
         {
             return await this.userOperations.AuthenticateUser(message);
         }

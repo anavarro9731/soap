@@ -23,7 +23,7 @@
         public static ContainerBuilder ConfigureCore<TUserAuthenticator>(
             ContainerBuilder builder,
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Func<IMessageAggregator> messageAggregatorFactory,
             Func<IDocumentRepository> documentRepositoryFactory,
             List<Action<ContainerBuilder>> containerActions) where TUserAuthenticator : IAuthenticateUsers
@@ -106,8 +106,6 @@
                        .InstancePerDependency();
             }
 
-           
-
             void AddOperations()
             {
                 builder.RegisterAssemblyTypes(domainLogicAssembly)
@@ -134,13 +132,14 @@
             if (string.IsNullOrEmpty(currentEnvironment))
             {
                 throw new Exception(
-                    "No startup configuration defined. " + $"You must add an App.Config file with an <appSetting> element whose key is '{AppSettingKey}' and whose value matches a class "
+                    "No startup configuration defined. "
+                    + $"You must add an App.Config file with an <appSetting> element whose key is '{AppSettingKey}' and whose value matches a class "
                     + "in the endpoint which implements IEnvironmentSpecificConfig.");
             }
 
             var environmentConfigClasses = (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly()) //unit tests 
-                                                   .GetTypes()
-                                                   .Where(t => t.InheritsOrImplements(typeof(IEnvironmentSpecificConfig)) && !t.IsInterface && !t.IsAbstract);
+                                           .GetTypes()
+                                           .Where(t => t.InheritsOrImplements(typeof(IEnvironmentSpecificConfig)) && !t.IsInterface && !t.IsAbstract);
 
             foreach (var environmentConfigClass in environmentConfigClasses)
                 if (string.Equals(environmentConfigClass.Name, currentEnvironment, StringComparison.InvariantCultureIgnoreCase))

@@ -2,7 +2,6 @@
 {
     using System;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
-    using Soap.Pf.EndpointClients;
     using Soap.Pf.EndpointTestsBase;
     using Xunit;
 
@@ -11,11 +10,11 @@
         [Fact]
         public async void ItShouldNotFail()
         {
-            var apiClient = new MsmqApiClient("serviceapi");
+            var apiClient = TestUtils.Endpoints.Msmq.CreateApiClient(typeof(SeedDatabase).Assembly);
 
             var logItemMessageId = Guid.NewGuid();
 
-            await apiClient.SendCommand(
+            await apiClient.Send(
                 new SeedDatabase
                 {
                     MessageId = logItemMessageId

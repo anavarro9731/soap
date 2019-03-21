@@ -1,8 +1,8 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Routes
 {
     using Soap.If.Interfaces.Messages;
 
-    public abstract partial class MessageRoute
+    public abstract class MessageRoute
     {
         public abstract bool CanRouteMessage(IApiMessage message);
 

@@ -34,14 +34,14 @@
 
         public static TestEndpointConfiguration<TUserAuthenticator> Configure<TUserAuthenticator>(
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Assembly msmqEndpointAssembly,
             Assembly httpEndpointAssembly,
             IApplicationConfig applicationConfig) where TUserAuthenticator : IAuthenticateUsers
         {
             return new TestEndpointConfiguration<TUserAuthenticator>(
                 domainLogicAssembly,
-                domainModelsAssembly,
+                domainMessagesAssembly,
                 msmqEndpointAssembly,
                 httpEndpointAssembly,
                 applicationConfig);

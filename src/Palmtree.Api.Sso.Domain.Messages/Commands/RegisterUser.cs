@@ -5,7 +5,7 @@ namespace Palmtree.Api.Sso.Domain.Messages.Commands
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Interfaces.Messages;
 
-    public class RegisterUser : ApiCommand<RegistrationResult>
+    public class RegisterUser : ApiCommand<RegisterUser.RegistrationResult>
     {
         public RegisterUser(string email, string name, string password)
         {
@@ -21,6 +21,28 @@ namespace Palmtree.Api.Sso.Domain.Messages.Commands
         public string Password { get; }
 
         public Guid UserId { get; set; }
+
+        public class RegistrationResult
+        {
+            public string Message { get; set; }
+
+            public Guid ProcessId { get; set; }
+
+            public bool Success { get; set; }
+
+            public UserProfile User { get; set; }
+
+            public static RegistrationResult Create(string message, UserProfile user, bool success, Guid processId)
+            {
+                return new RegistrationResult
+                {
+                    Message = message,
+                    User = user,
+                    Success = success,
+                    ProcessId = processId
+                };
+            }
+        }
     }
 
     public class RegisterUserValidator : AbstractValidator<RegisterUser>

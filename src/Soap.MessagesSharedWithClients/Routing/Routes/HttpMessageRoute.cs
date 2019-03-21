@@ -1,4 +1,4 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Routes
 {
     using Soap.Pf.ClientServerMessaging.Routing.Addresses;
 

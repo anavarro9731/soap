@@ -12,7 +12,7 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
-    using Soap.If.MessagePipeline.Messages;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.Pf.EndpointInfrastructure;
     using Topshelf;
 
@@ -24,15 +24,15 @@
 
         public MsmqEndpointConfiguration(
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
-            Func<IContainer, IBusContext> addBusToContainerFunc,
+            Assembly domainMessagesAssembly,
+            Action<IContainer> addBusToContainerFunc,
             Func<IDocumentRepository> documentRepositoryFactory)
         {
             try
             {
                 CreateLogger(out this.logger);
 
-                this.service = new Startup(addBusToContainerFunc, documentRepositoryFactory, domainLogicAssembly, domainModelsAssembly);
+                this.service = new Startup(addBusToContainerFunc, documentRepositoryFactory, domainLogicAssembly, domainMessagesAssembly);
             }
             catch (Exception ex)
             {
@@ -60,7 +60,8 @@
             return this;
         }
 
-        public void Start(MsmqEndpointWindowsServiceSettings serviceSettings, IApiCommand startupCommand = null)
+        public void 
+            Start(MsmqEndpointWindowsServiceSettings serviceSettings, IApiCommand startupCommand = null)
         {
             {
                 try
@@ -68,37 +69,37 @@
                     HostFactory.Run(
                         x =>
                             {
-                                x.UseSerilog(Log.Logger);
+                            x.UseSerilog(Log.Logger);
 
-                                x.OnException(
-                                    exception =>
-                                        {
-                                        this.logger.Error(exception, "Unhandled Exception in MSMQ Endpoint Startup {Message}.", exception.Message);
-                                        Log.CloseAndFlush(); //make sur we get the error before the thread dies 
-                                        });
+                            x.OnException(
+                                exception =>
+                                    {
+                                    this.logger.Error(exception, "Unhandled Exception in MSMQ Endpoint Startup {Message}.", exception.Message);
+                                    Log.CloseAndFlush(); //make sur we get the error before the thread dies 
+                                    });
 
-                                x.Service<Startup>(
-                                    s =>
-                                        {
-                                            s.ConstructUsing(() => this.service);
-                                            s.WhenStarted(tc => tc.Start(startupCommand));
-                                            s.WhenStopped(tc => tc.Stop());
-                                        });
+                            x.Service<Startup>(
+                                s =>
+                                    {
+                                    s.ConstructUsing(() => this.service);
+                                    s.WhenStarted(tc => tc.Start(startupCommand));
+                                    s.WhenStopped(tc => tc.Stop());
+                                    });
 
-                                x.RunAsLocalSystem();
+                            x.RunAsLocalSystem();
 
-                                x.SetDescription(serviceSettings.Description);
-                                x.SetDisplayName(serviceSettings.DisplayName);
-                                x.SetServiceName(serviceSettings.Name);
+                            x.SetDescription(serviceSettings.Description);
+                            x.SetDisplayName(serviceSettings.DisplayName);
+                            x.SetServiceName(serviceSettings.Name);
 
-                                if (serviceSettings.StartAutomatically)
-                                {
-                                    x.StartAutomatically();
-                                }
-                                else
-                                {
-                                    x.StartManually();
-                                }
+                            if (serviceSettings.StartAutomatically)
+                            {
+                                x.StartAutomatically();
+                            }
+                            else
+                            {
+                                x.StartManually();
+                            }
                             });
                 }
                 catch (Exception ex)
@@ -108,7 +109,7 @@
 
                     this.logger.Error(ex, "Startup Error {Message}", ex.Message);
                     Log.CloseAndFlush(); //make sure we get the error before thread dies
-                    
+
                     //Prevent the app continuing if the error occurs during startup
                     throw new Exception("Startup Error", ex);
                 }
@@ -119,13 +120,13 @@
         {
             public readonly List<Action<ContainerBuilder>> ContainerActions = new List<Action<ContainerBuilder>>();
 
-            private readonly Func<IContainer, IBusContext> addBusToContainerFunc;
+            private readonly Action<IContainer> addBusToContainerFunc;
 
             private readonly Func<IDocumentRepository> documentRepositoryFactory;
 
             private readonly Assembly domainLogicAssembly;
 
-            private readonly Assembly domainModelsAssembly;
+            private readonly Assembly domainMessagesAssembly;
 
             private readonly IEnumerable<Assembly> handlerAssemblies = new[]
             {
@@ -136,52 +137,15 @@
             private IContainer container;
 
             public Startup(
-                Func<IContainer, IBusContext> addBusToContainerFunc,
+                Action<IContainer> addBusToContainerFunc,
                 Func<IDocumentRepository> documentRepositoryFactory,
                 Assembly domainLogicAssembly,
-                Assembly domainModelsAssembly)
+                Assembly domainMessagesAssembly)
             {
                 this.addBusToContainerFunc = addBusToContainerFunc;
                 this.documentRepositoryFactory = documentRepositoryFactory;
                 this.domainLogicAssembly = domainLogicAssembly;
-                this.domainModelsAssembly = domainModelsAssembly;
-            }
-
-            public void Start(IApiCommand startupCommand)
-            {
-                {
-                    var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
-                        new ContainerBuilder(),
-                        this.domainLogicAssembly,
-                        this.domainModelsAssembly,
-                        MessageAggregator.Create,
-                        this.documentRepositoryFactory,
-                        this.ContainerActions);
-
-                    AddHandlers(builder, this.handlerAssemblies); //push down?
-
-                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>(); //push down?
-
-                    builder.RegisterType<CommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
-
-                    this.container = builder.Build();
-
-                    EndpointSetup.ValidateContainer(this.container);
-
-                    this.addBusToContainerFunc(this.container); //will update
-
-                    //event sub and reg
-
-                    Log.Logger.Information("Ready to receive messages");
-
-                    if (startupCommand != null) SendStartupMessage();
-
-                }
-
-                void SendStartupMessage()
-                {
-                    this.container.Resolve<IBusContext>().SendLocal(new SendCommandOperation(startupCommand));
-                }
+                this.domainMessagesAssembly = domainMessagesAssembly;
             }
 
             public static void AddHandlers(ContainerBuilder builder, IEnumerable<Assembly> handlerAssemblies)
@@ -196,7 +160,7 @@
                                    {
                                    (e.Instance as MessageHandlerBase).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
                                    })
@@ -210,11 +174,47 @@
                                    {
                                    (e.Instance as MessageHandlerBase).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<IUnitOfWork>(),
+                                       e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
                                    })
                            .InstancePerLifetimeScope();
+                }
+            }
+
+            public void Start(IApiCommand startupCommand)
+            {
+                {
+                    var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
+                        new ContainerBuilder(),
+                        this.domainLogicAssembly,
+                        this.domainMessagesAssembly,
+                        MessageAggregator.Create,
+                        this.documentRepositoryFactory,
+                        this.ContainerActions);
+
+                    AddHandlers(builder, this.handlerAssemblies); //push down?
+
+                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>(); //push down?
+
+                    builder.RegisterType<RebusCommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
+                                        
+                    this.container = builder.Build();
+
+                    this.addBusToContainerFunc(this.container);
+
+                    EndpointSetup.ValidateContainer(this.container);
+                    
+                    //event sub and reg
+
+                    Log.Logger.Information("Ready to receive messages");
+
+                    if (startupCommand != null) SendStartupMessage();
+                }
+
+                void SendStartupMessage()
+                {
+                    this.container.Resolve<IBusContext>().SendLocal(startupCommand);
                 }
             }
 

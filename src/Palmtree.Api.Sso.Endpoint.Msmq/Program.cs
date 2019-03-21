@@ -1,9 +1,11 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Msmq
 {
+    using DataStore;
     using DataStore.Impl.SqlServer;
     using Palmtree.Api.Sso.Domain.Logic;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
+    using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointInfrastructure;
     using Soap.Pf.MsmqEndpointBase;
 
@@ -12,7 +14,7 @@
         public static void Main(string[] args)
         {
             var applicationConfiguration = (ApplicationConfiguration)EndpointSetup.GetConfiguration().Variables;
-            var domainModelsAssembly = typeof(SeedDatabase).Assembly;
+            var domainMessagesAssembly = typeof(SeedDatabase).Assembly;
             var domainLogicAssembly = typeof(UserOperations).Assembly;
             var serviceSettings = new MsmqEndpointWindowsServiceSettings
             {
@@ -24,9 +26,12 @@
 
             MsmqEndpoint.Configure<UserAuthenticator>(
                             domainLogicAssembly,
-                            domainModelsAssembly,
-                            container => RebusBusContext.Create<ConfirmEmail>(applicationConfiguration, container, false),
-                            () => new SqlServerRepository(applicationConfiguration.SqlServerDbSettings))
+                            domainMessagesAssembly,
+                            container => MsmqEndpoint.CreateBusContext(
+                                applicationConfiguration,
+                                container,
+                                new MessageAssemblyToMsmqEndpointRoute(domainMessagesAssembly, applicationConfiguration.ApiEndpointSettings.MsmqEndpointAddress)),
+                            () => new InMemoryDocumentRepository())
                         .Start(serviceSettings);
         }
     }

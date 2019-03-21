@@ -4,7 +4,7 @@
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Interfaces.Messages;
 
-    public class AuthenticateUser : ApiCommand<ClientSecurityContext>
+    public class AuthenticateUser : ApiCommand<ResetPasswordFromEmail.ClientSecurityContext>
     {
         public AuthenticateUser(UserCredentials credentials)
         {

@@ -1,4 +1,4 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Routes
 {
     using System;
     using Soap.If.Interfaces.Messages;
@@ -11,6 +11,8 @@ namespace Soap.Pf.ClientServerMessaging.Routing
             MsmqEndpointAddress = new MsmqEndpointAddress(msmqEndpointAddress);
 
             MessageTypeName = messageType.AssemblyQualifiedName;
+
+            MessageTypes.Add(messageType);
         }
 
         public string MessageTypeName { get; set; }

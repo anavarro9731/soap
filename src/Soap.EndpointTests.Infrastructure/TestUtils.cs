@@ -3,22 +3,20 @@
     using System;
     using System.Configuration;
     using System.Linq;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.If.Interfaces.Messages;
     using Soap.Pf.ClientServerMessaging.Queries;
-    using Soap.Pf.ClientServerMessaging.Routing;
+    using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointClients;
 
     public static class TestUtils
     {
         public static class Assert
         {
-            public static Task<GetMessageLogItemQuery.ResponseModel> CommandCompletion(
-                Guid messageId,
-                int timeoutMsec = 15000,
-                int pollIntervalMsec = 1000)
+            public static Task<GetMessageLogItemQuery.ResponseModel> CommandCompletion(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
             {
                 {
                     var messageResults = AwaitMessageResults().Result;
@@ -38,10 +36,7 @@
                             var listener = Task.Factory.StartNew(
                                 () =>
                                     {
-                                    var http = new HttpApiClient(new []
-                                    {
-                                        new MessageTypeToHttpEndpointRoute(typeof(GetMessageLogItemQuery), Query.ApiHostUri.OriginalString), 
-                                    });
+                                    var http = Endpoints.Http.CreateApiClient(typeof(GetMessageLogItemQuery).Assembly);
 
                                     while (true)
                                     {
@@ -50,7 +45,7 @@
                                             MessageIdOfLogItem = messageId
                                         };
 
-                                        queryResponse = http.SendQuery<GetMessageLogItemQuery.ResponseModel>(queryRequest).Result;
+                                        queryResponse = http.SendQuery(queryRequest).Result;
 
                                         if (IsComplete(queryResponse)) break;
 
@@ -94,13 +89,12 @@
                 }
             }
 
-            public static Task CommandFailure(Guid messageId, int timeoutMsec = 15000, int pollIntervalMsec = 1000)
+            public static Task CommandFailure(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
             {
                 var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 messageResults.SuccessfulAttempt.Should()
                               .BeNull(
@@ -114,13 +108,12 @@
                 return Task.CompletedTask;
             }
 
-            public static Task CommandSuccess(Guid messageId, int timeoutMsec = 15000, int pollIntervalMsec = 1000)
+            public static Task CommandSuccess(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
             {
                 var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 if (messageResults.FailedAttempts?.Count >= messageResults.MaxFailedMessages)
                 {
@@ -136,19 +129,36 @@
             }
         }
 
-        public static class Command
+        public static class Endpoints
         {
-            public const int LongRunningPollIntervalMsec = 20000;
+            public static class Http
+            {
+                private static readonly Uri ApiHostUri = new Uri(ConfigurationManager.AppSettings["ApiHostUri"]);
 
-            public const int LongRunningTimeoutMsec = 120000;
+                public static HttpApiClient CreateApiClient(Assembly assembly)
+                {
+                    return new HttpApiClient(
+                        new[]
+                        {
+                            new MessageAssemblyToHttpEndpointRoute(assembly, ApiHostUri.OriginalString)
+                        });
+                }
+            }
 
-            public static string ApiHostEndpointAddress = ConfigurationManager.AppSettings["CommandToForward.ApiHostQueue"]
-                                                                              ?.Replace("@localhost", $"@{Environment.MachineName}");
-        }
+            public static class Msmq
+            {
+                private const int LongRunningPollIntervalMsec = 20000;
 
-        public static class Query
-        {
-            public static Uri ApiHostUri = new Uri(ConfigurationManager.AppSettings["Query.ApiHostUri"]);
+                private const int LongRunningTimeoutMsec = 120000;
+
+                private static readonly string ApiHostEndpointAddress =
+                    ConfigurationManager.AppSettings["ApiHostQueue"]?.Replace("@localhost", $"@{Environment.MachineName}");
+
+                public static BusApiClient CreateApiClient(Assembly messageAssembly)
+                {
+                    return new BusApiClient(new MessageAssemblyToMsmqEndpointRoute(messageAssembly, ApiHostEndpointAddress));
+                }
+            }
         }
     }
 }

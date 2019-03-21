@@ -2,14 +2,14 @@
 {
     using System.Threading.Tasks;
     using Rebus.Handlers;
-    using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessagePipeline;
 
-    public class CommandHandler : IHandleMessages<IApiCommand>
+    public class RebusCommandHandler : IHandleMessages<IApiCommand>
     {
-        private readonly IMessagePipeline messagePipeline;
+        private readonly MessagePipeline messagePipeline;
 
-        public CommandHandler(IMessagePipeline messagePipeline)
+        public RebusCommandHandler(MessagePipeline messagePipeline)
         {
             this.messagePipeline = messagePipeline;
         }

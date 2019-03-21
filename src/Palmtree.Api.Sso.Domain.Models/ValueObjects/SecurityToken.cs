@@ -33,6 +33,14 @@ namespace Palmtree.Api.Sso.Domain.Models.ValueObjects
             };
         }
 
+        public static string EncryptToken(SecurityToken token)
+        {
+            const string AesPassword = "2xQXihMFXz7fE29oTKsrViBofE6GLr58";
+            var encryptedMessage = AesEncryptamajig.Encrypt(JsonConvert.SerializeObject(token), AesPassword);
+            var hashDetails = Soap.If.Utility.SecureHmacHash.CreateFrom(encryptedMessage);
+            return hashDetails + encryptedMessage;
+        }
+
         public static SecurityToken DecryptToken(string tokenString)
         {
             const string AesPassword = "2xQXihMFXz7fE29oTKsrViBofE6GLr58";

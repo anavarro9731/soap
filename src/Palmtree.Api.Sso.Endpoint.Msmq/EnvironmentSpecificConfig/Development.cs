@@ -32,8 +32,7 @@
             1,
             "An error has occurred.",
             true,
-            "PalmTree SSO - MSMQ",
-            SeqLoggingConfig.Create("http://localhost:5341/"));
+            "PalmTree SSO - MSMQ");
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {

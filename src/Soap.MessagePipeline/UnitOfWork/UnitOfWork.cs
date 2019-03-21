@@ -21,10 +21,11 @@
 
         private IBusContext busContext;
 
-        public UnitOfWork(QueuedStateChanger stateChanger, IMessageAggregator messageAggregator)
+        public UnitOfWork(QueuedStateChanger stateChanger, IMessageAggregator messageAggregator, IBusContext busContext)
         {
             this.stateChanger = stateChanger;
             this.messageAggregator = messageAggregator;
+            this.busContext = busContext;
             TransactionId = Guid.NewGuid();
         }
 
@@ -44,7 +45,7 @@
             QueueStateChange(
                 new QueuedApiEvent
                 {
-                    CommitClosure = () => this.messageAggregator.CollectAndForward(new PublishEventOperation(@event)).To(this.busContext.Publish),
+                    CommitClosure = () => this.busContext.Publish(@event),
                     Event = @event
                 });
         }
@@ -61,26 +62,24 @@
             QueueStateChange(
                 new QueuedApiCommand
                 {
-                    CommitClosure = () => this.messageAggregator.CollectAndForward(new SendCommandOperation(command)).To(this.busContext.Send),
+                    CommitClosure = () => this.busContext.Send(command),
                     Command = command
                 });
         }
 
-        public void SendCommandToSelf(IApiCommand command)
+        public void SendLocal(IApiCommand command)
         {
             command.TimeOfCreationAtOrigin = DateTime.UtcNow;
 
             QueueStateChange(
                 new QueuedApiCommand
                 {
-                    CommitClosure = () => this.messageAggregator.CollectAndForward(new SendCommandOperation(command)).To(this.busContext.SendLocal),
+                    CommitClosure = () => this.busContext.SendLocal(command),
                     Command = command
                 });
         }
-        //reply via directsend
-        public void SetBusContext(IBusContext busContext)
-        {
-            this.busContext = busContext;
-        }
+
+        //reply
+
     }
 }

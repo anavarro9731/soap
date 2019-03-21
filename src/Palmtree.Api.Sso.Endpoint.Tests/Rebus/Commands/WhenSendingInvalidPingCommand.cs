@@ -14,7 +14,7 @@
 
 //        public WhenSendingInvalidPingCommand()
 //        {
-//            var apiClient = new MsmqApiClient("serviceapi");
+//            var apiClient = new BusClient("serviceapi");
 
 //            this.userId = Guid.NewGuid();
 

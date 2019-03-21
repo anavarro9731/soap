@@ -24,7 +24,7 @@
         {
             this.allMessages.Add(message);
 
-            if (message is IDataStoreOperation || message is IBusOperation)
+            if (message is IDataStoreOperation) //we never want to gate these in testing becase we are collecting calls in a "FakeStore" rather than setting up return values
             {
                 return new MessagePropogator<TMessage>(message);
             }

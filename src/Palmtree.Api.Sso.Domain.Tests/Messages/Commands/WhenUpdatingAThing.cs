@@ -11,8 +11,6 @@
     {
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
-        private readonly Thing result;
-
         private readonly Guid thingId = Guid.Parse("33de11ce-2058-49bb-a4e9-e1b23fb0b9c4");
 
         public WhenUpdatingAThing()

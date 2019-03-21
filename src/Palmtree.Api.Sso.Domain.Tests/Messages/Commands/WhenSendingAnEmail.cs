@@ -12,8 +12,6 @@
     {
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
-        private readonly List<EmailResponse> result;
-
         private readonly SendEmail sendEmailCommand;
 
         public WhenSendingAnEmail()
@@ -40,7 +38,7 @@
             this.endPoint.MessageAggregator.When<EmailSender.SendingEmail>().Return(new EmailResponse());
 
             //act
-            this.result = this.endPoint.HandleCommand(this.sendEmailCommand) as List<EmailResponse>;
+            this.endPoint.HandleCommand(this.sendEmailCommand);
         }
 
         [Fact]

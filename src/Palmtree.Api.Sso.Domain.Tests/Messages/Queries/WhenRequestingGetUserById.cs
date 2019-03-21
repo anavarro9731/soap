@@ -17,7 +17,7 @@
     {
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
-        private readonly IApiQuery getUserById;
+        private readonly ApiQuery<User> getUserById;
 
         private readonly IUserWithPermissions result;
 
@@ -28,7 +28,7 @@
             this.getUserById = new GetUserById(TestData.User1.id);
 
             //act
-            this.result = (IUserWithPermissions)this.endPoint.HandleQuery(this.getUserById);
+            this.result = (IUserWithPermissions)this.endPoint.HandleQuery<User>(this.getUserById);
         }
 
         [Fact]

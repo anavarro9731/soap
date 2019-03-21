@@ -18,6 +18,7 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
+    using Soap.If.MessagePipeline.Messages;
     using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.Pf.EndpointClients;
     using Soap.Pf.EndpointInfrastructure;
@@ -38,7 +39,7 @@
 
         private static Assembly domainLogicAssembly;
 
-        private static Assembly domainModelsAssembly;
+        private static Assembly domainMessagesAssembly;
 
         private static ILogger logger;
 
@@ -46,12 +47,12 @@
 
         public HttpEndpointConfiguration(
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Func<IBusContext> busContextFactory,
             Func<IDocumentRepository> documentRepositoryFactory)
         {
             HttpEndpointConfiguration<TUserAuthenticator>.domainLogicAssembly = domainLogicAssembly;
-            HttpEndpointConfiguration<TUserAuthenticator>.domainModelsAssembly = domainModelsAssembly;
+            HttpEndpointConfiguration<TUserAuthenticator>.domainMessagesAssembly = domainMessagesAssembly;
             HttpEndpointConfiguration<TUserAuthenticator>.busContextFactory = busContextFactory;
             HttpEndpointConfiguration<TUserAuthenticator>.documentRepositoryFactory = documentRepositoryFactory;
 
@@ -169,7 +170,7 @@
                 void SendStartupCommand()
                 {
                     var bus = rootLifetimeScope.Resolve<IBusContext>();
-                    bus.SendLocal(new SendCommandOperation(startupCommand));
+                    bus.SendLocal((startupCommand));
                 }
             }
 
@@ -193,7 +194,7 @@
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
                         domainLogicAssembly,
-                        domainModelsAssembly,
+                        domainMessagesAssembly,
                         MessageAggregator.Create,
                         documentRepositoryFactory,
                         containerActions);

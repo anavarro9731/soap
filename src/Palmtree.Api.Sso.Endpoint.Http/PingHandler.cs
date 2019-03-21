@@ -1,18 +1,17 @@
-﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
+﻿namespace Palmtree.Api.Sso.Endpoint.Http
 {
     using System;
     using System.Threading.Tasks;
     using FluentValidation;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Messages.Events;
-    using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.Utility.PureFunctions;
     using Soap.Pf.HttpEndpointBase;
 
-    public class PingHandler : CommandHandler<PingCommand, PongViewModel>
+    public class PingHandler : CommandHandler<PingCommand, PingCommand.PongViewModel>
     {
-        public PongViewModel ProcessPing(PingCommand ping, ApiMessageMeta meta)
+        public PingCommand.PongViewModel ProcessPing(PingCommand ping, ApiMessageMeta meta)
         {
             new PingCommandValidator().ValidateAndThrow(ping);
 
@@ -34,12 +33,17 @@
 
             UnitOfWork.SendCommand(pong2);
 
-            var pong3 = new PongViewModel
+            var pong3 = new PingCommand.PongViewModel
             {
                 PingedAt = ping.PingedAt,
                 PingedBy = ping.PingedBy
             };
             return pong3;
+        }
+
+        protected override Task<PingCommand.PongViewModel> Handle(PingCommand message, ApiMessageMeta meta)
+        {
+            return Task.FromResult(ProcessPing(message, meta));
         }
 
         private static void AssertTestScenarios(PingCommand ping, ApiMessageMeta meta)
@@ -54,11 +58,6 @@
                     Guard.Against(true, "Paramater Invalid");
                     break;
             }
-        }
-
-        protected override Task<PongViewModel> Handle(PingCommand message, ApiMessageMeta meta)
-        {
-            return Task.FromResult(ProcessPing(message, meta));
         }
     }
 }

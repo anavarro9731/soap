@@ -15,7 +15,7 @@
     using Soap.If.Utility.PureFunctions;
     using Soap.Integrations.Mailgun;
 
-    public class UserRegistrationProcess : StatefulProcess<UserRegistrationProcess>, IBeginProcess<RegisterUser, RegistrationResult>, IContinueProcess<ConfirmEmail>
+    public class UserRegistrationProcess : StatefulProcess<UserRegistrationProcess>, IBeginProcess<RegisterUser, RegisterUser.RegistrationResult>, IContinueProcess<ConfirmEmail>
     {
         private readonly IApplicationConfig config;
 
@@ -27,7 +27,7 @@
             this.config = config;
         }
 
-        public async Task<RegistrationResult> BeginProcess(RegisterUser command, ApiMessageMeta meta)
+        public async Task<RegisterUser.RegistrationResult> BeginProcess(RegisterUser command, ApiMessageMeta meta)
         {
             {
                 Validate();
@@ -38,7 +38,7 @@
 
                 References.UserId = newUser.id;
 
-                return RegistrationResult.Create("User Created", UserProfile.Create(newUser), true, ProcessId);
+                return RegisterUser.RegistrationResult.Create("User Created", UserProfile.Create(newUser), true, ProcessId);
             }
 
             void Validate()

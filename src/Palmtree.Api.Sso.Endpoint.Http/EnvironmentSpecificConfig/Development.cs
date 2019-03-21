@@ -33,8 +33,7 @@
             0,
             "An error has occurred.",
             true,
-            "PalmTree SSO - HTTP",
-            SeqLoggingConfig.Create("http://localhost:5341/")
+            "PalmTree SSO - HTTP"
             );
 
         public void DefineCorsPolicyPerEnvironment(CorsPolicyBuilder policyBuilder)

@@ -1,7 +1,8 @@
-namespace Soap.Pf.ClientServerMessaging.Routing
+namespace Soap.Pf.ClientServerMessaging.Routing.Routes
 {
     using System.Reflection;
     using Soap.If.Interfaces.Messages;
+    using Soap.Pf.ClientServerMessaging.Commands;
     using Soap.Pf.ClientServerMessaging.Routing.Addresses;
 
     public class MessageAssemblyToHttpEndpointRoute : HttpMessageRoute
@@ -19,7 +20,14 @@ namespace Soap.Pf.ClientServerMessaging.Routing
 
         public override bool CanRouteMessage(IApiMessage message)
         {
-            return message.GetType().Assembly.FullName == AssemblyName;
+            if (message is IForwardCommandFromHttpToMsmq forwardedMessage)
+            {
+                return forwardedMessage.CommandToForward.GetType().Assembly.FullName == AssemblyName;
+            }
+            else
+            {
+                return message.GetType().Assembly.FullName == AssemblyName;
+            }
         }
     }
 }
