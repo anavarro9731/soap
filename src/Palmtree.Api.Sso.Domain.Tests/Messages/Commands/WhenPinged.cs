@@ -61,7 +61,7 @@
         [Fact]
         public void ItShouldRecordASuccessfulResult()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
             Assert.NotNull(logItemResult.SuccessfulAttempt);
         }
 
@@ -91,7 +91,7 @@
         [Fact]
         public void ItShouldRecordASuccessForTheFirstCommand()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.NotNull(logItemResult.SuccessfulAttempt);
         }
@@ -131,7 +131,7 @@
         [Fact]
         public void ItShouldRecordASuccessForTheFirstCommand()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.NotNull(logItemResult.SuccessfulAttempt);
         }
@@ -180,7 +180,7 @@
         [Fact]
         public void ItShouldNotRecordASuccess()
         {
-            var logItemResult = this.endpoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endpoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.Null(logItemResult.SuccessfulAttempt);
         }
@@ -188,7 +188,7 @@
         [Fact]
         public void ItShouldRecordAllFailedAttempts()
         {
-            var logItemResult = this.endpoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endpoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.Equal(this.totalAttempts, logItemResult.FailedAttempts.Count);
         }
@@ -246,7 +246,7 @@
         [Fact]
         public void ItShouldNotRecordASuccess()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.Null(logItemResult.SuccessfulAttempt);
         }
@@ -254,7 +254,7 @@
         [Fact]
         public void ItShouldRecordAllFailedAttempts()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.Equal(this.totalAttempts, logItemResult.FailedAttempts.Count);
         }
@@ -307,7 +307,7 @@
         [Fact]
         public void ItShouldRecordAllFailedAttempts()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.Single(logItemResult.FailedAttempts);
         }
@@ -315,7 +315,7 @@
         [Fact]
         public void ItShouldRecordASuccess()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.command.MessageId)).Result.Single();
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.command.MessageId)).Result.Single();
 
             Assert.NotNull(logItemResult.SuccessfulAttempt);
         }

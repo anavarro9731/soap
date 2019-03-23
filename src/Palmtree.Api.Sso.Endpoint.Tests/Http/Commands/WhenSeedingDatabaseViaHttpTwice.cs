@@ -26,7 +26,11 @@
                 messageId = Guid.NewGuid();
 
                 apiClient.SendCommand(
-                             new ForwardCommandFromHttpToMsmq<SeedDatabase>(new SeedDatabase())
+                             new ForwardCommandFromHttpToMsmq<SeedDatabase>(
+                                 new SeedDatabase()
+                                 {
+                                     MessageId = Guid.NewGuid()
+                                 })
                              {
                                  MessageId = messageId
                              })

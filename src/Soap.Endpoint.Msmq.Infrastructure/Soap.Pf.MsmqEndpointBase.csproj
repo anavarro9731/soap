@@ -13,7 +13,6 @@
     <PackageReference Include="Rebus.Msmq" Version="4.0.0" />
     <PackageReference Include="Topshelf" Version="4.0.3" />
     <PackageReference Include="Topshelf.Serilog" Version="4.0.3" />
-    <PackageReference Include="DataStore.Impl.SqlServer" Version="1.6.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj" />

@@ -19,7 +19,7 @@
             void DetermineChange(out Thing thing)
             {
                 thing = Thing.Create(msg.NameOfThing);
-                thing.id = msg.ThingId;
+                thing.Id = msg.ThingId;
             }
         }
 

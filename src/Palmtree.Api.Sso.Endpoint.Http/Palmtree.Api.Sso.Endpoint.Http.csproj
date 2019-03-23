@@ -7,10 +7,10 @@
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />    
-    <PackageReference Include="DataStore.Impl.SqlServer" Version="1.6.6" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\datastore\src\DataStore.Providers.CosmosDb\DataStore.Providers.CosmosDb.csproj" />
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Logic\Palmtree.Api.Sso.Domain.Logic.csproj" />
     <ProjectReference Include="..\Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>

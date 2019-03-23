@@ -4,12 +4,13 @@
     using System.Collections.Generic;
     using CircuitBoard.Permissions;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Providers.CosmosDb;
     using Destructurama.Attributed;
     using Palmtree.Api.Sso.Domain.Models.Entities;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Soap.If.Utility;
 
-    public class User : Aggregate, IUserWithPermissions
+    public class User : CosmosAggregate, IUserWithPermissions
     {
         public enum UserStates
         {
@@ -45,6 +46,9 @@
             string userName,
             Guid? id = null)
         {
+            //TODO remove id from IUserWithPermissions
+            var userId = id ?? Guid.NewGuid();
+
             return new User
             {
                 Email = email,
@@ -54,9 +58,10 @@
                 Permissions = new List<IApplicationPermission>(),
                 UserName = userName,
                 ActiveSecurityTokens = new List<SecurityToken>(),
-                id = id ?? Guid.NewGuid(),
+                id = userId,
                 ThingIds = new List<Guid>(),
-                Status = FlaggedState.Create<UserStates>()
+                Status = FlaggedState.Create<UserStates>(),
+                Id = userId
             };
         }
 
@@ -74,6 +79,8 @@
         {
             return Permissions.Contains(permission);
         }
+
+        public Guid id { get; set; }
 
         public bool HasRequestedAPasswordReset()
         {

@@ -25,7 +25,7 @@
         {
             //arrange            
             this.endPoint.AddToDatabase(TestData.User1);
-            this.getUserById = new GetUserById(TestData.User1.id);
+            this.getUserById = new GetUserById(TestData.User1.Id);
 
             //act
             this.result = (IUserWithPermissions)this.endPoint.HandleQuery<User>(this.getUserById);
@@ -34,7 +34,7 @@
         [Fact]
         public void ItShouldNotCreateAMessageLogEntry()
         {
-            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.id == this.getUserById.MessageId))
+            var logItemResult = this.endPoint.QueryDatabase<MessageLogItem>(query => query.Where(logItem => logItem.Id == this.getUserById.MessageId))
                                     .Result.SingleOrDefault();
 
             Assert.Null(logItemResult);
@@ -56,7 +56,7 @@
         [Fact]
         public void ItShouldReturnTheUser()
         {
-            Assert.Equal(this.result?.id, TestData.User1.id);
+            Assert.Equal(this.result?.id, TestData.User1.Id);
         }
     }
 }

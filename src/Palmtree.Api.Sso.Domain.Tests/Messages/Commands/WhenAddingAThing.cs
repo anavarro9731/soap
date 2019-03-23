@@ -32,7 +32,7 @@
         [Fact]
         public void ItShouldAddTheThingToTheDatabase()
         {
-            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.id == this.command.ThingId)).Result.SingleOrDefault();
+            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.Id == this.command.ThingId)).Result.SingleOrDefault();
             Assert.NotNull(thing);
         }
 
@@ -40,7 +40,7 @@
         public void ItShouldReturnTheNewThing()
         {
             Assert.NotNull(this.result);
-            Assert.Equal(this.command.ThingId, this.result.id);
+            Assert.Equal(this.command.ThingId, this.result.Id);
         }
     }
 }

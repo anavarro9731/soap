@@ -1,8 +1,8 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Http
 {
-    using DataStore;
-    using DataStore.Impl.SqlServer;
+    using DataStore.Providers.CosmosDb;
     using Palmtree.Api.Sso.Domain.Logic;
+    using Palmtree.Api.Sso.Domain.Logic.Configuration;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Soap.Pf.ClientServerMessaging.Routing.Routes;
@@ -23,7 +23,7 @@
                             () => HttpEndpoint.CreateBusContext(
                                 applicationConfiguration,
                                 new MessageAssemblyToMsmqEndpointRoute(domainMessagesAssembly, applicationConfiguration.ApiEndpointSettings.MsmqEndpointAddress)),
-                            () => new InMemoryDocumentRepository())
+                            () => new CosmosDbRepository(applicationConfiguration.CosmosStoreSettings))
                         .Start();
         }
     }

@@ -22,7 +22,7 @@
 
 
             var resetPasswordFromEmail = new ResetPasswordFromEmail(TestData.User1.UserName, "new_password");
-            resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.id;
+            resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.Id;
             this.endPoint.HandleCommand(resetPasswordFromEmail, TestData.User1);
         }
 

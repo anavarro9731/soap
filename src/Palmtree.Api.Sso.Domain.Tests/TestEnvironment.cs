@@ -1,8 +1,9 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Tests
 {
     using System.Reflection;
-    using DataStore.Impl.SqlServer;
+    using Cosmonaut;
     using Palmtree.Api.Sso.Domain.Logic;
+    using Palmtree.Api.Sso.Domain.Logic.Configuration;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
@@ -27,7 +28,7 @@
                 returnExplicitErrorMessages: true,
                 numberOfApiMessageRetries: 3,
                 apiEndpointSettings: ApiEndpointSettings.Create("httpUrl", "msmqAddress"),
-                sqlServerDbSettings: SqlServerDbSettings.Create("serverInstance", "database", "userId", "password", "tableName"),
+                cosmosStoreSettings: new CosmosStoreSettings("testdb", "https://localhost:8081", "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="),
                 mailgunEmailSenderSettings: MailgunEmailSenderSettings.Create("im@mycomputer.com", "apiKey", "domain"));
 
             var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(

@@ -110,7 +110,7 @@
                             logger.Debug(
                                 result == null
                                     ? $"Failed to find record for msg id {message.MessageId}"
-                                    : $"Found record with id {result.id} for msg with id {message.MessageId}");
+                                    : $"Found record with id {result.Id} for msg with id {message.MessageId}");
                         }
                         catch (Exception e)
                         {
@@ -124,7 +124,7 @@
                     try
                     {
                         //save this immediately outside of the ambient txn so other threads will not get passed duplicate check
-                        using (var tx = new TransactionScope(TransactionScopeOption.Suppress))
+                        using ( var tx = new TransactionScope(TransactionScopeOption.Suppress))
                         {
                             logger.Debug($"Creating record for msg id {message.MessageId}");
 
@@ -134,7 +134,7 @@
 
                             tx.Complete();
 
-                            logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
+                            logger.Debug($"Created record with id {newItem.Id} for msg id {message.MessageId}");
 
                             return newItem.Clone();
                         }

@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions.Extensions;
     using Soap.Pf.ClientServerMessaging.Queries;
     using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointClients;
@@ -156,7 +157,8 @@
 
                 public static BusApiClient CreateApiClient(Assembly messageAssembly)
                 {
-                    return new BusApiClient(new MessageAssemblyToMsmqEndpointRoute(messageAssembly, ApiHostEndpointAddress));
+                    var client = new BusApiClient(new MessageAssemblyToMsmqEndpointRoute(messageAssembly, ApiHostEndpointAddress)).Op(async c => await c.Start());
+                    return client;
                 }
             }
         }

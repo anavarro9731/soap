@@ -10,6 +10,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
+    using Microsoft.CSharp.RuntimeBinder;
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline;
@@ -83,11 +84,11 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as Process).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<UnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as Process).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerDependency();
 
@@ -97,11 +98,11 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as StatefulProcess).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<UnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as StatefulProcess).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerDependency();
             }
@@ -113,11 +114,11 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as Operations).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<UnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as Operations).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerLifetimeScope();
             }

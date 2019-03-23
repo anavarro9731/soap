@@ -36,7 +36,7 @@
 
                 SendEmailNotification(UserProfile.Create(newUser));
 
-                References.UserId = newUser.id;
+                References.UserId = newUser.Id;
 
                 return RegisterUser.RegistrationResult.Create("User Created", UserProfile.Create(newUser), true, ProcessId);
             }

@@ -1,9 +1,9 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Models.Aggregates
 {
     using System;
-    using DataStore.Interfaces.LowLevel;
+    using DataStore.Providers.CosmosDb;
 
-    public class MessageFailedAllRetriesLogItem : Aggregate
+    public class MessageFailedAllRetriesLogItem : CosmosAggregate
     {
         public Guid IdOfMessageThatFailed { get; set; }
     }

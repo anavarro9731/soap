@@ -30,7 +30,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
         protected IMessageAggregator MessageAggregator { get; private set; }
 
-        protected Guid ProcessId => this.processState.id;
+        protected Guid ProcessId => this.processState.Id;
 
         protected dynamic References => this.processState.References;
 

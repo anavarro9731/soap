@@ -3,11 +3,11 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="4.0.5" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
     <PackageReference Include="CircuitBoard" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\datastore\src\DataStore.Providers.CosmosDb\DataStore.Providers.CosmosDb.csproj" />
     <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
   </ItemGroup>
 

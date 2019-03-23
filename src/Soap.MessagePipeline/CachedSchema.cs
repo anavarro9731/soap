@@ -6,9 +6,9 @@
     using System.ComponentModel;
     using System.Linq;
     using System.Text;
-    using DataStore.Models.PureFunctions.Extensions;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     public class CachedSchema
     {
