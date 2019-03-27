@@ -24,7 +24,7 @@
 
             this.endPoint.AddToDatabase(this.anotherUser);
 
-            var enableUser = new EnableUser(this.anotherUser.Id);
+            var enableUser = new EnableUser(this.anotherUser.id);
 
             //act
             this.endPoint.HandleCommand(enableUser, TestData.User1);
@@ -33,7 +33,7 @@
         [Fact]
         public void ItShouldEnableTheUserInTheDatabase()
         {
-            var user = this.endPoint.QueryDatabase<User>(q => q.Where(x => x.Id == this.anotherUser.Id)).Result.Single();
+            var user = this.endPoint.QueryDatabase<User>(q => q.Where(x => x.id == this.anotherUser.id)).Result.Single();
 
             Assert.True(!user.AccountIsDisabled());
         }
@@ -49,7 +49,7 @@
                 null,
                 "monmothma",
                 Guid.Parse("33de11ce-2058-49bb-a4e9-e1b23fb0b9c4"));
-            user.ActiveSecurityTokens.Add(SecurityToken.Create(user.Id, user.PasswordDetails.PasswordHash, DateTime.Now, new TimeSpan(0, 0, 15), true));
+            user.ActiveSecurityTokens.Add(SecurityToken.Create(user.id, user.PasswordDetails.PasswordHash, DateTime.Now, new TimeSpan(0, 0, 15), true));
             user.Status.AddState(User.UserStates.AccountDisabled);
             return user;
         }

@@ -31,7 +31,7 @@
         {
             return new MessageLogItem
             {
-                Id = message.MessageId,
+                id = message.MessageId,
                 MaxFailedMessages = applicationConfig.NumberOfApiMessageRetries + 1,
                 Message = message,
                 ClrTypeOfMessage = message.GetType().FullName,

@@ -1,10 +1,8 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic.Processes.Stateful
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Mailer.NET.Mailer;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
@@ -15,7 +13,9 @@
     using Soap.If.Utility.PureFunctions;
     using Soap.Integrations.Mailgun;
 
-    public class UserRegistrationProcess : StatefulProcess<UserRegistrationProcess>, IBeginProcess<RegisterUser, RegisterUser.RegistrationResult>, IContinueProcess<ConfirmEmail>
+    public class UserRegistrationProcess : StatefulProcess<UserRegistrationProcess>,
+                                           IBeginProcess<RegisterUser, RegisterUser.RegistrationResult>,
+                                           IContinueProcess<ConfirmEmail>
     {
         private readonly IApplicationConfig config;
 
@@ -36,7 +36,7 @@
 
                 SendEmailNotification(UserProfile.Create(newUser));
 
-                References.UserId = newUser.Id;
+                References.UserId = newUser.id;
 
                 return RegisterUser.RegistrationResult.Create("User Created", UserProfile.Create(newUser), true, ProcessId);
             }
@@ -57,20 +57,10 @@
 
             void SendEmailNotification(UserProfile response)
             {
-                UnitOfWork.SendCommand(
-                    new SendEmail(
-                        new Email
-                        {
-                            To = new List<Contact>
-                            {
-                                new Contact
-                                {
-                                    Email = response.Email
-                                }
-                            },
-                            Message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}",
-                            Subject = "Please verify your account"
-                        }));
+                var message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}";
+                var subject = "Please verify your account";
+
+                UnitOfWork.SendCommand(new SendEmail(message, subject, response.Email));
             }
         }
 

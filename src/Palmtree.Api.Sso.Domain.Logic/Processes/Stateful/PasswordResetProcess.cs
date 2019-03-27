@@ -51,20 +51,16 @@
 
             void SendEmailNotification(string to)
             {
+
+                var message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}";
+                var subject = "Password Reset Requested";
+                
+                
                 UnitOfWork.SendCommand(
                     new SendEmail(
-                        new Email
-                        {
-                            To = new List<Contact>
-                            {
-                                new Contact
-                                {
-                                    Email = to
-                                }
-                            },
-                            Message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}",
-                            Subject = "Password Reset Requested"
-                        }));
+                        message,
+                        subject,
+                        to));
             }
         }
 

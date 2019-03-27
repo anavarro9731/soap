@@ -21,7 +21,7 @@
             this.endPoint.AddToDatabase(TestData.User1);
             var thing = new Thing
             {
-                Id = this.thingId,
+                id = this.thingId,
                 NameOfThing = "Some Thing"
             };
             this.endPoint.AddToDatabase(thing);
@@ -36,13 +36,13 @@
         public void ItShouldReturnTheDeletedThing()
         {
             Assert.NotNull(this.result);
-            Assert.Equal(this.result.Id, this.thingId);
+            Assert.Equal(this.result.id, this.thingId);
         }
 
         [Fact]
         public void ItShouldSoftDeleteFromTheDatabase()
         {
-            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.Id == this.thingId)).Result.Single();
+            var thing = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.id == this.thingId)).Result.Single();
             Assert.True(thing.Active == false);
         }
     }

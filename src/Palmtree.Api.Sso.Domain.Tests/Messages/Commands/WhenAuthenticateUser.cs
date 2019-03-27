@@ -49,7 +49,7 @@
             user.Should().NotBeNull();
             user.ActiveSecurityTokens.Should().HaveCount(1);
 
-            var expectedSecurityToken = SecurityToken.Create(user.Id, user.PasswordDetails.PasswordHash, this.issuedAt, this.expiresIn, true);
+            var expectedSecurityToken = SecurityToken.Create(user.id, user.PasswordDetails.PasswordHash, this.issuedAt, this.expiresIn, true);
             user.ActiveSecurityTokens.Should()
                 .ContainSingle(t => t.UserId == expectedSecurityToken.UserId && t.SecureHmacHash == expectedSecurityToken.SecureHmacHash);
         }
@@ -57,7 +57,7 @@
         [Fact]
         public void ItShouldAuthenticateTheUser()
         {
-            Assert.True(this.result.UserProfile.Id == this.anotherUser.Id);
+            Assert.True(this.result.UserProfile.id == this.anotherUser.id);
         }
 
         private User CreateAnotherUser()

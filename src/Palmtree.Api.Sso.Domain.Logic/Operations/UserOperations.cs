@@ -87,7 +87,7 @@
         public async Task AddThingToUser(Thing thing, Guid userId)
         {
             {
-                DetermineChange(out Action<User> change, thing.Id);
+                DetermineChange(out Action<User> change, thing.id);
 
                 await DataStore.UpdateById(userId, change);
             }
@@ -108,7 +108,7 @@
 
                 DetermineChange(user, out Action<User> change);
 
-                await DataStore.UpdateById(user.Id, change, true);
+                await DataStore.UpdateById(user.id, change, true);
 
                 return response;
             }
@@ -139,7 +139,7 @@
             {
                 if (user.NormalCredentialsMatch(Credentials.Create(command.Credentials.Username, command.Credentials.Password)))
                 {
-                    var securityToken = SecurityToken.Create(user.Id, user.PasswordDetails.PasswordHash, DateTime.UtcNow, new TimeSpan(0, 15, 0), true);
+                    var securityToken = SecurityToken.Create(user.id, user.PasswordDetails.PasswordHash, DateTime.UtcNow, new TimeSpan(0, 15, 0), true);
 
                     change = u => Login(u, securityToken);
 
@@ -202,7 +202,7 @@
 
                 DetermineChange(out Action<User> change);
 
-                await DataStore.UpdateById(user.Id, change, true);
+                await DataStore.UpdateById(user.id, change, true);
 
             }
 
@@ -238,11 +238,11 @@
 
                 CreateNewPasswordHash(out SecureHmacHash newHash);
 
-                CreateNewSecurityToken(newHash, user.Id, out SecurityToken newToken);
+                CreateNewSecurityToken(newHash, user.id, out SecurityToken newToken);
 
                 DetermineChange(user, newHash, newToken, out Action<User> change);
 
-                await DataStore.UpdateById(user.Id, change, true);
+                await DataStore.UpdateById(user.id, change, true);
 
                 return Messages.Commands.ResetPasswordFromEmail.ClientSecurityContext.Create(newToken, user);
             }

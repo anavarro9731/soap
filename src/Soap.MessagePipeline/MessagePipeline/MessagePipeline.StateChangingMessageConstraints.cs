@@ -110,7 +110,7 @@
                             logger.Debug(
                                 result == null
                                     ? $"Failed to find record for msg id {message.MessageId}"
-                                    : $"Found record with id {result.Id} for msg with id {message.MessageId}");
+                                    : $"Found record with id {result.id} for msg with id {message.MessageId}");
                         }
                         catch (Exception e)
                         {
@@ -134,7 +134,7 @@
 
                             tx.Complete();
 
-                            logger.Debug($"Created record with id {newItem.Id} for msg id {message.MessageId}");
+                            logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
 
                             return newItem.Clone();
                         }

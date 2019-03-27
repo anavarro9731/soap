@@ -33,7 +33,7 @@
         [Fact]
         public void ItShouldRemoveSecurityTokens()
         {
-            var user = this.endPoint.QueryDatabase<User>(q => q.Where(x => x.Id == TestData.User1.Id)).Result.Single();
+            var user = this.endPoint.QueryDatabase<User>(q => q.Where(x => x.id == TestData.User1.id)).Result.Single();
 
             user.ActiveSecurityTokens.Count.Should().Be(1); //the original token before we added one during auth
         }

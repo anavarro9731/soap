@@ -32,7 +32,7 @@
                     "monmothma",
                     userId);
                 var securityToken = SecurityToken.Create(
-                    user.Id,
+                    user.id,
                     user.PasswordDetails.PasswordHash,
                     new DateTime(DateTime.Today.Year, 1, 1),
                     TimeSpan.FromDays(365),

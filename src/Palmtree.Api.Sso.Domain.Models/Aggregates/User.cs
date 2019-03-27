@@ -60,8 +60,7 @@
                 ActiveSecurityTokens = new List<SecurityToken>(),
                 id = userId,
                 ThingIds = new List<Guid>(),
-                Status = FlaggedState.Create<UserStates>(),
-                Id = userId
+                Status = FlaggedState.Create<UserStates>()
             };
         }
 
@@ -79,8 +78,6 @@
         {
             return Permissions.Contains(permission);
         }
-
-        public Guid id { get; set; }
 
         public bool HasRequestedAPasswordReset()
         {

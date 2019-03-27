@@ -20,7 +20,7 @@
 
             var thing = new Thing
             {
-                Id = this.thingId,
+                id = this.thingId,
                 NameOfThing = "Sme Thing"
             };
 
@@ -35,7 +35,7 @@
         [Fact]
         public void ItShouldUpdateTheThingInTheDatabase()
         {
-            var single = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.Id == this.thingId)).Result.Single();
+            var single = this.endPoint.QueryDatabase<Thing>(q => q.Where(x => x.id == this.thingId)).Result.Single();
 
             Assert.True(single.NameOfThing == "Some Thing");
         }

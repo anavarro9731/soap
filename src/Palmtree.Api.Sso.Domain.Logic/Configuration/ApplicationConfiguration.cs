@@ -1,6 +1,5 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic
 {
-    using Cosmonaut;
     using DataStore.Providers.CosmosDb;
     using Newtonsoft.Json;
     using Soap.If.Interfaces;
@@ -14,7 +13,7 @@
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
-            CosmosStoreSettings cosmosStoreSettings,
+            CosmosSettings cosmosStoreSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries,
             string defaultExceptionMessage,
@@ -52,13 +51,13 @@
 
         public SeqLoggingConfig SeqLoggingConfig { get; }
 
-        public CosmosStoreSettings CosmosStoreSettings { get; }
+        public CosmosSettings CosmosStoreSettings { get; }
 
         public static ApplicationConfiguration Create(
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
-            CosmosStoreSettings cosmosStoreSettings,
+            CosmosSettings cosmosStoreSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries = 1,
             string unexpectedExceptionMessage = "An Error Has Occurred",

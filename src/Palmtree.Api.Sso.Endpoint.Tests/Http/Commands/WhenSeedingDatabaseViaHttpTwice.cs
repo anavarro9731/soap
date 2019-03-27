@@ -1,7 +1,9 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Tests.Http.Commands
 {
     using System;
+    using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
+    using Palmtree.Api.Sso.Domain.Messages.Queries.Abstract;
     using Soap.Pf.ClientServerMessaging.Commands;
     using Soap.Pf.EndpointTestsBase;
     using Xunit;
@@ -9,23 +11,23 @@
     public class WhenSeedingDatabaseViaHttpTwice
     {
         [Fact]
-        public void ItShouldNotFail()
+        public async void ItShouldNotFail()
         {
             var apiClient = TestUtils.Endpoints.Http.CreateApiClient(typeof(SeedDatabase).Assembly);
 
             {
-                SendOneDbSeedCommand(out var message1Id);
-                SendOneDbSeedCommand(out var message2Id);
+                var message1Id = await SendOneDbSeedCommand();
+                var message2Id = await SendOneDbSeedCommand();
 
-                TestUtils.Assert.CommandSuccess(message1Id).Wait();
-                TestUtils.Assert.CommandSuccess(message2Id).Wait();
+                await TestUtils.Assert.CommandSuccess<GetMessageLogItemQuery, GetMessageLogItemQuery.GetMessageLogItemResponse>(message1Id);
+                await TestUtils.Assert.CommandSuccess<GetMessageLogItemQuery, GetMessageLogItemQuery.GetMessageLogItemResponse>(message2Id);
             }
 
-            void SendOneDbSeedCommand(out Guid messageId)
+            async Task<Guid> SendOneDbSeedCommand()
             {
-                messageId = Guid.NewGuid();
+                var messageId = Guid.NewGuid();
 
-                apiClient.SendCommand(
+                await apiClient.SendCommand(
                              new ForwardCommandFromHttpToMsmq<SeedDatabase>(
                                  new SeedDatabase()
                                  {
@@ -33,8 +35,9 @@
                                  })
                              {
                                  MessageId = messageId
-                             })
-                         .Wait();
+                             });
+
+                return messageId;
             }
         }
     }

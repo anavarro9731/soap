@@ -417,7 +417,7 @@
             {
 
                 await this.dataStore.UpdateById<MessageLogItem>(
-                              messageLogItem.Id,
+                              messageLogItem.id,
                               obj => MessageLogItemOperations.AddFailedMessageResult(obj, pipelineExceptionMessages))
                           .ConfigureAwait(false);
             }

@@ -1,5 +1,6 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using Palmtree.Api.Sso.Domain.Logic;
     using Soap.If.MessagePipeline.Models;
@@ -19,7 +20,7 @@
         {
             var emailSender = new EmailSender(this.applicationConfiguration.MailgunEmailSenderSettings, MessageAggregator);
 
-            message.Message.To.ForEach(contact => emailSender.SendEmail(message.Message.Message, message.Message.Subject, contact.Email));
+            emailSender.SendEmail(message.Text, message.Subject, message.SendTo);
 
             return Task.CompletedTask;
         }

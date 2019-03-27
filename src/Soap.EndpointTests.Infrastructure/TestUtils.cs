@@ -17,7 +17,11 @@
     {
         public static class Assert
         {
-            public static Task<GetMessageLogItemQuery.ResponseModel> CommandCompletion(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
+
             {
                 {
                     var messageResults = AwaitMessageResults().Result;
@@ -25,9 +29,9 @@
                     return Task.FromResult(messageResults);
                 }
 
-                Task<GetMessageLogItemQuery.ResponseModel> AwaitMessageResults()
+                Task<TMessageLogItemQueryResponse> AwaitMessageResults()
                 {
-                    GetMessageLogItemQuery.ResponseModel queryResponse = null;
+                    TMessageLogItemQueryResponse queryResponse = null;
 
                     try
                     {
@@ -37,11 +41,11 @@
                             var listener = Task.Factory.StartNew(
                                 () =>
                                     {
-                                    var http = Endpoints.Http.CreateApiClient(typeof(GetMessageLogItemQuery).Assembly);
+                                    var http = Endpoints.Http.CreateApiClient(typeof(TMessageLogItemQuery).Assembly);
 
                                     while (true)
                                     {
-                                        var queryRequest = new GetMessageLogItemQuery
+                                        var queryRequest = new TMessageLogItemQuery
                                         {
                                             MessageIdOfLogItem = messageId
                                         };
@@ -68,7 +72,7 @@
                                 if (queryResponse == null)
                                 {
                                     throw new TimeoutException(
-                                        $"{nameof(GetMessageLogItemQuery)} has timed-out after {timeoutMsec} milliseconds for Message ID {messageId}");
+                                        $"{nameof(TMessageLogItemQuery)} has timed-out after {timeoutMsec} milliseconds for Message ID {messageId}");
                                 }
                             }
                         }
@@ -84,37 +88,42 @@
                     return Task.FromResult(queryResponse);
                 }
 
-                bool IsComplete(GetMessageLogItemQuery.ResponseModel messageLogItem)
+                bool IsComplete(TMessageLogItemQueryResponse messageLogItem)
                 {
                     return messageLogItem?.SuccessfulAttempt != null || messageLogItem?.FailedAttempts.Count >= messageLogItem?.MaxFailedMessages;
                 }
             }
 
-            public static Task CommandFailure(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandFailure<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
             {
-                var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
+                var messageResults = CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull($"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(TMessageLogItemQueryResponse)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 messageResults.SuccessfulAttempt.Should()
                               .BeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
 
                 messageResults.FailedAttempts?.Count.Should()
                               .Be(
                                   messageResults.MaxFailedMessages,
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
 
-                return Task.CompletedTask;
+                return Task.FromResult(messageResults);
             }
 
-            public static Task CommandSuccess(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandSuccess<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
+
             {
-                var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
+                var messageResults = CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull($"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(TMessageLogItemQueryResponse)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 if (messageResults.FailedAttempts?.Count >= messageResults.MaxFailedMessages)
                 {
@@ -124,9 +133,9 @@
 
                 messageResults.SuccessfulAttempt.Should()
                               .NotBeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
 
-                return Task.CompletedTask;
+                return Task.FromResult(messageResults);
             }
         }
 

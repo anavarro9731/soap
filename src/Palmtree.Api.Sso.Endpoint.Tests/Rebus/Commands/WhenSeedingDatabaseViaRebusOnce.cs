@@ -2,6 +2,7 @@
 {
     using System;
     using Palmtree.Api.Sso.Domain.Messages.Commands;
+    using Palmtree.Api.Sso.Domain.Messages.Queries.Abstract;
     using Soap.Pf.EndpointTestsBase;
     using Xunit;
 
@@ -20,7 +21,7 @@
                     MessageId = logItemMessageId
                 });
 
-            await TestUtils.Assert.CommandSuccess(logItemMessageId);
+            await TestUtils.Assert.CommandSuccess<GetMessageLogItemQuery, GetMessageLogItemQuery.GetMessageLogItemResponse>(logItemMessageId);
         }
     }
 }

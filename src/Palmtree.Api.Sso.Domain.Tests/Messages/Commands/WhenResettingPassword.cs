@@ -22,7 +22,7 @@
 
 
             var resetPasswordFromEmail = new ResetPasswordFromEmail(TestData.User1.UserName, "new_password");
-            resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.Id;
+            resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.id;
             this.endPoint.HandleCommand(resetPasswordFromEmail, TestData.User1);
         }
 
@@ -31,7 +31,7 @@
         {
             var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<SendEmail>().Single();
 
-            Assert.Equal(TestData.User1.Email, emailSent.Message.To.First().Email);
+            Assert.Equal(TestData.User1.Email, emailSent.SendTo.First());
         }
 
         [Fact]

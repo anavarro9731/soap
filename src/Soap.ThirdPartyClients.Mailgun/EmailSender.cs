@@ -25,56 +25,62 @@
             this.messageAggregator = messageAggregator;
         }
 
-        public EmailResponse SendEmail(string text, string subject, string sendTo)
+        public EmailResponse SendEmail(string text, string subject, string[] sendTo)
         {
-            Guard.Against(
-                () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(sendTo),
-                "Sending emails to this address is not allowed.");
-
-            var emailMessage = new Email(this.mailgunClient)
+            foreach (var s in sendTo)
             {
-                Subject = subject,
-                From = new Contact
-                {
-                    Email = this.emailSettings.From
-                },
-                To = new List<Contact>
-                {
-                    new Contact
-                    {
-                        Email = sendTo
-                    }
-                }
-            };
+                Guard.Against(
+                    () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
+                    $"Sending emails to {s} is not allowed.");
+            }
 
-            return this.messageAggregator.CollectAndForward(new SendingEmail(emailMessage)).To(SendViaMailGun);
+
+            return this.messageAggregator.CollectAndForward(new SendingEmail(text, subject, sendTo)).To(SendViaMailGun);
         }
 
         private EmailResponse SendViaMailGun(SendingEmail sendingEmail)
         {
             try
             {
-                var result = this.mailgunClient.SendEmail(sendingEmail.Message);
+                var emailMessage = new Email(this.mailgunClient)
+                {
+                    Subject = sendingEmail.Subject,
+                    Message = sendingEmail.Text,
+                    From = new Contact
+                    {
+                        Email = this.emailSettings.From
+                    },
+                    To = sendingEmail.SendTo.Select(x => new Contact() { Email = x}).ToList()
+                    
+                };
+                var result = this.mailgunClient.SendEmail(emailMessage);
                 return result;
             }
             catch (Exception e)
             {
                 return new EmailResponse
                 {
-                    Message = e.Message,
-                    Success = false
+                    Message = e.Message, Success = false
                 };
             }
         }
 
         public class SendingEmail : IChangeState
         {
-            public SendingEmail(Email message)
+            public string Text { get; }
+
+            public string Subject { get; }
+
+            public string[] SendTo { get; }
+
+            public SendingEmail(string text, string subject, string[] sendTo)
             {
-                Message = message;
+                Text = text;
+                Subject = subject;
+                SendTo = sendTo;
             }
 
-            public Email Message { get; }
+            
 
             public double StateOperationCost { get; set; }
 

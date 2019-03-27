@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj" />
     <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Pf.AbstractMessages\Soap.Pf.AbstractMessages.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />
