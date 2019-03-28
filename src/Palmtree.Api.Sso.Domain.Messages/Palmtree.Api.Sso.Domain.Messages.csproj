@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Palmtree.Api.Sso.Domain.Models\Palmtree.Api.Sso.Domain.Models.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
-    <ProjectReference Include="..\Soap.Pf.AbstractMessages\Soap.Pf.AbstractMessages.csproj" />
+    <ProjectReference Include="..\Soap.Pf.AbstractMessages\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
   
 </Project>

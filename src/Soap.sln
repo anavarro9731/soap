@@ -74,7 +74,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataStore.Providers.CosmosD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CircuitBoard", "..\..\circuitboard\src\CircuitBoard\CircuitBoard.csproj", "{01F5E736-BDDC-46F3-8822-0337705CEEF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Pf.AbstractMessages", "Soap.Pf.AbstractMessages\Soap.Pf.AbstractMessages.csproj", "{AE7B6D96-19B0-4A10-ACBE-0ACBF83A7474}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Pf.MessageContractsBase", "Soap.Pf.AbstractMessages\Soap.Pf.MessageContractsBase.csproj", "{AE7B6D96-19B0-4A10-ACBE-0ACBF83A7474}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
