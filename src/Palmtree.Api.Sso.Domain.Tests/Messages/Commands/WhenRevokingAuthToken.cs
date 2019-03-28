@@ -20,7 +20,7 @@
             this.endPoint.AddToDatabase(user);
 
             var authenticateUser = new AuthenticateUser(AuthenticateUser.UserCredentials.Create(user.UserName, "secret-sauce"));
-            var securityContext = (ClientSecurityContext)this.endPoint.HandleCommand(authenticateUser);
+            var securityContext = (ResetPasswordFromEmail.ClientSecurityContext)this.endPoint.HandleCommand(authenticateUser);
 
             user = this.endPoint.QueryDatabase<User>().Result.Single();
             user.ActiveSecurityTokens.Count.Should().Be(2); //security token has been added to user

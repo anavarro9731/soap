@@ -31,7 +31,7 @@
         {
             var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<SendEmail>().Single();
 
-            Assert.Equal(TestData.User1.Email, emailSent.Message.To.First().Email);
+            Assert.Equal(TestData.User1.Email, emailSent.SendTo.First());
         }
 
         [Fact]

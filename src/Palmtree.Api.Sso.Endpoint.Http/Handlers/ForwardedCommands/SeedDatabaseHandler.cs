@@ -10,7 +10,7 @@
     {
         protected override Task Handle(ForwardCommandFromHttpToMsmq<SeedDatabase> message, ApiMessageMeta meta)
         {
-            UnitOfWork.SendCommand(message.Command);
+            UnitOfWork.SendCommand(message.CommandToForward);
 
             return Task.CompletedTask;
         }

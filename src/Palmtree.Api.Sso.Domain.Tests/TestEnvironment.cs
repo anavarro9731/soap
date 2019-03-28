@@ -1,15 +1,14 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Tests
 {
-    using System.Collections.Generic;
     using System.Reflection;
-    using DataStore.Impl.SqlServer;
+    using DataStore.Providers.CosmosDb;
     using Palmtree.Api.Sso.Domain.Logic;
+    using Palmtree.Api.Sso.Domain.Logic.Configuration;
     using Palmtree.Api.Sso.Domain.Logic.Operations;
+    using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Endpoint.Http;
-    using Palmtree.Api.Sso.Endpoint.Http.Handlers.Queries;
     using Palmtree.Api.Sso.Endpoint.Msmq;
-    using Palmtree.Api.Sso.Endpoint.Msmq.Handlers.Commands;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
@@ -21,7 +20,7 @@
         public static TestEndpoint CreateEndpoint()
         {
             var domainLogicAssembly = typeof(ThingOperations).Assembly;
-            var domainModelsAssembly = typeof(Thing).Assembly;
+            var domainMessagesAssembly = typeof(SeedDatabase).Assembly;
 
             IApplicationConfig applicationConfig = ApplicationConfiguration.Create(
                 "Testing",
@@ -29,21 +28,34 @@
                 returnExplicitErrorMessages: true,
                 numberOfApiMessageRetries: 3,
                 apiEndpointSettings: ApiEndpointSettings.Create("httpUrl", "msmqAddress"),
-                sqlServerDbSettings: SqlServerDbSettings.Create("serverInstance", "database", "userId", "password", "tableName"),
+                cosmosStoreSettings: new CosmosSettings("testdb", "https://localhost:8081", "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="),
                 mailgunEmailSenderSettings: MailgunEmailSenderSettings.Create("im@mycomputer.com", "apiKey", "domain"));
 
-            var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(domainLogicAssembly, domainModelsAssembly, PalmTreeApiSsoEndpointMsmq.GetAssembly, PalmTreeApiSsoEndpointHttp.GetAssembly, applicationConfig).Start();
+            var testEndpoint = TestEndpoint.Configure<UserAuthenticator>(
+                                               domainLogicAssembly,
+                                               domainMessagesAssembly,
+                                               PalmTreeApiSsoEndpointMsmq.GetAssembly,
+                                               PalmTreeApiSsoEndpointHttp.GetAssembly,
+                                               applicationConfig)
+                                           .Start();
             return testEndpoint;
         }
 
-        public static object HandleCommand(this TestEndpoint testEndpoint, IApiCommand command, User user)
+        public static T HandleCommand<T>(this TestEndpoint testEndpoint, ApiCommand<T> command, User user) where T : class, new()
         {
             SetMessageIdentityToken(command, user);
 
             return testEndpoint.HandleCommand(command);
         }
 
-        public static object HandleQuery(this TestEndpoint testEndpoint, IApiQuery query, User user)
+        public static void HandleCommand(this TestEndpoint testEndpoint, ApiCommand command, User user)
+        {
+            SetMessageIdentityToken(command, user);
+
+            testEndpoint.HandleCommand(command);
+        }
+
+        public static T HandleQuery<T>(this TestEndpoint testEndpoint, ApiQuery<T> query, User user) where T : class, new()
         {
             SetMessageIdentityToken(query, user);
 

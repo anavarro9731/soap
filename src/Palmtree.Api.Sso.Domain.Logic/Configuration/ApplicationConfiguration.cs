@@ -1,6 +1,6 @@
 ﻿namespace Palmtree.Api.Sso.Domain.Logic
 {
-    using DataStore.Impl.SqlServer;
+    using DataStore.Providers.CosmosDb;
     using Newtonsoft.Json;
     using Soap.If.Interfaces;
     using Soap.Integrations.Mailgun;
@@ -13,7 +13,7 @@
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
-            SqlServerDbSettings sqlServerDbSettings,
+            CosmosSettings cosmosStoreSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries,
             string defaultExceptionMessage,
@@ -23,7 +23,7 @@
         {
             EnvironmentName = environmentName;
             ApiEndpointSettings = apiEndpointSettings;
-            SqlServerDbSettings = sqlServerDbSettings;
+            CosmosStoreSettings = cosmosStoreSettings;
             MailgunEmailSenderSettings = mailgunEmailSenderSettings;
             NumberOfApiMessageRetries = numberOfApiMessageRetries;
             DefaultExceptionMessage = defaultExceptionMessage;
@@ -51,13 +51,13 @@
 
         public SeqLoggingConfig SeqLoggingConfig { get; }
 
-        public SqlServerDbSettings SqlServerDbSettings { get; }
+        public CosmosSettings CosmosStoreSettings { get; }
 
         public static ApplicationConfiguration Create(
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
-            SqlServerDbSettings sqlServerDbSettings,
+            CosmosSettings cosmosStoreSettings,
             MailgunEmailSenderSettings mailgunEmailSenderSettings,
             byte numberOfApiMessageRetries = 1,
             string unexpectedExceptionMessage = "An Error Has Occurred",
@@ -69,7 +69,7 @@
                 environmentName,
                 applicationVersion,
                 apiEndpointSettings,
-                sqlServerDbSettings,
+                cosmosStoreSettings,
                 mailgunEmailSenderSettings,
                 numberOfApiMessageRetries,
                 unexpectedExceptionMessage,

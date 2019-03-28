@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using CircuitBoard.Permissions;
+    using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.Aggregates;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
@@ -43,7 +44,7 @@
 
         public static string GetIdentityToken(this User user)
         {
-            return ClientSecurityContext.Create(user.ActiveSecurityTokens.First(), user).AuthToken;
+            return SecurityToken.EncryptToken(user.ActiveSecurityTokens.First());
         }
     }
 }

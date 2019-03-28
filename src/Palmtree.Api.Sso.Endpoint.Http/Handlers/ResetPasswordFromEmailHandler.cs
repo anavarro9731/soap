@@ -8,7 +8,7 @@
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.Pf.HttpEndpointBase;
 
-    public class ResetPasswordFromEmailHandler : CommandHandler<ResetPasswordFromEmail, ClientSecurityContext>
+    public class ResetPasswordFromEmailHandler : CommandHandler<ResetPasswordFromEmail, ResetPasswordFromEmail.ClientSecurityContext>
     {
         private readonly IStatefulProcess<PasswordResetProcess> passwordResetProcess;
 
@@ -17,9 +17,9 @@
             this.passwordResetProcess = passwordResetProcess;
         }
 
-        protected override async Task<ClientSecurityContext> Handle(ResetPasswordFromEmail message, ApiMessageMeta meta)
+        protected override async Task<ResetPasswordFromEmail.ClientSecurityContext> Handle(ResetPasswordFromEmail message, ApiMessageMeta meta)
         {
-            return await this.passwordResetProcess.ContinueProcess<ResetPasswordFromEmail, ClientSecurityContext>(message, meta);
+            return await this.passwordResetProcess.ContinueProcess<ResetPasswordFromEmail, ResetPasswordFromEmail.ClientSecurityContext>(message, meta);
         }
     }
 }

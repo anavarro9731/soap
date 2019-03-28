@@ -9,7 +9,7 @@
 
         public string FullName { get; private set; }
 
-        public Guid Id { get; private set; }
+        public Guid id { get; private set; }
 
         public static UserProfile Create(User user)
         {
@@ -17,7 +17,7 @@
             {
                 Email = user.Email,
                 FullName = user.FullName,
-                Id = user.id
+                id = user.id
             };
         }
     }

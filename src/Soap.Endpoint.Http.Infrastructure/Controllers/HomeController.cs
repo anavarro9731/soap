@@ -177,7 +177,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
             {
                 return $@"
     <p>
-        Command Schemas: <strong><a href='{getCommandSchemaUrl}' target='_blank'>{getCommandSchemaUrl}</a></strong> <br /> 
+        CommandToForward Schemas: <strong><a href='{getCommandSchemaUrl}' target='_blank'>{getCommandSchemaUrl}</a></strong> <br /> 
         Query Schemas: <strong><a href='{getQuerySchemaUrl}' target='_blank'>{getQuerySchemaUrl}</a></strong>
     </p>";
             }

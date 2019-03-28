@@ -3,14 +3,19 @@
     using FluentValidation;
     using Soap.If.Interfaces.Messages;
 
-    public class ForwardCommandFromHttpToMsmq<TApiCommand> : ApiCommand where TApiCommand : IApiCommand
+    public interface IForwardCommandFromHttpToMsmq
+    {
+        IApiCommand CommandToForward { get; set; }
+    }
+
+    public class ForwardCommandFromHttpToMsmq<TApiCommand> : ApiCommand, IForwardCommandFromHttpToMsmq where TApiCommand : IApiCommand
     {
         public ForwardCommandFromHttpToMsmq(TApiCommand command)
         {
-            Command = command;
+            CommandToForward = command;
         }
 
-        public IApiCommand Command { get; set; }
+        public IApiCommand CommandToForward { get; set; }
     }
 
     public class ForwardCommandFromHttpToMsmqValidator<TApiCommand> : AbstractValidator<ForwardCommandFromHttpToMsmq<TApiCommand>> where TApiCommand : ApiCommand
@@ -19,7 +24,7 @@
         {
             RuleFor(cmd => cmd.MessageId).NotEmpty();
 
-            RuleFor(cmd => cmd.Command).NotEmpty();
+            RuleFor(cmd => cmd.CommandToForward).NotEmpty();
 
 
         }

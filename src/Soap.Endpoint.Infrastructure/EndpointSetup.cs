@@ -10,6 +10,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions;
+    using Microsoft.CSharp.RuntimeBinder;
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline;
@@ -23,7 +24,7 @@
         public static ContainerBuilder ConfigureCore<TUserAuthenticator>(
             ContainerBuilder builder,
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Func<IMessageAggregator> messageAggregatorFactory,
             Func<IDocumentRepository> documentRepositoryFactory,
             List<Action<ContainerBuilder>> containerActions) where TUserAuthenticator : IAuthenticateUsers
@@ -57,7 +58,7 @@
                 builder.Register(c => documentRepositoryFactory()).AsSelf().As<IDocumentRepository>().InstancePerLifetimeScope();
                 builder.RegisterType<DataStore>().AsSelf().As<IDataStore>().InstancePerLifetimeScope();
                 builder.RegisterType<QueuedStateChanger>().AsSelf().InstancePerLifetimeScope();
-                builder.RegisterType<UnitOfWork>().As<IUnitOfWork>().InstancePerLifetimeScope();
+                builder.RegisterType<UnitOfWork>().As<UnitOfWork>().InstancePerLifetimeScope();
             }
 
             void AddMessageAggregator()
@@ -72,7 +73,7 @@
 
             void AddMessagePipeline()
             {
-                builder.RegisterType<MessagePipeline>().AsSelf().As<IMessagePipeline>();
+                builder.RegisterType<MessagePipeline>().AsSelf().As<MessagePipeline>();
             }
 
             void AddProcesses()
@@ -83,11 +84,11 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as Process).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as Process).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerDependency();
 
@@ -97,16 +98,14 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as StatefulProcess).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as StatefulProcess).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerDependency();
             }
-
-           
 
             void AddOperations()
             {
@@ -115,11 +114,11 @@
                        .OnActivated(
                            e =>
                                {
-                               (e.Instance as Operations).SetDependencies(
-                                   e.Context.Resolve<IDataStore>(),
-                                   e.Context.Resolve<IUnitOfWork>(),
-                                   e.Context.Resolve<ILogger>(),
-                                   e.Context.Resolve<IMessageAggregator>());
+                                   (e.Instance as Operations).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
                                })
                        .InstancePerLifetimeScope();
             }
@@ -134,13 +133,14 @@
             if (string.IsNullOrEmpty(currentEnvironment))
             {
                 throw new Exception(
-                    "No startup configuration defined. " + $"You must add an App.Config file with an <appSetting> element whose key is '{AppSettingKey}' and whose value matches a class "
+                    "No startup configuration defined. "
+                    + $"You must add an App.Config file with an <appSetting> element whose key is '{AppSettingKey}' and whose value matches a class "
                     + "in the endpoint which implements IEnvironmentSpecificConfig.");
             }
 
             var environmentConfigClasses = (Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly()) //unit tests 
-                                                   .GetTypes()
-                                                   .Where(t => t.InheritsOrImplements(typeof(IEnvironmentSpecificConfig)) && !t.IsInterface && !t.IsAbstract);
+                                           .GetTypes()
+                                           .Where(t => t.InheritsOrImplements(typeof(IEnvironmentSpecificConfig)) && !t.IsInterface && !t.IsAbstract);
 
             foreach (var environmentConfigClass in environmentConfigClasses)
                 if (string.Equals(environmentConfigClass.Name, currentEnvironment, StringComparison.InvariantCultureIgnoreCase))

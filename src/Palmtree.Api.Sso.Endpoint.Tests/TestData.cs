@@ -1,6 +1,7 @@
 ﻿namespace Palmtree.Api.Sso.Endpoint.Tests
 {
     using System;
+    using Palmtree.Api.Sso.Domain.Messages.Commands;
     using Palmtree.Api.Sso.Domain.Models.ValueObjects;
     using Palmtree.Api.Sso.Domain.Models.ViewModels;
     using Soap.If.Utility;
@@ -24,7 +25,7 @@
                 "6366163007C4F4A464972A2E7009EB4F4CF518E4BBE3827B208F83993FAE76669FEFE4E922359B156417EC9159C0CB02DA613919B859128373F8F796582F30D0");
             var passwordDetails = PasswordDetails.Create(passwordHash.IterationsUsed, passwordHash.HexSalt, passwordHash.HexHash);
             var securityToken = SecurityToken.Create(userId, passwordDetails.PasswordHash, new DateTime(DateTime.Today.Year, 1, 1), TimeSpan.FromDays(365), false);
-            var identityToken = ClientSecurityContext.EncryptToken(securityToken);
+            var identityToken = SecurityToken.EncryptToken(securityToken);
             return identityToken;
         }
     }

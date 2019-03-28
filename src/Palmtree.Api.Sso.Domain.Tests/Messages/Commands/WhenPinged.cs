@@ -20,7 +20,7 @@
 
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
-        private readonly PongViewModel pongViewModel;
+        private readonly PingCommand.PongViewModel pongViewModel;
 
         public WhenPinged()
         {
@@ -29,15 +29,13 @@
 
             // Act
             Thread.Sleep(1); //in memory it runs so fast, that sometimes this test fails because
-            // pong.TimeOfCreationAtOrigin.Should().BeAfter(this.command.PingedAt); is not true
-            this.pongViewModel = this.endPoint.HandleCommand(this.command) as PongViewModel;
+            // pong.TimeOfCreationAtOrigin.Should().BeAfter(this.command.PingedAt); is not tr
+            this.pongViewModel = this.endPoint.HandleCommand(this.command) as PingCommand.PongViewModel;
         }
 
         [Fact]
         public void ItShouldPongAsACommand()
         {
-            this.endPoint.MessageAggregator.StateOperations.OfType<ISendCommandOperation>().Count().Should().Be(1);
-
             var pong = this.endPoint.MessageAggregator.CommandsSent.Single().As<PongCommand>();
 
             pong.Should().NotBeNull();

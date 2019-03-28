@@ -15,20 +15,22 @@
 
         public IEnumerable<IApiEvent> Events => this.messages.OfType<IApiEvent>();
 
-        public async Task Publish(IPublishEventOperation publishEvent)
+        public async Task Publish(IApiEvent publishEvent)
         {
-            await Store(publishEvent.Event).ConfigureAwait(false);
+            await Store(publishEvent).ConfigureAwait(false);
         }
 
-        public async Task Send(ISendCommandOperation sendCommand)
+        public async Task Send(IApiCommand sendCommand)
         {
-            await Store(sendCommand.Command).ConfigureAwait(false);
+            await Store(sendCommand).ConfigureAwait(false);
         }
 
-        public async Task SendLocal(ISendCommandOperation sendCommand)
+        public async Task SendLocal(IApiCommand sendCommand)
         {
-            await Store(sendCommand.Command).ConfigureAwait(false);
+            await Store(sendCommand).ConfigureAwait(false);
         }
+
+        public bool IsOneWay { get; set; }
 
         private Task Store(IMessage message)
         {

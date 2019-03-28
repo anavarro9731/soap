@@ -43,7 +43,7 @@
     ///     In the event of an exception while handling an exception whether the failed message result
     ///     will be logged to the message log or not is entirely dependent on what the second exception was.
     /// </summary>
-    public partial class MessagePipeline : IMessagePipeline
+    public partial class MessagePipeline 
     {
         private readonly IApplicationConfig appConfig;
 
@@ -187,7 +187,7 @@
             {
                 Guard.Against(matchingHandlers.Count() > 1, $"Could not map message {message.MessageId} to handler, as more than one exists for this message type.");
 
-                Guard.Against(!matchingHandlers.Any(), $"Could not map message {message.MessageId} to handler, as none exists for this message type.");
+                Guard.Against(!matchingHandlers.Any(), $"Could not map message {message.MessageId} to handler, as none exists for this message type. {message.GetType().FullName}");
 
                 handler = matchingHandlers.Single();
             }
@@ -382,7 +382,9 @@
                          * would be raised to the calling service, or no error in the case of a machine losing power.
                         */
 
-                        if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage())
+                        if (ThisFailureIsTheFinalFailure() && 
+                            !TheMessageWeAreProcessingIsAMaxFailNotificationMessage() &&
+                            !this.busContext.IsOneWay)
                         {
                             //include a message to the bus which tells us this has occured and 
                             //allows us to handle these cases with additional logic
@@ -391,7 +393,6 @@
 
                         RemoveQueuedOperations();
                         await AddThisFailureToTheMessageLog().ConfigureAwait(false);
-
                         await this.dataStore.CommitChanges().ConfigureAwait(false);
                         scope.Complete();
                     }
@@ -447,7 +448,7 @@
                     instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
                 }
 
-                await this.busContext.SendLocal(new SendCommandOperation(instanceOfMesageFailedAllRetries)).ConfigureAwait(false);
+                await this.busContext.SendLocal(instanceOfMesageFailedAllRetries).ConfigureAwait(false);
             }
         }
 

@@ -12,8 +12,6 @@
     {
         private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
-        private readonly List<EmailResponse> result;
-
         private readonly SendEmail sendEmailCommand;
 
         public WhenSendingAnEmail()
@@ -21,26 +19,13 @@
             //arrange            
 
             this.sendEmailCommand = new SendEmail(
-                new Email
-                {
-                    From = new Contact
-                    {
-                        Email = "joe@schmoe.com"
-                    },
-                    To = new List<Contact>
-                    {
-                        new Contact
-                        {
-                            Email = "jane@schmoe.com"
-                        }
-                    },
-                    Message = "Hi"
-                });
+                "Hi",
+                "Hi", "jane@schmoe.com");
 
             this.endPoint.MessageAggregator.When<EmailSender.SendingEmail>().Return(new EmailResponse());
 
             //act
-            this.result = this.endPoint.HandleCommand(this.sendEmailCommand) as List<EmailResponse>;
+            this.endPoint.HandleCommand(this.sendEmailCommand);
         }
 
         [Fact]
@@ -48,7 +33,7 @@
         {
             var emailSending = this.endPoint.MessageAggregator.AllMessages.OfType<EmailSender.SendingEmail>().Single();
 
-            Assert.True(emailSending.Message.To.Single().Email == this.sendEmailCommand.Message.To.Single().Email);
+            Assert.True(emailSending.SendTo.Single() == this.sendEmailCommand.SendTo.Single());
         }
     }
 }

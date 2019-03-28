@@ -23,7 +23,7 @@
 
         private readonly string password = "secret-sauce2";
 
-        private readonly ClientSecurityContext result;
+        private readonly ResetPasswordFromEmail.ClientSecurityContext result;
 
         private readonly string username = "monmothma2";
 
@@ -38,7 +38,7 @@
 
             var authenticateUser = new AuthenticateUser(AuthenticateUser.UserCredentials.Create(this.username, this.password));
 
-            this.result = (ClientSecurityContext)this.endPoint.HandleCommand(authenticateUser);
+            this.result = (ResetPasswordFromEmail.ClientSecurityContext)this.endPoint.HandleCommand(authenticateUser);
         }
 
         [Fact]
@@ -57,7 +57,7 @@
         [Fact]
         public void ItShouldAuthenticateTheUser()
         {
-            Assert.True(this.result.UserProfile.Id == this.anotherUser.id);
+            Assert.True(this.result.UserProfile.id == this.anotherUser.id);
         }
 
         private User CreateAnotherUser()

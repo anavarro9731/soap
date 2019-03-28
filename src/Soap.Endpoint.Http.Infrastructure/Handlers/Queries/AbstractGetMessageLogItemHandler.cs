@@ -4,22 +4,21 @@
     using System.Threading.Tasks;
     using FluentValidation;
     using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.Pf.ClientServerMessaging.Queries;
-    using Soap.Pf.EndpointInfrastructure;
 
-    public class GetMessageLogItemHandler : QueryHandler<GetMessageLogItemQuery, GetMessageLogItemQuery.ResponseModel>
+    public class AbstractGetMessageLogItemHandler<TQuery, TResponse> : QueryHandler<TQuery, TResponse>
+        where TQuery : AbstractGetMessageLogItemQuery<TResponse>, new() where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
     {
         private readonly IApplicationConfig applicationConfig;
 
-        public GetMessageLogItemHandler(IApplicationConfig applicationConfig)
+        public AbstractGetMessageLogItemHandler(IApplicationConfig applicationConfig)
         {
             this.applicationConfig = applicationConfig;
         }
 
-        protected override async Task<GetMessageLogItemQuery.ResponseModel> Handle(GetMessageLogItemQuery query, ApiMessageMeta meta)
+        protected override async Task<TResponse> Handle(TQuery query, ApiMessageMeta meta)
         {
             {
                 Validate();
@@ -33,15 +32,15 @@
 
             void Validate()
             {
-                GetMessageLogItemQueryValidator.Default.ValidateAndThrow(query);
+                new GetMessageLogItemQueryValidator<TResponse>().ValidateAndThrow(query);
             }
         }
 
-        private static GetMessageLogItemQuery.ResponseModel ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)
+        private static TResponse ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)
         {
             if (message == null) return null;
 
-            return new GetMessageLogItemQuery.ResponseModel
+            return new TResponse
             {
                 ClrTypeOfMessage = message.ClrTypeOfMessage,
                 Message = message.Message,
@@ -51,27 +50,25 @@
             };
         }
 
-        private static GetMessageLogItemQuery.ResponseModel.SuccessMessageResult ToViewModel(MessageLogItem.SuccessMessageResult success)
+        private static AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult ToViewModel(MessageLogItem.SuccessMessageResult success)
         {
             if (success == null) return null;
 
-            return new GetMessageLogItemQuery.ResponseModel.SuccessMessageResult
+            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult()
             {
-                ReturnValue = success.ReturnValue,
-                SucceededAt = success.SucceededAt
+                ReturnValue = success.ReturnValue, SucceededAt = success.SucceededAt
             };
         }
 
-        private static GetMessageLogItemQuery.ResponseModel.FailedMessageResult ToViewModel(
+        private static AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractFailedMessageResult ToViewModel(
             MessageLogItem.FailedMessageResult failure,
             IApplicationConfig applicationConfig)
         {
             if (failure == null) return null;
 
-            return new GetMessageLogItemQuery.ResponseModel.FailedMessageResult
+            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractFailedMessageResult()
             {
-                Error = failure.Errors.ToEnvironmentSpecificError(applicationConfig),
-                FailedAt = failure.FailedAt
+                Error = failure.Errors.ToEnvironmentSpecificError(applicationConfig), FailedAt = failure.FailedAt
             };
         }
     }

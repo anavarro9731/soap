@@ -3,6 +3,7 @@
     using System;
 
     /* these two classes should not inherit from each other so as to allow them to be constrained separately in handlers
+     but to be grouped together in lists we use the IApiCommand interface
      */
 
     public abstract class ApiCommand : ApiMessage, IApiCommand

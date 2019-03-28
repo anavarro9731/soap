@@ -1,15 +1,20 @@
 ﻿namespace Soap.Integrations.Mailgun
 {
-    using Mailer.NET.Mailer;
     using Soap.If.Interfaces.Messages;
 
     public class SendEmail : ApiCommand
     {
-        public SendEmail(Email message)
+        public SendEmail(string text, string subject, params string[] sendTo)
         {
-            Message = message;
+            Text = text;
+            Subject = subject;
+            SendTo = sendTo;
         }
 
-        public Email Message { get; }
+        public string[] SendTo { get; }
+
+        public string Subject { get; }
+
+        public string Text { get; }
     }
 }

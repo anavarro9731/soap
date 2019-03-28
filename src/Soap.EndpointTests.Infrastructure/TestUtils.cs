@@ -3,21 +3,25 @@
     using System;
     using System.Configuration;
     using System.Linq;
+    using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.Utility.PureFunctions.Extensions;
     using Soap.Pf.ClientServerMessaging.Queries;
+    using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointClients;
 
     public static class TestUtils
     {
         public static class Assert
         {
-            public static Task<GetMessageLogItemQuery.ResponseModel> CommandCompletion(
-                Guid messageId,
-                int timeoutMsec = 15000,
-                int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
+
             {
                 {
                     var messageResults = AwaitMessageResults().Result;
@@ -25,9 +29,9 @@
                     return Task.FromResult(messageResults);
                 }
 
-                Task<GetMessageLogItemQuery.ResponseModel> AwaitMessageResults()
+                Task<TMessageLogItemQueryResponse> AwaitMessageResults()
                 {
-                    GetMessageLogItemQuery.ResponseModel queryResponse = null;
+                    TMessageLogItemQueryResponse queryResponse = null;
 
                     try
                     {
@@ -37,16 +41,16 @@
                             var listener = Task.Factory.StartNew(
                                 () =>
                                     {
-                                    var http = new HttpApiClient(Query.ApiHostUri);
+                                    var http = Endpoints.Http.CreateApiClient(typeof(TMessageLogItemQuery).Assembly);
 
                                     while (true)
                                     {
-                                        var queryRequest = new GetMessageLogItemQuery
+                                        var queryRequest = new TMessageLogItemQuery
                                         {
                                             MessageIdOfLogItem = messageId
                                         };
 
-                                        queryResponse = http.SendQuery<GetMessageLogItemQuery.ResponseModel>(queryRequest).Result;
+                                        queryResponse = http.SendQuery(queryRequest).Result;
 
                                         if (IsComplete(queryResponse)) break;
 
@@ -68,7 +72,7 @@
                                 if (queryResponse == null)
                                 {
                                     throw new TimeoutException(
-                                        $"{nameof(GetMessageLogItemQuery)} has timed-out after {timeoutMsec} milliseconds for Message ID {messageId}");
+                                        $"{nameof(TMessageLogItemQuery)} has timed-out after {timeoutMsec} milliseconds for Message ID {messageId}");
                                 }
                             }
                         }
@@ -84,39 +88,42 @@
                     return Task.FromResult(queryResponse);
                 }
 
-                bool IsComplete(GetMessageLogItemQuery.ResponseModel messageLogItem)
+                bool IsComplete(TMessageLogItemQueryResponse messageLogItem)
                 {
                     return messageLogItem?.SuccessfulAttempt != null || messageLogItem?.FailedAttempts.Count >= messageLogItem?.MaxFailedMessages;
                 }
             }
 
-            public static Task CommandFailure(Guid messageId, int timeoutMsec = 15000, int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandFailure<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
             {
-                var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
+                var messageResults = CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(TMessageLogItemQueryResponse)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 messageResults.SuccessfulAttempt.Should()
                               .BeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain only failed attempt(s)");
 
                 messageResults.FailedAttempts?.Count.Should()
                               .Be(
                                   messageResults.MaxFailedMessages,
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to have failed the maximum number of times");
 
-                return Task.CompletedTask;
+                return Task.FromResult(messageResults);
             }
 
-            public static Task CommandSuccess(Guid messageId, int timeoutMsec = 15000, int pollIntervalMsec = 1000)
+            public static Task<TMessageLogItemQueryResponse> CommandSuccess<TMessageLogItemQuery, TMessageLogItemQueryResponse>(Guid messageId, int timeoutMsec = 45000, int pollIntervalMsec = 1000)
+                where TMessageLogItemQuery : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>, new()
+                where TMessageLogItemQueryResponse : AbstractGetMessageLogItemQuery<TMessageLogItemQueryResponse>.AbstractResponseModel, new()
+
             {
-                var messageResults = CommandCompletion(messageId, timeoutMsec, pollIntervalMsec).Result;
+                var messageResults = CommandCompletion<TMessageLogItemQuery, TMessageLogItemQueryResponse>(messageId, timeoutMsec, pollIntervalMsec).Result;
 
                 messageResults.Should()
-                              .NotBeNull(
-                                  $"a {nameof(GetMessageLogItemQuery.ResponseModel)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
+                              .NotBeNull($"a {nameof(TMessageLogItemQueryResponse)} is expected to exist for {nameof(ApiCommand.MessageId)} {messageId}");
 
                 if (messageResults.FailedAttempts?.Count >= messageResults.MaxFailedMessages)
                 {
@@ -126,25 +133,43 @@
 
                 messageResults.SuccessfulAttempt.Should()
                               .NotBeNull(
-                                  $"the {nameof(GetMessageLogItemQuery.ResponseModel)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
+                                  $"the {nameof(TMessageLogItemQueryResponse)} for {nameof(ApiCommand.MessageId)} {messageId} was expected to contain a successful attempt");
 
-                return Task.CompletedTask;
+                return Task.FromResult(messageResults);
             }
         }
 
-        public static class Command
+        public static class Endpoints
         {
-            public const int LongRunningPollIntervalMsec = 20000;
+            public static class Http
+            {
+                private static readonly Uri ApiHostUri = new Uri(ConfigurationManager.AppSettings["ApiHostUri"]);
 
-            public const int LongRunningTimeoutMsec = 120000;
+                public static HttpApiClient CreateApiClient(Assembly assembly)
+                {
+                    return new HttpApiClient(
+                        new[]
+                        {
+                            new MessageAssemblyToHttpEndpointRoute(assembly, ApiHostUri.OriginalString)
+                        });
+                }
+            }
 
-            public static string ApiHostEndpointAddress = ConfigurationManager.AppSettings["Command.ApiHostQueue"]
-                                                                              ?.Replace("@localhost", $"@{Environment.MachineName}");
-        }
+            public static class Msmq
+            {
+                private const int LongRunningPollIntervalMsec = 20000;
 
-        public static class Query
-        {
-            public static Uri ApiHostUri = new Uri(ConfigurationManager.AppSettings["Query.ApiHostUri"]);
+                private const int LongRunningTimeoutMsec = 120000;
+
+                private static readonly string ApiHostEndpointAddress =
+                    ConfigurationManager.AppSettings["ApiHostQueue"]?.Replace("@localhost", $"@{Environment.MachineName}");
+
+                public static BusApiClient CreateApiClient(Assembly messageAssembly)
+                {
+                    var client = new BusApiClient(new MessageAssemblyToMsmqEndpointRoute(messageAssembly, ApiHostEndpointAddress)).Op(async c => await c.Start());
+                    return client;
+                }
+            }
         }
     }
 }

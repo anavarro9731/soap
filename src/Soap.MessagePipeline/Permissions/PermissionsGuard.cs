@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.PureFunctions
+﻿namespace Soap.If.MessagePipeline.Permissions
 {
     using CircuitBoard.Permissions;
     using Soap.If.Utility.PureFunctions;

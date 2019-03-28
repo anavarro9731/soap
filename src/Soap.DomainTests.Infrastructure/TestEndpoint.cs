@@ -34,12 +34,17 @@
 
         public static TestEndpointConfiguration<TUserAuthenticator> Configure<TUserAuthenticator>(
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Assembly msmqEndpointAssembly,
             Assembly httpEndpointAssembly,
             IApplicationConfig applicationConfig) where TUserAuthenticator : IAuthenticateUsers
         {
-            return new TestEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainModelsAssembly, msmqEndpointAssembly, httpEndpointAssembly, applicationConfig);
+            return new TestEndpointConfiguration<TUserAuthenticator>(
+                domainLogicAssembly,
+                domainMessagesAssembly,
+                msmqEndpointAssembly,
+                httpEndpointAssembly,
+                applicationConfig);
         }
 
         public void AddToDatabase<T>(T aggregate) where T : IAggregate
@@ -47,22 +52,36 @@
             InMemoryDocumentRepository.Aggregates.Add(aggregate);
         }
 
-        public object HandleCommand(IApiCommand command)
+        public void HandleCommand(ApiCommand command)
+        {
+            if (command.MessageId == Guid.Empty) command.MessageId = Guid.NewGuid();
+
+            this.container.Resolve<MessagePipeline>().Execute(command).GetAwaiter().GetResult();
+        }
+
+        public T HandleCommand<T>(ApiCommand<T> command) where T : class, new()
         {
             if (command.MessageId == Guid.Empty) command.MessageId = Guid.NewGuid();
 
             var result = this.container.Resolve<MessagePipeline>().Execute(command).GetAwaiter().GetResult();
 
-            return result;
+            return (T)result;
         }
 
-        public object HandleQuery(IApiQuery query)
+        public void HandleQuery(ApiQuery query) 
+        {
+            if (query.MessageId == Guid.Empty) query.MessageId = Guid.NewGuid();
+
+            this.container.Resolve<MessagePipeline>().Execute(query).GetAwaiter().GetResult();
+        }
+
+        public T HandleQuery<T>(ApiQuery<T> query) where T: class, new()
         {
             if (query.MessageId == Guid.Empty) query.MessageId = Guid.NewGuid();
 
             var result = this.container.Resolve<MessagePipeline>().Execute(query).GetAwaiter().GetResult();
 
-            return result;
+            return (T)result;
         }
 
         public Task<IEnumerable<T>> QueryDatabase<T>(Func<IQueryable<T>, IQueryable<T>> extendQueryable = null) where T : IHaveSchema, IHaveAUniqueId

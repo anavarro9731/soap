@@ -1,4 +1,4 @@
-﻿namespace Palmtree.Api.Sso.Domain.Logic
+﻿namespace Palmtree.Api.Sso.Domain.Logic.Configuration
 {
     using CircuitBoard.Permissions;
     using DataStore.Interfaces;

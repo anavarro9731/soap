@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Reflection;
-    using DataStore.Impl.SqlServer;
+    using DataStore.Providers.CosmosDb;
     using Destructurama;
     using Palmtree.Api.Sso.Domain.Logic;
     using Serilog;
@@ -20,7 +20,7 @@
             nameof(Development),
             Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
             ApiEndpointSettings.Create("http://localhost:5055", $"serviceapi@{Environment.MachineName}"),
-            SqlServerDbSettings.Create(".", "soap", "sa", "SuperDuper", "Aggregates"),
+            new CosmosSettings("C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==", "palmtree", "https://localhost:8081"),
             MailgunEmailSenderSettings.Create(
                 "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",
                 "key-101c1b392bb95000da55a349848aacd0",
@@ -32,8 +32,7 @@
             1,
             "An error has occurred.",
             true,
-            "PalmTree SSO - MSMQ",
-            SeqLoggingConfig.Create("http://localhost:5341/"));
+            "PalmTree SSO - MSMQ");
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {

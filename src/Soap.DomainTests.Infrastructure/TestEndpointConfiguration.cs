@@ -26,7 +26,7 @@
 
         private readonly Assembly domainLogicAssembly;
 
-        private readonly Assembly domainModelsAssembly;
+        private readonly Assembly domainMessagesAssembly;
 
         private readonly Assembly httpEndpointAssembly;
 
@@ -34,13 +34,13 @@
 
         public TestEndpointConfiguration(
             Assembly domainLogicAssembly,
-            Assembly domainModelsAssembly,
+            Assembly domainMessagesAssembly,
             Assembly msmqEndpointAssembly,
             Assembly httpEndpointAssembly,
             IApplicationConfig applicationConfig = null)
         {
             this.domainLogicAssembly = domainLogicAssembly;
-            this.domainModelsAssembly = domainModelsAssembly;
+            this.domainMessagesAssembly = domainMessagesAssembly;
             this.msmqEndpointAssembly = msmqEndpointAssembly;
             this.httpEndpointAssembly = httpEndpointAssembly;
             this.applicationConfig = applicationConfig;
@@ -75,7 +75,7 @@
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
                         this.domainLogicAssembly,
-                        this.domainModelsAssembly,
+                        this.domainMessagesAssembly,
                         () => messageAggregator,
                         () => new InMemoryDocumentRepository(),
                         this.containerActions);
@@ -85,6 +85,7 @@
                     ApplyCustomApplicationConfigActions();
 
                     builder.RegisterInstance(new InMemoryMessageBus()).As<IBusContext>();
+
 
                     MsmqEndpointConfiguration<TUserAuthenticator>.Startup.AddHandlers(
                         builder,
@@ -109,7 +110,7 @@
                 {
                     //add fail-safe sources only                        
                     Trace.TraceError($"Startup Error {ex}");
-                    logger?.Error(ex, "Startup Error");
+                    logger?.Error(ex, "Startup Error {Message}", ex.Message);
 
                     //Prevent the app continuing if the error occurs during startup
                     throw new Exception("Startup Error", ex);

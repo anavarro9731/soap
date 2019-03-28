@@ -14,7 +14,7 @@
 
 //        public WhenSendingInvalidPingCommand()
 //        {
-//            var apiClient = new RebusApiClient("serviceapi");
+//            var apiClient = new BusClient("serviceapi");
 
 //            this.userId = Guid.NewGuid();
 
@@ -35,7 +35,7 @@
 //            var messageFailedAllRetriesLogItem = queryClient.SendQuery<MessageFailedAllRetriesLogItem>(new GetMessageFailedAllRetriesLogItem(this.pingCommandId))
 //                                                            .Result;
 //            Assert.NotNull(messageFailedAllRetriesLogItem);
-//            Assert.Equal(messageFailedAllRetriesLogItem.IdOfMessageThatFailed, this.pingCommandId);
+//            Assert.Equal(messageFailedAllRetriesLogItem.idOfMessageThatFailed, this.pingCommandId);
 //        }
 //        */
 

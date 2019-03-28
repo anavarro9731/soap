@@ -98,9 +98,9 @@
             }
         }
 
-        public async Task<ClientSecurityContext> AuthenticateUser(AuthenticateUser command)
+        public async Task<ResetPasswordFromEmail.ClientSecurityContext> AuthenticateUser(AuthenticateUser command)
         {
-            ClientSecurityContext response = null;
+            ResetPasswordFromEmail.ClientSecurityContext response = null;
             {
                 var user = await FindUserWithMatchingUsername();
 
@@ -143,7 +143,7 @@
 
                     change = u => Login(u, securityToken);
 
-                    response = ClientSecurityContext.Create(securityToken, user);
+                    response = Messages.Commands.ResetPasswordFromEmail.ClientSecurityContext.Create(securityToken, user);
                 }
                 else
                 {
@@ -231,7 +231,7 @@
             }
         }
 
-        public async Task<ClientSecurityContext> ResetPasswordFromEmail(ResetPasswordFromEmail command)
+        public async Task<ResetPasswordFromEmail.ClientSecurityContext> ResetPasswordFromEmail(ResetPasswordFromEmail command)
         {
             {
                 var user = await Validate();
@@ -244,7 +244,7 @@
 
                 await DataStore.UpdateById(user.id, change, true);
 
-                return ClientSecurityContext.Create(newToken, user);
+                return Messages.Commands.ResetPasswordFromEmail.ClientSecurityContext.Create(newToken, user);
             }
 
             async Task<User> Validate()
