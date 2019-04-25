@@ -5,6 +5,6 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\circuitboard\src\CircuitBoard\CircuitBoard.csproj" />
+    <PackageReference Include="CircuitBoard" Version="1.0.2" />
   </ItemGroup>
 </Project>

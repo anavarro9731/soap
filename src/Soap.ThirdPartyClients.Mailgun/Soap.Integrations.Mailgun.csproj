@@ -10,7 +10,6 @@
     
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\circuitboard\src\CircuitBoard\CircuitBoard.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
   </ItemGroup>

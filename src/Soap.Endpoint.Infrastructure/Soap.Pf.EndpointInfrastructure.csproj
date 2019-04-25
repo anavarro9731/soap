@@ -7,10 +7,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
+    <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.8.0" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
     <PackageReference Include="Serilog.Exceptions" Version="2.5.0" />
     <PackageReference Include="Serilog.Sinks.ColoredConsole" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="3.4.0" />
+    <PackageReference Include="DataStore" Version="6.8.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />

@@ -1,12 +1,17 @@
 ﻿namespace Soap.Pf.EndpointInfrastructure
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.If.MessagePipeline.UnitOfWork;
+    using Soap.If.Utility;
 
     public abstract class MessageHandlerBase
     {
+      
+
         protected IDataStore DataStore { get; private set; }
 
         protected ILogger Logger { get; private set; }
@@ -22,5 +27,6 @@
             MessageAggregator = messageAggregator;
             DataStore = dataStore;
         }
+
     }
 }

@@ -1,10 +1,6 @@
 namespace Soap.Pf.HttpEndpointBase.Controllers
 {
     using System;
-    using System.Collections.Generic;
-    using System.Configuration;
-    using System.Data;
-    using System.Data.SqlClient;
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
@@ -18,8 +14,6 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
 
     public class HomeController : Controller
     {
-        private readonly IEnumerable<ConnectionStringSettings> _connectionStringSettings = ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>();
-
         private readonly string _ipAddress = Dns.GetHostEntryAsync(Dns.GetHostName())
                                                 .Result.AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork)
                                                 .ToString();
@@ -38,73 +32,15 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
                     applicationName = appConfig.ApplicationName,
                     version = this._version,
                     machineName = Environment.MachineName,
-                    ipAddress = Dns.GetHostEntryAsync(Dns.GetHostName()).Result.AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString(),
-                    databaseConnections = this._connectionStringSettings.Select(
-                                                  cs =>
-                                                      {
-                                                      var available = false;
-                                                      string error = null;
-
-                                                      try
-                                                      {
-                                                          available = CheckAvailability(cs.ConnectionString);
-                                                      }
-                                                      catch (Exception ex)
-                                                      {
-                                                          error = ex.Message;
-                                                      }
-
-                                                      return new
-                                                      {
-                                                          name = cs.Name,
-                                                          available,
-                                                          error
-                                                      };
-                                                      })
-                                              .OrderByDescending(x => x.available)
-                                              .ThenBy(x => x.name)
-                                              .ToList()
+                    ipAddress = Dns.GetHostEntryAsync(Dns.GetHostName()).Result.AddressList.First(ip => ip.AddressFamily == AddressFamily.InterNetwork).ToString()
                 };
+
                 return new JsonResult(
                     healthCheck,
                     new JsonSerializerSettings
                     {
-                        Formatting = Formatting.Indented,
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        Formatting = Formatting.Indented, ContractResolver = new CamelCasePropertyNamesContractResolver()
                     });
-            }
-
-            bool CheckAvailability(string connectionString, int connectionTimeoutSeconds = 5)
-            {
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new Exception($"SQL connection string is empty");
-                }
-
-                var builder = new SqlConnectionStringBuilder
-                {
-                    ConnectionString = connectionString,
-                    ConnectTimeout = connectionTimeoutSeconds
-                };
-
-                using (var connection = new SqlConnection(builder.ConnectionString))
-                {
-                    connection.Open();
-
-                    if (connection.State != ConnectionState.Open)
-                    {
-                        throw new Exception($"SQL connection state is {connection.State}");
-                    }
-
-                    using (var command = new SqlCommand("SELECT 1", connection))
-                    {
-                        var result = (int)command.ExecuteScalar();
-
-                        var available = result == 1;
-
-                        return available;
-                    }
-                }
             }
         }
 
@@ -172,7 +108,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
         Logs: <strong><a href='{seqLogsConfig.ServerUrl}' target='_blank'>{seqLogsConfig.ServerUrl}</a></strong>
     </p>";
             }
-            
+
             string BuildMessageSchemaSectionHtml(string getCommandSchemaUrl, string getQuerySchemaUrl)
             {
                 return $@"
@@ -184,7 +120,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
 
             string BuildFooterSectionHtml()
             {
-                return $@"
+                return @"
 </body>
 </html>";
             }

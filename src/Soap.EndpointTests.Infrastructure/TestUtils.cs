@@ -9,9 +9,9 @@
     using FluentAssertions;
     using Soap.If.Interfaces.Messages;
     using Soap.If.Utility.PureFunctions.Extensions;
-    using Soap.Pf.ClientServerMessaging.Queries;
     using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointClients;
+    using Soap.Pf.MessageContractsBase.Queries;
 
     public static class TestUtils
     {

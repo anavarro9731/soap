@@ -17,6 +17,8 @@
 
         protected IDataStoreQueryCapabilities DataStoreRead => DataStore.AsReadOnly();
 
+        protected IWithoutEventReplay DataStoreReadWithoutEventReplay => DataStore.WithoutEventReplay;
+
         protected ILogger Logger { get; private set; }
 
         protected IMessageAggregator MessageAggregator { get; private set; }

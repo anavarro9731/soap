@@ -9,7 +9,7 @@ namespace Soap.Pf.ClientServerMessaging.Routing.Addresses
         public MsmqEndpointAddress(string msmqEndpointAddress)
         {
             Guard.Against(
-                !Regex.IsMatch(msmqEndpointAddress, "^\\w+@\\w+$"),
+                !Regex.IsMatch(msmqEndpointAddress, "^\\w+@[\\w-]+$"),
                 $"Endpoint Address {msmqEndpointAddress} is not well-formed (e.g. queueName@machineName)");
 
             QueueName = msmqEndpointAddress.SubstringBefore('@');

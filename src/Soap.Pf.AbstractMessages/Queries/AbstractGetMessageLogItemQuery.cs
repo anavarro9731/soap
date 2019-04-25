@@ -1,4 +1,4 @@
-﻿namespace Soap.Pf.ClientServerMessaging.Queries
+﻿namespace Soap.Pf.MessageContractsBase.Queries
 {
     using System;
     using System.Collections.Generic;

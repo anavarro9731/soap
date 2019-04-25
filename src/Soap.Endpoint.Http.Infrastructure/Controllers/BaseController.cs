@@ -37,6 +37,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
                 }
                 catch (Exception ex)
                 {
+                    //TODO when this is returned to endpoint client on failure the error is lost
                     return BadRequest(
                         new
                         {

@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
+    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
+
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -3,7 +3,6 @@ namespace Soap.If.MessagePipeline.MessageAggregator
     using System;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using DataStore.Models.PureFunctions.Extensions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
     public class GatedMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage

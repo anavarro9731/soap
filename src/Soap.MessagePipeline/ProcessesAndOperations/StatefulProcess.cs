@@ -91,7 +91,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
             await DataStore.Update(this.processState).ConfigureAwait(false);
         }
 
-        public async Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand
+        public async Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand 
         {
             var process = this as IContinueProcess<TMessage, TReturnType>;
 

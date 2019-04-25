@@ -125,8 +125,8 @@
         public class Startup
         {
             /* This method gets called by the runtime. Order #2
-             * Essentially we use this for things which run after the container is setup.
-             * or for things MS has designed to be called here (e.g. appBuilder.useXXXX() methods) 
+             * Essentially we use this for Tags which run after the container is setup.
+             * or for Tags MS has designed to be called here (e.g. appBuilder.useXXXX() methods) 
              * "Configure" is an unhelpful name [See comment on ConfigureServices()].
              * 
              * See https://docs.microsoft.com/en-us/aspnet/core/fundamentals/startup for details

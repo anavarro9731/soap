@@ -6,7 +6,7 @@
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.Pf.ClientServerMessaging.Queries;
+    using Soap.Pf.MessageContractsBase.Queries;
 
     public class AbstractGetMessageLogItemHandler<TQuery, TResponse> : QueryHandler<TQuery, TResponse>
         where TQuery : AbstractGetMessageLogItemQuery<TResponse>, new() where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()

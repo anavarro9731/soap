@@ -23,9 +23,9 @@
 
             public object ProfilingData { get; set; }
 
-            public DateTime SapiCompletedAt { get; set; }
+            public DateTime? SapiCompletedAt { get; set; }
 
-            public DateTime SapiReceivedAt { get; set; }
+            public DateTime? SapiReceivedAt { get; set; }
 
             public string Schema { get; set; }
 

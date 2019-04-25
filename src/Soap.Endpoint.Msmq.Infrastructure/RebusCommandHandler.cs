@@ -16,7 +16,7 @@
 
         public async Task Handle(IApiCommand command)
         {
-            await this.messagePipeline.Execute(command).ConfigureAwait(false);
+            await this.messagePipeline.Execute(command);
         }
     }
 }

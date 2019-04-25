@@ -12,7 +12,6 @@
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.MessageAggregator;
-    using Soap.If.MessagePipeline.Messages;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.Utility.PureFunctions;
@@ -23,27 +22,8 @@
     ///     1. Add MetaData to the message
     ///     2. Map it to a specific handler type
     ///     3. Log the overall result of the attempted operation.
-    ///     |
-    ///     There are 5 types of exceptions that could occur.
-    ///     Domain Exceptions (failed guards), Validation Exceptions(message syntax failures), Exceptions handling Exceptions,
-    ///     UniqueConstraint violations, and Unexpected exceptions (any other exceptions thrown at any level inside the
-    ///     pipeline)
-    ///     |
-    ///     And these are handled at the top level of the pipeline with 3 potential clients in mind
-    ///     1. External clients, including unit tests, which will receive only a single string error message with more or less
-    ///     detail depending on Environment
-    ///     for all 4 types of exceptions
-    ///     2. Users of the Serilog logging system, which will receive the ExceptionMessages class serialised as part of the
-    ///     failed message log entry
-    ///     for all but the Exceptions handling Exceptions and UniqueConstraint violations
-    ///     for which they will receive a single line Fatal error
-    ///     3. Domain code which queries the message log to execute domain logic based a messages failed result.
-    ///     They will see a serialised verison of the ExceptionMessages class.
-    ///     No information is logged to the message log about exceptions which occur while handling an exception.
-    ///     In the event of an exception while handling an exception whether the failed message result
-    ///     will be logged to the message log or not is entirely dependent on what the second exception was.
     /// </summary>
-    public partial class MessagePipeline 
+    public partial class MessagePipeline
     {
         private readonly IApplicationConfig appConfig;
 
@@ -58,6 +38,8 @@
         private readonly ILogger logger;
 
         private readonly IMessageAggregator messageAggregator;
+
+        private IMapErrorCodesFromDomainToMessageErrorCodes mapErrorCodesFromDomainToMessageErrorCodes;
 
         public MessagePipeline(
             IApplicationConfig appConfig,
@@ -83,19 +65,16 @@
             var receivedAt = DateTime.UtcNow;
 
             {
-                //if this block fails, errors should be logged to serilog,
-                //but message will not be logged to messageresults
                 MessageLogItem messageLogItem = null;
 
                 var meta = new ApiMessageMeta
                 {
-                    ReceivedAtTimestamp = receivedAtTimestamp,
-                    ReceivedAt = receivedAt
+                    ReceivedAtTimestamp = receivedAtTimestamp, ReceivedAt = receivedAt
                 };
 
                 if (message.CanChangeState())
                 {
-                    //todo: create as pipelineexception message
+                    //if this block fails, errors logged to serilog, but message will not be logged to messageresults
                     StateChangingMessageConstraints.Enforce(this.dataStore, message, this.appConfig, this.logger, out messageLogItem);
                 }
 
@@ -103,7 +82,7 @@
                 {
                     CreateMeta(messageLogItem, out meta);
 
-                    FindHandlers(out List<IMessageHandler> matchingHandlers);
+                    FindHandlers(out var matchingHandlers);
 
                     if (MessageIsFailedAllRetriesMessageWithoutAHandler(matchingHandlers))
                     {
@@ -111,7 +90,12 @@
                         return null;
                     }
 
-                    FindHandlerOrThrow(matchingHandlers, out IMessageHandler handler);
+                    FindHandlerOrThrow(matchingHandlers, out var handler);
+
+                    if (handler is IMapErrorCodesFromDomainToMessageErrorCodes mapper)
+                    {
+                        this.mapErrorCodesFromDomainToMessageErrorCodes = mapper;
+                    }
 
                     Guard.Against(
                         message.MessageId == Constants.ForceFailBeforeMessageCompletesId
@@ -131,7 +115,11 @@
 
                     try //log the message failure
                     {
-                        var exceptionMessages = PipelineExceptionMessages.Create(exception, this.appConfig, message);
+                        var exceptionMessages = PipelineExceptionMessages.Create(
+                            exception,
+                            this.appConfig,
+                            message,
+                            this.mapErrorCodesFromDomainToMessageErrorCodes);
 
                         await LogFailedMessage(message, exceptionMessages, messageLogItem, meta).ConfigureAwait(false);
 
@@ -149,21 +137,28 @@
                             var orignalExceptionPlusHandlingException =
                                 new ExceptionHandlingException(new AggregateException(exceptionHandlingException, exception));
 
-                            var exceptionMessages = PipelineExceptionMessages.Create(orignalExceptionPlusHandlingException, this.appConfig, message);
+                            var exceptionMessages = PipelineExceptionMessages.Create(
+                                orignalExceptionPlusHandlingException,
+                                this.appConfig,
+                                message,
+                                this.mapErrorCodesFromDomainToMessageErrorCodes);
 
-                            this.logger.Error("Error Handling Failed Message {@error}", exceptionMessages);
+                            this.logger.Error("Error Handling Failed Message {@details}", exceptionMessages);
 
                             finalException = exceptionMessages.ToEnvironmentSpecificError(this.appConfig);
                         }
-                        catch //log a minimal error message of last resort
+                        catch (Exception lastChanceException) //log a minimal error message of last resort
                         {
-                            //avoid use of pipelinemessages here, this goes raw to the client don't show any exception details
-                            //serilog should never throw an error itself on the main thread, so logging should be safe here
-                            var lastChanceExceptionMessage = $"{PipelineExceptionMessages.CodePrefixes.EXWHEX}: {this.appConfig.DefaultExceptionMessage}";
+                            /* avoid use of PipelineExceptionMessages here as it could be the source of the error
+                            * this goes raw to the caller so show don't show any exception details
+                            * Serilog should swallow errors so logging should be safe here
+                            */
 
-                            this.logger.Error(lastChanceExceptionMessage);
+                            this.logger.Error($"Failed logging message {message.MessageId} with exception: {exception}", lastChanceException);
 
-                            finalException = new Exception(lastChanceExceptionMessage);
+                            var lastChanceExceptionMessageForCaller = $"{PipelineExceptionMessages.CodePrefixes.EXWHEX}: {this.appConfig.DefaultExceptionMessage}";
+
+                            finalException = new Exception(lastChanceExceptionMessageForCaller);
                         }
                     }
 
@@ -187,7 +182,9 @@
             {
                 Guard.Against(matchingHandlers.Count() > 1, $"Could not map message {message.MessageId} to handler, as more than one exists for this message type.");
 
-                Guard.Against(!matchingHandlers.Any(), $"Could not map message {message.MessageId} to handler, as none exists for this message type. {message.GetType().FullName}");
+                Guard.Against(
+                    !matchingHandlers.Any(),
+                    $"Could not map message {message.MessageId} to handler, as none exists for this message type. {message.GetType().FullName}");
 
                 handler = matchingHandlers.Single();
             }
@@ -199,30 +196,30 @@
 
                 // THandler<TMessage,TReturn> == TMessage<TReturn>
                 matchingHandlers = this.handlers.Where(
-                                               h =>
-                                                   {
-                                                       Type handlerType = h.GetType();
+                                           h =>
+                                               {
+                                               var handlerType = h.GetType();
 
-                                                       bool TypeHasOnlyTheMessageAndOrReturnTypeParams(Type t) => t.IsGenericType &&
-                                                                                                                  t.GenericTypeArguments.Length <= 2;
+                                               bool TypeHasOnlyTheMessageAndOrReturnTypeParams(Type t)
+                                               {
+                                                   return t.IsGenericType && t.GenericTypeArguments.Length <= 2;
+                                               }
 
-                                                       while (!TypeHasOnlyTheMessageAndOrReturnTypeParams(handlerType))
-                                                       {
-                                                           handlerType = handlerType.BaseType;
-                                                       }
+                                               while (!TypeHasOnlyTheMessageAndOrReturnTypeParams(handlerType)) handlerType = handlerType.BaseType;
 
-                                                       var handlerMessageType = handlerType.GenericTypeArguments.First().FullName;
-                                                       var handlerReturnType = handlerType.GenericTypeArguments.Length == 2 ?
-                                                                                   handlerType.GenericTypeArguments[1].FullName : null;
+                                               var handlerMessageType = handlerType.GenericTypeArguments.First().FullName;
+                                               var handlerReturnType = handlerType.GenericTypeArguments.Length == 2
+                                                                           ? handlerType.GenericTypeArguments[1].FullName
+                                                                           : null;
 
-                                                       return messageType == handlerMessageType && messageReturnType == handlerReturnType;
-                                                   }).ToList();
+                                               return messageType == handlerMessageType && messageReturnType == handlerReturnType;
+                                               })
+                                       .ToList();
             }
 
             bool MessageIsFailedAllRetriesMessageWithoutAHandler(List<IMessageHandler> matchingHandlers)
             {
-                return (message is IMessageFailedAllRetries && matchingHandlers.Count == 0);
-
+                return message is IMessageFailedAllRetries && matchingHandlers.Count == 0;
             }
         }
 
@@ -259,7 +256,8 @@
                                 Duration = stateOperation.StateOperationDuration.ToString(),
                                 Name = stateOperation.GetType().AsTypeNameString(),
                                 DataStore = dataStoreOperation.MethodCalled + (dataStoreOperation.TypeName != null ? "<" : "")
-                                            + dataStoreOperation.TypeName.SubstringAfterLast('.') + (dataStoreOperation.TypeName != null ? ">" : "")
+                                                                            + dataStoreOperation.TypeName.SubstringAfterLast('.')
+                                                                            + (dataStoreOperation.TypeName != null ? ">" : "")
                             });
                     }
                     else
@@ -267,8 +265,7 @@
                         stateOperations.Add(
                             new
                             {
-                                Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().AsTypeNameString()
+                                Duration = stateOperation.StateOperationDuration.ToString(), Name = stateOperation.GetType().AsTypeNameString()
                             });
                     }
 
@@ -278,14 +275,12 @@
                 stateOperations.Add(
                     new
                     {
-                        Duration = StopwatchUtil.CalculateLatency(previousTimestamp, finalTimestamp).ToString(),
-                        Name = "CPU Operation(s)"
+                        Duration = StopwatchUtil.CalculateLatency(previousTimestamp, finalTimestamp).ToString(), Name = "CPU Operation(s)"
                     });
 
                 var profilingData = new
                 {
-                    TotalProcessingTime = StopwatchUtil.CalculateLatency(initialTimestamp, finalTimestamp),
-                    StateOperations = stateOperations
+                    TotalProcessingTime = StopwatchUtil.CalculateLatency(initialTimestamp, finalTimestamp), StateOperations = stateOperations
                 };
 
                 return profilingData;
@@ -298,18 +293,22 @@
                     {
                         return false;
                     }
+
                     if (IsInvalidTimestampValue(stateOperation.StateOperationStopTimestamp))
                     {
                         return false;
                     }
+
                     if (IsStopTimestampBeforeStartTimestamp(stateOperation.StateOperationStartTimestamp, stateOperation.StateOperationStopTimestamp))
                     {
                         return false;
                     }
+
                     if (IsStartTimestampBeforePrevoiusStopTimestamp(previousStateOperationStopTimestamp, stateOperation.StateOperationStartTimestamp))
                     {
                         return false;
                     }
+
                     return true;
                 }
 
@@ -382,9 +381,7 @@
                          * would be raised to the calling service, or no error in the case of a machine losing power.
                         */
 
-                        if (ThisFailureIsTheFinalFailure() && 
-                            !TheMessageWeAreProcessingIsAMaxFailNotificationMessage() &&
-                            !this.busContext.IsOneWay)
+                        if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage() && !this.busContext.IsOneWay)
                         {
                             //include a message to the bus which tells us this has occured and 
                             //allows us to handle these cases with additional logic
@@ -409,13 +406,16 @@
                 //right now this only works on the real messageaggregator not IMessageaggregator
                 //so testing versions of message aggregator will end up committing queuedopertions on a failure
                 //essentially NOT rolling back the code
-                bool MessageIsQueuedStateChange(IMessage m) => m is IQueuedStateChange change && change.Committed == false;
+                bool MessageIsQueuedStateChange(IMessage m)
+                {
+                    return m is IQueuedStateChange change && change.Committed == false;
+                }
+
                 (this.messageAggregator as MessageAggregator)?.RemoveWhere(MessageIsQueuedStateChange);
             }
 
             async Task AddThisFailureToTheMessageLog()
             {
-
                 await this.dataStore.UpdateById<MessageLogItem>(
                               messageLogItem.id,
                               obj => MessageLogItemOperations.AddFailedMessageResult(obj, pipelineExceptionMessages))

@@ -9,4 +9,7 @@
     <PackageReference Include="FluentValidation" Version="7.2.0" />
     <PackageReference Include="PWDTK" Version="2.0.0.2" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
+  </ItemGroup>
 </Project>

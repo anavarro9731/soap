@@ -70,7 +70,7 @@ function global:Run {
 	if ($BuildAndTest) {
 		Build-And-Test -testPackages @(
 			"Soap.Tests"
-			#"Palmtree.Sso.Api.Domain.Tests"
+			#"Soap.Sso.Api.Domain.Tests"
 		)
 	}
 
@@ -87,15 +87,15 @@ function global:Run {
 			"Soap.Endpoint.Msmq.Infrastructure",
 			"Soap.EndpointTests.Infrastructure",
 			"Soap.MessagesSharedWithClients",
-            "Palmtree.Api.Sso.Endpoint.Http",
-			"Palmtree.Api.Sso.Endpoint.Msmq") `
+            "Soap.Api.Sso.Endpoint.Http",
+			"Soap.Api.Sso.Endpoint.Msmq") `
         -unlistedProjects @(
             "Soap.Interfaces",
 			"Soap.MessagePipeline",
 			"Soap.Utility") `
         -octopusProjects @(
-            "Palmtree.Api.Sso.Endpoint.Http",
-			"Palmtree.Api.Sso.Endpoint.Msmq") `
+            "Soap.Api.Sso.Endpoint.Http",
+			"Soap.Api.Sso.Endpoint.Msmq") `
         -nugetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" `
         -nugetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" `
         -nugetApiKey $nugetApiKey 

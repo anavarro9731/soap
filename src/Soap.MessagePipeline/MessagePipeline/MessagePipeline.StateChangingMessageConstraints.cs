@@ -3,7 +3,6 @@
     using System;
     using System.Transactions;
     using DataStore.Interfaces;
-    using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
     using Serilog;
     using Soap.If.Interfaces;
@@ -12,6 +11,7 @@
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.Utility;
     using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.PureFunctions.Extensions;
 
     public partial class MessagePipeline
     {
@@ -30,24 +30,38 @@
                         //prevent the same message on other threads passing duplicate validation checks due to a race condition
                         lock (ValidationLocker)
                         {
-                            logger.Debug($"Lock acquired, starting unqiue enforcement for msg {message.MessageId}");
+                            logger.Debug($"Lock acquired, starting unique enforcement for msg {message.MessageId}");
                             logItem = Validate() ?? CreateNewLogEntry();
                         }
                     }
                     catch (Exception exception)
                     {
-                        //messagelog ignored here, as db problems are most likely cause of failure, 
-                        //it will be as if the message was never received from messagelog point of view
+                        /* messagelog ignored here, as db problems are most likely cause of failure, 
+                         * and duplicates would append to the previous message instance
+                         * finally, it will be as if the message was never received from the messagelog point of view
+                        */
+                        var pipelineMessages = PipelineExceptionMessages.Create(exception, appConfig, message, null);
 
-                        var exceptionMessage = $"{PipelineExceptionMessages.CodePrefixes.INVALID}: {exception.Message}";
+                        var serilogEntry = new FailedMessageLogEntry
+                        {
+                            SapiReceivedAt = DateTime.UtcNow,
+                            SapiCompletedAt = null,
+                            UserName = null,
+                            MessageId = message.MessageId,
+                            Schema = message.GetType().FullName,
+                            Message = message,
+                            IsCommand = message is IApiCommand,
+                            IsQuery = message is IApiQuery,
+                            IsEvent = message is IApiEvent,
+                            ProfilingData = null,
+                            ExceptionMessages = pipelineMessages,
+                            EnvironmentName = appConfig.EnvironmentName,
+                            ApplicationName = appConfig.ApplicationName
+                        };
 
-                        logger.Error(exception, exceptionMessage);
+                        logger.Error("Message: {@message}", serilogEntry);
 
-                        //top level message raised below should all be safe for the client as this message goes raw to the client
-                        throw new Exception(exceptionMessage);
-
-
-                        //TD domain errors might work better here if pushed via pipelineexceptions
+                        throw pipelineMessages.ToEnvironmentSpecificError(appConfig);
                     }
                 }
 
@@ -62,13 +76,14 @@
                         {
                             Guard.Against(
                                 ItemIsADifferentMessageWithTheSameId(messageLogItem),
-                                $"A message with this MessageId {message.MessageId} has already been processed. This message will be discarded. If this is not a duplicate message please resend with a unique MessageId property value");
+                                GlobalErrorCodes.ItemIsADifferentMessageWithTheSameId);
 
-                            Guard.Against(MessageHasAlreadyBeenProcessedSuccessfully(messageLogItem), "This message has already been processed successfully");
+                            Guard.Against(MessageHasAlreadyBeenProcessedSuccessfully(messageLogItem),
+                              GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
 
                             Guard.Against(
                                 MessageHasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogItem),
-                                $"Message {message.MessageId} had already failed the maximum number of times allowed");
+                                GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
 
                             return messageLogItem;
                         }
@@ -77,7 +92,7 @@
 
                     bool MessageHasAlreadyBeenProcessedSuccessfully(MessageLogItem messageLogItem)
                     {
-                        //safeguard, should never happen, would be abug if it did
+                        //safeguard, should never happen, would be a bug if it did
                         return messageLogItem.SuccessfulAttempt != null;
                     }
 
@@ -91,7 +106,8 @@
                     bool ItemIsADifferentMessageWithTheSameId(MessageLogItem messageLogItem)
                     {
                         var messageAsJson = JsonConvert.SerializeObject(message);
-                        return Md5Hash.Verify(messageAsJson, messageLogItem.MessageHash) == false;
+                        var hashMatches = Md5Hash.Verify(messageAsJson, messageLogItem.MessageHash);
+                        return !hashMatches;
                     }
 
                     bool ItemHasAlreadyBeenReceived(MessageLogItem messageLogItemMatch)
@@ -124,7 +140,7 @@
                     try
                     {
                         //save this immediately outside of the ambient txn so other threads will not get passed duplicate check
-                        using ( var tx = new TransactionScope(TransactionScopeOption.Suppress))
+                        using (var tx = new TransactionScope(TransactionScopeOption.Suppress))
                         {
                             logger.Debug($"Creating record for msg id {message.MessageId}");
 

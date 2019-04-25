@@ -1,0 +1,16 @@
+﻿  <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.8.0" />
+    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Api.Sso.Domain.Constants\Soap.Api.Sso.Domain.Constants.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sso.Domain.Messages\Soap.Api.Sso.Domain.Messages.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sso.Domain.Models\Soap.Api.Sso.Domain.Models.csproj" />
+    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj" />
+  </ItemGroup>
+</Project>
