@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Soap.Api.Sample.Endpoint.Msmq": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "Soap.HostingEnvironment": "Development"
+      }
+    }
+  }
+}

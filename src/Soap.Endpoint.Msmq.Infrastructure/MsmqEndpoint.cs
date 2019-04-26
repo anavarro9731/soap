@@ -66,11 +66,10 @@ namespace Soap.Pf.MsmqEndpointBase
 
                                   o.SimpleRetryStrategy($"{appConfig.ApiEndpointSettings.MsmqEndpointName}.error", appConfig.NumberOfApiMessageRetries + 1, false);
 
-                                  o.SetBackoffTimes(TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(5));
+                                  //TODO: o.SetBackoffTimes(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1000));
 
                                   o.SetNumberOfWorkers(1);
                                   o.SetMaxParallelism(1);
-
                                   o.LogPipeline();
                                   });
             }

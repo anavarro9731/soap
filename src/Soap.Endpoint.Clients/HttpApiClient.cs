@@ -112,8 +112,16 @@
             };
 
             requestUri = uriBuilder.Uri;
+            HttpResponseMessage responseMessage = null;
+            try
+            {
+                responseMessage = await this.http.PostAsync(requestUri, content).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
 
-            var responseMessage = await this.http.PostAsync(requestUri, content).ConfigureAwait(false);
+            }
+
             if (!responseMessage.IsSuccessStatusCode)
             {
                 throw new Exception($"The server returned status code: {((int)responseMessage.StatusCode).ToString()} {responseMessage.StatusCode.ToString()}");
