@@ -9,8 +9,8 @@
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Constants\Soap.Api.Sso.Domain.Constants.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Messages\Soap.Api.Sso.Domain.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Models\Soap.Api.Sso.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
-    <ProjectReference Include="..\..\Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
+    <ProjectReference Include="..\..\Soap.Integrations.Mailgun\Soap.Integrations.Mailgun.csproj" />
   </ItemGroup>
 </Project>

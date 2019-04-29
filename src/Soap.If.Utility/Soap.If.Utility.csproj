@@ -2,14 +2,14 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.32.0</Version>
-    <Description>Soap.Pf.AbstractMessages</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="FluentValidation" Version="7.2.0" />
+    <PackageReference Include="PWDTK" Version="2.0.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Interfaces\Soap.If.Interfaces.csproj" />
-    <ProjectReference Include="..\Soap.Utility\Soap.If.Utility.csproj" />
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
   </ItemGroup>
 </Project>

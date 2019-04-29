@@ -9,9 +9,9 @@
     <PackageReference Include="FluentAssertions" Version="4.19.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj" />
-    <ProjectReference Include="..\Soap.MessagesSharedWithClients\Soap.Pf.ClientServerMessaging.csproj" />
-    <ProjectReference Include="..\Soap.Pf.AbstractMessages\Soap.Pf.MessageContractsBase.csproj" />
+    <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
+    <ProjectReference Include="..\Soap.Pf.ClientServerMessaging\Soap.Pf.ClientServerMessaging.csproj" />
+    <ProjectReference Include="..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

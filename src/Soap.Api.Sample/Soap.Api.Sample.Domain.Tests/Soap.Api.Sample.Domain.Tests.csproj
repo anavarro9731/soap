@@ -17,8 +17,8 @@
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Endpoint.Http\Soap.Api.Sample.Endpoint.Http.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Endpoint.Msmq\Soap.Api.Sample.Endpoint.Msmq.csproj" />
-    <ProjectReference Include="..\..\Soap.DomainTests.Infrastructure\Soap.Pf.DomainTestsBase.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.DomainTestsBase\Soap.Pf.DomainTestsBase.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
 
   <ItemGroup>

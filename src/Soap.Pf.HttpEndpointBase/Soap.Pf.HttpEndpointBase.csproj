@@ -12,9 +12,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj" />
-    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\Soap.Pf.AbstractMessages\Soap.Pf.MessageContractsBase.csproj" />
+    <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
+    <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

@@ -15,8 +15,8 @@
     <PackageReference Include="Topshelf.Serilog" Version="4.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Endpoint.Clients\Soap.Pf.EndpointClients.csproj" />
-    <ProjectReference Include="..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
+    <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
   </ItemGroup>
 
     <ItemGroup>

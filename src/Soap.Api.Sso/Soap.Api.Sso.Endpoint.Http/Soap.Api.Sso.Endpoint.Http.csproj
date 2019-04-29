@@ -11,7 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Logic\Soap.Api.Sso.Domain.Logic.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Http.Infrastructure\Soap.Pf.HttpEndpointBase.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

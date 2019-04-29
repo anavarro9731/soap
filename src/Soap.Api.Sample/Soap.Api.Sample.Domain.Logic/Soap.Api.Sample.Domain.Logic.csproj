@@ -9,9 +9,9 @@
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Constants\Soap.Api.Sample.Domain.Constants.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Soap.Api.Sample.Domain.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Soap.Api.Sample.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
-    <ProjectReference Include="..\..\Soap.ThirdPartyClients.Mailgun\Soap.Integrations.Mailgun.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
+    <ProjectReference Include="..\..\Soap.Integrations.Mailgun\Soap.Integrations.Mailgun.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Processes\Stateful\" />

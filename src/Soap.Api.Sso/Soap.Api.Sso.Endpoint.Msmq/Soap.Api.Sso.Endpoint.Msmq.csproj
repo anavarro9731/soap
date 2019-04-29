@@ -22,8 +22,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Logic\Soap.Api.Sso.Domain.Logic.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Infrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\..\Soap.Endpoint.Msmq.Infrastructure\Soap.Pf.MsmqEndpointBase.csproj" />    
+    <ProjectReference Include="..\..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.MsmqEndpointBase\Soap.Pf.MsmqEndpointBase.csproj" />    
   </ItemGroup>
 
   <ItemGroup>

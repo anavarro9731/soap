@@ -15,7 +15,7 @@
     <PackageReference Include="DataStore" Version="6.8.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.MessagePipeline\Soap.If.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

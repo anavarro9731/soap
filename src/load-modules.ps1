@@ -62,9 +62,9 @@ function global:Run {
 			"Soap.Pf.DomainTestsBase",
 			"Soap.Pf.EndpointClients",
 			"Soap.Pf.EndpointInfrastructure",
-			"Soap.Pf.EndpointTestBase",
+			"Soap.Pf.EndpointTestsBase",
 			"Soap.Pf.HttpEndpointBase",
-			"Soap.Pf.MessageContractBase",
+			"Soap.Pf.MessageContractsBase",
 			"Soap.Pf.MsmqEndpointBase")
 	}
 
@@ -85,9 +85,9 @@ function global:Run {
 			"Soap.Pf.DomainTestsBase",
 			"Soap.Pf.EndpointClients",
 			"Soap.Pf.EndpointInfrastructure",
-			"Soap.Pf.EndpointTestBase",
+			"Soap.Pf.EndpointTestsBase",
 			"Soap.Pf.HttpEndpointBase",
-			"Soap.Pf.MessageContractBase",
+			"Soap.Pf.MessageContractsBase",
 			"Soap.Pf.MsmqEndpointBase",
             "Soap.Api.Sso.Endpoint.Http",
 			"Soap.Api.Sso.Endpoint.Msmq"
