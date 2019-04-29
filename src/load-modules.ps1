@@ -1,14 +1,14 @@
 Param(
     [Parameter(Mandatory=$true)]
     [Alias('u')]
-	[string] $vstsUser,
+	[string] $adoUser,
     [Parameter(Mandatory=$true)]
     [Alias('p')]
-    [string] $vstsPassword
+    [string] $adoPassword
 )
 
-$vstsCredentials = @($vstsUser,$vstsPassword)
-$vstsRootUri = "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath="
+$adoCredentials = @($adoUser,$adoPassword)
+$adoRootUri = "https://anavarro9731.visualstudio.com/defaultcollection/powershell/_apis/git/repositories/powershell/items?api-version=1.0&scopepath="
 $modules = @(
     "build",
     "prepare-new-version",
@@ -23,7 +23,7 @@ Push-Location $PSScriptRoot
 Write-Host "Importing Custom Modules"
 
 # Base64-encodes the Personal Access Token (PAT) appropriately
-$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $vstsCredentials[0],$vstsCredentials[1])))
+$base64AuthInfo = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $adoCredentials[0],$adoCredentials[1])))
 
 # Set Modules Path for Session
 $env:PSModulePath = $env:PSModulePath + ";$PSScriptRoot\.psModules\"
@@ -31,7 +31,7 @@ $env:PSModulePath = $env:PSModulePath + ";$PSScriptRoot\.psModules\"
 # Download and Import all Modules
 foreach ($module in $modules) {
     New-Item ".\.psModules\$module\" -ItemType Directory -Verbose
-    Invoke-RestMethod -Uri "$vstsRootUri$module.psm1" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile ".\.psModules\$module\$module.psm1"
+    Invoke-RestMethod -Uri "$adoRootUri$module.psm1" -Headers @{Authorization=("Basic {0}" -f $base64AuthInfo)} -ContentType "text/plain; charset=UTF-8" -OutFile ".\.psModules\$module\$module.psm1"
     Import-Module $module -Verbose -Global -Force
 }
 
@@ -54,45 +54,48 @@ function global:Run {
 	
 	if ($PrepareNewVersion) {
 		Prepare-NewVersion -projects @(
-			"Soap.ThirdPartyClients.Mailgun",
-			"Soap.Interfaces",
-			"Soap.MessagePipeline",
-			"Soap.Utility",
-			"Soap.DomainTests.Infrastructure",
-			"Soap.Endpoint.Clients",
-			"Soap.Endpoint.Http.Infrastructure",
-			"Soap.Endpoint.Infrastructure",
-			"Soap.Endpoint.Msmq.Infrastructure",
-			"Soap.EndpointTests.Infrastructure",
-			"Soap.MessagesSharedWithClients")
+			"Soap.Integrations.Mailgun",
+			"Soap.If.Interfaces",
+			"Soap.If.MessagePipeline",
+			"Soap.If.Utility",
+			"Soap.Pf.ClientServerMessaging",
+			"Soap.Pf.DomainTestsBase",
+			"Soap.Pf.EndpointClients",
+			"Soap.Pf.EndpointInfrastructure",
+			"Soap.Pf.EndpointTestBase",
+			"Soap.Pf.HttpEndpointBase",
+			"Soap.Pf.MessageContractBase",
+			"Soap.Pf.MsmqEndpointBase")
 	}
 
 	if ($BuildAndTest) {
 		Build-And-Test -testPackages @(
-			"Soap.Tests"
-			#"Soap.Sso.Api.Domain.Tests"
+			"Soap.Tests",
+			"Soap.Api.Sso.Domain.Tests"
 		)
 	}
 
     if ($PackAndPublish) {
         Pack-And-Publish -projectsToPublish @(
-			"Soap.ThirdPartyClients.Mailgun",
-			"Soap.Interfaces",
-			"Soap.MessagePipeline",
-			"Soap.Utility",
-			"Soap.DomainTests.Infrastructure",
-			"Soap.Endpoint.Clients",
-			"Soap.Endpoint.Http.Infrastructure",
-			"Soap.Endpoint.Infrastructure",
-			"Soap.Endpoint.Msmq.Infrastructure",
-			"Soap.EndpointTests.Infrastructure",
-			"Soap.MessagesSharedWithClients",
+			"Soap.Integrations.Mailgun",
+			"Soap.If.Interfaces",
+			"Soap.If.MessagePipeline",
+			"Soap.If.Utility",
+			"Soap.Pf.ClientServerMessaging",
+			"Soap.Pf.DomainTestsBase",
+			"Soap.Pf.EndpointClients",
+			"Soap.Pf.EndpointInfrastructure",
+			"Soap.Pf.EndpointTestBase",
+			"Soap.Pf.HttpEndpointBase",
+			"Soap.Pf.MessageContractBase",
+			"Soap.Pf.MsmqEndpointBase",
             "Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso.Endpoint.Msmq") `
+			"Soap.Api.Sso.Endpoint.Msmq"
+			) `
         -unlistedProjects @(
-            "Soap.Interfaces",
-			"Soap.MessagePipeline",
-			"Soap.Utility") `
+            "Soap.If.Interfaces",
+			"Soap.If.MessagePipeline",
+			"Soap.If.Utility") `
         -octopusProjects @(
             "Soap.Api.Sso.Endpoint.Http",
 			"Soap.Api.Sso.Endpoint.Msmq") `
