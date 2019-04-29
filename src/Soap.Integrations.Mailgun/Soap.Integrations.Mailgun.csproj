@@ -1,13 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Service API Mailgun Service</Description>
     <TargetFramework>net461</TargetFramework>
-    <Version>0.32.0</Version>
+    <Version>0.33.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Mailer.NET" Version="1.5.0" />
-    
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />

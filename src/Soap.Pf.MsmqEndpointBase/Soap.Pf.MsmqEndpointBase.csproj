@@ -1,7 +1,7 @@
-﻿  <Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <Version>0.32.0</Version>
+    <Version>0.33.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Description>Used to create a Msmq Endpoint project</Description>
   </PropertyGroup>
@@ -18,8 +18,7 @@
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
   </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="System.Transactions" />
-    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System.Transactions" />
+  </ItemGroup>
 </Project>
