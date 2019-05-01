@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Handlers\Commands\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

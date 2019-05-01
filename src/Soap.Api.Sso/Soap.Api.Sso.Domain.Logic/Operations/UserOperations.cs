@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
+    using Soap.Api.Sso.Domain.Models;
     using Soap.Api.Sso.Domain.Models.Aggregates;
     using Soap.Api.Sso.Domain.Models.Entities;
     using Soap.Api.Sso.Domain.Models.ValueObjects;
@@ -13,7 +14,6 @@
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.If.Utility;
     using Soap.If.Utility.PureFunctions;
-    using Soap.Pf.EndpointInfrastructure;
 
     public class UserOperations : Operations<User>
     {

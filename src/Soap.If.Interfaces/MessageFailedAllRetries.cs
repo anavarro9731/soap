@@ -10,6 +10,8 @@
             IdOfMessageThatFailed = idOfMessageThatFailed;            
         }
 
+        public MessageFailedAllRetries() { }
+
         public Guid IdOfMessageThatFailed { get; set; }
 
         public Guid? StatefulProcessIdOfMessageThatFailed { get; set; }

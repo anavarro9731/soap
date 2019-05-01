@@ -3,27 +3,23 @@
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Commands;
     using Soap.If.MessagePipeline.Messages.ProcessMessages;
-    using Soap.Integrations.Mailgun;
-    using Soap.Pf.DomainTestsBase;
+    using Soap.Integrations.MailGun;
     using Xunit;
 
-    public class WhenResettingPassword
+    public class WhenResettingPassword : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         public WhenResettingPassword()
         {
             //arrange
-            this.endPoint.AddToDatabase(TestData.User1);
+            this.endPoint.AddToDatabase(Aggregates.User1);
 
             //act
-            var resetPassword = new RequestPasswordReset(TestData.User1.Email);
+            var resetPassword = new RequestPasswordReset(Aggregates.User1.Email);
             this.endPoint.HandleCommand(resetPassword);
 
-
-            var resetPasswordFromEmail = new ResetPasswordFromEmail(TestData.User1.UserName, "new_password");
+            var resetPasswordFromEmail = new ResetPasswordFromEmail(Aggregates.User1.UserName, "new_password");
             resetPasswordFromEmail.StatefulProcessId = this.endPoint.MessageAggregator.AllMessages.OfType<StatefulProcessStarted>().Single().InitialState.id;
-            this.endPoint.HandleCommand(resetPasswordFromEmail, TestData.User1);
+            this.endPoint.HandleCommand(resetPasswordFromEmail, Aggregates.User1);
         }
 
         [Fact]
@@ -31,7 +27,7 @@
         {
             var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<SendEmail>().Single();
 
-            Assert.Equal(TestData.User1.Email, emailSent.SendTo.First());
+            Assert.Equal(Aggregates.User1.Email, emailSent.SendTo.First());
         }
 
         [Fact]

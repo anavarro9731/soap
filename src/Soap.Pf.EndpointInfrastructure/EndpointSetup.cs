@@ -22,8 +22,8 @@
     {
         public static ContainerBuilder ConfigureCore<TUserAuthenticator>(
             ContainerBuilder builder,
-            Assembly domainLogicAssembly,
-            Assembly domainMessagesAssembly,
+            List<Assembly> domainLogicAssemblies,
+            List<Assembly> domainMessagesAssemblies,
             Func<IMessageAggregator> messageAggregatorFactory,
             Func<IDocumentRepository> documentRepositoryFactory,
             List<Action<ContainerBuilder>> containerActions) where TUserAuthenticator : IAuthenticateUsers
@@ -77,49 +77,56 @@
 
             void AddProcesses()
             {
-                builder.RegisterAssemblyTypes(domainLogicAssembly)
-                       .AssignableTo(typeof(Process))
-                       .AsImplementedInterfaces()
-                       .OnActivated(
-                           e =>
-                               {
+                foreach (var domainLogicAssembly in domainLogicAssemblies)
+                {
+                    builder.RegisterAssemblyTypes(domainLogicAssembly)
+                           .AssignableTo(typeof(Process))
+                           .AsImplementedInterfaces()
+                           .OnActivated(
+                               e =>
+                                   {
                                    (e.Instance as Process).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
                                        e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
-                               })
-                       .InstancePerDependency();
+                                   })
+                           .InstancePerDependency();
 
-                builder.RegisterAssemblyTypes(domainLogicAssembly)
-                       .AssignableTo(typeof(StatefulProcess))
-                       .AsImplementedInterfaces()
-                       .OnActivated(
-                           e =>
-                               {
+                    builder.RegisterAssemblyTypes(domainLogicAssembly)
+                           .AssignableTo(typeof(StatefulProcess))
+                           .AsImplementedInterfaces()
+                           .OnActivated(
+                               e =>
+                                   {
                                    (e.Instance as StatefulProcess).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
                                        e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
-                               })
-                       .InstancePerDependency();
+                                   })
+                           .InstancePerDependency();
+                }
+
             }
 
             void AddOperations()
             {
-                builder.RegisterAssemblyTypes(domainLogicAssembly)
-                       .AsClosedTypesOf(typeof(Operations<>))
-                       .OnActivated(
-                           e =>
-                               {
+                foreach (var domainLogicAssembly in domainLogicAssemblies)
+                {
+                    builder.RegisterAssemblyTypes(domainLogicAssembly)
+                           .AsClosedTypesOf(typeof(Operations<>))
+                           .OnActivated(
+                               e =>
+                                   {
                                    (e.Instance as Operations).SetDependencies(
                                        e.Context.Resolve<IDataStore>(),
                                        e.Context.Resolve<UnitOfWork>(),
                                        e.Context.Resolve<ILogger>(),
                                        e.Context.Resolve<IMessageAggregator>());
-                               })
-                       .InstancePerLifetimeScope();
+                                   })
+                           .InstancePerLifetimeScope();
+                }
             }
         }
 

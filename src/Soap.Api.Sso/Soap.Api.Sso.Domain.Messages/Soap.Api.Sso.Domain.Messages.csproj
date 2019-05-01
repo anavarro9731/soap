@@ -16,5 +16,9 @@
     <ProjectReference Include="..\..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
     <ProjectReference Include="..\..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Events\" />
+  </ItemGroup>
   
 </Project>

@@ -6,19 +6,16 @@
     using Soap.Api.Sso.Domain.Models.Aggregates;
     using Soap.Api.Sso.Domain.Models.ValueObjects;
     using Soap.If.Utility;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenDisablingAUser
+    public class WhenDisablingAUser : Test
     {
         private readonly User anotherUser;
-
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
         public WhenDisablingAUser()
         {
             //arrange            
-            this.endPoint.AddToDatabase(TestData.User1);
+            this.endPoint.AddToDatabase(Aggregates.User1);
 
             this.anotherUser = CreateAnotherUser();
 
@@ -29,7 +26,7 @@
             var disableUser = new DisableUser(this.anotherUser.id);
 
             //act
-            this.endPoint.HandleCommand(disableUser, TestData.User1);
+            this.endPoint.HandleCommand(disableUser, Aggregates.User1);
         }
 
         [Fact]

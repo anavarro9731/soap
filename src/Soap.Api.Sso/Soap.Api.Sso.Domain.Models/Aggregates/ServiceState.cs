@@ -1,10 +1,8 @@
 ﻿namespace Soap.Api.Sso.Domain.Models.Aggregates
 {
-    using DataStore.Interfaces.LowLevel;
-    using Soap.If.Utility;
+    using Soap.Pf.DomainModelsBase;
 
-    public class ServiceState : Aggregate
+    public class ServiceState : AbstractServiceState
     {
-        public FlaggedState DatabaseState { get; set; }
     }
 }

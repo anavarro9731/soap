@@ -9,7 +9,7 @@
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.Pf.MsmqEndpointBase;
 
-    public class UpgradeTheDatabaseHandler : CommandHandler<UpgradeTheDatabase>, IMapErrorCodesFromDomainToMessageErrorCodes
+    public class UpgradeTheDatabaseHandler : CommandHandler<UpgradeTheDatabaseCommand>, IMapErrorCodesFromDomainToMessageErrorCodes
     {
         private readonly IProcess<UpgradeTheDatabaseProcess> process;
 
@@ -23,15 +23,15 @@
             return new Dictionary<ErrorCode, ErrorCode>
             {
                 {
-                    UpgradeTheDatabaseProcess.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion, UpgradeTheDatabase.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion
+                    UpgradeTheDatabaseProcess.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion, UpgradeTheDatabaseCommand.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion
                 },
                 {
-                    UpgradeTheDatabaseProcess.ErrorCodes.NoUpgradeScriptExistsForThisVersion, UpgradeTheDatabase.ErrorCodes.NoUpgradeScriptExistsForThisVersion
+                    UpgradeTheDatabaseProcess.ErrorCodes.NoUpgradeScriptExistsForThisVersion, UpgradeTheDatabaseCommand.ErrorCodes.NoUpgradeScriptExistsForThisVersion
                 }
             };
         }
 
-        protected override async Task Handle(UpgradeTheDatabase message, ApiMessageMeta meta)
+        protected override async Task Handle(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
         {
             await this.process.BeginProcess(message, meta);
         }

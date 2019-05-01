@@ -5,7 +5,7 @@
     using System.Threading.Tasks;
     using Soap.Api.Sample.Domain.Constants;
     using Soap.Api.Sample.Domain.Messages.Commands;
-    using Soap.Api.Sample.Domain.Messages.Queries.Abstract;
+    using Soap.Api.Sample.Domain.Messages.Queries;
     using Soap.Pf.ClientServerMessaging.Commands;
     using Soap.Pf.EndpointTestsBase;
     using Xunit;
@@ -39,10 +39,10 @@
         private async Task Setup()
          {
             //arrange
-            var apiClient = TestUtils.Endpoints.Http.CreateApiClient(typeof(UpgradeTheDatabase).Assembly);
+            var apiClient = TestUtils.Endpoints.Http.CreateApiClient(typeof(UpgradeTheDatabaseCommand).Assembly);
 
-            var message = new ForwardCommandFromHttpToMsmq<UpgradeTheDatabase>(
-                new UpgradeTheDatabase(ReleaseVersions.v1)
+            var message = new ForwardCommandFromHttpToMsmq<UpgradeTheDatabaseCommand>(
+                new UpgradeTheDatabaseCommand(ReleaseVersions.v1)
                 {
                     MessageId = this.innerMessageId,
                     ReSeed = true,

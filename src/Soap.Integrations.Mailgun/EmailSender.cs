@@ -1,7 +1,6 @@
-﻿namespace Soap.Integrations.Mailgun
+﻿namespace Soap.Integrations.MailGun
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
@@ -12,15 +11,15 @@
 
     public class EmailSender
     {
-        private readonly MailgunEmailSenderSettings emailSettings;
+        private readonly MailGunEmailSenderSettings emailSettings;
 
         private readonly MailgunTransport mailgunClient;
 
         private readonly IMessageAggregator messageAggregator;
 
-        public EmailSender(MailgunEmailSenderSettings settings, IMessageAggregator messageAggregator)
+        public EmailSender(MailGunEmailSenderSettings settings, IMessageAggregator messageAggregator)
         {
-            this.mailgunClient = new MailgunTransport(settings.MailgunDomain, settings.ApiKey);
+            this.mailgunClient = new MailgunTransport(settings.MailGunDomain, settings.ApiKey);
             this.emailSettings = settings;
             this.messageAggregator = messageAggregator;
         }
@@ -28,12 +27,9 @@
         public EmailResponse SendEmail(string text, string subject, string[] sendTo)
         {
             foreach (var s in sendTo)
-            {
                 Guard.Against(
                     () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
                     $"Sending emails to {s} is not allowed.");
-            }
-
 
             return this.messageAggregator.CollectAndForward(new SendingEmail(text, subject, sendTo)).To(SendViaMailGun);
         }
@@ -50,8 +46,12 @@
                     {
                         Email = this.emailSettings.From
                     },
-                    To = sendingEmail.SendTo.Select(x => new Contact() { Email = x}).ToList()
-                    
+                    To = sendingEmail.SendTo.Select(
+                                         x => new Contact
+                                         {
+                                             Email = x
+                                         })
+                                     .ToList()
                 };
                 var result = this.mailgunClient.SendEmail(emailMessage);
                 return result;
@@ -67,12 +67,6 @@
 
         public class SendingEmail : IChangeState
         {
-            public string Text { get; }
-
-            public string Subject { get; }
-
-            public string[] SendTo { get; }
-
             public SendingEmail(string text, string subject, string[] sendTo)
             {
                 Text = text;
@@ -80,7 +74,7 @@
                 SendTo = sendTo;
             }
 
-            
+            public string[] SendTo { get; }
 
             public double StateOperationCost { get; set; }
 
@@ -89,6 +83,10 @@
             public long StateOperationStartTimestamp { get; set; }
 
             public long? StateOperationStopTimestamp { get; set; }
+
+            public string Subject { get; }
+
+            public string Text { get; }
         }
     }
 }

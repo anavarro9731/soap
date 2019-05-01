@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Domain.Models
+﻿namespace Soap.Api.Sample.Domain.Models.ViewModels
 {
     using System;
     using System.Collections.Generic;

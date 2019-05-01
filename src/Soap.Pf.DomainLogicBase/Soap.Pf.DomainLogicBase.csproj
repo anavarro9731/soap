@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <Version>0.33.0</Version>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Used to create a Domain Logic assembly</Description>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj" />
+  </ItemGroup>
+
+</Project>

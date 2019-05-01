@@ -4,11 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
-    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
 
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.If.Utility\Soap.If.Utility.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entities\" />

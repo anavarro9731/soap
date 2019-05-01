@@ -7,14 +7,14 @@
     using Soap.Api.Sso.Domain.Constants;
     using Soap.Api.Sso.Domain.Logic.Operations;
     using Soap.Api.Sso.Domain.Messages.Commands;
+    using Soap.Api.Sso.Domain.Models;
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.If.Utility.PureFunctions;
-    using Soap.Pf.EndpointInfrastructure;
 
-    public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabase>
+    public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabaseCommand>
     {
         private readonly IDocumentRepository documentRepository;
 
@@ -36,7 +36,7 @@
             this.TagOperations = TagOperations;
         }
 
-        public async Task BeginProcess(UpgradeTheDatabase message, ApiMessageMeta meta)
+        public async Task BeginProcess(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
         {
             {
                 Validate();

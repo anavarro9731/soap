@@ -13,7 +13,7 @@
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.If.Utility.PureFunctions;
 
-    public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabase>
+    public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabaseCommand>
     {
         private readonly IDocumentRepository documentRepository;
 
@@ -25,7 +25,7 @@
             this.documentRepository = documentRepository;
         }
 
-        public async Task BeginProcess(UpgradeTheDatabase message, ApiMessageMeta meta)
+        public async Task BeginProcess(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
         {
             {
                 Validate();
@@ -46,6 +46,7 @@
                 }
             }
 
+            //TODO: move to framework
             async Task ClearDb()
             {
                 MessageLogItem envelopeMessage = null;

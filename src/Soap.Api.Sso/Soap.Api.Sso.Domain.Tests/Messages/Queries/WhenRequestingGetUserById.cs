@@ -10,13 +10,10 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.Utility.PureFunctions.Extensions;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenRequestingGetUserById
+    public class WhenRequestingGetUserById : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         private readonly ApiQuery<User> getUserById;
 
         private readonly IUserWithPermissions result;
@@ -24,11 +21,11 @@
         public WhenRequestingGetUserById()
         {
             //arrange            
-            this.endPoint.AddToDatabase(TestData.User1);
-            this.getUserById = new GetUserById(TestData.User1.id);
+            this.endPoint.AddToDatabase(Aggregates.User1);
+            this.getUserById = new GetUserById(Aggregates.User1.id);
 
             //act
-            this.result = (IUserWithPermissions)this.endPoint.HandleQuery<User>(this.getUserById);
+            this.result = this.endPoint.HandleQuery(this.getUserById);
         }
 
         [Fact]
@@ -56,7 +53,7 @@
         [Fact]
         public void ItShouldReturnTheUser()
         {
-            Assert.Equal(this.result?.id, TestData.User1.id);
+            Assert.Equal(this.result?.id, Aggregates.User1.id);
         }
     }
 }

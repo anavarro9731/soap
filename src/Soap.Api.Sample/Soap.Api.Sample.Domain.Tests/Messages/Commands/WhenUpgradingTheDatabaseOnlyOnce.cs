@@ -5,20 +5,15 @@ namespace Soap.Api.Sample.Domain.Tests.Messages.Commands
     using Soap.Api.Sample.Domain.Constants;
     using Soap.Api.Sample.Domain.Messages.Commands;
     using Soap.Api.Sample.Domain.Models.Aggregates;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenUpgradingTheDatabaseOnlyOnce
+    public class WhenUpgradingTheDatabaseOnlyOnce : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         public WhenUpgradingTheDatabaseOnlyOnce()
         {
-            // Arrange
-            var commmand = new UpgradeTheDatabase(ReleaseVersions.v1);
+            var command = new UpgradeTheDatabaseCommand(ReleaseVersions.v1);
 
-            // Act
-            this.endPoint.HandleCommand(commmand);
+            this.endPoint.HandleCommand(command);
         }
 
         [Fact]

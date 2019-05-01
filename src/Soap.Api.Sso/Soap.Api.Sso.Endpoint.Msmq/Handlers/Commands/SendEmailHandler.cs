@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
     using Soap.Api.Sso.Domain.Logic.Configuration;
     using Soap.If.MessagePipeline.Models;
-    using Soap.Integrations.Mailgun;
+    using Soap.Integrations.MailGun;
     using Soap.Pf.MsmqEndpointBase;
 
     public class SendEmailHandler : CommandHandler<SendEmail>
@@ -17,7 +17,7 @@
 
         protected override Task Handle(SendEmail message, ApiMessageMeta meta)
         {
-            var emailSender = new EmailSender(this.applicationConfiguration.MailgunEmailSenderSettings, MessageAggregator);
+            var emailSender = new EmailSender(this.applicationConfiguration.MailGunEmailSenderSettings, MessageAggregator);
 
             emailSender.SendEmail(message.Text, message.Subject, message.SendTo);
 

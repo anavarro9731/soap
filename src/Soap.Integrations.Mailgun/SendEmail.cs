@@ -1,4 +1,4 @@
-﻿namespace Soap.Integrations.Mailgun
+﻿namespace Soap.Integrations.MailGun
 {
     using Soap.If.Interfaces.Messages;
 

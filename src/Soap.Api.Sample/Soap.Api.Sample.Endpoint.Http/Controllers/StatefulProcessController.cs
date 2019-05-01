@@ -2,7 +2,6 @@
 {
     using System;
     using Microsoft.AspNetCore.Mvc;
-    using Soap.Api.Sample.Domain.Messages.Commands;
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline.MessagePipeline;
     using Soap.Pf.HttpEndpointBase.Controllers;
@@ -20,7 +19,6 @@
         {
             switch (spAction)
             {
-               
             }
         }
     }

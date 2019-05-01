@@ -2,18 +2,23 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IdentityModel.Tokens;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using Autofac;
     using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using Microsoft.Azure.Documents;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Pf.MessageContractsBase;
 
     public class TestEndpoint
     {
@@ -68,14 +73,14 @@
             return (T)result;
         }
 
-        public void HandleQuery(ApiQuery query) 
+        public void HandleQuery(ApiQuery query)
         {
             if (query.MessageId == Guid.Empty) query.MessageId = Guid.NewGuid();
 
             this.container.Resolve<MessagePipeline>().Execute(query).GetAwaiter().GetResult();
         }
 
-        public T HandleQuery<T>(ApiQuery<T> query) where T: class, new()
+        public T HandleQuery<T>(ApiQuery<T> query) where T : class, new()
         {
             if (query.MessageId == Guid.Empty) query.MessageId = Guid.NewGuid();
 
@@ -91,5 +96,6 @@
                                   : extendQueryable(InMemoryDocumentRepository.Aggregates.OfType<T>().AsQueryable());
             return Task.FromResult(queryResult);
         }
+    
     }
 }

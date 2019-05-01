@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
     using System.Reflection;
     using Autofac;
     using CircuitBoard.MessageAggregator;
@@ -13,6 +14,7 @@
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.UnitOfWork;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointInfrastructure;
     using Topshelf;
 
@@ -187,8 +189,8 @@
                 {
                     var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         new ContainerBuilder(),
-                        this.domainLogicAssembly,
-                        this.domainMessagesAssembly,
+                        new[] { this.domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
+                        new[] { this.domainMessagesAssembly }.ToList(),
                         MessageAggregator.Create,
                         this.documentRepositoryFactory,
                         this.ContainerActions);

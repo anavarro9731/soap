@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Autofac;
     using Autofac.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.Messages;
     using Soap.If.MessagePipeline.UnitOfWork;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointClients;
     using Soap.Pf.EndpointInfrastructure;
 
@@ -193,8 +195,8 @@
 
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
-                        domainLogicAssembly,
-                        domainMessagesAssembly,
+                        new[] { domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
+                        new[] { domainMessagesAssembly }.ToList(),
                         MessageAggregator.Create,
                         documentRepositoryFactory,
                         containerActions);

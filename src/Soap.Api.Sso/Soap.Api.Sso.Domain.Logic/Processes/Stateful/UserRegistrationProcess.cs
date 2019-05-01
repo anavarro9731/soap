@@ -11,7 +11,7 @@
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.If.Utility.PureFunctions;
-    using Soap.Integrations.Mailgun;
+    using Soap.Integrations.MailGun;
 
     public class UserRegistrationProcess : StatefulProcess<UserRegistrationProcess>,
                                            IBeginProcess<RegisterUser, RegisterUser.RegistrationResult>,

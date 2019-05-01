@@ -4,21 +4,18 @@
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Commands;
     using Soap.Api.Sso.Domain.Models.Aggregates;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenAddingATag
+    public class WhenAddingATag : Test
     {
         private readonly AddATag command;
-
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
         private readonly Tag result;
 
         public WhenAddingATag()
         {
             //arrange            
-            this.endPoint.AddToDatabase(TestData.User1);
+            this.endPoint.AddToDatabase(Aggregates.User1);
 
             this.command = new AddATag("Some Tag")
             {
@@ -26,7 +23,7 @@
             };
 
             //act
-            this.result = this.endPoint.HandleCommand(this.command, TestData.User1);
+            this.result = this.endPoint.HandleCommand(this.command, Aggregates.User1);
         }
 
         [Fact]

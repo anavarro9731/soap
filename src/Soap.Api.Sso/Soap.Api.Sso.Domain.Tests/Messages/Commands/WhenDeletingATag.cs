@@ -4,13 +4,10 @@
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Commands;
     using Soap.Api.Sso.Domain.Models.Aggregates;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenDeletingATag
+    public class WhenDeletingATag : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         private readonly Tag result;
 
         private readonly Guid TagId = Guid.Parse("33de11ce-2058-49bb-a4e9-e1b23fb0b9c4");
@@ -18,18 +15,17 @@
         public WhenDeletingATag()
         {
             //arrange            
-            this.endPoint.AddToDatabase(TestData.User1);
+            this.endPoint.AddToDatabase(Aggregates.User1);
             var Tag = new Tag
             {
-                id = this.TagId,
-                NameOfTag = "Some Tag"
+                id = this.TagId, NameOfTag = "Some Tag"
             };
             this.endPoint.AddToDatabase(Tag);
 
             var deleteTag = new DeleteTag(this.TagId);
 
             //act
-            this.result = (Tag)this.endPoint.HandleCommand(deleteTag, TestData.User1);
+            this.result = this.endPoint.HandleCommand(deleteTag, Aggregates.User1);
         }
 
         [Fact]

@@ -4,16 +4,14 @@
     using FluentAssertions;
     using Soap.Api.Sso.Domain.Messages.Commands;
     using Soap.Api.Sso.Domain.Models.Aggregates;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenAuthenticateUser
+    public class WhenAuthenticateUser : Test
+
     {
-        private readonly AddFullyRegisteredUser createRegisteredUser1 = TestData.Commands.CreateRegisteredUser1();
+        private readonly AddFullyRegisteredUser createRegisteredUser1 = Commands.CreateRegisteredUser1();
 
-        private readonly AddFullyRegisteredUser createRegisteredUser2 = TestData.Commands.CreateRegisteredUser2();
-
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
+        private readonly AddFullyRegisteredUser createRegisteredUser2 = Commands.CreateRegisteredUser2();
 
         private readonly ResetPasswordFromEmail.ClientSecurityContext result;
 
@@ -25,8 +23,8 @@
 
             this.endPoint.HandleCommand(this.createRegisteredUser2);
 
-            var authenticateUser = new AuthenticateUser(
-                AuthenticateUser.UserCredentials.Create(this.createRegisteredUser2.Email, this.createRegisteredUser2.Password));
+            var authenticateUser =
+                new AuthenticateUser(AuthenticateUser.UserCredentials.Create(this.createRegisteredUser2.Email, this.createRegisteredUser2.Password));
 
             this.result = this.endPoint.HandleCommand(authenticateUser);
         }

@@ -2,8 +2,16 @@
 {
     using System;
 
-    public class ApiMessage : IApiMessage
+    public abstract class ApiMessage : IApiMessage
     {
+        ///// <summary>
+        ///// For SERIALIZATION
+        ///// </summary>
+        //protected ApiMessage()
+        //{   
+
+        //}
+
         public string IdentityToken { get; set; }
 
         public Guid MessageId { get; set; }

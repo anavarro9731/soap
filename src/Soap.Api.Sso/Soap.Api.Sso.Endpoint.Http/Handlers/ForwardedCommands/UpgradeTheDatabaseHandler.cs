@@ -6,11 +6,11 @@
     using Soap.Pf.ClientServerMessaging.Commands;
     using Soap.Pf.HttpEndpointBase;
 
-    public class UpgradeTheDatabaseHandler : CommandHandler<ForwardCommandFromHttpToMsmq<UpgradeTheDatabase>>
+    public class UpgradeTheDatabaseHandler : CommandHandler<ForwardCommandFromHttpToMsmq<UpgradeTheDatabaseCommand>>
     {
-        protected override Task Handle(ForwardCommandFromHttpToMsmq<UpgradeTheDatabase> message, ApiMessageMeta meta)
+        protected override Task Handle(ForwardCommandFromHttpToMsmq<UpgradeTheDatabaseCommand> message, ApiMessageMeta meta)
         {
-            (message.CommandToForward as UpgradeTheDatabase).EnvelopeId = message.MessageId;
+            (message.CommandToForward as UpgradeTheDatabaseCommand).EnvelopeId = message.MessageId;
 
             UnitOfWork.SendCommand(message.CommandToForward);
 

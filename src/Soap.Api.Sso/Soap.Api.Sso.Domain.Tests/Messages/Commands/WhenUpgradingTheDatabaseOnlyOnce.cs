@@ -4,21 +4,18 @@ namespace Soap.Api.Sso.Domain.Tests.Messages.Commands
     using FluentAssertions;
     using Soap.Api.Sso.Domain.Constants;
     using Soap.Api.Sso.Domain.Messages.Commands;
+    using Soap.Api.Sso.Domain.Models;
     using Soap.Api.Sso.Domain.Models.Aggregates;
     using Soap.Api.Sso.Domain.Models.ValueObjects;
     using Soap.If.Utility;
-    using Soap.Pf.DomainTestsBase;
-    using Soap.Pf.EndpointInfrastructure;
     using Xunit;
 
-    public class WhenUpgradingTheDatabaseOnlyOnce
+    public class WhenUpgradingTheDatabaseOnlyOnce : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         public WhenUpgradingTheDatabaseOnlyOnce()
         {
             // Arrange
-            var commmand = new UpgradeTheDatabase(ReleaseVersions.v1);
+            var commmand = new UpgradeTheDatabaseCommand(ReleaseVersions.v1);
 
             // Act
             this.endPoint.HandleCommand(commmand);
@@ -45,7 +42,7 @@ namespace Soap.Api.Sso.Domain.Tests.Messages.Commands
                 defaultUser.Email.Should().Be(HardCodedMasterData.RootUser.EmailAddress);
                 defaultUser.FullName.Should().Be(HardCodedMasterData.RootUser.FullName);
                 var expectedPasswordHash = HashPassword(HardCodedMasterData.RootUser.Password, defaultUser.PasswordDetails);
-                
+
                 defaultUser.PasswordDetails.PasswordHash.Should().Be(expectedPasswordHash);
             }
 

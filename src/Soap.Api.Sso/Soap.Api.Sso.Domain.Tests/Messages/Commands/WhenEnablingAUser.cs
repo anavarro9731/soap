@@ -6,19 +6,16 @@
     using Soap.Api.Sso.Domain.Models.Aggregates;
     using Soap.Api.Sso.Domain.Models.ValueObjects;
     using Soap.If.Utility;
-    using Soap.Pf.DomainTestsBase;
     using Xunit;
 
-    public class WhenEnablingAUser
+    public class WhenEnablingAUser : Test
     {
         private readonly User anotherUser;
-
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
         public WhenEnablingAUser()
         {
             //arrange            
-            this.endPoint.AddToDatabase(TestData.User1);
+            this.endPoint.AddToDatabase(Aggregates.User1);
 
             this.anotherUser = CreateAnotherUser();
 
@@ -27,7 +24,7 @@
             var enableUser = new EnableUser(this.anotherUser.id);
 
             //act
-            this.endPoint.HandleCommand(enableUser, TestData.User1);
+            this.endPoint.HandleCommand(enableUser, Aggregates.User1);
         }
 
         [Fact]
@@ -58,4 +55,4 @@
             return user;
         }
     }
-    }
+}

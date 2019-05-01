@@ -2,23 +2,18 @@
 {
     using System.Linq;
     using Mailer.NET.Mailer.Response;
-    using Soap.Integrations.Mailgun;
-    using Soap.Pf.DomainTestsBase;
+    using Soap.Integrations.MailGun;
     using Xunit;
 
-    public class WhenSendingAnEmail
+    public class WhenSendingAnEmail : Test
     {
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
-
         private readonly SendEmail sendEmailCommand;
 
         public WhenSendingAnEmail()
         {
             //arrange            
 
-            this.sendEmailCommand = new SendEmail(
-                "Hi",
-                "Hi", "jane@schmoe.com");
+            this.sendEmailCommand = new SendEmail("Hi", "Hi", "jane@schmoe.com");
 
             this.endPoint.MessageAggregator.When<EmailSender.SendingEmail>().Return(new EmailResponse());
 

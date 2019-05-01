@@ -1,15 +1,15 @@
-﻿namespace Soap.Integrations.Mailgun
+﻿namespace Soap.Integrations.MailGun
 {
     using System.Collections.Generic;
     using Soap.If.Utility.PureFunctions;
 
-    public class MailgunEmailSenderSettings
+    public class MailGunEmailSenderSettings
     {
-        private MailgunEmailSenderSettings(string from, string apiKey, string mailgunDomain, IReadOnlyList<string> allowedTo)
+        private MailGunEmailSenderSettings(string from, string apiKey, string mailGunDomain, IReadOnlyList<string> allowedTo)
         {
             From = from;
             ApiKey = apiKey;
-            MailgunDomain = mailgunDomain;
+            MailGunDomain = mailGunDomain;
             AllowedTo = allowedTo;
         }
 
@@ -20,15 +20,15 @@
 
         public string From { get; }
 
-        public string MailgunDomain { get; }
+        public string MailGunDomain { get; }
 
-        public static MailgunEmailSenderSettings Create(string from, string apiKey, string mailgunDomain, IReadOnlyList<string> allowedTo = null)
+        public static MailGunEmailSenderSettings Create(string from, string apiKey, string mailgunDomain, IReadOnlyList<string> allowedTo = null)
         {
-            Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailgunEmailSenderSettings)}.{nameof(from)} cannot be null");
-            Guard.Against(string.IsNullOrEmpty(apiKey), $"{nameof(MailgunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
-            Guard.Against(string.IsNullOrEmpty(mailgunDomain), $"{nameof(MailgunEmailSenderSettings)}.{nameof(mailgunDomain)} cannot be null");
+            Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
+            Guard.Against(string.IsNullOrEmpty(apiKey), $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
+            Guard.Against(string.IsNullOrEmpty(mailgunDomain), $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailgunDomain)} cannot be null");
 
-            return new MailgunEmailSenderSettings(
+            return new MailGunEmailSenderSettings(
                 from,
                 apiKey,
                 mailgunDomain,

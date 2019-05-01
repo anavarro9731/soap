@@ -4,6 +4,10 @@
     {
         IApiEndpointSettings ApiEndpointSettings { get; }
 
+        ISeqLoggingConfig SeqLoggingSettings { get; }
+
+     
+
         string ApplicationVersion { get; }
 
         string ApplicationName { get; }

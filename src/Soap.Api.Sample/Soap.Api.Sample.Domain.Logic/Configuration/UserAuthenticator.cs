@@ -4,6 +4,7 @@
     using DataStore.Interfaces;
     using Soap.Api.Sample.Domain.Models;
     using Soap.Api.Sample.Domain.Models.ValueObjects;
+    using Soap.Api.Sample.Domain.Models.ViewModels;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
 

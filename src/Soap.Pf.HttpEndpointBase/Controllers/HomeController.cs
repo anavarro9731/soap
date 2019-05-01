@@ -50,7 +50,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
         {
             {
                 var appConfig = (IApplicationConfig)HttpContext.RequestServices.GetService(typeof(IApplicationConfig));
-                var seqLogsConfig = (SeqLoggingConfig)HttpContext.RequestServices.GetService(typeof(SeqLoggingConfig));
+                var seqLogsConfig = (ISeqLoggingConfig)HttpContext.RequestServices.GetService(typeof(ISeqLoggingConfig));
 
                 var getHealthCheckUrl = Url.Link(nameof(GetHealthCheck), null);
                 var getCommandSchemaUrl = Url.Link(nameof(CommandController.GetCommandSchema), null);
@@ -99,7 +99,7 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
     </p>";
             }
 
-            string BuildLogsSectionHtml(SeqLoggingConfig seqLogsConfig)
+            string BuildLogsSectionHtml(ISeqLoggingConfig seqLogsConfig)
             {
                 return seqLogsConfig == null
                            ? string.Empty

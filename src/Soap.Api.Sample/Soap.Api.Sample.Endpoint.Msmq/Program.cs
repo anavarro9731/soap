@@ -13,7 +13,7 @@
         public static void Main(string[] args)
         {
             var applicationConfiguration = (ApplicationConfiguration)EndpointSetup.GetConfiguration().Variables;
-            var domainMessagesAssembly = typeof(UpgradeTheDatabase).Assembly;
+            var domainMessagesAssembly = typeof(UpgradeTheDatabaseCommand).Assembly;
             var domainLogicAssembly = typeof(ServiceStateOperations).Assembly;
             var serviceSettings = new MsmqEndpointWindowsServiceSettings
             {

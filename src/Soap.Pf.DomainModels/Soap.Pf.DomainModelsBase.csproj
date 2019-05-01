@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <Version>0.33.0</Version>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Description>Used to create a Domain Models assembly</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.If.Utility\Soap.If.Utility.csproj" />
+  </ItemGroup>
+</Project>

@@ -113,14 +113,8 @@
 
             requestUri = uriBuilder.Uri;
             HttpResponseMessage responseMessage = null;
-            try
-            {
-                responseMessage = await this.http.PostAsync(requestUri, content).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
 
-            }
+            responseMessage = await this.http.PostAsync(requestUri, content).ConfigureAwait(false);
 
             if (!responseMessage.IsSuccessStatusCode)
             {

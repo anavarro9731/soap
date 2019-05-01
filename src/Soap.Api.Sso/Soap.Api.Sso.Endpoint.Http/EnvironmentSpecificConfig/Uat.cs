@@ -30,7 +30,7 @@
                                                            .Destructure.UsingAttributes()
                                                            .Enrich.WithExceptionDetails();
 
-            var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingConfig;
+            var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingSettings;
             if (seqConfig != null)
             {
                 loggerConfiguration.WriteTo.Seq(seqConfig.ServerUrl, apiKey: seqConfig.ApiKey);

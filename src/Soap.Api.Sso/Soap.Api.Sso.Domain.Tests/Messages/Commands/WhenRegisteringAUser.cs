@@ -3,15 +3,12 @@
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Commands;
     using Soap.Api.Sso.Domain.Models.Aggregates;
-    using Soap.Integrations.Mailgun;
-    using Soap.Pf.DomainTestsBase;
+    using Soap.Integrations.MailGun;
     using Xunit;
 
-    public class WhenRegisteringAUser
+    public class WhenRegisteringAUser : Test
     {
         private readonly string email;
-
-        private readonly TestEndpoint endPoint = TestEnvironment.CreateEndpoint();
 
         private readonly RegisterUser registerUserCommand;
 

@@ -1,81 +1,66 @@
 ﻿namespace Soap.Api.Sso.Domain.Logic.Configuration
 {
     using DataStore.Providers.CosmosDb;
-    using Newtonsoft.Json;
     using Soap.If.Interfaces;
-    using Soap.Integrations.Mailgun;
-    using Soap.Pf.EndpointInfrastructure;
+    using Soap.Integrations.MailGun;
 
     public class ApplicationConfiguration : IApplicationConfig
     {
-        [JsonConstructor]
-        private ApplicationConfiguration(
+        public ApplicationConfiguration(
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
             CosmosSettings cosmosStoreSettings,
-            MailgunEmailSenderSettings mailgunEmailSenderSettings,
-            byte numberOfApiMessageRetries,
-            string defaultExceptionMessage,
-            bool returnExplicitErrorMessages,
-            string applicationName,
-            SeqLoggingConfig seqLoggingConfig)
+            MailGunEmailSenderSettings mailGunEmailSenderSettings,
+            bool returnExplicitErrorMessages = false,
+            byte numberOfApiMessageRetries = 1,
+            string defaultExceptionMessage = "An error has occurred.",
+            string applicationName = null,
+            ISeqLoggingConfig seqLoggingSettings = null)
         {
             EnvironmentName = environmentName;
             ApiEndpointSettings = apiEndpointSettings;
             CosmosStoreSettings = cosmosStoreSettings;
-            MailgunEmailSenderSettings = mailgunEmailSenderSettings;
+            MailGunEmailSenderSettings = mailGunEmailSenderSettings;
             NumberOfApiMessageRetries = numberOfApiMessageRetries;
             DefaultExceptionMessage = defaultExceptionMessage;
             ReturnExplicitErrorMessages = returnExplicitErrorMessages;
             ApplicationName = applicationName;
-            SeqLoggingConfig = seqLoggingConfig;
-            ApplicationVersion = this.GetType().Assembly.GetName().Version.ToString(3);
+            SeqLoggingSettings = seqLoggingSettings;
+            ApplicationVersion = GetType().Assembly.GetName().Version.ToString(3);
         }
 
         public IApiEndpointSettings ApiEndpointSettings { get; }
 
+        public string ApplicationName { get; }
+
         public string ApplicationVersion { get; }
 
-        public string ApplicationName { get; }
+        public CosmosSettings CosmosStoreSettings { get; }
 
         public string DefaultExceptionMessage { get; }
 
         public string EnvironmentName { get; }
 
-        public MailgunEmailSenderSettings MailgunEmailSenderSettings { get; }
+        public MailGunEmailSenderSettings MailGunEmailSenderSettings { get; }
 
         public byte NumberOfApiMessageRetries { get; set; }
 
         public bool ReturnExplicitErrorMessages { get; }
 
-        public SeqLoggingConfig SeqLoggingConfig { get; }
+        public ISeqLoggingConfig SeqLoggingSettings { get; }
 
-        public CosmosSettings CosmosStoreSettings { get; }
-
-        public static ApplicationConfiguration Create(
-            string environmentName,
-            string applicationVersion,
-            IApiEndpointSettings apiEndpointSettings,
-            CosmosSettings cosmosStoreSettings,
-            MailgunEmailSenderSettings mailgunEmailSenderSettings,
-            byte numberOfApiMessageRetries = 1,
-            string unexpectedExceptionMessage = "An Error Has Occurred",
-            bool returnExplicitErrorMessages = false,
-            string applicationName = null,
-            SeqLoggingConfig seqLoggingConfig = null)
+        public class SeqLoggingConfig : ISeqLoggingConfig
         {
-            return new ApplicationConfiguration(
-                environmentName,
-                applicationVersion,
-                apiEndpointSettings,
-                cosmosStoreSettings,
-                mailgunEmailSenderSettings,
-                numberOfApiMessageRetries,
-                unexpectedExceptionMessage,
-                returnExplicitErrorMessages,
-                applicationName,
-                seqLoggingConfig);
+            public SeqLoggingConfig(string serverUrl, string apiKey)
+            {
+                ApiKey = apiKey;
+                ServerUrl = serverUrl;
+            }
+
+            public string ApiKey { get; }
+
+            public string ServerUrl { get; }
         }
     }
 }
