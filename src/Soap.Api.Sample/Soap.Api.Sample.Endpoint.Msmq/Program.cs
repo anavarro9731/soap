@@ -1,10 +1,10 @@
 ﻿namespace Soap.Api.Sample.Endpoint.Msmq
 {
-    using DataStore.Providers.CosmosDb;
     using Soap.Api.Sample.Domain.Logic.Configuration;
     using Soap.Api.Sample.Domain.Logic.Operations;
     using Soap.Api.Sample.Domain.Messages.Commands;
     using Soap.Pf.ClientServerMessaging.Routing.Routes;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointInfrastructure;
     using Soap.Pf.MsmqEndpointBase;
 
@@ -30,7 +30,7 @@
                                 applicationConfiguration,
                                 container,
                                 new MessageAssemblyToMsmqEndpointRoute(domainMessagesAssembly, applicationConfiguration.ApiEndpointSettings.MsmqEndpointAddress)),
-                            () => new CosmosDbRepository(applicationConfiguration.CosmosStoreSettings))
+                            () => applicationConfiguration.DatabaseSettings.CreateRepository())
                         .Start(serviceSettings);
         }
     }

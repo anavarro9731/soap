@@ -10,6 +10,7 @@
         Guid MessageId { get; set; }
 
         DateTime? TimeOfCreationAtOrigin { get; set; }
+
     }
 
     // ReSharper disable once InconsistentNaming

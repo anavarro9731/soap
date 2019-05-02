@@ -1,18 +1,16 @@
-﻿namespace Soap.Api.Sample.Domain.Logic.Configuration
+﻿namespace Soap.Pf.DomainLogicBase
 {
-    using DataStore.Providers.CosmosDb;
+    using DataStore.Interfaces;
     using Soap.If.Interfaces;
-    using Soap.Integrations.MailGun;
 
     public class ApplicationConfiguration : IApplicationConfig
     {
-        //TODO: CosmosSetting and Mailgun to IAppConfig
         public ApplicationConfiguration(
             string environmentName,
             string applicationVersion,
             IApiEndpointSettings apiEndpointSettings,
-            CosmosSettings cosmosStoreSettings,
-            MailGunEmailSenderSettings mailGunEmailSenderSettings,
+            IDatabaseSettings databaseSettings,
+            INotificationServerSettings notificationServerSettings,
             bool returnExplicitErrorMessages = false,
             byte numberOfApiMessageRetries = 1,
             string defaultExceptionMessage = "An error has occurred.",
@@ -21,8 +19,8 @@
         {
             EnvironmentName = environmentName;
             ApiEndpointSettings = apiEndpointSettings;
-            CosmosStoreSettings = cosmosStoreSettings;
-            MailGunEmailSenderSettings = mailGunEmailSenderSettings;
+            DatabaseSettings = databaseSettings;
+            NotificationServerSettings = notificationServerSettings;
             NumberOfApiMessageRetries = numberOfApiMessageRetries;
             DefaultExceptionMessage = defaultExceptionMessage;
             ReturnExplicitErrorMessages = returnExplicitErrorMessages;
@@ -37,13 +35,13 @@
 
         public string ApplicationVersion { get; }
 
-        public CosmosSettings CosmosStoreSettings { get; }
+        public IDatabaseSettings DatabaseSettings { get; }
 
         public string DefaultExceptionMessage { get; }
 
         public string EnvironmentName { get; }
 
-        public MailGunEmailSenderSettings MailGunEmailSenderSettings { get; }
+        public INotificationServerSettings NotificationServerSettings { get; }
 
         public byte NumberOfApiMessageRetries { get; set; }
 

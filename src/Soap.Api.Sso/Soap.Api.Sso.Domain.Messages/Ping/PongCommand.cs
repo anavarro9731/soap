@@ -4,6 +4,9 @@
 
     public class PongCommand : AbstractPongCommand
     {
-    
+        public override void Validate()
+        {
+            
+        }
     }
 }

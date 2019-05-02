@@ -41,15 +41,22 @@ namespace Soap.Api.Sso.Domain.Messages.Commands
                 };
             }
         }
-    }
 
-    public class RegisterUserValidator : AbstractValidator<RegisterUser>
-    {
-        public RegisterUserValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.Email).EmailAddress();
-            RuleFor(x => x.Name).NotEmpty().Length(5, 50);
-            RuleFor(x => x.Password);
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<RegisterUser>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Email).EmailAddress();
+                RuleFor(x => x.Name).NotEmpty().Length(5, 50);
+                RuleFor(x => x.Password);
+            }
         }
     }
+
+
 }

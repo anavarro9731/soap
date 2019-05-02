@@ -10,7 +10,7 @@
 
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
-    ///     TransactionScopeAsyncFlowOption.Enabled is requried to use tx with async/await
+    ///     TransactionScopeAsyncFlowOption.Enabled is required to use tx with async/await
     /// </summary>
     public abstract class CommandHandler<TCommand, R> : MessageHandlerBase, IMessageHandler where TCommand : ApiCommand<R> where R : class, IApiCommand, new()
     {
@@ -28,6 +28,8 @@
         private async Task HandleTyped(TCommand message, ApiMessageMeta meta)
         {
             {
+                message.Validate();
+
                 var reply = await Handle(message, meta).ConfigureAwait(false);
 
                 using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -64,6 +66,8 @@
 
         private async Task HandleTyped(TCommand message, ApiMessageMeta meta)
         {
+            message.Validate();
+            
             await Handle(message, meta).ConfigureAwait(false);
 
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))

@@ -23,6 +23,8 @@
 
         private async Task<TResponseModel> HandleTyped(TQuery message, ApiMessageMeta meta)
         {
+            message.Validate();
+
             return await Handle(message, meta).ConfigureAwait(false);
         }
     }
@@ -33,7 +35,6 @@
         {
             //There are 2 types of commands with return types, only one makes sense on this endpoint.
             //TODO:Guard.Against(message.GetType()..InheritsOrImplements(typeof(ApiCommand<>)), "You are not allowed to send Request/Reply messages to an HTTP endpoint, only to MSMQ");
-
             return await HandleTyped((TCommand)message, meta).ConfigureAwait(false);
         }
 
@@ -42,6 +43,8 @@
         private async Task<object> HandleTyped(TCommand message, ApiMessageMeta meta)
         {
             {
+                message.Validate();
+                
                 var returnValue = await Handle(message, meta).ConfigureAwait(false);
 
                 using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
@@ -77,6 +80,8 @@
 
         private async Task HandleTyped(TCommand message, ApiMessageMeta meta)
         {
+            message.Validate();
+            
             await Handle(message, meta).ConfigureAwait(false);
 
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))

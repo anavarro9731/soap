@@ -12,5 +12,10 @@
         }
 
         public Guid Id { get; }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

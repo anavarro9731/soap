@@ -18,5 +18,10 @@
         public class MessageFailedAllRetriesLogItemViewModel : AbstractResponseModel
         {
         }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

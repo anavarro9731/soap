@@ -8,7 +8,7 @@
         IApiCommand CommandToForward { get; set; }
     }
 
-    public class ForwardCommandFromHttpToMsmq<TApiCommand> : ApiCommand, IForwardCommandFromHttpToMsmq where TApiCommand : IApiCommand
+    public class ForwardCommandFromHttpToMsmq<TApiCommand> : ApiCommand, IForwardCommandFromHttpToMsmq where TApiCommand : ApiCommand
     {
         public ForwardCommandFromHttpToMsmq(TApiCommand command)
         {
@@ -16,19 +16,20 @@
         }
 
         public IApiCommand CommandToForward { get; set; }
-    }
 
-    public class ForwardCommandFromHttpToMsmqValidator<TApiCommand> : AbstractValidator<ForwardCommandFromHttpToMsmq<TApiCommand>> where TApiCommand : ApiCommand
-    {
-        public ForwardCommandFromHttpToMsmqValidator()
+        public override void Validate()
         {
-            RuleFor(cmd => cmd.MessageId).NotEmpty();
-
-            RuleFor(cmd => cmd.CommandToForward).NotEmpty();
-
-
+            new Validator().ValidateAndThrow(this);
         }
 
-        public static ForwardCommandFromHttpToMsmqValidator<TApiCommand> Default { get; } = new ForwardCommandFromHttpToMsmqValidator<TApiCommand>();
+        public class Validator : AbstractValidator<ForwardCommandFromHttpToMsmq<TApiCommand>>
+        {
+            public Validator()
+            {
+                RuleFor(cmd => cmd.MessageId).NotEmpty();
+
+                RuleFor(cmd => cmd.CommandToForward).NotEmpty();
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@
     using System;
     using Soap.If.Interfaces.Messages;
 
-    public class AbstractPongEvent : ApiEvent
+    public abstract class AbstractPongEvent : ApiEvent
     {
         public DateTime PingedAt { get; set; }
 

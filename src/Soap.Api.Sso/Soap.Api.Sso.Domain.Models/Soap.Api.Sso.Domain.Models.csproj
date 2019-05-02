@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
-    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
+    <PackageReference Include="DataStore.Interfaces" Version="6.10.0" />
 
   </ItemGroup>
   <ItemGroup>

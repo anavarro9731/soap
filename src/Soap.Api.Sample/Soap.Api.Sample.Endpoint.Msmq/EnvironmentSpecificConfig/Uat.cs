@@ -8,6 +8,7 @@
     using Serilog.Exceptions;
     using Soap.Api.Sample.Domain.Logic.Configuration;
     using Soap.If.Interfaces;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointInfrastructure;
 
     public class Uat : IEnvironmentSpecificConfig

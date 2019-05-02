@@ -33,7 +33,7 @@
         [Fact]
         public void ItShouldSendAnEmailToTheNewUser()
         {
-            var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<SendEmail>().Single();
+            var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<NotifyUsers>().Single();
 
             Assert.Equal(this.email, emailSent.SendTo.First());
         }

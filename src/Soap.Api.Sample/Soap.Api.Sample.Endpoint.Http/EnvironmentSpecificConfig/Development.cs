@@ -13,6 +13,8 @@
     using Soap.If.Interfaces;
     using Soap.If.MessagePipeline.Models;
     using Soap.Integrations.MailGun;
+    using Soap.Pf.DomainLogicBase;
+    using Soap.Pf.EndpointInfrastructure;
     using Soap.Pf.HttpEndpointBase;
 
     public class Development : IHttpEnvironmentSpecificConfiguration
@@ -23,7 +25,7 @@
                 Assembly.GetExecutingAssembly().GetName().Version.ToString(3),
                 ApiEndpointSettings.Create("http://localhost:6066", $"sampleapi@{Environment.MachineName}"),
                 new CosmosSettings("C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==", "SampleApi", "https://localhost:8081"),
-                MailGunEmailSenderSettings.Create(
+                new MailGunEmailSenderSettings(
                     "Mailgun Sandbox <postmaster@sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org>",
                     "key-101c1b392bb95000da55a349848aacd0",
                     "sandboxfa97c8c997f64d29a75c2453725b78e0.mailgun.org",

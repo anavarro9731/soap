@@ -76,13 +76,11 @@
 
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
+                        this.applicationConfig,
                         new [] { this.domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly}.ToList(),
                         new [] { this.domainMessagesAssembly }.ToList(),
                         () => messageAggregator,
-                        () => new InMemoryDocumentRepository(),
                         this.containerActions);
-
-                    builder.RegisterInstance(this.applicationConfig).AsSelf().As<IApplicationConfig>();
 
                     ApplyCustomApplicationConfigActions();
 

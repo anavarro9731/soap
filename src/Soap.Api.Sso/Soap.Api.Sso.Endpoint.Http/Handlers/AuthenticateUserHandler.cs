@@ -19,8 +19,6 @@
 
         protected override async Task<ResetPasswordFromEmail.ClientSecurityContext> Handle(AuthenticateUser message, ApiMessageMeta meta)
         {
-            new AuthenticateUserValidator().ValidateAndThrow(message);
-
             var securityContext = await this.userOperations.AuthenticateUser(Credentials.Create(message.Credentials.Username, message.Credentials.Password));
             return new ResetPasswordFromEmail.ClientSecurityContext
             {

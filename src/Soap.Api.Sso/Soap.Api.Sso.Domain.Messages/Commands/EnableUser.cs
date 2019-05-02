@@ -11,5 +11,10 @@
         }
 
         public Guid IdOfUserToEnable { get; }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

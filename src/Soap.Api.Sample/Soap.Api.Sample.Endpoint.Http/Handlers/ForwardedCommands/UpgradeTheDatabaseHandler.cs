@@ -10,7 +10,6 @@
     {
         protected override Task Handle(ForwardCommandFromHttpToMsmq<UpgradeTheDatabaseCommand> message, ApiMessageMeta meta)
         {
-
             (message.CommandToForward as UpgradeTheDatabaseCommand).EnvelopeId = message.MessageId;
 
             UnitOfWork.SendCommand(message.CommandToForward);

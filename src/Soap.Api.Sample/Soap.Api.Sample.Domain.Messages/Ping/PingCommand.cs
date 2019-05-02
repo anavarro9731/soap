@@ -1,6 +1,5 @@
-﻿namespace Soap.Api.Sample.Domain.Messages.Commands
+﻿namespace Soap.Api.Sample.Domain.Messages.Ping
 {
-    using FluentValidation;
     using Soap.Pf.MessageContractsBase.Commands;
 
     public class PingCommand : AbstractPingCommand<PingCommand.PongViewModel>
@@ -18,6 +17,4 @@
         {
         }
     }
-
-
 }

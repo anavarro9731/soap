@@ -21,8 +21,6 @@
         protected override async Task<TResponse> Handle(TQuery query, ApiMessageMeta meta)
         {
             {
-                Validate();
-
                 var msgLogItem = await DataStore.ReadActiveById<MessageLogItem>(query.MessageIdOfLogItem);
 
                 var viewModel = ToViewModel(msgLogItem, this.applicationConfig);
@@ -30,10 +28,6 @@
                 return viewModel;
             }
 
-            void Validate()
-            {
-                new GetMessageLogItemQueryValidator<TResponse>().ValidateAndThrow(query);
-            }
         }
 
         private static TResponse ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)

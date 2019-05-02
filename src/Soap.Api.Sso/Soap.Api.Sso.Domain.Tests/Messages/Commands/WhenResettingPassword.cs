@@ -23,9 +23,9 @@
         }
 
         [Fact]
-        public void ItShouldSendEmail()
+        public void ItShouldNotifyUser()
         {
-            var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<SendEmail>().Single();
+            var emailSent = this.endPoint.MessageAggregator.CommandsSent.OfType<NotifyUsers>().Single();
 
             Assert.Equal(Aggregates.User1.Email, emailSent.SendTo.First());
         }

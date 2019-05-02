@@ -18,7 +18,7 @@
             }
 
             public static AddFullyRegisteredUser CreateRegisteredUser2(
-                string email = "monmotha @rebelalliance.org",
+                string email = "monmotha@rebelalliance.org",
                 string name = "Mon Monthma",
                 string password = "rebels4ever")
             {

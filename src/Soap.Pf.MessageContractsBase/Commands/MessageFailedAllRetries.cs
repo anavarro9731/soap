@@ -1,6 +1,7 @@
-﻿namespace Soap.If.Interfaces
+﻿namespace Soap.Pf.MessageContractsBase.Commands
 {
     using System;
+    using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
 
     public class MessageFailedAllRetries<TFailedMessage> : ApiCommand, IMessageFailedAllRetries
@@ -15,7 +16,11 @@
         public Guid IdOfMessageThatFailed { get; set; }
 
         public Guid? StatefulProcessIdOfMessageThatFailed { get; set; }
+
+        public override void Validate()
+        {
+            
+        }
     }
-    
-    //TODO: add validation, check that if incoming message has stateful process id that this one does as well
+
 }

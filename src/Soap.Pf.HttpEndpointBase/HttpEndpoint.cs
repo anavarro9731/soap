@@ -12,10 +12,10 @@ namespace Soap.Pf.HttpEndpointBase
         public static HttpEndpointConfiguration<TUserAuthenticator> Configure<TUserAuthenticator>(
             Assembly domainLogicAssembly,
             Assembly domainMessagesAssembly,
-            Func<IBusContext> busContextBuilder,
-            Func<IDocumentRepository> documentRepositoryBuilder) where TUserAuthenticator : IAuthenticateUsers
+            Func<IBusContext> busContextBuilder
+            ) where TUserAuthenticator : IAuthenticateUsers
         {
-            return new HttpEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainMessagesAssembly, busContextBuilder, documentRepositoryBuilder);
+            return new HttpEndpointConfiguration<TUserAuthenticator>(domainLogicAssembly, domainMessagesAssembly, busContextBuilder);
         }
 
         public static BusApiClient CreateBusContext(IApplicationConfig appConfig, params MsmqMessageRoute[] msmqRoutes)

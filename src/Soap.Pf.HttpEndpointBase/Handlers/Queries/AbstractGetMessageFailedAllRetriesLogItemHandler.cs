@@ -13,6 +13,8 @@
     {
         protected override async Task<TResponse> Handle(TQuery message, ApiMessageMeta meta)
         {
+
+            
             var dbModel = (await DataStore.ReadActive<MessageFailedAllRetriesLogItem>(m => m.IdOfMessageThatFailed == message.IdOfMessageYouWantResultsFor))
                 .SingleOrDefault();
 

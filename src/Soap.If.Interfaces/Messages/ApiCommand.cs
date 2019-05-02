@@ -11,10 +11,12 @@
         public Guid? StatefulProcessId { get; set; }
     }
 
-    public class ApiCommand<TResponse> : ApiMessage, IApiCommand where TResponse : class, new()
+    public abstract class ApiCommand<TResponse> : ApiMessage, IApiCommand where TResponse : class, new()
     {
         public TResponse ReturnValue { get; set; }
 
         public Guid? StatefulProcessId { get; set; }
+
+        
     }
 }

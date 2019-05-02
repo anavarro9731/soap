@@ -14,6 +14,10 @@
         public string NameOfTag { get; set; }
 
         public Guid TagId { get; set; }
-        
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

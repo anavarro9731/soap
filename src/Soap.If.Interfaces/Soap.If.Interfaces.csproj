@@ -6,5 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CircuitBoard" Version="1.0.2" />
+    <PackageReference Include="DataStore.Interfaces" Version="6.10.0" />
   </ItemGroup>
 </Project>

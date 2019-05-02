@@ -11,6 +11,7 @@
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
     using Soap.Integrations.MailGun;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.DomainTestsBase;
 
     public partial class Test
@@ -24,7 +25,14 @@
                                             typeof(UpgradeTheDatabaseCommand).Assembly,
                                             typeof(SoapApiSsoEndpointMsmq).Assembly,
                                             typeof(SoapApiSsoEndpointHttp).Assembly,
-                                            new ApplicationConfiguration("test", "0.0.0", new ApiEndpointSettings("httpAddress", "msmqAddress"), null, MailGunEmailSenderSettings.Create("from", "key", "to", null), true, 3))
+                                            new ApplicationConfiguration(
+                                                "test",
+                                                "0.0.0",
+                                                new ApiEndpointSettings("httpAddress", "msmqAddress"),
+                                                null,
+                                                new MailGunEmailSenderSettings("from", "key", "to", null),
+                                                true,
+                                                3))
                                         .Start();
         }
     }

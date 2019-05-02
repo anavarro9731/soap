@@ -1,10 +1,10 @@
 ﻿namespace Soap.Api.Sample.Endpoint.Http
 {
-    using DataStore.Providers.CosmosDb;
     using Soap.Api.Sample.Domain.Logic.Configuration;
     using Soap.Api.Sample.Domain.Logic.Operations;
     using Soap.Api.Sample.Domain.Messages.Commands;
     using Soap.Pf.ClientServerMessaging.Routing.Routes;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointInfrastructure;
     using Soap.Pf.HttpEndpointBase;
 
@@ -21,8 +21,7 @@
                             domainMessagesAssembly,
                             () => HttpEndpoint.CreateBusContext(
                                 applicationConfiguration,
-                                new MessageAssemblyToMsmqEndpointRoute(domainMessagesAssembly, applicationConfiguration.ApiEndpointSettings.MsmqEndpointAddress)),
-                            () => new CosmosDbRepository(applicationConfiguration.CosmosStoreSettings))
+                                new MessageAssemblyToMsmqEndpointRoute(domainMessagesAssembly, applicationConfiguration.ApiEndpointSettings.MsmqEndpointAddress)))
                         .Start();
         }
     }

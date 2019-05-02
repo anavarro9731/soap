@@ -22,14 +22,21 @@
 
             public UserProfile UserProfile { get; set; }
         }
-    }
 
-    public class ResetPasswordFromEmailValidator : AbstractValidator<ResetPasswordFromEmail>
-    {
-        public ResetPasswordFromEmailValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.Username).NotNull();
-            RuleFor(x => x.NewPassword).NotNull();
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<ResetPasswordFromEmail>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Username).NotNull();
+                RuleFor(x => x.NewPassword).NotNull();
+            }
         }
     }
+
+
 }

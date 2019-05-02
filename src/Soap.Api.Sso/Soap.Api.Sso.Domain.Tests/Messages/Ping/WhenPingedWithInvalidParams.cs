@@ -8,6 +8,7 @@
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.Pf.MessageContractsBase.Commands;
     using Xunit;
 
     public class WhenPingedWithInvalidParams : Test

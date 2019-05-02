@@ -14,11 +14,12 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="Serilog" Version="2.5.0" />
-    <PackageReference Include="DataStore.Interfaces" Version="6.8.0" />
+    <PackageReference Include="DataStore.Interfaces" Version="6.10.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.If.Utility\Soap.If.Utility.csproj" />
+    <ProjectReference Include="..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Transactions" />

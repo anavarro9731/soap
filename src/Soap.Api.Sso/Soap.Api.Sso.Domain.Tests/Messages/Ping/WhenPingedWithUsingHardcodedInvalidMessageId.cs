@@ -8,6 +8,7 @@
     using Soap.If.MessagePipeline.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.Pf.MessageContractsBase.Commands;
     using Xunit;
 
     public class WhenPingedWithUsingHardcodedInvalidMessageId : Test

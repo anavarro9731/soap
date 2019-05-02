@@ -27,14 +27,21 @@
 
             public DateTime PongedAt { get; set; } = DateTime.Now;
         }
-    }
 
-    public class PingCommandValidator<TPing, TPongResponse> : AbstractValidator<AbstractPingCommand<TPongResponse>>
-        where TPing : AbstractPingCommand<TPongResponse>, new() where TPongResponse : AbstractPingCommand<TPongResponse>.AbstractResponseModel, new()
-    {
-        public PingCommandValidator()
+        public override sealed void Validate()
         {
-            RuleFor(x => x.PingedBy).NotEmpty();
+            new Validator<TResponse>().ValidateAndThrow(this);
+        }
+
+        public class Validator<TPongResponse> : AbstractValidator<AbstractPingCommand<TPongResponse>>
+            where TPongResponse : AbstractPingCommand<TPongResponse>.AbstractResponseModel, new()
+        {
+            public Validator()
+            {
+                RuleFor(x => x.PingedBy).NotEmpty();
+            }
         }
     }
+
+
 }

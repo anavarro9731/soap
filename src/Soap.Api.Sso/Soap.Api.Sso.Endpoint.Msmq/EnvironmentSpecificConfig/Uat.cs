@@ -6,8 +6,8 @@
     using Serilog;
     using Serilog.Debugging;
     using Serilog.Exceptions;
-    using Soap.Api.Sso.Domain.Logic.Configuration;
     using Soap.If.Interfaces;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.EndpointInfrastructure;
 
     public class Uat : IEnvironmentSpecificConfig
@@ -17,10 +17,9 @@
 
         public void DefineLoggingPolicyPerEnvironment(out LoggerConfiguration loggerConfiguration)
         {
-            loggerConfiguration = new LoggerConfiguration()
-                .Enrich.WithProperty("Environment", nameof(Uat))
-                .Enrich.WithProperty("Application", Variables.ApplicationName)
-                .Enrich.WithExceptionDetails();
+            loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", nameof(Uat))
+                                                           .Enrich.WithProperty("Application", Variables.ApplicationName)
+                                                           .Enrich.WithExceptionDetails();
 
             var seqConfig = ((ApplicationConfiguration)Variables).SeqLoggingSettings;
             if (seqConfig != null)

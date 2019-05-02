@@ -12,5 +12,10 @@
         }
 
         public Guid TagId { get; set; }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

@@ -1,16 +1,25 @@
 ﻿namespace Soap.Integrations.MailGun
 {
     using System.Collections.Generic;
+    using CircuitBoard.MessageAggregator;
+    using Soap.If.Interfaces;
     using Soap.If.Utility.PureFunctions;
 
-    public class MailGunEmailSenderSettings
+    public class MailGunEmailSenderSettings : INotificationServerSettings
     {
-        private MailGunEmailSenderSettings(string from, string apiKey, string mailGunDomain, IReadOnlyList<string> allowedTo)
+        public MailGunEmailSenderSettings(string from, string apiKey, string mailGunDomain, IReadOnlyList<string> allowedTo)
         {
+            Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
+            Guard.Against(string.IsNullOrEmpty(apiKey), $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
+            Guard.Against(string.IsNullOrEmpty(mailGunDomain), $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailGunDomain)} cannot be null");
+
             From = from;
             ApiKey = apiKey;
             MailGunDomain = mailGunDomain;
-            AllowedTo = allowedTo;
+            AllowedTo = allowedTo ?? new[]
+            {
+                "*"
+            };
         }
 
         //the purpose of this is to prevent sending to bogus addresses when testing which causes problems for our mailgun account
@@ -22,20 +31,9 @@
 
         public string MailGunDomain { get; }
 
-        public static MailGunEmailSenderSettings Create(string from, string apiKey, string mailgunDomain, IReadOnlyList<string> allowedTo = null)
+        public INotifyUsers CreateServer(IMessageAggregator messageAggregator)
         {
-            Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
-            Guard.Against(string.IsNullOrEmpty(apiKey), $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
-            Guard.Against(string.IsNullOrEmpty(mailgunDomain), $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailgunDomain)} cannot be null");
-
-            return new MailGunEmailSenderSettings(
-                from,
-                apiKey,
-                mailgunDomain,
-                allowedTo ?? new[]
-                {
-                    "*"
-                });
+            return new EmailSender(this, messageAggregator);
         }
     }
 }

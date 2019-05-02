@@ -1,5 +1,6 @@
 ﻿namespace Soap.Api.Sso.Domain.Messages.Commands
 {
+    using System.Runtime.InteropServices;
     using FluentValidation;
     using Soap.If.Interfaces.Messages;
 
@@ -31,15 +32,21 @@
                 };
             }
         }
-    }
 
-    public class AuthenticateUserValidator : AbstractValidator<AuthenticateUser>
-    {
-        public AuthenticateUserValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.Credentials).NotNull();
-            RuleFor(x => x.Credentials.Password).NotEmpty();
-            RuleFor(x => x.Credentials.Username).NotEmpty();
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<AuthenticateUser>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Credentials).NotNull();
+                RuleFor(x => x.Credentials.Password).NotEmpty();
+                RuleFor(x => x.Credentials.Username).NotEmpty();
+            }
         }
     }
+
 }

@@ -187,18 +187,19 @@
             public void Start(IApiCommand startupCommand)
             {
                 {
-                    var builder = EndpointSetup.ConfigureCore<TUserAuthenticator>(
-                        new ContainerBuilder(),
+                    var builder = new ContainerBuilder();
+
+                    EndpointSetup.ConfigureCore<TUserAuthenticator>(
+                        builder,
+                        EnvironmentConfig.Variables,
                         new[] { this.domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
                         new[] { this.domainMessagesAssembly }.ToList(),
                         MessageAggregator.Create,
-                        this.documentRepositoryFactory,
                         this.ContainerActions);
 
                     AddHandlers(builder, this.handlerAssemblies); //push down?
 
-                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>(); //push down?
-
+                    
                     builder.RegisterType<RebusCommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
                                         
                     this.container = builder.Build();

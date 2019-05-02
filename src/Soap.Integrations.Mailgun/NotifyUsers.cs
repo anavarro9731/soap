@@ -2,9 +2,9 @@
 {
     using Soap.If.Interfaces.Messages;
 
-    public class SendEmail : ApiCommand
+    public class NotifyUsers : ApiCommand
     {
-        public SendEmail(string text, string subject, params string[] sendTo)
+        public NotifyUsers(string text, string subject, params string[] sendTo)
         {
             Text = text;
             Subject = subject;
@@ -16,5 +16,10 @@
         public string Subject { get; }
 
         public string Text { get; }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

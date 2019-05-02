@@ -11,7 +11,9 @@
     using Soap.Api.Sample.Endpoint.Msmq;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
+    using Soap.Pf.DomainLogicBase;
     using Soap.Pf.DomainTestsBase;
+    using Soap.Pf.EndpointInfrastructure;
 
     public partial class Test
     {

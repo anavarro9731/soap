@@ -7,9 +7,10 @@
     using Mailer.NET.Mailer;
     using Mailer.NET.Mailer.Response;
     using Mailer.NET.Mailer.Transport;
+    using Soap.If.Interfaces;
     using Soap.If.Utility.PureFunctions;
 
-    public class EmailSender
+    public class EmailSender : INotifyUsers
     {
         private readonly MailGunEmailSenderSettings emailSettings;
 
@@ -24,7 +25,12 @@
             this.messageAggregator = messageAggregator;
         }
 
-        public EmailResponse SendEmail(string text, string subject, string[] sendTo)
+        public void Notify(string text, string subject, string[] sendTo)
+        {
+            SendEmail(text, subject, sendTo);
+        }
+
+        private EmailResponse SendEmail(string text, string subject, string[] sendTo)
         {
             foreach (var s in sendTo)
                 Guard.Against(

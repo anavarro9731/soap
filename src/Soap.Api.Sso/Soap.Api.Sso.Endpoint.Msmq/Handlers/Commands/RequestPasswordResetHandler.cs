@@ -19,8 +19,6 @@
 
         protected override async Task Handle(RequestPasswordReset message, ApiMessageMeta meta)
         {
-            new RequestPasswordResetValidator().ValidateAndThrow(message);
-
             await this.passwordResetProcess.BeginProcess(message, meta);
         }
     }

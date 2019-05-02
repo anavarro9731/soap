@@ -4,5 +4,9 @@ namespace Soap.Api.Sso.Domain.Messages.Commands
 
     public class RevokeAllAuthTokens : ApiCommand
     {
+        public override void Validate()
+        {
+            
+        }
     }
 }

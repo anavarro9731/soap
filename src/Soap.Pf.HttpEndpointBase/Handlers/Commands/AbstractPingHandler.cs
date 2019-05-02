@@ -17,8 +17,6 @@
     {
         protected override Task<TPongResponseViewModel> Handle(TPing message, ApiMessageMeta meta)
         {
-            new PingCommandValidator<TPing, TPongResponseViewModel>().ValidateAndThrow(message);
-
             AssertTestScenarios(message, meta);
 
             var pong = new TPongEvent

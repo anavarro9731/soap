@@ -1,12 +1,16 @@
 ﻿namespace Soap.If.Interfaces
 {
+    using DataStore.Interfaces;
+
     public interface IApplicationConfig
     {
         IApiEndpointSettings ApiEndpointSettings { get; }
 
         ISeqLoggingConfig SeqLoggingSettings { get; }
 
-     
+        IDatabaseSettings DatabaseSettings { get; }
+
+        INotificationServerSettings NotificationServerSettings { get; }
 
         string ApplicationVersion { get; }
 

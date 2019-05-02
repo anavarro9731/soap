@@ -21,16 +21,23 @@ namespace Soap.Api.Sso.Domain.Messages.Commands
         public string Name { get; }
 
         public string Password { get; }
-    }
 
-    public class AddFullyRegisteredUserValidator : AbstractValidator<AddFullyRegisteredUser>
-    {
-        public AddFullyRegisteredUserValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.Email).EmailAddress();
-            RuleFor(x => x.Name).NotEmpty().Length(5, 50);
-            RuleFor(x => x.Password);
-            RuleFor(x => x.Id).NotEmpty();
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<AddFullyRegisteredUser>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.Email).EmailAddress();
+                RuleFor(x => x.Name).NotEmpty().Length(5, 50);
+                RuleFor(x => x.Password);
+                RuleFor(x => x.Id).NotEmpty();
+            }
         }
     }
+
+
 }

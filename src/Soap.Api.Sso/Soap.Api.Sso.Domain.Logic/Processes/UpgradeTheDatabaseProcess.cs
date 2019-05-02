@@ -39,8 +39,6 @@
         public async Task BeginProcess(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
         {
             {
-                Validate();
-
                 if (message.ReSeed) await ClearDb();
 
                 switch (message.ReleaseVersion)
@@ -84,10 +82,6 @@
                 
             }
 
-            void Validate()
-            {
-                new UpgradeTheDatabaseValidator().ValidateAndThrow(message);
-            }
         }
 
         public class ReplaceMessageLogItemOperation : IDataStoreWriteOperation<MessageLogItem>

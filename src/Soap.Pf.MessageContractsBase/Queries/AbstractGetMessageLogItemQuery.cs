@@ -39,14 +39,21 @@
                 public DateTime? SucceededAt { get; set; }
             }
         }
-    }
 
-    public class GetMessageLogItemQueryValidator<TResponse> : AbstractValidator<AbstractGetMessageLogItemQuery<TResponse>>
-        where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
-    {
-        public GetMessageLogItemQueryValidator()
+        public override sealed void Validate()
         {
-            RuleFor(cmd => cmd.MessageIdOfLogItem).NotEmpty();
+            new Validator<TResponse>().ValidateAndThrow(this);
+        }
+
+        public class Validator<TResponse> : AbstractValidator<AbstractGetMessageLogItemQuery<TResponse>>
+            where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
+        {
+            public Validator()
+            {
+                RuleFor(cmd => cmd.MessageIdOfLogItem).NotEmpty();
+            }
         }
     }
+
+
 }

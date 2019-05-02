@@ -11,11 +11,16 @@
         }
 
         public string Email { get; }
+
+        public override void Validate()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
     }
 
-    public class RequestPasswordResetValidator : AbstractValidator<RequestPasswordReset>
+    public class Validator : AbstractValidator<RequestPasswordReset>
     {
-        public RequestPasswordResetValidator()
+        public Validator()
         {
             RuleFor(x => x.Email).EmailAddress();
         }

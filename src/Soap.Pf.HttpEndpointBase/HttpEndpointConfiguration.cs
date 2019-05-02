@@ -37,7 +37,6 @@
 
         private static Func<IBusContext> busContextFactory;
 
-        private static Func<IDocumentRepository> documentRepositoryFactory;
 
         private static Assembly domainLogicAssembly;
 
@@ -50,13 +49,12 @@
         public HttpEndpointConfiguration(
             Assembly domainLogicAssembly,
             Assembly domainMessagesAssembly,
-            Func<IBusContext> busContextFactory,
-            Func<IDocumentRepository> documentRepositoryFactory)
+            Func<IBusContext> busContextFactory
+            )
         {
             HttpEndpointConfiguration<TUserAuthenticator>.domainLogicAssembly = domainLogicAssembly;
             HttpEndpointConfiguration<TUserAuthenticator>.domainMessagesAssembly = domainMessagesAssembly;
             HttpEndpointConfiguration<TUserAuthenticator>.busContextFactory = busContextFactory;
-            HttpEndpointConfiguration<TUserAuthenticator>.documentRepositoryFactory = documentRepositoryFactory;
 
             try
             {
@@ -195,16 +193,14 @@
 
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
+                        EnvironmentConfig.Variables,
                         new[] { domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
                         new[] { domainMessagesAssembly }.ToList(),
                         MessageAggregator.Create,
-                        documentRepositoryFactory,
                         containerActions);
                     
                     AddHandlers(builder, handlerAssemblies);
-
-                    builder.RegisterInstance(EnvironmentConfig.Variables).AsSelf().As<IApplicationConfig>();
-
+                    
                     //we want to build this here even though we could pass in an instance
                     //because we want to ensure that the serilog global logger has been setup
                     builder.RegisterInstance(busContextFactory()).As<IBusContext>();

@@ -38,7 +38,7 @@
             {
                 await SetUserState();
 
-                SendEmailNotification(command.Email);
+                NotifyUser(command.Email);
 
                 await AddState(States.EmailSent);
             }
@@ -48,12 +48,12 @@
                 await this.userOperations.RequestPasswordReset(command.Email, ProcessId);
             }
 
-            void SendEmailNotification(string to)
+            void NotifyUser(string to)
             {
                 var message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}";
                 var subject = "Password Reset Requested";
 
-                UnitOfWork.SendCommand(new SendEmail(message, subject, to));
+                UnitOfWork.SendCommand(new NotifyUsers(message, subject, to));
             }
         }
 
@@ -73,8 +73,6 @@
 
             void Validate()
             {
-                new ResetPasswordFromEmailValidator().ValidateAndThrow(command);
-
                 Guard.Against(!HasState(States.EmailSent), "Cannot Set Password When User Has Not Requested It");
             }
         }

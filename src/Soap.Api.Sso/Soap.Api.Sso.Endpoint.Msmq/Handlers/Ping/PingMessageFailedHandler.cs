@@ -1,8 +1,8 @@
-﻿namespace Soap.Api.Sample.Endpoint.Msmq.Handlers.Ping
+﻿namespace Soap.Api.Sso.Endpoint.Msmq.Handlers.Ping
 {
     using Soap.Api.Sso.Domain.Messages.Ping;
-    using Soap.If.Interfaces;
     using Soap.Pf.DomainLogicBase;
+    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Pf.MsmqEndpointBase.Handlers;
 
     //TODO write two endpoint tests for this

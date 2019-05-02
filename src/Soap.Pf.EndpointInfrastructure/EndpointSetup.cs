@@ -22,18 +22,21 @@
     {
         public static ContainerBuilder ConfigureCore<TUserAuthenticator>(
             ContainerBuilder builder,
+            IApplicationConfig applicationConfig,
             List<Assembly> domainLogicAssemblies,
             List<Assembly> domainMessagesAssemblies,
             Func<IMessageAggregator> messageAggregatorFactory,
-            Func<IDocumentRepository> documentRepositoryFactory,
             List<Action<ContainerBuilder>> containerActions) where TUserAuthenticator : IAuthenticateUsers
         {
             {
+                builder.RegisterInstance(applicationConfig).AsSelf().As<IApplicationConfig>();
+
                 AddLogging();
                 AddMessageAggregator();
                 //adding api messages to find message frm sp controller
                 AddUnitOfWorkAndCoreServices();
                 AddMessageAuthenticator();
+                AddNotificationServer();
                 AddOperations();
                 AddProcesses();
                 AddMessagePipeline();
@@ -54,7 +57,10 @@
 
             void AddUnitOfWorkAndCoreServices()
             {
-                builder.Register(c => documentRepositoryFactory()).AsSelf().As<IDocumentRepository>().InstancePerLifetimeScope();
+                builder.Register(c => applicationConfig.DatabaseSettings?.CreateRepository() ?? new InMemoryDocumentRepository())
+                       .AsSelf()
+                       .As<IDocumentRepository>()
+                       .InstancePerLifetimeScope();
                 builder.RegisterType<DataStore>().AsSelf().As<IDataStore>().InstancePerLifetimeScope();
                 builder.RegisterType<QueuedStateChanger>().AsSelf().InstancePerLifetimeScope();
                 builder.RegisterType<UnitOfWork>().As<UnitOfWork>().InstancePerLifetimeScope();
@@ -107,13 +113,11 @@
                                    })
                            .InstancePerDependency();
                 }
-
             }
 
             void AddOperations()
             {
                 foreach (var domainLogicAssembly in domainLogicAssemblies)
-                {
                     builder.RegisterAssemblyTypes(domainLogicAssembly)
                            .AsClosedTypesOf(typeof(Operations<>))
                            .OnActivated(
@@ -126,7 +130,11 @@
                                        e.Context.Resolve<IMessageAggregator>());
                                    })
                            .InstancePerLifetimeScope();
-                }
+            }
+
+            void AddNotificationServer()
+            {
+                builder.Register(c => applicationConfig.NotificationServerSettings.CreateServer(c.Resolve<IMessageAggregator>()));
             }
         }
 

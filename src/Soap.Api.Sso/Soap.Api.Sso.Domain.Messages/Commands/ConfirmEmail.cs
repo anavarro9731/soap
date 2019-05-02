@@ -10,13 +10,18 @@
         {
             StatefulProcessId = processId;
         }
-    }
 
-    public class ConfirmEmailValidator : AbstractValidator<ConfirmEmail>
-    {
-        public ConfirmEmailValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.StatefulProcessId).NotNull();
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<ConfirmEmail>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.StatefulProcessId).NotNull();
+            }
         }
     }
 }

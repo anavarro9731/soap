@@ -33,10 +33,10 @@ namespace Soap.Api.Sso.Domain.Tests.Messages.Commands
         }
 
         [Fact]
-        public void ItShouldSetTheServiceStateDbVersionTo2()
+        public void ItShouldKeepTheDbVersionAtOneBecauseOfTheReseed()
         {
             var ss = this.endPoint.QueryDatabase<ServiceState>().Result.Single();
-            ss.DatabaseState.HasState(ReleaseVersions.v2).Should().BeTrue();
+            ss.DatabaseState.HasState(ReleaseVersions.v1).Should().BeTrue();
         }
     }
 }

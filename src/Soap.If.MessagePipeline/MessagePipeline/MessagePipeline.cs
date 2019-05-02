@@ -16,6 +16,7 @@
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.Pf.MessageContractsBase.Commands;
 
     /// <summary>
     ///     The jobs of this class is are:

@@ -30,13 +30,20 @@
                 Guid.Parse("493ab843-c82a-4623-9ede-aa7dabba86f4"),
                 "No Upgrade Script Exists For This Version");
         }
-    }
 
-    public class UpgradeTheDatabaseValidator : AbstractValidator<UpgradeTheDatabaseCommand>
-    {
-        public UpgradeTheDatabaseValidator()
+        public override void Validate()
         {
-            RuleFor(x => x.ReleaseVersion != ReleaseVersions.NULL);           
+            new Validator().ValidateAndThrow(this);
+        }
+
+        public class Validator : AbstractValidator<UpgradeTheDatabaseCommand>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.ReleaseVersion != ReleaseVersions.NULL);
+            }
         }
     }
+
+
 }

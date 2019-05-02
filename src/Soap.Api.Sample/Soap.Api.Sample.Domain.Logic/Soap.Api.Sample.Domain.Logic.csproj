@@ -3,7 +3,7 @@
     <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.8.0" />
+      <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.10.0" />
     </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.Integrations.Mailgun\Soap.Integrations.MailGun.csproj" />

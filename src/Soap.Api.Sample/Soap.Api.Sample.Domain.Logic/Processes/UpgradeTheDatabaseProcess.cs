@@ -29,8 +29,6 @@
         public async Task BeginProcess(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
         {
             {
-                Validate();
-
                 if (message.ReSeed) await ClearDatabase.ExecuteOutsideTransaction(this.documentRepository,
                     DataStoreReadOnly, message.EnvelopeId, meta);
 
@@ -48,11 +46,6 @@
                 }
             }
 
-
-            void Validate()
-            {
-                new UpgradeTheDatabaseValidator().ValidateAndThrow(message);
-            }
         }
 
         private async Task V1()

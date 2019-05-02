@@ -34,7 +34,7 @@
 
                 var newUser = await AddPartiallyRegisteredUser();
 
-                SendEmailNotification(UserProfile.Create(newUser));
+                SendNotification(UserProfile.Create(newUser));
 
                 References.UserId = newUser.id;
 
@@ -43,8 +43,6 @@
 
             void Validate()
             {
-                new RegisterUserValidator().Validate(command);
-
                 Guard.Against(() => { return DataStoreReadOnly.Read<User>(u => u.Email == command.Email).Result.SingleOrDefault() != null; }, "User Already Exists");
             }
 
@@ -55,12 +53,12 @@
                 return newUser;
             }
 
-            void SendEmailNotification(UserProfile response)
+            void SendNotification(UserProfile response)
             {
                 var message = $"Please click this link to reset your password: {this.config.ApiEndpointSettings.HttpEndpointUrl}/resetpassword/{ProcessId}";
                 var subject = "Please verify your account";
 
-                UnitOfWork.SendCommand(new SendEmail(message, subject, response.Email));
+                UnitOfWork.SendCommand(new NotifyUsers(message, subject, response.Email));
             }
         }
 

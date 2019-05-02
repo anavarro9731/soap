@@ -10,5 +10,10 @@ namespace Soap.Api.Sso.Domain.Messages.Commands
         }
 
         public string AuthToken { get; }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }
