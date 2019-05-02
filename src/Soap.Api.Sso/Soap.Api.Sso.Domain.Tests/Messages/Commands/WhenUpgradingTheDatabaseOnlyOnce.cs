@@ -51,5 +51,12 @@ namespace Soap.Api.Sso.Domain.Tests.Messages.Commands
                 return SecureHmacHash.CreateFrom(clearPassword, passwordDetails.HashIterations, passwordDetails.HexSalt).HexHash;
             }
         }
+
+        [Fact]
+        public void ItShouldSetTheServiceStateDbVersionTo1()
+        {
+            var ss = this.endPoint.QueryDatabase<ServiceState>().Result.Single();
+            ss.DatabaseState.HasState(ReleaseVersions.v1).Should().BeTrue();
+        }
     }
 }

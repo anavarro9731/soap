@@ -31,5 +31,12 @@ namespace Soap.Api.Sso.Domain.Tests.Messages.Commands
 
             allUsers.Count.Should().Be(1);
         }
+
+        [Fact]
+        public void ItShouldSetTheServiceStateDbVersionTo2()
+        {
+            var ss = this.endPoint.QueryDatabase<ServiceState>().Result.Single();
+            ss.DatabaseState.HasState(ReleaseVersions.v2).Should().BeTrue();
+        }
     }
 }
