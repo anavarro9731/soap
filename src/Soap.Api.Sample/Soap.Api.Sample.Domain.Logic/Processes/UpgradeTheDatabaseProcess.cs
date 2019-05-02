@@ -12,6 +12,7 @@
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
     using Soap.If.Utility.PureFunctions;
+    using Soap.Pf.DomainLogicBase;
 
     public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabaseCommand>
     {
@@ -30,7 +31,8 @@
             {
                 Validate();
 
-                if (message.ReSeed) await ClearDb();
+                if (message.ReSeed) await ClearDatabase.ExecuteOutsideTransaction(this.documentRepository,
+                    DataStoreReadOnly, message.EnvelopeId, meta);
 
                 switch (message.ReleaseVersion)
                 {
@@ -46,33 +48,6 @@
                 }
             }
 
-            //TODO: move to framework
-            async Task ClearDb()
-            {
-                MessageLogItem envelopeMessage = null;
-
-                if (message.EnvelopeId.HasValue)
-                {
-                    envelopeMessage = await DataStoreReadOnly.ReadActiveById<MessageLogItem>(message.EnvelopeId.Value);
-                }
-
-                await ((IResetData)this.documentRepository).NonTransactionalReset();
-
-                if (envelopeMessage != null)
-                {
-                    await this.documentRepository.AddAsync(
-                        new ReplaceMessageLogItemOperation
-                        {
-                            Model = envelopeMessage
-                        });
-                }
-
-                await this.documentRepository.AddAsync(new ReplaceMessageLogItemOperation
-                {
-                    Model = meta.MessageLogItem
-                });
-
-            }
 
             void Validate()
             {
@@ -111,23 +86,6 @@
                 "No Upgrade Script Exists For This Version");
         }
 
-        public class ReplaceMessageLogItemOperation : IDataStoreWriteOperation<MessageLogItem>
-        {
-            public DateTime Created { get; set; }
 
-            public string MethodCalled { get; set; }
-
-            public MessageLogItem Model { get; set; }
-
-            public double StateOperationCost { get; set; }
-
-            public TimeSpan? StateOperationDuration { get; set; }
-
-            public long StateOperationStartTimestamp { get; set; }
-
-            public long? StateOperationStopTimestamp { get; set; }
-
-            public string TypeName { get; set; }
-        }
     }
 }
