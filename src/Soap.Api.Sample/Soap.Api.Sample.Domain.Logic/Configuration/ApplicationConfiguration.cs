@@ -6,6 +6,7 @@
 
     public class ApplicationConfiguration : IApplicationConfig
     {
+        //TODO: CosmosSetting and Mailgun to IAppConfig
         public ApplicationConfiguration(
             string environmentName,
             string applicationVersion,
