@@ -9,12 +9,12 @@
 
     public class WhenPingedMultipleTimesWithTheSameMessage : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
         public WhenPingedMultipleTimesWithTheSameMessage()
         {
             // Arrange
-            this.command = new PingCommand(nameof(WhenPingedMultipleTimesWithTheSameMessage));
+            this.command = new HttpPingCommand(nameof(WhenPingedMultipleTimesWithTheSameMessage));
 
             this.endPoint.HandleCommand(this.command);
         }

@@ -10,7 +10,7 @@
     using Xunit;
 
     [Collection("Resets Db")]
-    public class WhenSeedingDatabaseViaHttp
+    public class WhenSeedingTheDatabaseViaHttp
     {
         private readonly Guid innerMessageId = Guid.NewGuid();
 

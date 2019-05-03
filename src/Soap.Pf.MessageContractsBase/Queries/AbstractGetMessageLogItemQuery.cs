@@ -5,21 +5,22 @@
     using FluentValidation;
     using Soap.If.Interfaces.Messages;
 
-    public abstract class AbstractGetMessageLogItemQuery<TResponse> : ApiQuery<TResponse> where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
+    public abstract class AbstractGetMessageLogItemQuery<TResponse> : ApiQuery<TResponse> 
+        where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
     {
         public Guid MessageIdOfLogItem { get; set; }
 
         public abstract class AbstractResponseModel
         {
             public string ClrTypeOfMessage { get; set; }
-
+                
             public bool Failed => FailedAttempts.Count >= MaxFailedMessages;
 
             public List<AbstractFailedMessageResult> FailedAttempts { get; set; } = new List<AbstractFailedMessageResult>();
 
             public int MaxFailedMessages { get; set; }
 
-            public dynamic Message { get; set; }
+            public object Message { get; set; }
 
             public bool Succeeded => SuccessfulAttempt != null;
 
@@ -34,7 +35,7 @@
 
             public class AbstractSuccessMessageResult
             {
-                public dynamic ReturnValue { get; set; }
+                public object ReturnValue { get; set; }
 
                 public DateTime? SucceededAt { get; set; }
             }

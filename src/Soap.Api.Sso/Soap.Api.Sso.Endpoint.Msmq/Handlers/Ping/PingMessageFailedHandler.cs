@@ -4,9 +4,9 @@
     using Soap.Pf.DomainLogicBase;
     using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Pf.MsmqEndpointBase.Handlers;
+    using Soap.Pf.MsmqEndpointBase.Handlers.Commands;
 
-    //TODO write two endpoint tests for this
-    public class PingMessageFailedHandler : AbstractPingMessageFailedHandler<MessageFailedAllRetries<PingCommand>, PingCommand, PingCommand.PongViewModel>
+    public class PingMessageFailedHandler : AbstractPingMessageFailedHandlerForMsmq<MessageFailedAllRetries<MsmqPingCommand>, MsmqPingCommand>
     {
         public PingMessageFailedHandler(MessageFailedAllRetriesLogItemOperations failedMessageLogItemOperations)
             : base(failedMessageLogItemOperations)

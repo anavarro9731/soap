@@ -8,5 +8,9 @@
         public  DateTime PingedAt { get; set; }
 
         public  string PingedBy { get; set; }
+
+        public override void Validate()
+        {
+        }
     }
 }

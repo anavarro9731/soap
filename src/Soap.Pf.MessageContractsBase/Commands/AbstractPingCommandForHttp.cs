@@ -4,13 +4,14 @@
     using FluentValidation;
     using Soap.If.Interfaces.Messages;
 
-    public abstract class AbstractPingCommand<TResponse> : ApiCommand<TResponse> where TResponse : AbstractPingCommand<TResponse>.AbstractResponseModel, new()
+    public abstract class AbstractPingCommandForHttp<TResponse> : ApiCommand<TResponse>
+        where TResponse : AbstractPingCommandForHttp<TResponse>.AbstractResponseModel, new()
     {
-        protected AbstractPingCommand()
+        protected AbstractPingCommandForHttp()
         {
         }
 
-        protected AbstractPingCommand(string pingedBy)
+        protected AbstractPingCommandForHttp(string pingedBy)
         {
             PingedBy = pingedBy;
         }
@@ -18,6 +19,11 @@
         public DateTime PingedAt { get; set; }
 
         public string PingedBy { get; set; }
+
+        public override sealed void Validate()
+        {
+            new Validator<TResponse>().ValidateAndThrow(this);
+        }
 
         public abstract class AbstractResponseModel
         {
@@ -28,13 +34,8 @@
             public DateTime PongedAt { get; set; } = DateTime.Now;
         }
 
-        public override sealed void Validate()
-        {
-            new Validator<TResponse>().ValidateAndThrow(this);
-        }
-
-        public class Validator<TPongResponse> : AbstractValidator<AbstractPingCommand<TPongResponse>>
-            where TPongResponse : AbstractPingCommand<TPongResponse>.AbstractResponseModel, new()
+        public class Validator<TPongResponse> : AbstractValidator<AbstractPingCommandForHttp<TPongResponse>>
+            where TPongResponse : AbstractPingCommandForHttp<TPongResponse>.AbstractResponseModel, new()
         {
             public Validator()
             {
@@ -42,6 +43,4 @@
             }
         }
     }
-
-
 }

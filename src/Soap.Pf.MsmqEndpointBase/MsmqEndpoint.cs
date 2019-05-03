@@ -7,6 +7,7 @@ namespace Soap.Pf.MsmqEndpointBase
     using Rebus.Autofac;
     using Rebus.Backoff;
     using Rebus.Config;
+    using Rebus.Persistence.InMem;
     using Rebus.Retry.Simple;
     using Rebus.TransactionScopes;
     using Soap.If.Interfaces;
@@ -31,7 +32,8 @@ namespace Soap.Pf.MsmqEndpointBase
         public static void CreateBusContext(IApplicationConfig appConfig, IContainer container, params MsmqMessageRoute[] messageRoutes)
         {
             {
-                var bus = new BusApiClient(messageRoutes, ConfigureRebus, Rebus.Config.Configure.With(new AutofacContainerAdapter(container)));
+                var bus = new BusApiClient(messageRoutes, ConfigureRebus, 
+                    Rebus.Config.Configure.With(new AutofacContainerAdapter(container)));
 
                 //hotswap tx, ms msg storage
 
@@ -51,7 +53,7 @@ namespace Soap.Pf.MsmqEndpointBase
             }
 
             void ConfigureRebus(RebusConfigurer configurer)
-            {
+            {                
                 configurer.Transport(t => t.UseMsmq(appConfig.ApiEndpointSettings.MsmqEndpointName))
                           .Options(
                               o =>
@@ -66,12 +68,13 @@ namespace Soap.Pf.MsmqEndpointBase
 
                                   o.SimpleRetryStrategy($"{appConfig.ApiEndpointSettings.MsmqEndpointName}.error", appConfig.NumberOfApiMessageRetries + 1, false);
 
-                                  //TODO: o.SetBackoffTimes(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1000));
-
+                                  //o.SetBackoffTimes(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1000));
+                                  
                                   o.SetNumberOfWorkers(1);
                                   o.SetMaxParallelism(1);
                                   o.LogPipeline();
-                                  });
+                                  })
+                        .Subscriptions(s => s.StoreInMemory());
             }
         }
     }

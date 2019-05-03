@@ -2,13 +2,13 @@
 {
     using Soap.Pf.MessageContractsBase.Commands;
 
-    public class PingCommand : AbstractPingCommand<PingCommand.PongViewModel>
+    public class HttpPingCommand : AbstractPingCommandForHttp<HttpPingCommand.PongViewModel>
     {
-        public PingCommand()
+        public HttpPingCommand()
         {
         }
 
-        public PingCommand(string pingedBy)
+        public HttpPingCommand(string pingedBy)
             : base(pingedBy)
         {
         }

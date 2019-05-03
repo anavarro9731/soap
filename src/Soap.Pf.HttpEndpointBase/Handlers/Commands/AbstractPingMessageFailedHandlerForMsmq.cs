@@ -1,21 +1,18 @@
-﻿namespace Soap.Pf.MsmqEndpointBase.Handlers
+﻿namespace Soap.Pf.HttpEndpointBase.Handlers.Commands
 {
     using System.Threading.Tasks;
-    using Soap.If.Interfaces;
     using Soap.If.MessagePipeline.Models;
     using Soap.Pf.DomainLogicBase;
+    using Soap.Pf.HttpEndpointBase;
     using Soap.Pf.MessageContractsBase.Commands;
-    using Soap.Pf.MsmqEndpointBase;
 
-    public class AbstractPingMessageFailedHandler<TPingFailed, TPing, TPingResponseViewModel> : CommandHandler<TPingFailed>
+    public class AbstractPingMessageFailedHandlerForHttp<TPingFailed, TPing> : CommandHandler<TPingFailed>
         where TPingFailed : MessageFailedAllRetries<TPing>, new()
-        where TPing : AbstractPingCommand<TPingResponseViewModel>, new()
-        where TPingResponseViewModel : AbstractPingCommand<TPingResponseViewModel>.AbstractResponseModel, new()
 
     {
         private readonly MessageFailedAllRetriesLogItemOperations failedMessageLogItemOperations;
 
-        public AbstractPingMessageFailedHandler(MessageFailedAllRetriesLogItemOperations failedMessageLogItemOperations)
+        public AbstractPingMessageFailedHandlerForHttp(MessageFailedAllRetriesLogItemOperations failedMessageLogItemOperations)
         {
             this.failedMessageLogItemOperations = failedMessageLogItemOperations;
         }

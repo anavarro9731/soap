@@ -4,7 +4,6 @@
     using System.Diagnostics;
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Ping;
-    using Soap.If.Interfaces;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
@@ -13,14 +12,14 @@
 
     public class WhenPingedWithInvalidParams : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
         private readonly int totalAttempts;
 
         public WhenPingedWithInvalidParams()
         {
             // Arrange
-            this.command = new PingCommand(null);
+            this.command = new HttpPingCommand(null);
 
             // Act            
             this.totalAttempts = this.endPoint.AppConfig.NumberOfApiMessageRetries + 1;
@@ -55,7 +54,7 @@
         [Fact]
         public void ItShouldSendAMaxFailedMessageOnTheLastIteration()
         {
-            Assert.Single(this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>());
+            Assert.Single(this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<HttpPingCommand>>());
         }
 
         [Fact]

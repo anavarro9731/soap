@@ -8,16 +8,16 @@
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Xunit;
 
-    public class WhenPinged : Test
+    public class WhenHttpPinged : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
-        private readonly PingCommand.PongViewModel pongViewModel;
+        private readonly HttpPingCommand.PongViewModel pongViewModel;
 
-        public WhenPinged()
+        public WhenHttpPinged()
         {
             // Arrange
-            this.command = new PingCommand(typeof(WhenPinged).FullName);
+            this.command = new HttpPingCommand(typeof(WhenMsmqPinged).FullName);
 
             // Act
             Thread.Sleep(1); //in memory it runs so fast, that sometimes this test fails because
@@ -26,7 +26,7 @@
         }
 
         [Fact]
-        public void ItShouldPongAsACommand()
+        public void ItShouldSendAPongCommand()
         {
             var pong = this.endPoint.MessageAggregator.CommandsSent.Single().As<PongCommand>();
 
@@ -36,19 +36,6 @@
             pong.PingedBy.Should().Be(this.command.PingedBy);
         }
 
-        [Fact]
-        public void ItShouldPongAsAnEvent()
-        {
-            this.endPoint.MessageAggregator.EventsPublished.Count().Should().Be(1);
-
-            var @event = this.endPoint.MessageAggregator.EventsPublished.Single();
-
-            var pong = @event.As<PongEvent>();
-            pong.Should().NotBeNull();
-            pong.TimeOfCreationAtOrigin.Should().BeAfter(this.command.PingedAt);
-            pong.PingedAt.Should().Be(this.command.PingedAt);
-            pong.PingedBy.Should().Be(this.command.PingedBy);
-        }
 
         [Fact]
         public void ItShouldRecordASuccessfulResult()

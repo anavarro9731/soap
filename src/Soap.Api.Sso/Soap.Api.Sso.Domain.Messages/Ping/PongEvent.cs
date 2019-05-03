@@ -4,9 +4,6 @@
 
     public class PongEvent : AbstractPongEvent
     {
-        public override void Validate()
-        {
-            
-        }
+
     }
 }

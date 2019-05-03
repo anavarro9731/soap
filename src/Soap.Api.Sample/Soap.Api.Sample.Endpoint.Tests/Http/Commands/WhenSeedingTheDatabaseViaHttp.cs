@@ -1,7 +1,6 @@
 ﻿namespace Soap.Api.Sample.Endpoint.Tests.Http.Commands
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Domain.Constants;
     using Soap.Api.Sample.Domain.Messages.Commands;
@@ -11,7 +10,7 @@
     using Xunit;
 
     [Collection("Resets Db")]
-    public class WhenSeedingDatabaseViaHttp
+    public class WhenSeedingTheDatabaseViaHttp
     {
         private readonly Guid innerMessageId = Guid.NewGuid();
 
@@ -37,7 +36,7 @@
         }
 
         private async Task Setup()
-         {
+        {
             //arrange
             var apiClient = TestUtils.Endpoints.Http.CreateApiClient(typeof(UpgradeTheDatabaseCommand).Assembly);
 

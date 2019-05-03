@@ -9,12 +9,12 @@
 
     public class WhenPingedMultipleTimesWithADifferentMessageButSameMessageId : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
         public WhenPingedMultipleTimesWithADifferentMessageButSameMessageId()
         {
             // Arrange
-            this.command = new PingCommand(1.ToString());
+            this.command = new HttpPingCommand(1.ToString());
 
             var result = this.endPoint.HandleCommand(this.command);
         }
@@ -33,7 +33,7 @@
             try
             {
                 this.endPoint.HandleCommand(
-                    new PingCommand(2.ToString())
+                    new HttpPingCommand(2.ToString())
                     {
                         MessageId = this.command.MessageId
                     });

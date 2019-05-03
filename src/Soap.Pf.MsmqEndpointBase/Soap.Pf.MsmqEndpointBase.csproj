@@ -23,4 +23,7 @@
   <ItemGroup>
     <Reference Include="System.Transactions" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Handlers\Queries\" />
+  </ItemGroup>
 </Project>

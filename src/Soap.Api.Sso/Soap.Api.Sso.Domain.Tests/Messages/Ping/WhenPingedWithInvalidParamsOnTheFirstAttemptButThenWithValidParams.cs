@@ -8,12 +8,12 @@
 
     public class WhenPingedWithInvalidParamsOnTheFirstAttemptButThenWithValidParams : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
         public WhenPingedWithInvalidParamsOnTheFirstAttemptButThenWithValidParams()
         {
             // Arrange
-            this.command = new PingCommand("SpecialInvalidParamSeeCodeInHandler");
+            this.command = new HttpPingCommand("SpecialInvalidParamSeeCodeInHandler");
 
             // Act            
 

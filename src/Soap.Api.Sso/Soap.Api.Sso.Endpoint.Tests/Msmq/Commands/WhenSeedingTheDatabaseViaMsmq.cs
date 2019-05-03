@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sso.Endpoint.Tests.Rebus.Commands
+﻿namespace Soap.Api.Sso.Endpoint.Tests.Msmq.Commands
 {
     using System;
     using System.Threading.Tasks;
@@ -9,7 +9,7 @@
     using Xunit;
 
     [Collection("Resets Db")]
-    public class WhenSeedingDatabaseViaRebus
+    public class WhenSeedingTheDatabaseViaMsmq
 
     {
         private readonly Guid logItemMessageId = Guid.NewGuid();

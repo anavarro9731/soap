@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.Utility;
@@ -17,11 +16,8 @@
 
         public int MaxFailedMessages { get; set; }
 
-        /* NOTE: Messagelogitem.Message not generic 
-         * because some clients might not serialise using JSON.NET, 
-         * publicly serialisable classes should not rely on $type
-         * also datastore doesn't support generics*/
-        public dynamic Message { get; set; }
+        /* MessageLogItem not generic to keep all in one collection */
+        public object Message { get; set; }
 
         public string MessageHash { get; set; }
 
@@ -39,11 +35,6 @@
             };
         }
 
-        public T MessageAs<T>()
-        {
-            return ((JObject)Message).ToObject<T>();
-        }
-
         public class FailedMessageResult
         {
             public PipelineExceptionMessages Errors { get; set; }
@@ -54,15 +45,14 @@
             {
                 return new FailedMessageResult
                 {
-                    Errors = errors,
-                    FailedAt = DateTime.UtcNow
+                    Errors = errors, FailedAt = DateTime.UtcNow
                 };
             }
         }
 
         public class SuccessMessageResult : Entity
         {
-            public dynamic ReturnValue { get; set; }
+            public object ReturnValue { get; set; }
 
             public DateTime SucceededAt { get; set; }
 
@@ -70,8 +60,7 @@
             {
                 return new SuccessMessageResult
                 {
-                    ReturnValue = returnValue,
-                    SucceededAt = DateTime.UtcNow
+                    ReturnValue = returnValue, SucceededAt = DateTime.UtcNow
                 };
             }
         }

@@ -3,7 +3,6 @@
     using System;
     using System.Linq;
     using Soap.Api.Sso.Domain.Messages.Ping;
-    using Soap.If.Interfaces;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessagePipeline;
     using Soap.If.MessagePipeline.Models;
@@ -13,14 +12,14 @@
 
     public class WhenPingedWithUsingHardcodedInvalidMessageId : Test
     {
-        private readonly PingCommand command;
+        private readonly HttpPingCommand command;
 
         private readonly int totalAttempts;
 
         public WhenPingedWithUsingHardcodedInvalidMessageId()
         {
             // Arrange
-            this.command = new PingCommand(nameof(WhenPingedWithUsingHardcodedInvalidMessageId))
+            this.command = new HttpPingCommand(nameof(WhenPingedWithUsingHardcodedInvalidMessageId))
             {
                 MessageId = MessagePipeline.Constants.ForceFailBeforeMessageCompletesId
             };
@@ -60,7 +59,7 @@
         {
             //have to check NSB directly because this is sent outside of the UnitOfWork
             //and for now there is no message in the aggregator showing this took place
-            Assert.Single(this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<PingCommand>>());
+            Assert.Single(this.endPoint.InMemoryMessageBus.Commands.OfType<MessageFailedAllRetries<HttpPingCommand>>());
         }
 
         [Fact]
