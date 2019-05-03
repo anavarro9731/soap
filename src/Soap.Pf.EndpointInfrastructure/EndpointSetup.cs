@@ -11,6 +11,7 @@
     using DataStore.Interfaces;
     using Serilog;
     using Soap.If.Interfaces;
+    using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline;
     using Soap.If.MessagePipeline.MessagePipeline;
     using Soap.If.MessagePipeline.ProcessesAndOperations;
@@ -33,7 +34,7 @@
 
                 AddLogging();
                 AddMessageAggregator();
-                //adding api messages to find message frm sp controller
+                AddMessageInstanceCreator();
                 AddUnitOfWorkAndCoreServices();
                 AddMessageAuthenticator();
                 AddNotificationServer();
@@ -132,6 +133,11 @@
                            .InstancePerLifetimeScope();
             }
 
+            void AddMessageInstanceCreator()
+            {
+                builder.RegisterInstance(new MessageInstanceCreator(domainMessagesAssemblies)).As<MessageInstanceCreator>();
+            }
+
             void AddNotificationServer()
             {
                 builder.Register(c => applicationConfig.NotificationServerSettings.CreateServer(c.Resolve<IMessageAggregator>()));
@@ -221,6 +227,28 @@
                     return messageTypePerHandlerTypes.Count() > 1;
                 }
             }
+        }
+    }
+
+    public class MessageInstanceCreator
+    {
+        private readonly List<Assembly> domainMessageAssemblies;
+
+        public MessageInstanceCreator(List<Assembly> domainMessageAssemblies)
+        {
+            this.domainMessageAssemblies = domainMessageAssemblies;
+        }
+
+        public IApiMessage CreateInstance(string typeName)
+        {
+            foreach (var domainMessageAssembly in this.domainMessageAssemblies)
+            {
+                var matches = domainMessageAssembly.ExportedTypes.Where(t => t.FullName == typeName);
+                var enumerable = matches as Type[] ?? matches.ToArray();
+                if (enumerable.Any()) return (IApiMessage)enumerable.Single().Assembly.CreateInstance(typeName);
+            }
+
+            throw new Exception("Could not locate the requested continuation message type.");
         }
     }
 }

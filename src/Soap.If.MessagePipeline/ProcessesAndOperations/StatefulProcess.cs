@@ -184,7 +184,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
         private void RecordCompleted(string username)
         {
-            MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username));
+            MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username, this.processState));
         }
 
         private void RecordContinued<TMessage>(TMessage message, ApiMessageMeta meta) where TMessage : IApiCommand

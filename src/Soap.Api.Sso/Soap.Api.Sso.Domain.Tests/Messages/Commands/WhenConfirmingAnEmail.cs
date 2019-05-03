@@ -16,7 +16,10 @@
             var registerUserCommand = new RegisterUser(email, "Joe Schmoe", "password");
             this.result = this.endPoint.HandleCommand(registerUserCommand);
 
-            var confirmEmail = new ConfirmEmail(this.result.ProcessId);
+            var confirmEmail = new ConfirmEmail
+            {
+                StatefulProcessId = this.result.ProcessId
+            };
             var user = this.endPoint.QueryDatabase<User>(q => q.Where(u => u.id == this.result.User.id)).Result.Single();
 
             //act

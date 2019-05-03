@@ -40,15 +40,10 @@
         [Fact]
         public void ItShouldNotLogTheSensitiveUserDetails()
         {
+      
+            Log.CloseAndFlush(); //make sure all entries are accounted for
             var logEntries = this.endPoint.MessageAggregator.LogEntries;
 
-            Log.CloseAndFlush(); //make sure all entries are accounted for
-
-            do
-            {
-                //variable threading delay
-            }
-            while (!logEntries.Any());
 
             var logEntry = logEntries.Single(l => l.Text.Contains(this.getUserById.MessageId.ToString()));
 
