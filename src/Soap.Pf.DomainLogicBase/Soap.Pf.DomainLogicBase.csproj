@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.37.0</Version>
@@ -10,6 +10,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
-    <ProjectReference Include="..\Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj" />
+    <ProjectReference Include="..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
   </ItemGroup>
 </Project>

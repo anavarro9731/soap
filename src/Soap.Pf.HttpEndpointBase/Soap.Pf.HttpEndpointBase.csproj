@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <Version>0.37.0</Version>
@@ -13,7 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Pf.DomainLogicBase\Soap.Pf.DomainLogicBase.csproj" />
-    <ProjectReference Include="..\Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj" />
+    <ProjectReference Include="..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
     <ProjectReference Include="..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />

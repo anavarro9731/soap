@@ -92,16 +92,16 @@ function global:Run {
 			"Soap.Pf.DomainLogicBase",
 			"Soap.Pf.DomainModelsBase",
 			"Soap.Pf.MsmqEndpointBase",
-            "Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso.Endpoint.Msmq"
+            "Soap.Api.Sso\Soap.Api.Sso.Endpoint.Http",
+			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Msmq"
 			) `
         -unlistedProjects @(
             "Soap.If.Interfaces",
 			"Soap.If.MessagePipeline",
 			"Soap.If.Utility") `
         -octopusProjects @(
-            "Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso.Endpoint.Msmq") `
+            "Soap.Api.Sso\Soap.Api.Sso.Endpoint.Http",
+			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Msmq") `
         -nugetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" `
         -nugetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" `
         -nugetApiKey $nugetApiKey 

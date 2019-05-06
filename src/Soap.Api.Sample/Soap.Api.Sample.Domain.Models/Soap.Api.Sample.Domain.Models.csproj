@@ -8,7 +8,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.If.Utility\Soap.If.Utility.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj" />
+    <ProjectReference Include="..\..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entities\" />
