@@ -82,7 +82,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Api.Sample.Endpoint.Ms
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Api.Sample.Endpoint.Tests", "Soap.Api.Sample\Soap.Api.Sample.Endpoint.Tests\Soap.Api.Sample.Endpoint.Tests.csproj", "{2F4BDD46-C4E1-43B9-AD85-182C60A16034}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.DomainModelsBase", "Soap.Pf.DomainModels\Soap.Pf.DomainModelsBase.csproj", "{1C8F4746-F482-403D-9003-724B87663CB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.DomainModelsBase", "Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj", "{1C8F4746-F482-403D-9003-724B87663CB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.DomainLogicBase", "Soap.Pf.DomainLogicBase\Soap.Pf.DomainLogicBase.csproj", "{4DCEE9CB-43E1-4721-9CB3-74B8F7917C39}"
 EndProject
