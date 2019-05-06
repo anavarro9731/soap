@@ -73,7 +73,7 @@ function global:Run {
 	if ($BuildAndTest) {
 		Build-And-Test -testPackages @(
 			"Soap.Tests",
-			"Soap.Api.Sso.Domain.Tests"
+			"Soap.Api.Sso\Soap.Api.Sso.Domain.Tests"
 		)
 	}
 
