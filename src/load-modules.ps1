@@ -67,9 +67,7 @@ function global:Run {
 			"Soap.Pf.MessageContractsBase",
 			"Soap.Pf.DomainLogicBase",
 			"Soap.Pf.DomainModelsBase",
-			"Soap.Pf.MsmqEndpointBase",
-            "Soap.Api.Sso\Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Msmq"
+			"Soap.Pf.MsmqEndpointBase"
 			)
 	}
 
