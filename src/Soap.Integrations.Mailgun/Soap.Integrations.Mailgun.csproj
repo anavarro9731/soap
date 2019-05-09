@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>Service API Mailgun Service</Description>
     <TargetFramework>net461</TargetFramework>
-    <Version>0.46.0</Version>
+    <Version>0.47.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
