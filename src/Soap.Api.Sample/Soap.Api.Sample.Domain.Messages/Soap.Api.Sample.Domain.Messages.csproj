@@ -6,19 +6,17 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="7.2.0" />
-
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Constants\Soap.Api.Sample.Domain.Constants.csproj" />
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Soap.Api.Sample.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.If.Utility\Soap.If.Utility.csproj" />
-    <ProjectReference Include="..\..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
+    <PackageReference Include="Soap.If.Utility" Version="0.47.0" />
+    <PackageReference Include="Soap.If.Interfaces" Version="0.47.0" />
+    <PackageReference Include="Soap.Pf.MessageContractsBase" Version="0.47.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Events\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Constants\Soap.Api.Sample.Domain.Constants.csproj" />
   </ItemGroup>
   
 </Project>

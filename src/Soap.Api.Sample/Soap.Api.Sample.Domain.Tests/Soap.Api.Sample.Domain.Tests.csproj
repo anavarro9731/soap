@@ -13,19 +13,18 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Soap.Pf.DomainTestsBase" Version="0.47.0" />
+    <PackageReference Include="Soap.Pf.HttpEndpointBase" Version="0.47.0" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Messages\Queries\" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Endpoint.Http\Soap.Api.Sample.Endpoint.Http.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Endpoint.Msmq\Soap.Api.Sample.Endpoint.Msmq.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.DomainTestsBase\Soap.Pf.DomainTestsBase.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Messages\Queries\" />
   </ItemGroup>
 
 

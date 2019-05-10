@@ -18,12 +18,12 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="Soap.Pf.EndpointInfrastructure" Version="0.47.0" />
+    <PackageReference Include="Soap.Pf.MsmqEndpointBase" Version="0.47.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.MsmqEndpointBase\Soap.Pf.MsmqEndpointBase.csproj" />    
   </ItemGroup>
 
   <ItemGroup>

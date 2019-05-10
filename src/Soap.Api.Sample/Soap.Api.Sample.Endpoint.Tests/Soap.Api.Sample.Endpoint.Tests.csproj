@@ -10,12 +10,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <PackageReference Include="Soap.Pf.EndpointTestsBase" Version="0.47.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Soap.Api.Sample.Domain.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Soap.Api.Sample.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.EndpointTestsBase\Soap.Pf.EndpointTestsBase.csproj" />
   </ItemGroup>
 
 </Project>

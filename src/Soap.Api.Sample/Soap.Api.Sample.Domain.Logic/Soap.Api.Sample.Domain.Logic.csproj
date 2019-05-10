@@ -4,16 +4,17 @@
   </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.10.0" />
+      <PackageReference Include="Soap.Integrations.Mailgun" Version="0.47.0" />
+      <PackageReference Include="Soap.Pf.DomainLogicBase" Version="0.47.0" />
+
+      <PackageReference Include="Soap.If.MessagePipeline" Version="0.47.0" />
     </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Soap.Integrations.Mailgun\Soap.Integrations.MailGun.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.DomainLogicBase\Soap.Pf.DomainLogicBase.csproj" />
+    <Folder Include="Processes\Stateful\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Constants\Soap.Api.Sample.Domain.Constants.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Soap.Api.Sample.Domain.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Soap.Api.Sample.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Processes\Stateful\" />
   </ItemGroup>
 </Project>

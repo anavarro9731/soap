@@ -9,13 +9,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
+    <PackageReference Include="Soap.Pf.HttpEndpointBase" Version="0.47.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Handlers\Commands\" />
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
   </ItemGroup>
 </Project>
