@@ -1,7 +1,20 @@
+function Test-IsGitInstalled
+{
+    $32BitPrograms = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*
+    $64BitPrograms = Get-ItemProperty     HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*
+    $programsWithGitInName = ($32BitPrograms + $64BitPrograms) | Where-Object { $null -ne $_.DisplayName -and $_.Displayname.Contains('Git') }
+    $isGitInstalled = $null -ne $programsWithGitInName
+    return $isGitInstalled
+}
+
 $NewName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
 $DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
 $PackageFeedUrl = Read-Host -Prompt 'Enter The Nuget Package Feed Url (e.g. https://f.feedz.io/companyA/feed1/nuget)'
 $SymbolsFeedUrl = Read-Host -Prompt 'Enter The Symbols Feed Url (e.g. https://f.feedz.io/companyA/feed1/symbols)'
+
+if (-Not (Test-IsGitInstalled)) {
+	Write-Host "Git is not installed"
+}
 
 if (-Not ($NewName -match '^[A-Za-z\.]+$')) {
 	Write-Host "$NewName does not match regex"
@@ -31,6 +44,9 @@ Write-Host "Please wait..."
 
 $newLocation = "$DiskLocation".trim('\') + "\$NewName\src"
 
+if (Test-Path $newLocation) {
+	Remove-Item -Recurse -Force $newLocation
+}
 mkdir $newLocation
 
 cp .\Soap.Api.Sample\**.* $newLocation -Recurse -Force 
@@ -49,3 +65,11 @@ Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 dotnet new sln -n $NewName
 
 Get-ChildItem -Recurse -File -Filter “*.csproj” | ForEach-Object { dotnet sln add $_.FullName }
+
+cd ..
+
+git init
+git add -A
+git commit -m "initial"
+
+

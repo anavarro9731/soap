@@ -18,10 +18,12 @@ function global:Run {
 		Prepare-NewVersion -projects @(
 			"Soap.Api.Sample.Domain.Messages",
 			"Soap.Api.Sample.Domain.Constants",
+			"Soap.Api.Sample.Domain.Logic",
+			"Soap.Api.Sample.Domain.Models",
+			"Soap.Api.Sample.Domain.Tests",
             		"Soap.Api.Sample.Endpoint.Http",
 			"Soap.Api.Sample.Endpoint.Msmq",
-			"Soap.Api.Sample.Domain.Logic",
-			"Soap.Api.Sample.Domain.Models"
+			"Soap.Api.Sample.Endpoint.Tests"
 			)
 	}
 
