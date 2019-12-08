@@ -1,6 +1,7 @@
 ﻿<Project ToolsVersion="15.0" Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <Version>0.0.0</Version>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
