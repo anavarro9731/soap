@@ -16,7 +16,6 @@
     <ProjectReference Include="..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
-    <ProjectReference Include="..\Soap.Pf.MessageContractsBase\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

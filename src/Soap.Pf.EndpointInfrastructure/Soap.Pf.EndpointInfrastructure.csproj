@@ -15,9 +15,6 @@
     <PackageReference Include="DataStore" Version="6.10.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="System.Configuration" />
   </ItemGroup>
 </Project>

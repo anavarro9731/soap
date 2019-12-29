@@ -1,7 +1,0 @@
-﻿The message base classes in this folder are here for convenience when constructing your
-domain messages, it makes them cleaner to read. 
-
-HOWEVER, DO NOT EVER reference these classes IN the MESSAGEPIPELINE Assembly.
-The low-level interfaces must remain the only way you work with messages in that
-assembly or you risk versioning conflicts when importing domain messages from other
-services.

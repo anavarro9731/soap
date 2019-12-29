@@ -1,9 +1,18 @@
 ﻿namespace Soap.If.Interfaces.Messages
 {
     using System;
+    using System.Threading.Tasks;
 
-    public abstract class ApiEvent : ApiMessage, IApiEvent
+    /*
+    NEVER add any logic to these classes, or you may risk conflicts between versions of message 
+    contract assemblies. Use headers to implement variables logic. If you are going to use 
+    static classes as a base interface for messages then you must make sure you never add any logic
+    which is not backwards compatible. 
+     */
+    public abstract class ApiEvent : ApiMessage
     {
         public DateTime OccurredAt { get; set; }
+
+        public abstract Task Handle();
     }
 }

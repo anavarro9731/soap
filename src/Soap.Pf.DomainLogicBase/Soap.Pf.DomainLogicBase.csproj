@@ -9,7 +9,6 @@
     <PackageReference Include="DataStore.Interfaces" Version="6.10.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.MessagePipeline\Soap.If.MessagePipeline.csproj" />
     <ProjectReference Include="..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
   </ItemGroup>
 </Project>

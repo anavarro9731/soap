@@ -8,18 +8,19 @@
     using Soap.If.MessagePipeline.Models.Aggregates;
     using Soap.Pf.EndpointInfrastructure;
 
+    
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
     ///     TransactionScopeAsyncFlowOption.Enabled is requried to use tx with async/await
     /// </summary>
     public abstract class QueryHandler<TQuery, TResponseModel> : MessageHandlerBase, IMessageHandler where TQuery : ApiQuery<TResponseModel> where TResponseModel : class, new()
-    {
+    
         public async Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta)
         {
             return await HandleTyped((TQuery)message, meta).ConfigureAwait(false);
         }
-
-        protected abstract Task<TResponseModel> Handle(TQuery message, ApiMessageMeta meta);
+        
+        protected abstract Task<TResponseModel> Handle(TQuery message, AnpiMessageMeta meta);
 
         private async Task<TResponseModel> HandleTyped(TQuery message, ApiMessageMeta meta)
         {
@@ -39,7 +40,7 @@
         }
 
         protected abstract Task<TViewModel> Handle(TCommand message, ApiMessageMeta meta);
-
+valueretur
         private async Task<object> HandleTyped(TCommand message, ApiMessageMeta meta)
         {
             {

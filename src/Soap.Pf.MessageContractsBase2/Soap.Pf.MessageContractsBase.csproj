@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="8.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.If.Utility\Soap.If.Utility.csproj" />
+  </ItemGroup>
+
+</Project>

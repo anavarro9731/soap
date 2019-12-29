@@ -10,6 +10,6 @@
     /// </summary>
     public interface IAuthenticateUsers
     {
-        IUserWithPermissions Authenticate(IApiMessage message);
+        IIdentityWithPermissions Authenticate(ApiMessage message);
     }
 }

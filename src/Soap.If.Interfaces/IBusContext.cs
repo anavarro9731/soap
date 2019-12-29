@@ -5,12 +5,8 @@
 
     public interface IBusContext
     {
-        Task Publish(IApiEvent publishEvent);
+        Task Publish(ApiEvent publishEvent);
 
-        Task Send(IApiCommand sendCommand);
-
-        Task SendLocal(IApiCommand sendCommand);
-
-        bool IsOneWay { get; set; }
+        Task Send(ApiCommand sendCommand);
     }
 }

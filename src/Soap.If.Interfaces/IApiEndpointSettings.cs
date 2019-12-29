@@ -4,10 +4,10 @@
     {
         string HttpEndpointUrl { get; }
 
-        string MsmqEndpointAddress { get; }
+        string QueueEndpointAddress { get; }
 
-        string MsmqEndpointHost { get; }
+        string QueueEndpointHost { get; }
 
-        string MsmqEndpointName { get; }
+        string QueueEndpointName { get; }
     }
 }
