@@ -1,56 +1,17 @@
-﻿namespace Soap.If.MessagePipeline.MessagePipeline
+namespace Soap.If.MessagePipeline.Messages
 {
-    using System;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models;
+    using CircuitBoard.Messages;
 
-    public abstract class SerilogEntry
+    public class SerilogEntry : ILogMessage
     {
-        public string ApplicationName { get; set; }
+        public string Text { get; set; }
 
-        public string EnvironmentName { get; set; }
-
-        public bool IsCommand { get; set; }
-
-        public bool IsEvent { get; set; }
-
-        public ApiMessage Message { get; set; }
-
-        public bool IsQuery { get; set; }
-
-        public Guid MessageId { get; set; }
-
-        public object ProfilingData { get; set; }
-
-        public DateTime? SapiCompletedAt { get; set; }
-
-        public DateTime? SapiReceivedAt { get; set; }
-
-        public string Schema { get; set; }
-
-        public bool Succeeded { get; internal set; }
-
-        public string UserName { get; set; }
-    }
-
-    public class SuccessfulLogEntry : SerilogEntry
-    {
-        public SuccessfulLogEntry()
+        public static SerilogEntry Create(string text)
         {
-            Succeeded = true;
+            return new SerilogEntry
+            {
+                Text = text
+            };
         }
-
-    }
-
-    public class FailedMessageLogItem : SerilogEntry
-    {
-        public FailedMessageLogItem(MessageExceptionInfo exceptionInfo)
-        {
-            Succeeded = false;
-            ExceptionMessages = exceptionInfo;
-        }
-
-        public MessageExceptionInfo ExceptionMessages { get; internal set; }
-
     }
 }

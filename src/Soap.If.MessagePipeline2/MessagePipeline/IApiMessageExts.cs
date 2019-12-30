@@ -7,12 +7,14 @@
     using System.Threading.Tasks;
     using System.Transactions;
     using CircuitBoard.Messages;
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.MessageAggregator;
     using Soap.If.MessagePipeline.Models;
     using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.If.MessagePipeline2.MessagePipeline;
     using Soap.If.Utility;
     using Soap.If.Utility.PureFunctions;
@@ -21,146 +23,116 @@
 
     public static class IApiMessageExts
     {
-        internal static async Task EnforceConstraints(this ApiMessage message, Action<MessageLogEntry> outLogItem)
+        internal static bool HasUnfinishedUnitOfWork(this ApiMessage message)
         {
-            { 
-                try
-                {
-                    outLogItem(await Validate() ?? await CreateNewLogEntry());
-                }
-                catch (Exception exception)
-                {
-                    var pipelineMessages = LogMessageFailureEarlyAndBail(exception);
+            return MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.Complete == false;
+        }
+        
+        internal static void Authenticate(this ApiMessage message, IAuthenticateUsers authenticator, Action<IIdentityWithPermissions> outIdentity)
+        {
+            IIdentityWithPermissions identity = message.IdentityToken != null ? authenticator.Authenticate(message) : null;
+            outIdentity(identity);
+        }
 
-                    throw pipelineMessages.ToEnvironmentSpecificError();
-
-                }
-            }
-
-            MessageExceptionInfo LogMessageFailureEarlyAndBail(Exception exception)
+        internal static async Task FindMessageLogEntry(this ApiMessage message, Action<MessageLogEntry> outResult)
+        {
+            try
             {
-                /* Formal MessageLog ignored here, as db problems are most likely cause of failure, 
-                 * and duplicates would append to the previous message instance
-                 * finally, it will be as if the message was never received from the MessageLog's point of view
-                */
-                var pipelineMessages = new MessageExceptionInfo(exception, message);
+                MContext.Logger.Debug($"Looking for msg id {message.MessageId}");
 
-                var serilogEntry = new FailedMessageLogItem(pipelineMessages)
-                {
-                    SapiReceivedAt = DateTime.UtcNow,
-                    SapiCompletedAt = null,
-                    UserName = null,
-                    MessageId = message.MessageId,
-                    Schema = message.GetType().FullName,
-                    Message = message,
-                    IsCommand = message is ApiCommand,
-                    IsQuery = message is IApiQuery,
-                    IsEvent = message is ApiEvent,
-                    ProfilingData = null,
-                    EnvironmentName = MMessageContext.AppConfig.EnvironmentName,
-                    ApplicationName = MMessageContext.AppConfig.ApplicationName
-                };
+                var result = await MContext.DataStore.ReadActiveById<MessageLogEntry>(message.MessageId);
 
-                MMessageContext.Logger.Error("Message: {@message}", serilogEntry);
-                return pipelineMessages;
+                MContext.Logger.Debug(
+                    result == null
+                        ? $"Failed to find record for msg id {message.MessageId}"
+                        : $"Found record with id {result.id} for msg with id {message.MessageId}");
+
+                outResult(result);
             }
-
-            async Task<MessageLogEntry> Validate()
+            catch (Exception e)
             {
-                {
-                    Guard.Against(message.MessageId == Guid.Empty, "All ApiMessages must have a unique MessageId property value");
-
-                    MessageLogEntry messageLogItem = null;
-
-                    await FindMessageLogItem(v => messageLogItem = v);
-
-                    if (HasAlreadyBeenReceived(messageLogItem))
-                    {
-                        Guard.Against(IsADifferentMessageButWithTheSameId(messageLogItem), GlobalErrorCodes.ItemIsADifferentMessageWithTheSameId);
-
-                        Guard.Against(HasAlreadyBeenProcessedSuccessfully(messageLogItem), GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
-
-                        Guard.Against(HasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogItem), GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
-
-                        return messageLogItem;
-                    }
-
-                    return null;
-                }
-
-                bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogItem)
-                {
-                    //safeguard, should never happen, would be a bug if it did
-                    return messageLogItem.SuccessfulAttempt != null;
-                }
-
-                bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogItem)
-                {
-                    //should never happen, unless message broker/bus it configured to retry message more times
-                    //than the pipeline is configured to allow
-                    return messageLogItem.FailedAttempts.Count > MMessageContext.AppConfig.NumberOfApiMessageRetries;
-                }
-
-                bool IsADifferentMessageButWithTheSameId(MessageLogEntry messageLogItem)
-                {
-                    var messageAsJson = JsonSerializer.Serialize(message);
-                    var hashMatches = Md5HashExt.Verify(messageAsJson, messageLogItem.MessageHash);
-                    return !hashMatches;
-                }
-
-                bool HasAlreadyBeenReceived(MessageLogEntry messageLogItemMatch)
-                {
-                    return messageLogItemMatch != null;
-                }
-
-                async Task FindMessageLogItem(Action<MessageLogEntry> outResult)
-                {
-                    try
-                    {
-                        MMessageContext.Logger.Debug($"Looking for msg id {message.MessageId}");
-
-                        var result = await MMessageContext.DataStore.ReadActiveById<MessageLogEntry>(message.MessageId);
-
-                        MMessageContext.Logger.Debug(
-                            result == null
-                                ? $"Failed to find record for msg id {message.MessageId}"
-                                : $"Found record with id {result.id} for msg with id {message.MessageId}");
-
-                        outResult(result);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new Exception($"Could not read message {message.MessageId} from store", e);
-                    }
-                }
-            }
-
-            async Task<MessageLogEntry> CreateNewLogEntry()
-            {
-                try
-                {
-                    MMessageContext.Logger.Debug($"Creating record for msg id {message.MessageId}");
-
-                    var newItem = await MMessageContext.DataStore.Create(new MessageLogEntry(message));
-
-                    await MMessageContext.DataStore.CommitChanges();
-
-                    MMessageContext.Logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
-
-                    return newItem.Clone();
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Could not write message {message.MessageId} to store", e);
-                }
+                throw new Exception($"Could not read message {message.MessageId} from store", e);
             }
         }
 
-        internal static async Task MarkSuccess(this ApiMessage message)
+        internal static void UpdateContextAfterLogEntryObtained(this ApiMessage message, MessageLogEntry logEntry, 
+            (DateTime receivedAt, long ticks) timeStamp, IIdentityWithPermissions identity)
         {
-            var meta = MMessageContext.AfterMessageAccepted.MessageMeta;
+            MContext.AfterMessageLogEntryObtained.Set(
+                new MessageMeta
+                {
+                    StartTicks = timeStamp.ticks,
+                    ReceivedAt = timeStamp.receivedAt,
+                    Schema = message.GetType().AssemblyQualifiedName,
+                    RequestedBy = identity
+                },
+                null, logEntry);
+        }
 
-            var serilogEntry = new SuccessfulLogEntry()
+        internal static void ValidateOrThrow(this ApiMessage message)
+        {
+            {
+                MessageLogEntry messageLogEntry = MContext.AfterMessageLogEntryObtained.MessageLogEntry;
+
+                Guard.Against(message.MessageId == Guid.Empty, "All ApiMessages must have a unique MessageId property value");
+
+                Guard.Against(IsADifferentMessageButWithTheSameId(messageLogEntry), GlobalErrorCodes.ItemIsADifferentMessageWithTheSameId);
+
+                Guard.Against(HasAlreadyBeenProcessedSuccessfully(messageLogEntry), GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
+
+                Guard.Against(HasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogEntry), GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
+
+                message.Validate();
+
+            }
+
+            bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry)
+            {
+                //- safeguard, cannot think of a reason it would happen 
+                return messageLogEntry.UnitOfWork != null && messageLogEntry.UnitOfWork.Complete;
+            }
+
+            bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogEntry)
+            {
+                //should never happen, unless message broker/bus it configured to retry message more times
+                //than the pipeline is configured to allow
+                return messageLogEntry.Attempts.Count > MContext.AppConfig.NumberOfApiMessageRetries;
+            }
+
+            bool IsADifferentMessageButWithTheSameId(MessageLogEntry messageLogEntry)
+            {
+                var messageAsJson = JsonSerializer.Serialize(message);
+                var hashMatches = Md5HashExt.Verify(messageAsJson, messageLogEntry.MessageHash);
+                return !hashMatches;
+            }
+
+        }
+
+        internal static async Task CreateNewLogEntry(this ApiMessage message, Action<MessageLogEntry> outLogEntry)
+        {
+            try
+            {
+                MContext.Logger.Debug($"Creating record for msg id {message.MessageId}");
+
+                var newItem = await MContext.DataStore.Create(new MessageLogEntry(message));
+
+                await MContext.DataStore.CommitChanges();
+
+                MContext.Logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
+
+                outLogEntry(newItem.Clone());
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Could not write message {message.MessageId} to store", e);
+            }
+        }
+
+        internal static void SerilogSuccess(this ApiMessage message)
+        {
+            var meta = MContext.AfterMessageLogEntryObtained.MessageMeta;
+
+            var serilogEntry = new SuccessfulAttempt()
             {
                 Succeeded = true,
                 SapiReceivedAt = meta.ReceivedAt,
@@ -173,14 +145,34 @@
                 IsQuery = message is IApiQuery,
                 IsEvent = message is ApiEvent,
                 ProfilingData = CreateProfilingData(meta),
-                EnvironmentName = MMessageContext.AppConfig.EnvironmentName,
-                ApplicationName = MMessageContext.AppConfig.ApplicationName
+                EnvironmentName = MContext.AppConfig.EnvironmentName,
+                ApplicationName = MContext.AppConfig.ApplicationName
             };
 
-            await MMessageContext.DataStore.UpdateById<MessageLogEntry>(message.MessageId, logEntry =>
-                logEntry.AddSuccessfulMessageResult());
+            MContext.Logger.Information("Message: {@message}", serilogEntry);
+        }
 
-            MMessageContext.Logger.Information("Message: {@message}", serilogEntry);
+        internal static void SerilogFailure(this ApiMessage message, FormattedExceptionInfo exceptionInfo)
+        {
+            var meta = MContext.AfterMessageLogEntryObtained.MessageMeta;
+
+            var serilogEntry = new FailedAttempt(exceptionInfo)
+            {
+                SapiReceivedAt = meta?.ReceivedAt,
+                SapiCompletedAt = DateTime.UtcNow,
+                UserName = meta?.RequestedBy?.UserName,
+                MessageId = message.MessageId,
+                Schema = message.GetType().FullName,
+                Message = message,
+                IsCommand = message is ApiCommand,
+                IsQuery = message is IApiQuery,
+                IsEvent = message is ApiEvent,
+                ProfilingData = meta != null ? CreateProfilingData(meta) : null,
+                EnvironmentName = MContext.AppConfig.EnvironmentName,
+                ApplicationName = MContext.AppConfig.ApplicationName
+            };
+
+            MContext.Logger.Error("Message: {@message}", serilogEntry);
         }
 
         private static object CreateProfilingData(MessageMeta meta)
@@ -194,7 +186,7 @@
 
                 var stateOperations = new List<object>();
 
-                foreach (var stateOperation in MMessageContext.MessageAggregator.AllMessages.OfType<IStateOperation>())
+                foreach (var stateOperation in MContext.MessageAggregator.AllMessages.OfType<IStateOperation>())
                 {
                     if (HasValidTimestamps(stateOperation, previousTimestamp) == false)
                     {
@@ -292,81 +284,61 @@
             }
         }
 
-        internal static async Task MarkFailure(
+        internal static async Task MarkFailureInMessageLog(
             this ApiMessage message,
-            MessageExceptionInfo pipelineExceptionMessages,
-            MessageLogEntry messageLogItem)
+            FormattedExceptionInfo exceptionInfo)
         {
+            /* It is possible we could fail while handling a failed message but before we hit this block
+                * in that instance we will fail to record the error and the message's error count will remain the same.
+                * The message will be retried again as if it was the first failure. You will need queue-level retry limits
+                * to prevent messages being retried indefinitely until the underlying problem is fixed.
+                * 
+                * It is also possible we could fail after writing this block however that would only result in a different
+                * final exception being thrown to the endpoint. This new exception will be logged by Serilog and will not
+                * change the behaviour of the system as the endpoint runtime doesn't care what the error thrown to it is
+                * only that an error is thrown.
+                *
+                * In both cases a machine losing power should also not change the ultimate behaviour of the system.
+                *
+                * If the error happens before the unit-of-work is persisted then the message will be retried and the unit-of-work
+                * will be recalculated. If the error occurs after the unit-of-work has been persisted, then the message will be
+                * retried and on the retry we try to republish the uow from an aggregate. In the event that all retries fail
+                * we could be left with a partially unpublished unit-of-work and a poison message. Logic needs to be in place
+                * at the beginning of the execution stack to attempt to unwind the unit of work if possible in this case.
+               */
+
+            try
             {
-                var meta = MMessageContext.AfterMessageAccepted.MessageMeta;
-                var serilogEntry = new FailedMessageLogItem(pipelineExceptionMessages)
-                {
-                    SapiReceivedAt = meta.ReceivedAt,
-                    SapiCompletedAt = DateTime.UtcNow,
-                    UserName = meta.RequestedBy?.UserName,
-                    MessageId = message.MessageId,
-                    Schema = message.GetType().FullName,
-                    Message = message,
-                    IsCommand = message is ApiCommand,
-                    IsQuery = message is IApiQuery,
-                    IsEvent = message is ApiEvent,
-                    ProfilingData = CreateProfilingData(meta),
-                    EnvironmentName = MMessageContext.AppConfig.EnvironmentName,
-                    ApplicationName = MMessageContext.AppConfig.ApplicationName
-                };
+                /* abandon current unit of work, maybe it's persisted maybe not, maybe partially complete, or even fully complete
+                in all cases all we care about now is recording the failure, no other I/O bounds ops will occur */
+                //- TODO MMessageContext.MessageAggregator.Clear();
 
-                MMessageContext.Logger.Error("Message: {@message}", serilogEntry);
-
-                if (message.CanChangeState)
+                if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage())
                 {
-                    await LogStateChangingMessage();
+                    /* send a message to the bus which tells us this has occured
+                     allowing us to handle these cases with compensating logic */
+                    SendFinalFailureMessage();
                 }
+
+                await AddThisFailureToTheMessageLog();
+
+                await QueuedStateChanges.CommitChanges();
             }
 
-            async Task LogStateChangingMessage()
+
+            catch (Exception e)
             {
-                try
-                {
-                    /* It is possible we could fail while handling a failed message but before we hit this block
-                     * in that instance we will fail to record the error and the message's error count will remain the same.
-                     * The message will be retried again as if it was the first failure. You will need queue-level retry limits
-                     * to prevent messages being retried indefinitely until the underlying problem is fixed.
-                     * 
-                     * It is also possible we could fail after writing this block however that would only result in a different
-                     * final exception being thrown to the endpoint. This new exception will be logged by Serilog and will not
-                     * change the behaviour of the system as the endpoint runtime doesn't care what the error thrown to it is
-                     * only that an error is thrown.
-                     *
-                     * In both cases a machine losing power should also not change the ultimate behaviour of the system.
-                     *
-                     * If the error happens before the unit-of-work is persisted then the message will be retried and the unit-of-work
-                     * will be recalculated. If the error occurs after the unit-of-work has been persisted, then the message will be
-                     * retried and on the retry we try to republish the uow from an aggregate. In the event that all retries fail
-                     * we could be left with a partially unpublished unit-of-work and a poison message. Logic needs to be in place
-                     * at the beginning of the execution stack to attempt to unwind the unit of work if possible in this case.
-                    */
-
-                    if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage())
-                    {
-                        /* send a message to the bus which tells us this has occured
-                         allowing us to handle these cases with compensating logic */
-                        SendFinalFailureMessage();
-                    }
-
-                    await AddThisFailureToTheMessageLog();
-
-                    await MMessageContext.DataStore.CommitChanges();
-                }
-                catch (Exception e)
-                {
-                    throw new Exception($"Error logging failed message {message.MessageId} result to DataStore", e);
-                }
+                throw new Exception($"Error logging failed message {message.MessageId} result to DataStore", e);
             }
+
 
             async Task AddThisFailureToTheMessageLog()
             {
-                await MMessageContext.DataStore.UpdateById<MessageLogEntry>(messageLogItem.id, logEntry =>
-                    logEntry.AddFailedMessageResult(pipelineExceptionMessages));
+                //- in-place update, unlikely to be used, but why not
+                var logEntry = MContext.AfterMessageLogEntryObtained.MessageLogEntry;
+                logEntry.AddFailedAttempt(exceptionInfo);
+
+                await MContext.DataStore.Update(logEntry);
             }
 
             bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage()
@@ -377,7 +349,8 @@
 
             bool ThisFailureIsTheFinalFailure()
             {
-                return messageLogItem.FailedAttempts.Count == MMessageContext.AppConfig.NumberOfApiMessageRetries;
+                //- remember that total attempts is initial message + retries
+                return MContext.AfterMessageLogEntryObtained.MessageLogEntry.Attempts.Count == MContext.AppConfig.NumberOfApiMessageRetries;
             }
 
             void SendFinalFailureMessage()
@@ -395,7 +368,7 @@
                     instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
                 }
 
-                MMessageContext.Bus.SendCommand(instanceOfMesageFailedAllRetries);
+                MContext.Bus.Send(instanceOfMesageFailedAllRetries);
             }
         }
     }

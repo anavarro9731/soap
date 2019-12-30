@@ -26,8 +26,8 @@
                 new JsonFormatter().Format(logEvent, output);
 
                 this.messageAggregator.Collect(
-                    LogMessageWithMeta.Create(
-                        new LogMessage
+                    SerilogEntryWithMeta.Create(
+                        new SerilogEntry
                         {
                             Text = output.ToString()
                         }));

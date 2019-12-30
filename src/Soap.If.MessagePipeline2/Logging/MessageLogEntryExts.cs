@@ -5,25 +5,26 @@
     using System.Text.Json;
     using DataStore.Interfaces.LowLevel;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.If.MessagePipeline2.MessagePipeline;
     using Soap.If.Utility;
     using Soap.If.Utility.Models;
+    using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
     public static class MessageLogEntryExts
     {
-        public static MessageLogEntry AddFailedMessageResult(this MessageLogEntry messageLogItem, MessageExceptionInfo errors)
+        public static void AddFailedAttempt(this MessageLogEntry messageLogItem, FormattedExceptionInfo errors)
         {
-            messageLogItem.FailedAttempts.Insert(0, new MessageLogEntry.FailedMessageResult(errors));
-
-            return messageLogItem;
+            messageLogItem.Attempts.Insert(0, new MessageLogEntry.Attempt(errors));
         }
 
-        public static MessageLogEntry AddSuccessfulMessageResult(this MessageLogEntry messageLogItem)
+        public static void AddUnitOfWork(this MessageLogEntry messageLogEntry, UnitOfWork unitOfWork)
         {
-            messageLogItem.SuccessfulAttempt = new MessageLogEntry.SuccessMessageResult();
+            //- defensive programming, shouldn't happen want to catch it if I missed something
+            Guard.Against(messageLogEntry.UnitOfWork != null, "Cannot add another unit of work");
 
-            return messageLogItem;
+            messageLogEntry.UnitOfWork = unitOfWork;
         }
     }
 
@@ -32,7 +33,7 @@
         public MessageLogEntry(ApiMessage message)
         {
             id = message.MessageId;
-            MaxFailedMessages = MMessageContext.AppConfig.NumberOfApiMessageRetries + 1;
+            MaxRetriesAllowed = MContext.AppConfig.NumberOfApiMessageRetries + 1;
             SerialisedMessage = message.ToSerialisableObject();
             MessageHash = JsonSerializer.Serialize(message).ToMd5Hash();
         }
@@ -42,45 +43,32 @@
             //- satisfy datastore new() constraint  
         }
 
-        public List<FailedMessageResult> FailedAttempts { get; set; } = new List<FailedMessageResult>();
+        public List<Attempt> Attempts { get; internal set; } = new List<Attempt>();
 
-        public int MaxFailedMessages { get; set; }
+        public int MaxRetriesAllowed { get; internal set; }
 
-        public string MessageHash { get; set; }
+        public string MessageHash { get; internal set; }
 
-        public SerialisableObject SerialisedMessage { get; set; }
+        public bool ProcessingComplete { get; internal set; }
 
-        public SuccessMessageResult SuccessfulAttempt { get; set; }
+        public SerialisableObject SerialisedMessage { get; internal set; }
 
-        public class FailedMessageResult
+        public UnitOfWork UnitOfWork { get; internal set; }
+
+        public class Attempt
         {
-            public FailedMessageResult(MessageExceptionInfo errors)
+            public Attempt(FormattedExceptionInfo errors = null)
             {
                 Errors = errors;
-                FailedAt = DateTime.UtcNow;
             }
 
-            internal FailedMessageResult()
+            internal Attempt()
             {
             }
 
-            public MessageExceptionInfo Errors { get; set; }
+            public DateTime CompletedAt { get; internal set; } = DateTime.UtcNow;
 
-            public DateTime FailedAt { get; set; }
-        }
-
-        public class SuccessMessageResult : Entity
-        {
-            public SuccessMessageResult(object returnValue = null)
-            {
-                SucceededAt = DateTime.UtcNow;
-            }
-
-            internal SuccessMessageResult()
-            {
-            }
-
-            public DateTime SucceededAt { get; set; }
+            public FormattedExceptionInfo Errors { get; internal set; }
         }
     }
 }

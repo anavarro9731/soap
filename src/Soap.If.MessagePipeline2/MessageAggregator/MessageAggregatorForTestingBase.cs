@@ -17,13 +17,13 @@ namespace Soap.If.MessagePipeline.MessageAggregator
 
         public IReadOnlyList<IMessage> AllMessages => this.allMessages;
 
-        public IReadOnlyList<IApiCommand> CommandsSent => new ReadOnlyCapableList<IApiCommand>().Op(
+        public IReadOnlyList<ApiCommand> CommandsSent => new ReadOnlyCapableList<ApiCommand>().Op(
             l => l.AddRange(AllMessages.OfType<QueuedApiCommand>().Select(co => co.Command).ToList()));
 
         public IReadOnlyList<IDataStoreOperation> DataStoreOperations => new ReadOnlyCapableList<IDataStoreOperation>().Op(
             l => l.AddRange(AllMessages.OfType<IDataStoreOperation>().ToList()));
 
-        public IReadOnlyList<IApiEvent> EventsPublished => new ReadOnlyCapableList<IApiEvent>().Op(
+        public IReadOnlyList<ApiEvent> EventsPublished => new ReadOnlyCapableList<ApiEvent>().Op(
             l => l.AddRange(AllMessages.OfType<QueuedApiEvent>().Select(peo => peo.Event).ToList()));
 
         public IReadOnlyList<ILogMessage> LogEntries => new ReadOnlyCapableList<ILogMessage>().Op(l => l.AddRange(AllMessages.OfType<ILogMessage>().ToList()));

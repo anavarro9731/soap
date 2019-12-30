@@ -9,8 +9,8 @@
     /// </summary>
     public interface IProcess<TProcess>
     {
-        Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
 
-        Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
     }
 }

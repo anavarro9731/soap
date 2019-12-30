@@ -15,8 +15,6 @@
 
     public abstract class ApiMessage
     {
-        public bool CanChangeState => !(this is IApiQuery);
-
         public string IdentityToken { get; set; }
 
         public bool IsFailedAllRetriesMessage => this is MessageFailedAllRetries;

@@ -6,8 +6,6 @@
 
     public class MessageMeta
     {
-        public MessageLogEntry MessageLogItem { get; set; }
-
         public DateTime ReceivedAt { get; set; }
 
         public long StartTicks { get; set; }

@@ -1,8 +1,11 @@
 ﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     using System;
+    using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using CircuitBoard.Permissions;
+    using DataStore.Interfaces.LowLevel;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
@@ -21,9 +24,7 @@
     {
         private readonly IAuthenticateUsers authenticator;
 
-        private readonly object handlerClass;
-
-        public MessagePipeline(IAuthenticateUsers authenticator, object handlerClass)
+        public MessagePipeline(IAuthenticateUsers authenticator)
         {
             this.authenticator = authenticator;
             this.handlerClass = handlerClass;
@@ -31,29 +32,64 @@
 
         public async Task Execute(string messageJson, string assemblyQualifiedName)
         {
-            { 
+            {
                 var receivedAtTick = StopwatchOps.GetStopwatchTimestamp();
                 var receivedAt = DateTime.UtcNow;
-                MessageLogEntry messageLogItem = null;
+                MessageLogEntry messageLogEntry = null;
+                ApiMessage message;
 
-                ApiMessage message = JsonSerializer.Deserialize(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
-
-                if (message.CanChangeState)
+                try
                 {
-                    /* if this constraints fail
-                     errors are logged to Serilog 
-                     but the message is not logged to MessageResults */
-                    await message.EnforceConstraints(v => messageLogItem = v);
-
-                    //TODO: check to see if message has unit of work waiting and do that instead
+                    message = JsonSerializer.Deserialize(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
+                }
+                catch (Exception e)
+                {
+                    MContext.Logger.Fatal("Cannot deserialise message: type {@type}, error {@error}, json {@json}", assemblyQualifiedName, e.Message, messageJson);
+                    return;
                 }
 
                 try //- execute the message
                 {
-                    message.Validate();
+                    IIdentityWithPermissions identity = null;
 
-                    SetMessageMetaInContext(messageLogItem, message, (receivedAt, receivedAtTick));
+                    await message.FindMessageLogEntry(v => messageLogEntry = v);
 
+                    var messageHasNotBeenSeenBefore = messageLogEntry == null;
+
+                    if (messageHasNotBeenSeenBefore)
+                    {
+                        await message.CreateNewLogEntry(v => messageLogEntry = v);
+                    }
+
+                    message.Authenticate(this.authenticator, v => identity = v);
+
+                    message.UpdateContextAfterLogEntryObtained(messageLogEntry, (receivedAt, receivedAtTick), identity);
+
+                    message.ValidateOrThrow();
+
+                    if (message.HasUnfinishedUnitOfWork())
+                    {
+                        
+                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                                .UnitOfWork.BusCommandMessages.Select(c => c.FromSerialisableObject<ApiCommand>())
+                                .ToList().ForEach(x => MContext.Bus.Send(x));
+
+                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                                .UnitOfWork.BusEventMessages.Select(e => e.FromSerialisableObject<ApiEvent>())
+                                .ToList().ForEach(x => MContext.Bus.Publish(x));
+
+                        //TODO- finish uow
+                        //MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                        //        .UnitOfWork.DataStoreCreateOperations.Select(c => c.FromSerialisableObject<Aggregate>())
+                        //        .ToList().ForEach(x => MContext.DataStore.Update(x));
+
+
+
+
+                        message.SerilogSuccess();
+                        return;
+                    }
+                    
                     if (message.IsFailedAllRetriesMessage)
                     {
                         message.HandleFinalFailure();
@@ -64,7 +100,7 @@
                         {
                             case IApiQuery q:
                                 var responseEvent = await q.Handle();
-                                //TODO queue response event
+                                MContext.Bus.Publish(responseEvent);
                                 break;
                             case ApiCommand c:
                                 await c.Handle();
@@ -75,16 +111,12 @@
                         }
                     }
 
+                    await QueuedStateChanges.SaveUnitOfWork();
+
                     await QueuedStateChanges.CommitChanges();
 
-                    Guard.Against(
-                        message.MessageId == Constants.ForceFailBeforeMessageCompletesId
-                        || message.MessageId == Constants.ForceFailBeforeMessageCompletesAndFailErrorHandlerId,
-                        "Forced Fail In Message Handler",
-                        ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+                    message.SerilogSuccess();
 
-                    //TODO: move successlogentry into write queue?
-                    await message.MarkSuccess();
                 }
                 catch (Exception exception)
                 {
@@ -92,16 +124,13 @@
 
                     try //- log the message failure
                     {
-                        var exceptionMessages = new MessageExceptionInfo(exception, message);
-
-                        await message.MarkFailure(exceptionMessages, messageLogItem);
-
-                        Guard.Against(
-                            message.MessageId == Constants.ForceFailBeforeMessageCompletesAndFailErrorHandlerId,
-                            "Forced Fail In Exception Handler",
-                            ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+                        var exceptionMessages = new FormattedExceptionInfo(exception);
 
                         finalException = exceptionMessages.ToEnvironmentSpecificError();
+
+                        await message.MarkFailureInMessageLog(exceptionMessages);
+
+                        message.SerilogFailure(exceptionMessages);
                     }
                     catch (Exception exceptionHandlingException)
                     {
@@ -110,11 +139,11 @@
                             var orignalExceptionPlusHandlingException =
                                 new ExceptionHandlingException(new AggregateException(exceptionHandlingException, exception));
 
-                            var exceptionMessages = new MessageExceptionInfo(orignalExceptionPlusHandlingException, message);
-
-                            MMessageContext.Logger.Error("Error Handling Failed Message {@details}", exceptionMessages);
+                            var exceptionMessages = new FormattedExceptionInfo(orignalExceptionPlusHandlingException);
 
                             finalException = exceptionMessages.ToEnvironmentSpecificError();
+                            
+                            MContext.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
                         }
                         catch (Exception lastChanceException) //- log a minimal error message of last resort
                         {
@@ -123,12 +152,13 @@
                             * Serilog should swallow it's own internal errors so logging should be safe here
                             */
 
-                            MMessageContext.Logger.Error(
-                                $"Failed logging message {message.MessageId} with exception: {exception}",
-                                lastChanceException);
+                            MContext.Logger.Fatal(
+                                "Could not log error to db message log or seq using standard code, ignoring previous error and logging only the raw exception"
+                                +  "{@messageId} {@originalException} {@secondException} {@finalException}",
+                                exception, exceptionHandlingException, lastChanceException);
 
                             var lastChanceExceptionMessageForCaller =
-                                $"{MessageExceptionInfo.CodePrefixes.EXWHEX}: {MMessageContext.AppConfig.DefaultExceptionMessage}";
+                                $"{FormattedExceptionInfo.CodePrefixes.EXWHEX}: {MContext.AppConfig.DefaultExceptionMessage}";
 
                             finalException = new Exception(lastChanceExceptionMessageForCaller);
                         }
@@ -138,19 +168,7 @@
                 }
             }
 
-            void SetMessageMetaInContext(MessageLogEntry messageLogItem, ApiMessage message, (DateTime receivedAt, long ticks) timeStamp)
-            {
-                MMessageContext.AfterMessageAccepted.Set(
-                    new MessageMeta
-                    {
-                        StartTicks = timeStamp.ticks,
-                        ReceivedAt = timeStamp.receivedAt,
-                        Schema = message.GetType().AssemblyQualifiedName,
-                        RequestedBy = message.IdentityToken != null ? this.authenticator.Authenticate(message) : null,
-                        MessageLogItem = messageLogItem
-                    },
-                    null);
-            }
+
         }
 
         public static class Constants

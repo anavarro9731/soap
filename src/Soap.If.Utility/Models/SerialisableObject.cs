@@ -6,7 +6,7 @@
     using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
-    public class SerialisableObject 
+    public class SerialisableObject
     {
         public SerialisableObject(object x)
         {
@@ -18,7 +18,7 @@
 
         public string TypeName { get; internal set; }
 
-        public T Deserialise<T>() where  T: class
+        public T Deserialise<T>() where T : class
         {
             T obj = JsonSerializer.Deserialize(ObjectData, Type.GetType(TypeName)).As<T>();
             return obj;

@@ -4,6 +4,6 @@
 
     public class QueuedApiEvent : QueuedStateChange
     {
-        public IApiEvent Event { get; set; }
+        public ApiEvent Event { get; set; }
     }
 }

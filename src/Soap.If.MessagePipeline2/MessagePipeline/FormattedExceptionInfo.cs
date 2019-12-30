@@ -9,9 +9,9 @@
     using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
-    public class MessageExceptionInfo
+    public class FormattedExceptionInfo
     {
-        public MessageExceptionInfo(Exception exception, ApiMessage message)
+        public FormattedExceptionInfo(Exception exception)
         {
             if (exception is ValidationException validationException)
             {
@@ -28,7 +28,7 @@
             else if (exception is DomainException)
             {
                 var externalErrorMessage = exception.Message == "#default-message#"
-                                               ? MMessageContext.AppConfig.DefaultExceptionMessage
+                                               ? MContext.AppConfig.DefaultExceptionMessage
                                                : exception.Message;
 
                 Errors.Add((CodePrefixes.DOMAIN, null, externalErrorMessage));
@@ -37,7 +37,7 @@
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
-                var mapErrorCodesFromDomainToMessageErrorCodes = MMessageContext.AfterMessageAccepted.DomainToMessageErrorCodesMapper;
+                var mapErrorCodesFromDomainToMessageErrorCodes = MContext.AfterMessageLogEntryObtained.DomainToMessageErrorCodesMapper;
                 var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error + Environment.NewLine
                                                              + domainExceptionWithErrorCode.ToString().SubstringBefore("--- ");
 
@@ -49,7 +49,7 @@
                 }
                 else if (mapErrorCodesFromDomainToMessageErrorCodes == null)
                 {
-                    Errors.Add((CodePrefixes.DOMAIN, null, MMessageContext.AppConfig.DefaultExceptionMessage));
+                    Errors.Add((CodePrefixes.DOMAIN, null, MContext.AppConfig.DefaultExceptionMessage));
                     SensitiveInformation = $"No mapper defined in handler for: {errorMessageAppendixWhenNoMapperExists}";
                 }
                 else
@@ -64,7 +64,7 @@
                     }
                     else
                     {
-                        Errors.Add((CodePrefixes.DOMAIN, null, MMessageContext.AppConfig.DefaultExceptionMessage));
+                        Errors.Add((CodePrefixes.DOMAIN, null, MContext.AppConfig.DefaultExceptionMessage));
                         SensitiveInformation =
                             $"Mapping {{domain error, msg error}} missing from mapper in handler for: {errorMessageAppendixWhenNoMapperExists}";
                     }
@@ -72,24 +72,19 @@
             }
             else if (exception is ExceptionHandlingException)
             {
-                Errors.Add((CodePrefixes.EXWHEX, null, MMessageContext.AppConfig.DefaultExceptionMessage));
+                Errors.Add((CodePrefixes.EXWHEX, null, MContext.AppConfig.DefaultExceptionMessage));
                 SensitiveInformation = exception.ToString();
             }
             else
             {
-                Errors.Add((CodePrefixes.CLR, null, MMessageContext.AppConfig.DefaultExceptionMessage));
+                Errors.Add((CodePrefixes.CLR, null, MContext.AppConfig.DefaultExceptionMessage));
                 SensitiveInformation = exception.ToString();
             }
 
             ExternalErrorMessage = Errors.Select(x => $"{x.prefix}:{x.code}:{x.message}").Aggregate((a, b) => a + Environment.NewLine + b);
 
-            /* these two lines will sometimes, but not always be on an outer message
-             depending on where in the pipeline it occurs, no harm to copy here */
-            MessageId = message.MessageId;
-            MessageSchema = message.GetType().FullName;
-
-            ApplicationName = MMessageContext.AppConfig.ApplicationName;
-            EnvironmentName = MMessageContext.AppConfig.EnvironmentName;
+            ApplicationName = MContext.AppConfig.ApplicationName;
+            EnvironmentName = MContext.AppConfig.EnvironmentName;
         }
 
         public string ApplicationName { get; set; }
@@ -108,7 +103,7 @@
 
         public Exception ToEnvironmentSpecificError()
         {
-            if (MMessageContext.AppConfig.ReturnExplicitErrorMessages)
+            if (MContext.AppConfig.ReturnExplicitErrorMessages)
             {
                 return new PipelineException(
                     ExternalErrorMessage + Environment.NewLine + "ERROR DETAILS" + Environment.NewLine + SensitiveInformation,

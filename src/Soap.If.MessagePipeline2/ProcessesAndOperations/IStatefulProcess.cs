@@ -9,12 +9,12 @@
     /// </summary>
     public interface IStatefulProcess<TProcess>
     {
-        Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
 
-        Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
 
-        Task ContinueProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task ContinueProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
 
-        Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : IApiCommand;
+        Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand;
     }
 }

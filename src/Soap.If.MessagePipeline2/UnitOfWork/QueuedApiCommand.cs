@@ -4,7 +4,7 @@
 
     public class QueuedApiCommand : QueuedStateChange
     {
-        public IApiCommand Command { get; set; } 
+        public ApiCommand Command { get; set; } 
         //.. here for reference in debugging as all detail is in the closure of the base class
     }
 }

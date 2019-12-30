@@ -9,18 +9,18 @@
 
     public class Operations<T> : Operations where T : class, IAggregate, new()
     {
-        protected IDataStoreWriteOnlyScoped<T> DataWriter => MMessageContext.DataStore.AsWriteOnlyScoped<T>();
+        protected IDataStoreWriteOnlyScoped<T> DataWriter => MContext.DataStore.AsWriteOnlyScoped<T>();
     }
 
     public abstract class Operations
     {
-        protected IDataStoreQueryCapabilities DataReader => MMessageContext.DataStore.AsReadOnly();
+        protected IDataStoreQueryCapabilities DataReader => MContext.DataStore.AsReadOnly();
 
-        protected IWithoutEventReplay DirectDataReader => MMessageContext.DataStore.WithoutEventReplay;
+        protected IWithoutEventReplay DirectDataReader => MContext.DataStore.WithoutEventReplay;
 
-        protected ILogger Logger => MMessageContext.Logger;
+        protected ILogger Logger => MContext.Logger;
 
-        protected IMessageAggregator MessageAggregator => MMessageContext.MessageAggregator;
+        protected IMessageAggregator MessageAggregator => MContext.MessageAggregator;
 
     }
 }

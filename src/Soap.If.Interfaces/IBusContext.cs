@@ -5,8 +5,8 @@
 
     public interface IBusContext
     {
-        Task Publish(ApiEvent publishEvent);
+        void Publish(ApiEvent publishEvent);
 
-        Task Send(ApiCommand sendCommand);
+        void Send(ApiCommand sendCommand);
     }
 }

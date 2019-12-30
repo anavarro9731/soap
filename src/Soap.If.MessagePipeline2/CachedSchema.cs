@@ -19,10 +19,9 @@
 
         public string Schema { get; }
 
-        public static CachedSchema Create<TApiMessageType>(IApplicationConfig applicationConfig, IList<IMessageHandler> handlers) where TApiMessageType : IApiMessage
+        public static CachedSchema Create(IApplicationConfig applicationConfig, IList<ApiMessage> messages) 
         {
-            var handlerTypes = handlers.Where(h => h.GetType().BaseType.GenericTypeArguments.First().InheritsOrImplements(typeof(TApiMessageType)))
-                                       .Select(h => h.GetType())
+            var handlerTypes = messages.Select(h => h.GetType())
                                        .OrderBy(t => t.Name);
 
             return new CachedSchema(GetSchemaOutput(applicationConfig, handlerTypes));

@@ -14,6 +14,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
     using Soap.If.MessagePipeline2.MessagePipeline;
     using Soap.If.Utility;
     using Soap.If.Utility.PureFunctions;
+    using Soap.Pf.BusContext;
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>
     {
@@ -25,13 +26,13 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
     {
         private ProcessState processState;
 
-        protected IDataStoreQueryCapabilities DataReader => MMessageContext.DataStore.AsReadOnly();
+        protected IDataStoreQueryCapabilities DataReader => MContext.DataStore.AsReadOnly();
 
-        protected IWithoutEventReplay DirectDataReader => MMessageContext.DataStore.WithoutEventReplay;
+        protected IWithoutEventReplay DirectDataReader => MContext.DataStore.WithoutEventReplay;
 
-        protected ILogger Logger => MMessageContext.Logger;
+        protected ILogger Logger => MContext.Logger;
 
-        protected IMessageAggregator MessageAggregator => MMessageContext.MessageAggregator;
+        protected IMessageAggregator MessageAggregator => MContext.MessageAggregator;
 
         protected Guid ProcessId => this.processState.id;
 
@@ -39,13 +40,13 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
         protected MessageBus MessageBus { get; private set; }
 
-        public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             var process = this as IBeginProcess<TMessage>;
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            this.processState = await MMessageContext.DataStore.Create(new ProcessState()).ConfigureAwait(false);
+            this.processState = await MContext.DataStore.Create(new ProcessState()).ConfigureAwait(false);
 
             message.StatefulProcessId = ProcessId;
 
@@ -53,16 +54,16 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
             await process.BeginProcess(message, meta).ConfigureAwait(false);
 
-            await MMessageContext.DataStore.Update(this.processState).ConfigureAwait(false);
+            await MContext.DataStore.Update(this.processState).ConfigureAwait(false);
         }
 
-        public async Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        public async Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             var process = this as IBeginProcess<TMessage, TReturnType>;
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            this.processState = await MMessageContext.DataStore.Create(new ProcessState()).ConfigureAwait(false);
+            this.processState = await MContext.DataStore.Create(new ProcessState()).ConfigureAwait(false);
 
             message.StatefulProcessId = ProcessId;
 
@@ -70,12 +71,12 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
             var result = await process.BeginProcess(message, meta);
 
-            await MMessageContext.DataStore.Update(this.processState).ConfigureAwait(false);
+            await MContext.DataStore.Update(this.processState).ConfigureAwait(false);
 
             return result;
         }
 
-        public async Task ContinueProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        public async Task ContinueProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             var process = this as IContinueProcess<TMessage>;
 
@@ -83,16 +84,16 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
             Guard.Against(!message.StatefulProcessId.HasValue, "Message does not have correlation Id");
 
-            this.processState = await MMessageContext.DataStore.ReadActiveById<ProcessState>(message.StatefulProcessId.Value).ConfigureAwait(false);
+            this.processState = await MContext.DataStore.ReadActiveById<ProcessState>(message.StatefulProcessId.Value).ConfigureAwait(false);
 
             RecordContinued(message, meta);
 
             await process.ContinueProcess(message, meta);
 
-            await MMessageContext.DataStore.Update(this.processState).ConfigureAwait(false);
+            await MContext.DataStore.Update(this.processState).ConfigureAwait(false);
         }
 
-        public async Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        public async Task<TReturnType> ContinueProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             var process = this as IContinueProcess<TMessage, TReturnType>;
 
@@ -100,13 +101,13 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
             Guard.Against(!message.StatefulProcessId.HasValue, "Message does not have correlation Id");
 
-            this.processState = await MMessageContext.DataStore.ReadActiveById<ProcessState>(message.StatefulProcessId.Value).ConfigureAwait(false);
+            this.processState = await MContext.DataStore.ReadActiveById<ProcessState>(message.StatefulProcessId.Value).ConfigureAwait(false);
 
             RecordContinued(message, meta);
 
             var result = await process.ContinueProcess(message, meta);
 
-            await MMessageContext.DataStore.Update(this.processState).ConfigureAwait(false);
+            await MContext.DataStore.Update(this.processState).ConfigureAwait(false);
 
             return result;
         }
@@ -124,10 +125,10 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
                 this.processState.Flags = new Flags(additionalStatus);
             }
 
-            return MMessageContext.DataStore.Update(this.processState);
+            return MContext.DataStore.Update(this.processState);
         }
 
-        protected void CompleteProcess(IApiCommand command, MessageMeta meta)
+        protected void CompleteProcess(ApiCommand command, MessageMeta meta)
         {
             var username = meta.RequestedBy?.UserName;
             RecordCompleted(username);
@@ -161,7 +162,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
                 throw new Exception("This saga's state has not been set.");
             }
 
-            return MMessageContext.DataStore.Update(this.processState);
+            return MContext.DataStore.Update(this.processState);
         }
 
         protected Task<ProcessState> ReplaceState(Enum newStatus)
@@ -170,7 +171,7 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
 
             if (this.processState.Flags != null) this.processState.Flags = new Flags(newStatus);
 
-            return MMessageContext.DataStore.Update(this.processState);
+            return MContext.DataStore.Update(this.processState);
         }
 
         private void RecordCompleted(string username)
@@ -178,12 +179,12 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
             MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username, this.processState));
         }
 
-        private void RecordContinued<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        private void RecordContinued<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             MessageAggregator.Collect(new StatefulProcessContinued(GetType().Name, meta.RequestedBy?.UserName, this.processState));
         }
 
-        private void RecordStarted<TMessage>(TMessage message, MessageMeta meta) where TMessage : IApiCommand
+        private void RecordStarted<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
             MessageAggregator.Collect(new StatefulProcessStarted(GetType().Name, meta.RequestedBy?.UserName, this.processState));
         }

@@ -3,7 +3,7 @@ namespace Soap.If.MessagePipeline.Messages
     using System;
     using CircuitBoard.Messages;
 
-    public class LogMessageWithMeta : ILogMessage
+    public class SerilogEntryWithMeta : ILogMessage
     {
         public DateTime Created { get; set; }
 
@@ -11,9 +11,9 @@ namespace Soap.If.MessagePipeline.Messages
 
         private ILogMessage Message { get; set; }
 
-        public static LogMessageWithMeta Create(ILogMessage logMessage)
+        public static SerilogEntryWithMeta Create(ILogMessage logMessage)
         {
-            return new LogMessageWithMeta
+            return new SerilogEntryWithMeta
             {
                 Message = logMessage,
                 Created = DateTime.UtcNow

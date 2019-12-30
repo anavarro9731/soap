@@ -11,6 +11,7 @@
     using Soap.If.MessagePipeline.UnitOfWork;
     using Soap.If.MessagePipeline2.MessagePipeline;
     using Soap.If.Utility.PureFunctions;
+    using Soap.Pf.BusContext;
 
     /// <summary>
     ///     represents a stateless multi-step process which occurs in a single unit of work
@@ -22,13 +23,13 @@
 
     public abstract class Process
     {
-        protected IDataStoreQueryCapabilities DataReader => MMessageContext.DataStore.AsReadOnly();
+        protected IDataStoreQueryCapabilities DataReader => MContext.DataStore.AsReadOnly();
 
-        protected IWithoutEventReplay DirectDataReader => MMessageContext.DataStore.WithoutEventReplay;
+        protected IWithoutEventReplay DirectDataReader => MContext.DataStore.WithoutEventReplay;
 
-        protected ILogger Logger => MMessageContext.Logger;
+        protected ILogger Logger => MContext.Logger;
 
-        protected IMessageAggregator MessageAggregator => MMessageContext.MessageAggregator;
+        protected IMessageAggregator MessageAggregator => MContext.MessageAggregator;
         
         protected MessageBus MessageBus { get; private set; }
 
