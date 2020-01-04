@@ -27,7 +27,6 @@
         public MessagePipeline(IAuthenticateUsers authenticator)
         {
             this.authenticator = authenticator;
-            this.handlerClass = handlerClass;
         }
 
         public async Task Execute(string messageJson, string assemblyQualifiedName)
@@ -78,13 +77,21 @@
                                 .UnitOfWork.BusEventMessages.Select(e => e.FromSerialisableObject<ApiEvent>())
                                 .ToList().ForEach(x => MContext.Bus.Publish(x));
 
-                        //TODO- finish uow
-                        //MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                        //        .UnitOfWork.DataStoreCreateOperations.Select(c => c.FromSerialisableObject<Aggregate>())
-                        //        .ToList().ForEach(x => MContext.DataStore.Update(x));
+                        await MContext.Bus.CommitChanges();
 
+                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                                .UnitOfWork.DataStoreCreateOperations.Select(c => c.FromSerialisableObject<dynamic>())
+                                .ToList().ForEach(x => MContext.DataStore.Create(x));
 
+                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                                .UnitOfWork.DataStoreUpdateOperations.Select(c => c.FromSerialisableObject<dynamic>())
+                                .ToList().ForEach(x => MContext.DataStore.Update(x));
 
+                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
+                                .UnitOfWork.DataStoreDeleteOperations.Select(c => c.FromSerialisableObject<dynamic>())
+                                .ToList().ForEach(x => MContext.DataStore.DeleteHard(x));
+
+                        await MContext.DataStore.CommitChanges();
 
                         message.SerilogSuccess();
                         return;

@@ -23,5 +23,6 @@
             T obj = JsonSerializer.Deserialize(ObjectData, Type.GetType(TypeName)).As<T>();
             return obj;
         }
+
     }
 }

@@ -12,6 +12,7 @@
         public List<SerialisableObject> BusEventMessages { get; set; }
 
         //TODO: replace with calls to check aggregate history, its slower but removes consistency problem between complete and aggregate
+        //- do the same with the get calls to properties
         public bool Complete => true;
             //BusCommandMessages.All(a => a.Complete) && BusEventMessages.All(a => a.Complete) && DataStoreCreateOperations.All(a => a.Complete)
             //&& DataStoreDeleteOperations.All(a => a.Complete) && DataStoreUpdateOperations.All(a => a.Complete);
