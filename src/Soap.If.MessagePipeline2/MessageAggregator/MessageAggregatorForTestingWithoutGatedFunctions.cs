@@ -15,5 +15,10 @@
             this.allMessages.Add(message);
             return new MessagePropogator<TMessage>(message);
         }
+
+        public void Clear()
+        {
+            this.allMessages.Clear();
+        }
     }
 }

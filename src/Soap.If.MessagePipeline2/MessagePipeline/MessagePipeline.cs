@@ -5,7 +5,6 @@
     using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
-    using DataStore.Interfaces.LowLevel;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
@@ -43,7 +42,11 @@
                 }
                 catch (Exception e)
                 {
-                    MContext.Logger.Fatal("Cannot deserialise message: type {@type}, error {@error}, json {@json}", assemblyQualifiedName, e.Message, messageJson);
+                    MContext.Logger.Fatal(
+                        "Cannot deserialise message: type {@type}, error {@error}, json {@json}",
+                        assemblyQualifiedName,
+                        e.Message,
+                        messageJson);
                     return;
                 }
 
@@ -54,7 +57,7 @@
                     await message.FindMessageLogEntry(v => messageLogEntry = v);
 
                     var messageHasNotBeenSeenBefore = messageLogEntry == null;
-
+                    
                     if (messageHasNotBeenSeenBefore)
                     {
                         await message.CreateNewLogEntry(v => messageLogEntry = v);
@@ -64,39 +67,57 @@
 
                     message.UpdateContextAfterLogEntryObtained(messageLogEntry, (receivedAt, receivedAtTick), identity);
 
-                    message.ValidateOrThrow();
+                    await message.ValidateOrThrow();
 
-                    if (message.HasUnfinishedUnitOfWork())
+                    if (await message.HasUnfinishedUnitOfWork())
                     {
-                        
-                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                                .UnitOfWork.BusCommandMessages.Select(c => c.FromSerialisableObject<ApiCommand>())
-                                .ToList().ForEach(x => MContext.Bus.Send(x));
+                        foreach (var busMessageUnitOfWork in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.BusCommandMessages)
+                            if (!await busMessageUnitOfWork.IsComplete())
+                            {
+                                var command = busMessageUnitOfWork.FromSerialisableObject<ApiCommand>();
+                                MContext.Bus.Send(command);
+                            }
 
-                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                                .UnitOfWork.BusEventMessages.Select(e => e.FromSerialisableObject<ApiEvent>())
-                                .ToList().ForEach(x => MContext.Bus.Publish(x));
-
+                        foreach (var busMessageUnitOfWork in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.BusEventMessages)
+                            if (!await busMessageUnitOfWork.IsComplete())
+                            {
+                                var @event = busMessageUnitOfWork.FromSerialisableObject<ApiEvent>();
+                                MContext.Bus.Publish(@event);
+                            }
+                        //- race condition is possible from IsComplete() but messagelog will filter it
                         await MContext.Bus.CommitChanges();
 
-                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                                .UnitOfWork.DataStoreCreateOperations.Select(c => c.FromSerialisableObject<dynamic>())
-                                .ToList().ForEach(x => MContext.DataStore.Create(x));
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreCreateOperations)
+                            if (!await datastoreOperation.IsComplete())
+                            {
+                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                MContext.DataStore.Create(aggregate);
+                            }
 
-                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                                .UnitOfWork.DataStoreUpdateOperations.Select(c => c.FromSerialisableObject<dynamic>())
-                                .ToList().ForEach(x => MContext.DataStore.Update(x));
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreUpdateOperations)
+                            if (!await datastoreOperation.IsComplete())
+                            {
+                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                MContext.DataStore.Update(aggregate);
+                            }
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreDeleteOperations)
+                            if (!await datastoreOperation.IsComplete())
+                            {
+                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                MContext.DataStore.DeleteHard(aggregate);
+                            }
 
-                        MContext.AfterMessageLogEntryObtained.MessageLogEntry
-                                .UnitOfWork.DataStoreDeleteOperations.Select(c => c.FromSerialisableObject<dynamic>())
-                                .ToList().ForEach(x => MContext.DataStore.DeleteHard(x));
-
+                        /* another race condition is possible from IsComplete(), etag will help to resolve difference between uow save and
+                        uow re-attempt in which case we will assume the other write was newer and abandon ours. It will not solve the race
+                        between re-attempt and another committing thread, that is small enough of a risk, and we have
+                        a audit of changes to the aggregate we will leave it for now...TODO add etag support
                         await MContext.DataStore.CommitChanges();
+
 
                         message.SerilogSuccess();
                         return;
                     }
-                    
+
                     if (message.IsFailedAllRetriesMessage)
                     {
                         message.HandleFinalFailure();
@@ -123,7 +144,6 @@
                     await QueuedStateChanges.CommitChanges();
 
                     message.SerilogSuccess();
-
                 }
                 catch (Exception exception)
                 {
@@ -149,7 +169,7 @@
                             var exceptionMessages = new FormattedExceptionInfo(orignalExceptionPlusHandlingException);
 
                             finalException = exceptionMessages.ToEnvironmentSpecificError();
-                            
+
                             MContext.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
                         }
                         catch (Exception lastChanceException) //- log a minimal error message of last resort
@@ -161,8 +181,10 @@
 
                             MContext.Logger.Fatal(
                                 "Could not log error to db message log or seq using standard code, ignoring previous error and logging only the raw exception"
-                                +  "{@messageId} {@originalException} {@secondException} {@finalException}",
-                                exception, exceptionHandlingException, lastChanceException);
+                                + "{@messageId} {@originalException} {@secondException} {@finalException}",
+                                exception,
+                                exceptionHandlingException,
+                                lastChanceException);
 
                             var lastChanceExceptionMessageForCaller =
                                 $"{FormattedExceptionInfo.CodePrefixes.EXWHEX}: {MContext.AppConfig.DefaultExceptionMessage}";
@@ -174,8 +196,6 @@
                     throw finalException;
                 }
             }
-
-
         }
 
         public static class Constants

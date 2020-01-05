@@ -47,36 +47,37 @@
                 {
                     if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiCommand)))
                     {
-                        u.BusCommandMessages.Add(((QueuedApiCommand)queuedStateChange).Command.ToSerialisableObject());
+                        u.BusCommandMessages.Add(new UnitOfWork.BusMessageUnitOfWork(((QueuedApiCommand)queuedStateChange).Command));
                     }
 
                     if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiEvent)))
                     {
-                        u.BusCommandMessages.Add(((QueuedApiEvent)queuedStateChange).Event.ToSerialisableObject());
+                        u.BusEventMessages.Add(new UnitOfWork.BusMessageUnitOfWork(((QueuedApiEvent)queuedStateChange).Event));
                     }
 
-                    //- TODO get right interfaces
-                    //if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
-                    //{
-                    //    u.BusCommandMessages.Add(((IDataStoreWriteOperation<Aggregate>)queuedStateChange).Model.ToSerialisableObject());
-                    //}
+                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
+                    {
+                        u.DataStoreCreateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
+                    }
 
-                    //if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiCommand)))
-                    //{
-                    //    u.BusCommandMessages.Add(((QueuedApiCommand)queuedStateChange).Command.ToSerialisableObject());
-                    //}
+                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedUpdateOperation<>)))
+                    {
+                        u.DataStoreUpdateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
+                    }
 
-                    //if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiCommand)))
-                    //{
-                    //    u.BusCommandMessages.Add(((QueuedApiCommand)queuedStateChange).Command.ToSerialisableObject());
-                    //}
+                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
+                    {
+                        u.DataStoreDeleteOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
+                    }
+
                 }
 
             MContext.AfterMessageLogEntryObtained.MessageLogEntry.AddUnitOfWork(u);
-            //- update immediately you need find a way to get it to be first so use different instance instead
+            //- update immediately, you would need find a way to get it to be persisted first so use different instance of ds instead
             using var tempDataStore = new DataStore(MContext.AppConfig.DatabaseSettings.CreateRepository());
             await tempDataStore.Update(MContext.AfterMessageLogEntryObtained.MessageLogEntry);
             await tempDataStore.CommitChanges();
+            //- from this point on we can crash, throw, lose power, it won't matter all will be continued when the message is next dequeued
         }
 
         public static async Task CommitChanges()

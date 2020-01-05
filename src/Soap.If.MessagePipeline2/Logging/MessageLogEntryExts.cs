@@ -26,6 +26,8 @@
 
             messageLogEntry.UnitOfWork = unitOfWork;
         }
+
+        
     }
 
     public sealed class MessageLogEntry : Aggregate

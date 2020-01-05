@@ -23,9 +23,9 @@
 
     public static class IApiMessageExts
     {
-        internal static bool HasUnfinishedUnitOfWork(this ApiMessage message)
+        internal static async Task<bool> HasUnfinishedUnitOfWork(this ApiMessage message)
         {
-            return MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.Complete == false;
+            return await MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.IsComplete() == false;
         }
         
         internal static void Authenticate(this ApiMessage message, IAuthenticateUsers authenticator, Action<IIdentityWithPermissions> outIdentity)
@@ -69,7 +69,7 @@
                 null, logEntry);
         }
 
-        internal static void ValidateOrThrow(this ApiMessage message)
+        internal static async Task ValidateOrThrow(this ApiMessage message)
         {
             {
                 MessageLogEntry messageLogEntry = MContext.AfterMessageLogEntryObtained.MessageLogEntry;
@@ -78,7 +78,7 @@
 
                 Guard.Against(IsADifferentMessageButWithTheSameId(messageLogEntry), GlobalErrorCodes.ItemIsADifferentMessageWithTheSameId);
 
-                Guard.Against(HasAlreadyBeenProcessedSuccessfully(messageLogEntry), GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
+                Guard.Against(await HasAlreadyBeenProcessedSuccessfully(messageLogEntry), GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
 
                 Guard.Against(HasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogEntry), GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
 
@@ -86,10 +86,10 @@
 
             }
 
-            bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry)
+            async Task<bool> HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry)
             {
                 //- safeguard, cannot think of a reason it would happen 
-                return messageLogEntry.UnitOfWork != null && messageLogEntry.UnitOfWork.Complete;
+                return messageLogEntry.UnitOfWork != null && await messageLogEntry.UnitOfWork.IsComplete();
             }
 
             bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogEntry)
@@ -311,7 +311,7 @@
             {
                 /* abandon current unit of work, maybe it's persisted maybe not, maybe partially complete, or even fully complete
                 in all cases all we care about now is recording the failure, no other I/O bounds ops will occur */
-                //- TODO MMessageContext.MessageAggregator.Clear();
+                MContext.MessageAggregator.Clear();
 
                 if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage())
                 {

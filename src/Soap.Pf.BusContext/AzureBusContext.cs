@@ -38,6 +38,7 @@
     {
         private readonly IMessageAggregator messageAggregator;
 
+        //- TODO initialise 
         private readonly QueueClient queueClient = null;
 
         private readonly TopicClient topicClient = null;

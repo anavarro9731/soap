@@ -14,6 +14,7 @@
             TypeName = x.GetType().AssemblyQualifiedName;
         }
 
+
         public string ObjectData { get; internal set; }
 
         public string TypeName { get; internal set; }

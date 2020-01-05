@@ -44,6 +44,11 @@
             return new GatedMessagePropogator<TMessage>(message, this.ReturnValues.ContainsKey(eventType) ? this.ReturnValues[eventType].Dequeue() : null);
         }
 
+        public void Clear()
+        {
+            this.allMessages.Clear();
+        }
+
         public IValueReturner When<TMessage>() where TMessage : IMessage
         {
             return new ValueReturner(this.ReturnValues, typeof(TMessage).FullName);
