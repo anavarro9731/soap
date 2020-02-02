@@ -1,10 +1,12 @@
 ﻿namespace Soap.If.MessagePipeline.MessagePipeline
 {
     using System;
+    using System.Data;
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
+    using DataStore.Models.Messages;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
     using Soap.If.MessagePipeline.Models;
@@ -71,6 +73,40 @@
 
                     if (await message.HasUnfinishedUnitOfWork())
                     {
+                        //basically here the hardest part is check the ds uows 
+                        //if there are any uncommittedorrolledback remaining and none superseded try recommitting
+                        //otherwise try rollingback thats it! i think
+                        //and write some awful unit tests :( :(
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreCreateOperations)
+                            if (!await datastoreOperation.IsCommittedSuccessfully())
+                            {
+                                try
+                                {
+                                    var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                 //   MContext.DataStore.DocumentRepository.AddAsync(new UpdateOperation<dynamic>() {  aggregate)};
+                                }
+                                catch (DBConcurrencyException)
+                                {
+                                    //- rollback the rest of the already committed UOW
+                                }
+                            }
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreUpdateOperations)
+                            if (!await datastoreOperation.IsCommittedSuccessfully())
+                            {
+                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                MContext.DataStore.Update(aggregate);
+                            }
+                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreDeleteOperations)
+                            if (!await datastoreOperation.IsCommittedSuccessfully())
+                            {
+                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
+                                MContext.DataStore.DeleteHard(aggregate);
+                            }
+
+                        /* race condition is possible from IsComplete(), etag will help to resolve difference between uow save and
+                        uow re-attempt in which case we will assume the other    write was newer and abandon ours. */
+                        await MContext.DataStore.CommitChanges();
+
                         foreach (var busMessageUnitOfWork in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.BusCommandMessages)
                             if (!await busMessageUnitOfWork.IsComplete())
                             {
@@ -87,31 +123,6 @@
                         //- race condition is possible from IsComplete() but messagelog will filter it
                         await MContext.Bus.CommitChanges();
 
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreCreateOperations)
-                            if (!await datastoreOperation.IsComplete())
-                            {
-                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                MContext.DataStore.Create(aggregate);
-                            }
-
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreUpdateOperations)
-                            if (!await datastoreOperation.IsComplete())
-                            {
-                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                MContext.DataStore.Update(aggregate);
-                            }
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreDeleteOperations)
-                            if (!await datastoreOperation.IsComplete())
-                            {
-                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                MContext.DataStore.DeleteHard(aggregate);
-                            }
-
-                        /* another race condition is possible from IsComplete(), etag will help to resolve difference between uow save and
-                        uow re-attempt in which case we will assume the other write was newer and abandon ours. It will not solve the race
-                        between re-attempt and another committing thread, that is small enough of a risk, and we have
-                        a audit of changes to the aggregate we will leave it for now...TODO add etag support
-                        await MContext.DataStore.CommitChanges();
 
 
                         message.SerilogSuccess();
@@ -142,6 +153,8 @@
                     await QueuedStateChanges.SaveUnitOfWork();
 
                     await QueuedStateChanges.CommitChanges();
+
+                    //- update UOW with etags?
 
                     message.SerilogSuccess();
                 }

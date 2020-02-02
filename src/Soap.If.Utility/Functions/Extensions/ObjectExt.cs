@@ -8,10 +8,18 @@
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Text.Json;
+    using System.Threading.Tasks;
     using Soap.If.Utility.Models;
 
     public static class ObjectExt
     {
+
+        public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
+        {
+            dynamic awaitable = @this.Invoke(obj, parameters);
+            await awaitable;
+            return awaitable.GetAwaiter().GetResult();
+        }
 
         private static readonly char[] SystemTypeChars =
         {

@@ -57,7 +57,7 @@
 
                     if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
                     {
-                        u.DataStoreCreateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
+                        u.DataStoreCreateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).));
                     }
 
                     if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedUpdateOperation<>)))
@@ -74,7 +74,7 @@
 
             MContext.AfterMessageLogEntryObtained.MessageLogEntry.AddUnitOfWork(u);
             //- update immediately, you would need find a way to get it to be persisted first so use different instance of ds instead
-            using var tempDataStore = new DataStore(MContext.AppConfig.DatabaseSettings.CreateRepository());
+            var tempDataStore = new DataStore(MContext.AppConfig.DatabaseSettings.CreateRepository());
             await tempDataStore.Update(MContext.AfterMessageLogEntryObtained.MessageLogEntry);
             await tempDataStore.CommitChanges();
             //- from this point on we can crash, throw, lose power, it won't matter all will be continued when the message is next dequeued

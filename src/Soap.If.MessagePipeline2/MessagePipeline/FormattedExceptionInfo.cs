@@ -9,7 +9,7 @@
     using Soap.If.Utility.PureFunctions;
     using Soap.If.Utility.PureFunctions.Extensions;
 
-    public class FormattedExceptionInfo
+    public class FormattedExceptionInfo 
     {
         public FormattedExceptionInfo(Exception exception)
         {

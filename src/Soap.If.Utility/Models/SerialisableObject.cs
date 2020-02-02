@@ -14,6 +14,7 @@
             TypeName = x.GetType().AssemblyQualifiedName;
         }
 
+        public SerialisableObject() { }
 
         public string ObjectData { get; internal set; }
 

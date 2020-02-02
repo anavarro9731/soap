@@ -5,6 +5,6 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces" Version="7.13.0" />
+    <PackageReference Include="DataStore.Interfaces" Version="8.3.0" />
   </ItemGroup>
 </Project>
