@@ -1,16 +1,17 @@
-﻿namespace Soap.If.MessagePipeline.Models.Aggregates
+﻿namespace Soap.If.MessagePipeline.Logging
 {
     using System;
     using System.Collections.Generic;
     using System.Text.Json;
+    using System.Threading.Tasks;
+    using DataStore;
     using DataStore.Interfaces.LowLevel;
     using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.MessagePipeline;
     using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.MessagePipeline2.MessagePipeline;
-    using Soap.If.Utility;
+    using Soap.If.Utility.Functions.Extensions;
+    using Soap.If.Utility.Functions.Operations;
     using Soap.If.Utility.Models;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
 
     public static class MessageLogEntryExts
     {
@@ -19,30 +20,44 @@
             messageLogItem.Attempts.Insert(0, new MessageLogEntry.Attempt(errors));
         }
 
-        public static void AddUnitOfWork(this MessageLogEntry messageLogEntry, UnitOfWork unitOfWork)
+        public static Task CompleteUnitOfWork(this MessageLogEntry messageLogEntry)
         {
-            //- defensive programming, shouldn't happen want to catch it if I missed something
-            Guard.Against(messageLogEntry.UnitOfWork != null, "Cannot add another unit of work");
+            messageLogEntry.ProcessingComplete = true;
 
-            messageLogEntry.UnitOfWork = unitOfWork;
+            return UpdateMessageLogEntry(messageLogEntry);
         }
 
-        
+        public static Task UpdateUnitOfWork(this MessageLogEntry messageLogEntry, UnitOfWork u)
+        {
+            messageLogEntry.UnitOfWork = u;
+
+            return messageLogEntry.UpdateMessageLogEntry();
+        }
+
+        private static async Task UpdateMessageLogEntry(this MessageLogEntry messageLogEntry)
+        {
+            /* update immediately, you would need find a way to get it to be persisted
+             first so use different instance of ds instead*/
+            var d = new DataStore(MContext.AppConfig.DatabaseSettings.CreateRepository());
+            await d.Update(messageLogEntry);
+            await d.CommitChanges();
+        }
     }
 
     public sealed class MessageLogEntry : Aggregate
     {
-        public MessageLogEntry(ApiMessage message)
+        public MessageLogEntry(ApiMessage message, bool optimisticConcurrency, int numberOfRetries)
         {
             id = message.MessageId;
-            MaxRetriesAllowed = MContext.AppConfig.NumberOfApiMessageRetries + 1;
+            MaxRetriesAllowed = numberOfRetries + 1;
             SerialisedMessage = message.ToSerialisableObject();
             MessageHash = JsonSerializer.Serialize(message).ToMd5Hash();
+            UnitOfWork = new UnitOfWork(optimisticConcurrency);
         }
 
         public MessageLogEntry()
         {
-            //- satisfy datastore new() constraint  
+            //- satisfy DataStore new() constraint  
         }
 
         public List<Attempt> Attempts { get; internal set; } = new List<Attempt>();
@@ -66,6 +81,7 @@
 
             internal Attempt()
             {
+                //-serialiser
             }
 
             public DateTime CompletedAt { get; internal set; } = DateTime.UtcNow;

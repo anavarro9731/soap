@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-using System.Security.Cryptography;
-
-namespace PWDTK_DOTNET451
+﻿namespace Soap.If.Utility.PWDTK
 {
+    using System;
+    using System.Linq;
+    using System.Security.Cryptography;
+    using System.Text;
+
     /// <summary>
     /// Implementation of the Rfc2898 PBKDF2 specification located here http://www.ietf.org/rfc/rfc2898.txt using HMACSHA512 as the underlying PRF
     /// Made by thashiznets@yahoo.com.au
@@ -53,11 +53,11 @@ namespace PWDTK_DOTNET451
                 throw new SaltLessThanRecommended();
             }
 
-            _hmacsha512Obj = new HMACSHA512(password);
-            hLen = _hmacsha512Obj.HashSize / 8;
-            P = password;
-            S = salt;
-            c = iterations;
+            this._hmacsha512Obj = new HMACSHA512(password);
+            this.hLen = this._hmacsha512Obj.HashSize / 8;
+            this.P = password;
+            this.S = salt;
+            this.c = iterations;
         }
 
         /// <summary>
@@ -93,20 +93,20 @@ namespace PWDTK_DOTNET451
         public Byte[] GetDerivedKeyBytes_PBKDF2_HMACSHA512(Int32 keyLength)
         {
             //no need to throw exception for dkLen too long as per spec because dkLen cannot be larger than Int32.MaxValue so not worth the overhead to check
-            dkLen = keyLength;
+            this.dkLen = keyLength;
 
-            Double l = Math.Ceiling((Double)dkLen / hLen);
+            Double l = Math.Ceiling((Double)this.dkLen / this.hLen);
 
             Byte[] finalBlock = new Byte[0];
 
             for (Int32 i = 1; i <= l; i++)
             {
                 //Concatenate each block from F into the final block (T_1..T_l)
-                finalBlock = pMergeByteArrays(finalBlock, F(P, S, c, i));
+                finalBlock = pMergeByteArrays(finalBlock, F(this.P, this.S, this.c, i));
             }
 
             //returning DK note r not used as dkLen bytes of the final concatenated block returned rather than <0...r-1> substring of final intermediate block + prior blocks as per spec
-            return finalBlock.Take(dkLen).ToArray();
+            return finalBlock.Take(this.dkLen).ToArray();
 
         }
 
@@ -160,7 +160,7 @@ namespace PWDTK_DOTNET451
         private Byte[] PRF(Byte[] P, Byte[] S)
         {
             //HMACSHA512 Hashing, better than the HMACSHA1 in Microsofts implementation ;)
-            return _hmacsha512Obj.ComputeHash(pMergeByteArrays(P, S));
+            return this._hmacsha512Obj.ComputeHash(pMergeByteArrays(P, S));
         }
 
         //This method returns the 4 octet encoded Int32 with most significant bit first as per spec

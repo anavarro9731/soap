@@ -1,7 +1,5 @@
-namespace Soap.If.MessagePipeline.Messages.ProcessMessages
+namespace Soap.If.MessagePipeline.ProcessesAndOperations.ProcessMessages
 {
-    using Soap.If.MessagePipeline.Models.Aggregates;
-
     public class StatefulProcessContinued : ProcessEvent
     {
         public StatefulProcessContinued(string processType, string username, ProcessState initialState)

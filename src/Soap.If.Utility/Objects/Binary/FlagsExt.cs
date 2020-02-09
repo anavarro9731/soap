@@ -1,8 +1,8 @@
-﻿namespace Soap.If.Utility
+﻿namespace Soap.If.Utility.Objects.Binary
 {
     using System;
     using System.Collections.Generic;
-    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.Functions.Operations;
 
     /* stores a bunch of different flags in a single serialisable class
      avoids lots of bool properties and can also be used to represent 
@@ -67,7 +67,7 @@
     {
         public Flags(Enum initialState)
         {
-            Utility.FlagsExt.AddState(this, initialState);
+            FlagsExt.AddState(this, initialState);
         }
 
         public List<int> Values = new List<int>();

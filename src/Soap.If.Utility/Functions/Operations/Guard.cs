@@ -1,7 +1,9 @@
-﻿namespace Soap.If.Utility.PureFunctions
+﻿namespace Soap.If.Utility.Functions.Operations
 {
     using System;
     using Soap.If.Interfaces;
+    using Soap.If.Utility.Enums;
+    using Soap.If.Utility.Models;
 
     public static class Guard
     {

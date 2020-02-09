@@ -6,13 +6,10 @@
     using CircuitBoard.Messages;
     using DataStore;
     using DataStore.Interfaces;
-    using DataStore.Interfaces.LowLevel;
     using DataStore.Models.Messages;
-    using Soap.If.MessagePipeline.Messages;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.If.MessagePipeline2.MessagePipeline;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.MessagePipeline.Logging;
+    using Soap.If.Utility.Functions.Extensions;
+    using Soap.If.Utility.Functions.Operations;
 
     /*
      * Executes queued changes via a closure.
@@ -39,47 +36,6 @@
             }
         }
 
-        public static async Task SaveUnitOfWork()
-        {
-            var u = new UnitOfWork();
-            foreach (var queuedStateChange in QueuedChanges)
-                if (IsDurableChange(queuedStateChange))
-                {
-                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiCommand)))
-                    {
-                        u.BusCommandMessages.Add(new UnitOfWork.BusMessageUnitOfWork(((QueuedApiCommand)queuedStateChange).Command));
-                    }
-
-                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedApiEvent)))
-                    {
-                        u.BusEventMessages.Add(new UnitOfWork.BusMessageUnitOfWork(((QueuedApiEvent)queuedStateChange).Event));
-                    }
-
-                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
-                    {
-                        u.DataStoreCreateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).));
-                    }
-
-                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedUpdateOperation<>)))
-                    {
-                        u.DataStoreUpdateOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
-                    }
-
-                    if (queuedStateChange.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)))
-                    {
-                        u.DataStoreDeleteOperations.Add(new UnitOfWork.DataStoreUnitOfWork(((IQueuedDataStoreWriteOperation)queuedStateChange).Model));
-                    }
-
-                }
-
-            MContext.AfterMessageLogEntryObtained.MessageLogEntry.AddUnitOfWork(u);
-            //- update immediately, you would need find a way to get it to be persisted first so use different instance of ds instead
-            var tempDataStore = new DataStore(MContext.AppConfig.DatabaseSettings.CreateRepository());
-            await tempDataStore.Update(MContext.AfterMessageLogEntryObtained.MessageLogEntry);
-            await tempDataStore.CommitChanges();
-            //- from this point on we can crash, throw, lose power, it won't matter all will be continued when the message is next dequeued
-        }
-
         public static async Task CommitChanges()
         {
             Guard.Against(
@@ -89,10 +45,15 @@
                 + " using a new message. This is ensure the UoW can be persisted in case of failure. All other I/O bound ops must be pushed"
                 + " to the perimeter");
 
+            /* from this point on we can crash, throw, lose power, it won't matter all
+            will be continued when the message is next dequeued*/
+            await SaveUnitOfWork();
+            
             await MContext.DataStore.CommitChanges();
             await MContext.Bus.CommitChanges();
+            await MContext.AfterMessageLogEntryObtained.MessageLogEntry.CompleteUnitOfWork();
 
-            //any other arbitrary calls made e.g. to 3rd party API etc. committed calls should already be skipped
+            /* any other arbitrary calls made e.g. to 3rd party API etc. */
             foreach (var queuedStateChange in QueuedChanges)
             {
                 await queuedStateChange.CommitClosure();
@@ -102,7 +63,59 @@
 
         public static void QueueChange(IQueuedStateChange queuedStateChange)
         {
+            /* any other arbitrary calls made e.g. to 3rd party API etc. */
             MContext.MessageAggregator.Collect(queuedStateChange);
+        }
+
+        public static Task SaveUnitOfWork()
+        {
+            var u = MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork;
+
+            foreach (var queuedStateChange in QueuedChanges)
+                if (IsDurableChange(queuedStateChange))
+                {
+                    var soapUnitOfWorkId = MContext.AfterMessageLogEntryObtained.MessageLogEntry.id;
+
+                    switch (queuedStateChange)
+                    {
+                        case QueuedApiCommand c:
+                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(c.Command));
+                            break;
+
+                        case QueuedApiEvent e:
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(e.Event));
+                            break;
+
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedCreateOperation<>)):
+                            u.DataStoreCreateOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.Create));
+                            break;
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedHardDeleteOperation<>)):
+                            u.DataStoreCreateOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.HardDelete));
+                            break;
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedUpdateOperation<>)):
+                            u.DataStoreCreateOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.Update));
+                            break;
+                    }
+                }
+
+            return MContext.AfterMessageLogEntryObtained.MessageLogEntry.UpdateUnitOfWork(u);
+            /* from this point on we can crash, throw, lose power, it won't matter all
+            will be continued when the message is next dequeued*/
         }
 
         private static bool IsDurableChange(IQueuedStateChange x)

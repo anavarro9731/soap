@@ -3,8 +3,7 @@
     using System;
     using System.Text.Json;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.Utility.Functions.Extensions;
 
     public class SerialisableObject
     {
@@ -22,9 +21,7 @@
 
         public T Deserialise<T>() where T : class
         {
-            T obj = JsonSerializer.Deserialize(ObjectData, Type.GetType(TypeName)).As<T>();
-            return obj;
+            return ObjectData.FromJsonToInterface<T>(TypeName);
         }
-
     }
 }

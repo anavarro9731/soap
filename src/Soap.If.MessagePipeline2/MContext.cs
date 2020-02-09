@@ -1,14 +1,17 @@
-﻿namespace Soap.If.MessagePipeline2.MessagePipeline
+﻿namespace Soap.If.MessagePipeline
 {
+    using System;
     using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.Interfaces.Messages;
+    using Soap.If.MessagePipeline.Logging;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.Utility.Functions.Extensions;
+    using Soap.If.Utility.Functions.Operations;
+    using Soap.If.Utility.Objects.Blended;
     using Soap.Pf.BusContext;
 
     public static class MContext
@@ -68,7 +71,21 @@
                 }
             }
 
-            internal static void Set(MessageMeta meta, IMapErrorCodesFromDomainToMessageErrorCodes mapper, MessageLogEntry logEntry)
+            internal static void UpdateContext(ApiMessage message, MessageLogEntry logEntry,
+                (DateTime receivedAt, long ticks) timeStamp, IIdentityWithPermissions identity)
+            {
+                MContext.AfterMessageLogEntryObtained.Set(
+                    new MessageMeta
+                    {
+                        StartTicks = timeStamp.ticks,
+                        ReceivedAt = timeStamp.receivedAt,
+                        Schema = message.GetType().AssemblyQualifiedName,
+                        RequestedBy = identity
+                    },
+                    null, logEntry);
+            }
+
+            private static void Set(MessageMeta meta, IMapErrorCodesFromDomainToMessageErrorCodes mapper, MessageLogEntry logEntry)
             {
                 CallContext.SetData(nameof(MessageMeta), meta);
                 CallContext.SetData(nameof(MessageLogEntry), logEntry);

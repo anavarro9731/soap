@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility
+﻿namespace Soap.If.Utility.Functions.Extensions
 {
     using System;
     using System.Security.Cryptography;

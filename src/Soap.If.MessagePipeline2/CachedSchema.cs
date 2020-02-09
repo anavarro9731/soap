@@ -8,7 +8,7 @@
     using System.Text;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.Utility.Functions.Extensions;
 
     public class CachedSchema
     {

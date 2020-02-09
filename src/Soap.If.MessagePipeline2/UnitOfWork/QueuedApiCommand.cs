@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.Messages
+﻿namespace Soap.If.MessagePipeline.UnitOfWork
 {
     using Soap.If.Interfaces.Messages;
 

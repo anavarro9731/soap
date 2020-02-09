@@ -1,7 +1,7 @@
 ﻿namespace Soap.If.MessagePipeline.Permissions
 {
     using CircuitBoard.Permissions;
-    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.Functions.Operations;
 
     public static class PermissionsGuard
     {

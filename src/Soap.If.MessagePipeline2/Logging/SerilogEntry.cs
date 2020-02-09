@@ -1,4 +1,4 @@
-namespace Soap.If.MessagePipeline.Messages
+namespace Soap.If.MessagePipeline.Logging
 {
     using CircuitBoard.Messages;
 

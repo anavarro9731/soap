@@ -1,8 +1,8 @@
-﻿namespace Soap.If.MessagePipeline.MessagePipeline
+﻿namespace Soap.If.MessagePipeline.Logging
 {
     using System;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.MessagePipeline;
 
     public abstract class SerilogApiMessageEntry
     {

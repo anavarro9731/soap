@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.PureFunctions.Extensions
+﻿namespace Soap.If.Utility.Functions.Extensions
 {
     using System;
     using System.Collections.Generic;

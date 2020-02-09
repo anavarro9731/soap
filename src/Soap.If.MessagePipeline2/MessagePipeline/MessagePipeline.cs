@@ -6,15 +6,12 @@
     using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
-    using DataStore.Models.Messages;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.Logging;
     using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.MessagePipeline2.MessagePipeline;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.Utility.Functions.Extensions;
+    using Soap.If.Utility.Functions.Operations;
 
     /// <summary>
     ///     1. Build MetaData to the message
@@ -36,11 +33,11 @@
                 var receivedAtTick = StopwatchOps.GetStopwatchTimestamp();
                 var receivedAt = DateTime.UtcNow;
                 MessageLogEntry messageLogEntry = null;
-                ApiMessage message;
+                ApiMessage m;
 
                 try
                 {
-                    message = JsonSerializer.Deserialize(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
+                    m = JsonSerializer.Deserialize(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
                 }
                 catch (Exception e)
                 {
@@ -56,107 +53,51 @@
                 {
                     IIdentityWithPermissions identity = null;
 
-                    await message.FindMessageLogEntry(v => messageLogEntry = v);
+                    await m.CreateOrFindLogEntry(v => messageLogEntry = v);
 
-                    var messageHasNotBeenSeenBefore = messageLogEntry == null;
-                    
-                    if (messageHasNotBeenSeenBefore)
+                    m.Authenticate(this.authenticator, v => identity = v);
+
+                    MContext.AfterMessageLogEntryObtained.UpdateContext(m, messageLogEntry, (receivedAt, receivedAtTick), identity);
+
+                    m.ValidateOrThrow();
+
+                    var result = await messageLogEntry.UnitOfWork.AttemptToFinishAPreviousAttempt(MContext.Bus, MContext.DataStore);
+
+                    switch (result)
                     {
-                        await message.CreateNewLogEntry(v => messageLogEntry = v);
+                        case UnitOfWorkExtensions.State.AllComplete:
+                            m.SerilogSuccess();
+                            return;
+
+                        case UnitOfWorkExtensions.State.New:
+                        case UnitOfWorkExtensions.State.AllRolledBack:
+
+                            switch (m)
+                            {
+                                case ApiCommand c when c.IsFailedAllRetriesMessage:
+                                    m.HandleFinalFailure();
+                                    break;
+                                case IApiQuery q:
+                                    var responseEvent = await q.Handle();
+                                    MContext.Bus.Publish(responseEvent);
+                                    break;
+                                case ApiCommand c:
+                                    await c.Handle();
+                                    break;
+                                case ApiEvent e:
+                                    await e.Handle();
+                                    break;
+                            }
+
+                            /* from this point on we can crash, throw, lose power, it won't matter all
+                            will be continued when the message is next dequeued. Prior to this any errors
+                            will fall into the catch block below and result in the message being retried
+                            from the beginning but there will be no unit of work on the MessageLogEntry */
+                            await QueuedStateChanges.CommitChanges();
+                            
+                            m.SerilogSuccess();
+                            break;
                     }
-
-                    message.Authenticate(this.authenticator, v => identity = v);
-
-                    message.UpdateContextAfterLogEntryObtained(messageLogEntry, (receivedAt, receivedAtTick), identity);
-
-                    await message.ValidateOrThrow();
-
-                    if (await message.HasUnfinishedUnitOfWork())
-                    {
-                        //basically here the hardest part is check the ds uows 
-                        //if there are any uncommittedorrolledback remaining and none superseded try recommitting
-                        //otherwise try rollingback thats it! i think
-                        //and write some awful unit tests :( :(
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreCreateOperations)
-                            if (!await datastoreOperation.IsCommittedSuccessfully())
-                            {
-                                try
-                                {
-                                    var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                 //   MContext.DataStore.DocumentRepository.AddAsync(new UpdateOperation<dynamic>() {  aggregate)};
-                                }
-                                catch (DBConcurrencyException)
-                                {
-                                    //- rollback the rest of the already committed UOW
-                                }
-                            }
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreUpdateOperations)
-                            if (!await datastoreOperation.IsCommittedSuccessfully())
-                            {
-                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                MContext.DataStore.Update(aggregate);
-                            }
-                        foreach (var datastoreOperation in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.DataStoreDeleteOperations)
-                            if (!await datastoreOperation.IsCommittedSuccessfully())
-                            {
-                                var aggregate = datastoreOperation.FromSerialisableObject<dynamic>();
-                                MContext.DataStore.DeleteHard(aggregate);
-                            }
-
-                        /* race condition is possible from IsComplete(), etag will help to resolve difference between uow save and
-                        uow re-attempt in which case we will assume the other    write was newer and abandon ours. */
-                        await MContext.DataStore.CommitChanges();
-
-                        foreach (var busMessageUnitOfWork in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.BusCommandMessages)
-                            if (!await busMessageUnitOfWork.IsComplete())
-                            {
-                                var command = busMessageUnitOfWork.FromSerialisableObject<ApiCommand>();
-                                MContext.Bus.Send(command);
-                            }
-
-                        foreach (var busMessageUnitOfWork in MContext.AfterMessageLogEntryObtained.MessageLogEntry.UnitOfWork.BusEventMessages)
-                            if (!await busMessageUnitOfWork.IsComplete())
-                            {
-                                var @event = busMessageUnitOfWork.FromSerialisableObject<ApiEvent>();
-                                MContext.Bus.Publish(@event);
-                            }
-                        //- race condition is possible from IsComplete() but messagelog will filter it
-                        await MContext.Bus.CommitChanges();
-
-
-
-                        message.SerilogSuccess();
-                        return;
-                    }
-
-                    if (message.IsFailedAllRetriesMessage)
-                    {
-                        message.HandleFinalFailure();
-                    }
-                    else
-                    {
-                        switch (message)
-                        {
-                            case IApiQuery q:
-                                var responseEvent = await q.Handle();
-                                MContext.Bus.Publish(responseEvent);
-                                break;
-                            case ApiCommand c:
-                                await c.Handle();
-                                break;
-                            case ApiEvent e:
-                                await e.Handle();
-                                break;
-                        }
-                    }
-
-                    await QueuedStateChanges.SaveUnitOfWork();
-
-                    await QueuedStateChanges.CommitChanges();
-
-                    //- update UOW with etags?
-
-                    message.SerilogSuccess();
                 }
                 catch (Exception exception)
                 {
@@ -168,9 +109,9 @@
 
                         finalException = exceptionMessages.ToEnvironmentSpecificError();
 
-                        await message.MarkFailureInMessageLog(exceptionMessages);
+                        await m.MarkFailureInMessageLog(exceptionMessages);
 
-                        message.SerilogFailure(exceptionMessages);
+                        m.SerilogFailure(exceptionMessages);
                     }
                     catch (Exception exceptionHandlingException)
                     {

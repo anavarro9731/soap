@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline2.MessagePipeline
+﻿namespace Soap.If.Utility.Objects.Blended
 {
     using System.Collections.Concurrent;
     using System.Threading;

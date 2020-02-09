@@ -1,12 +1,12 @@
-﻿using System;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Security;
-using System.Security.Cryptography;
-using System.Linq;
-
-namespace PWDTK_DOTNET451
+﻿namespace Soap.If.Utility.PWDTK
 {
+    using System;
+    using System.Linq;
+    using System.Security;
+    using System.Security.Cryptography;
+    using System.Text;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// Password Toolkit created by Thashiznets
     /// This library facilitates crypto random salt generating and password hashing using HMACSHA512 based PBKDF2
@@ -76,18 +76,18 @@ namespace PWDTK_DOTNET451
             /// <param name="maxLength">Forces at most this number of characters</param>
             public PasswordPolicy(int xUpper, int xNonAlphaNumeric, int xNumeric, int minLength, int maxLength)
             {
-                _aForceXUpperCase = xUpper;
-                _aForceXNonAlphaNumeric = xNonAlphaNumeric;
-                _aForceXNumeric = xNumeric;
-                _aPasswordMinLength = minLength;
-                _aPasswordMaxLength = maxLength;
+                this._aForceXUpperCase = xUpper;
+                this._aForceXNonAlphaNumeric = xNonAlphaNumeric;
+                this._aForceXNumeric = xNumeric;
+                this._aPasswordMinLength = minLength;
+                this._aPasswordMaxLength = maxLength;
             }
 
             public int ForceXUpperCase
             {
                 get
                 {
-                    return _aForceXUpperCase;
+                    return this._aForceXUpperCase;
                 }
             }
 
@@ -95,7 +95,7 @@ namespace PWDTK_DOTNET451
             {
                 get
                 {
-                    return _aForceXNonAlphaNumeric;
+                    return this._aForceXNonAlphaNumeric;
                 }
             }
 
@@ -103,7 +103,7 @@ namespace PWDTK_DOTNET451
             {
                 get
                 {
-                    return _aForceXNumeric;
+                    return this._aForceXNumeric;
                 }
             }
 
@@ -111,7 +111,7 @@ namespace PWDTK_DOTNET451
             {
                 get
                 {
-                    return _aPasswordMinLength;
+                    return this._aPasswordMinLength;
                 }
             }
 
@@ -119,7 +119,7 @@ namespace PWDTK_DOTNET451
             {
                 get
                 {
-                    return _aPasswordMaxLength;
+                    return this._aPasswordMaxLength;
                 }
             }
         }

@@ -6,11 +6,10 @@
     using Serilog;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Messages.ProcessMessages;
-    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.MessagePipeline2.MessagePipeline;
-    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.Functions.Operations;
     using Soap.Pf.BusContext;
 
     /// <summary>

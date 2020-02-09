@@ -1,8 +1,7 @@
-﻿namespace Soap.If.Utility.PureFunctions.Extensions
+﻿namespace Soap.If.Utility.Functions.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Dynamic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -13,6 +12,12 @@
 
     public static class ObjectExt
     {
+        private static JsonSerializerOptions serialiserOptions = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            IgnoreReadOnlyProperties = true,
+            WriteIndented = true
+        };
 
         public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
         {
@@ -93,8 +98,14 @@
 
         public static T FromJson<T>(this string json)
         {
-            var obj = JsonSerializer.Deserialize<T>(json);
+            var obj = JsonSerializer.Deserialize<T>(json, serialiserOptions);
             return obj;
+        }
+
+        public static T FromJsonToInterface<T>(this string json, string typeName) where T: class
+        {
+            var obj = JsonSerializer.Deserialize(json, Type.GetType(typeName), serialiserOptions).As<T>();
+            return obj.As<T>();
         }
 
         /// <summary>
@@ -165,6 +176,11 @@
             }
 
             return false;
+        }
+
+        public static bool Is(this object child, Type t)
+        {
+            return child.GetType().InheritsOrImplements(t);
         }
 
         public static bool IsAnonymousType(this Type type)
@@ -283,7 +299,11 @@
 
         public static string ToJson(this object instance, bool prettyPrint = false)
         {
-            var json = JsonSerializer.Serialize(instance, new JsonSerializerOptions() { WriteIndented = prettyPrint });
+            var json = JsonSerializer.Serialize(instance, new JsonSerializerOptions()
+            {
+                WriteIndented = prettyPrint,
+                IgnoreReadOnlyProperties = true
+            });
             return json;
         }
 

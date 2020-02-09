@@ -8,8 +8,8 @@ namespace Soap.If.MessagePipeline.MessageAggregator
     using DataStore.Interfaces;
     using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Messages;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.MessagePipeline.UnitOfWork;
+    using Soap.If.Utility.Functions.Extensions;
 
     public abstract class MessageAggregatorForTestingBase
     {

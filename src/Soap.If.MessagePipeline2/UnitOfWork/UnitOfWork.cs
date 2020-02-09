@@ -1,208 +1,262 @@
 ﻿namespace Soap.If.MessagePipeline.UnitOfWork
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
+    using System.Runtime.Remoting;
     using System.Threading.Tasks;
-    using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using DataStore.Options;
+    using DataStore.Models.Messages;
+    using Soap.If.Interfaces;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.If.MessagePipeline2.MessagePipeline;
+    using Soap.If.MessagePipeline.Logging;
+    using Soap.If.Utility.Functions.Extensions;
     using Soap.If.Utility.Models;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
 
-    public class UnitOfWork : Aggregate
+    public class UnitOfWork
     {
-        public bool OptimisticConcurreny { get; internal set; } = true;
-
-        public List<BusMessageUnitOfWork> BusCommandMessages { get; internal set; }
-
-        public List<BusMessageUnitOfWork> BusEventMessages { get; internal set; }
-
-        public List<DataStoreUnitOfWork> DataStoreCreateOperations { get; internal set; }
-
-        public List<DataStoreUnitOfWork> DataStoreDeleteOperations { get; internal set; }
-
-        public List<DataStoreUnitOfWork> DataStoreUpdateOperations { get; internal set; }
-
-        public async Task<bool> IsComplete()
+        public UnitOfWork(bool optimisticConcurrency)
         {
-            foreach (var busMessage in BusCommandMessages)
-                if (!await busMessage.IsComplete())
-                    return false;
-
-            foreach (var busMessage in BusEventMessages)
-                if (!await busMessage.IsComplete())
-                    return false;
-
-            foreach (var dataStoreCreateOperation in DataStoreCreateOperations)
-                if (!await dataStoreCreateOperation.IsCommitted())
-                    return false;
-
-            foreach (var dataStoreUpdateOperation in DataStoreUpdateOperations)
-                if (!await dataStoreUpdateOperation.IsCommitted())
-                    return false;
-
-            foreach (var datastoreDeleteOperation in DataStoreDeleteOperations)
-                if (!await datastoreDeleteOperation.IsCommitted())
-                    return false;
-
-            return true;
+            OptimisticConcurrency = optimisticConcurrency;
         }
 
-        public async Task CompleteOrRollback()
-        {
-            if (!IsComplete())
-            {
+        public List<BusMessageUnitOfWorkItem> BusCommandMessages { get; internal set; }
 
-            }
+        public List<BusMessageUnitOfWorkItem> BusEventMessages { get; internal set; }
+
+        public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; }
+
+        public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; }
+
+        public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; }
+
+        public bool OptimisticConcurrency { get; internal set; }
+    }
+
+    public static class UnitOfWorkExtensions
+    {
+        public enum State
+        {
+            New,
+
+            AllComplete,
+
+            AllRolledBack
         }
 
-        public class BusMessageUnitOfWork : SerialisableObject
+        public static async Task<State> AttemptToFinishAPreviousAttempt(
+            this UnitOfWork unitOfWork,
+            IBusContext busContext,
+            IDataStore dataStore)
         {
-            public BusMessageUnitOfWork(ApiMessage x)
-                : base(x)
             {
-                MessageId = x.MessageId;
-            }
+                /* check the ds UoW's look ahead first to see if there are potential conflicts
+                 if there are then we can assume that is why we failed last time and we should rollback any remaining items
+                 starting with the creates and updates since they are the ones that other people could have seen
+                 and finally returning AllRolledBack */
 
-            public Guid MessageId { get; internal set; }
+                //- don't recalculate these expensive ops
+                var records = await WaitForAllRecords(unitOfWork);
 
-            /* used on retries to know the state of a message */
-            public async Task<bool> IsComplete() => await QueryForCompleteness();
-
-            /* checking completeness by using MessageLogEntry record does not guarantee the
-             message has not already been sent as race condition can occur,
-             however MessageLog constraints will filter any duplicates solving that situation 
-             and for our purposes of knowing whether to resend it is sufficiently consistent
-             and will avoid duplicates in 99% of cases */
-            private async Task<bool> QueryForCompleteness()
-            {
-                var logEntry = (await MContext.DataStore.Read<MessageLogEntry>(x => x.id == MessageId)).SingleOrDefault();
-                return logEntry != null;
-            }
-        }
-
-        public class DataStoreUnitOfWork
-        {
-            public OperationTypes OperationType { get; internal set; }
-
-            public SerialisableObject BeforeModel { get; internal set; }
-
-            public SerialisableObject AfterModel { get; internal set; }
-
-            public string UnitOfWorkId { get; internal set; }
-
-            public Guid ObjectId { get; internal set; }
-
-            public enum OperationTypes
-            {
-                Create,
-                Update,
-                HardDelete
-            }
-
-            [Flags]
-            public enum RecordState
-            {
-                NotCommittedOrRolledBack,
-                CommittedAndSuperseded,
-                CommittedAndRemainsLatestVersion
-            }
-
-            public DataStoreUnitOfWork(IAggregate beforeModel, IAggregate afterModel, Guid soapUnitOfWorkId, OperationTypes operationType)
-            {
-                Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //- should never happen
-                OperationType = operationType;
-                BeforeModel = beforeModel.ToSerialisableObject();
-                AfterModel = afterModel.ToSerialisableObject();
-                UnitOfWorkId = soapUnitOfWorkId.ToString();
-                ObjectId = afterModel.id;
-            }
-
-            internal DataStoreUnitOfWork()
-            { }
-
-            public Task Rollback(Func<IAggregate, Task> delete, Func<IAggregate, Task> create, Func<IAggregate, Task> resetTo)
-            {
-                Task task = OperationType switch
+                return unitOfWork switch
                 {
-                    OperationTypes.Create => delete(AfterModel.FromSerialisableObject<IAggregate>()),
-                    OperationTypes.Update => resetTo(BeforeModel.FromSerialisableObject<IAggregate>()),
-                    OperationTypes.HardDelete => create(BeforeModel.FromSerialisableObject<IAggregate>()),
-                    _ => throw new DomainException("Unhandled Operation Type")
+                    var u when IsEmpty(u) => State.New,
+                    _ => await AttemptCompletion(records, unitOfWork, busContext)
                 };
-                return task;
             }
 
-            public async Task<bool> IsCommitted() =>
-                await GetRecordState() == (RecordState.CommittedAndSuperseded | RecordState.CommittedAndRemainsLatestVersion);
+            static async Task<State> AttemptCompletion(List<Record> records, UnitOfWork unitOfWork, IBusContext busContext)
+            {
+                if (!unitOfWork.OptimisticConcurrency) return await CompleteDataAndMessages();
 
-            /* used on retries to know the state of a message */
-            private async Task<RecordState> GetRecordState()
+                return records switch
+                {
+                    var r when HasNotStartedDataButCannotFinish(r) => State.AllRolledBack,
+                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(),
+                    var r when PartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(),
+                    var r when CompletedDataButNotMarkedAsCompleted(r) => await CompleteMessages(),
+                    _ => throw new DomainException(
+                             "Unaccounted for case in handling failed unit of work"
+                             + $" {MContext.AfterMessageLogEntryObtained.MessageLogEntry.id}")
+                };
+
+                async Task<State> RollbackRemaining()
+                {
+                    foreach (var record in records.Where(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed))
+                        await record.UowItem.Rollback(null, null, null);
+                    return State.AllRolledBack;
+                }
+
+                async Task<State> CompleteDataAndMessages()
+                {
+                    await SaveUnsavedData(records);
+                    return await CompleteMessages();
+                }
+
+                async Task<State> CompleteMessages()
+                {
+                    await SendAnyUnsentMessages(unitOfWork, busContext);
+                    await MContext.AfterMessageLogEntryObtained.MessageLogEntry.CompleteUnitOfWork();
+                    return State.AllComplete;
+                }
+
+                //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
+                static bool PartiallyCompletedDataAndCanFinish(List<Record> records)
+                {
+                    return records.Any(
+                        x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack
+                             && !ThereAreRecordsThatCannotBeCompleted(records));
+                }
+
+                //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
+                static bool HasNotStartedDataButCannotFinish(List<Record> records)
+                {
+                    return records.All(
+                        x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack
+                             && MContext.AfterMessageLogEntryObtained.MessageLogEntry.ProcessingComplete == false);
+                }
+
+                /* could be from messages or just the complete flag itself, in any case the complete
+                method can be called and it will skip over the completed methods */
+                static bool CompletedDataButNotMarkedAsCompleted(List<Record> records)
+                {
+                    return records.All(
+                        x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed
+                             && MContext.AfterMessageLogEntryObtained.MessageLogEntry.ProcessingComplete == false);
+                }
+
+                static bool PartiallyCompletedDataButCannotFinish(List<Record> records)
+                {
+                    return ThereAreRecordsThatCannotBeCompleted(records) && records.Any(
+                               x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed);
+                }
+
+                static bool ThereAreRecordsThatCannotBeCompleted(List<Record> records)
+                {
+                    return records.Any(
+                        r => r.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack && r.Superseded);
+                }
+            }
+
+            static bool IsEmpty(UnitOfWork u)
+            {
+                return !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
+                       && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
+            }
+
+            static async Task SaveUnsavedData(List<Record> records)
             {
                 {
-                    List<AggregateVersionInfo> history = null;
+                    /* use order least vulnerable to rollbacks,
+                 take updates which and prioritize those that are modified recently 
+                 then take creates, because deletes are always allowed through both physically
+                 and logically (I don't think we care about race condition when deleting) and if a create
+                 fails it means less to rollback if the deletes have not been done yet*/
 
-                    await GetAggregateHistory(ObjectId, (BeforeModel ?? AfterModel).TypeName, v => history = v);
+                    var incompleteRecords = records
+                                            .Where(
+                                                x => x.State == DataStoreUnitOfWorkItemExtensions
+                                                                .RecordState.NotCommittedOrRolledBack)
+                                            .OrderBy(
+                                                x => x.UowItem.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Update)
+                                            .ThenBy(x => x.UowItem.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Create)
+                                            .ThenByDescending(
+                                                x => x.UowItem.BeforeModel?.Deserialise<IAggregate>()
+                                                      .ModifiedAsMillisecondsEpochTime)
+                                            .ToList();
 
-                    return history switch
-                    {
-                        var h when ChangeHasNotBeenCommittedOrWasRolledBack(h) => RecordState.NotCommittedOrRolledBack,
-                        var h when ChangeHasBeenCommittedButSuperseded(h) => RecordState.CommittedAndSuperseded,
-                        _ => RecordState.CommittedAndRemainsLatestVersion
-                    };
+                    foreach (var incompleteRecord in incompleteRecords) await SaveRecord(incompleteRecord);
                 }
 
-                bool AggregateExists(List<AggregateVersionInfo> history) => history != null;
-
-                bool ChangeHasNotBeenCommittedOrWasRolledBack(List<AggregateVersionInfo> history)
+                static async Task SaveRecord(Record r)
                 {
-                    return this.OperationType switch
+                    var before = r.UowItem.BeforeModel?.Deserialise<IAggregate>();
+                    var after = r.UowItem.AfterModel?.Deserialise<IAggregate>();
+
+                    switch (r.UowItem.OperationType)
                     {
-                        OperationTypes.Create => !AggregateExists(history),
-                        OperationTypes.HardDelete => AggregateExists((history)),
-                        OperationTypes.Update => !history.Exists(v => v.UnitOfWorkId == this.UnitOfWorkId),
-                        _ => throw new DomainException("Operation Type Unknown")
-                    };
+                        case DataStoreUnitOfWorkItem.OperationTypes.Update:
+                            await MContext.DataStore.DocumentRepository.UpdateAsync(after, nameof(AttemptToFinishAPreviousAttempt));
+                            break;
+                        case DataStoreUnitOfWorkItem.OperationTypes.Create:
+                            await MContext.DataStore.DocumentRepository.CreateAsync(
+                                after,
+                                nameof(AttemptToFinishAPreviousAttempt));
+                            break;
+                        case DataStoreUnitOfWorkItem.OperationTypes.HardDelete:
+                            await MContext.DataStore.DocumentRepository.DeleteAsync(
+                                before,
+                                nameof(AttemptToFinishAPreviousAttempt));
+                            break;
+                    }
+
                 }
+            }
 
-                /* dont rely on eTag where, too many dependencies on that feature will make it brittle
-                 checking the now consistent history is equally as good. etag will still be the ultimate
-                 arbiter of all subsequent changes during retries. This is simply used to skip rollbacks
-                 where they have already been superseded. */
-                bool ChangeHasBeenCommittedButSuperseded(List<AggregateVersionInfo> history)
+            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBusContext busContext)
+            {
+                /* cannot rollback messages, forward only,
+            it's not the same risk as data though since there are no concurrency issues
+            it's really only infrastructure problems that would stop you here */
+                var incompleteCommands = await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete());
+                incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList().ForEach(busContext.Send);
+
+                var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete());
+                incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList().ForEach(busContext.Publish);
+            }
+
+            static async Task<List<Record>> WaitForAllRecords(UnitOfWork unitOfWork)
+            {
+                var records = new List<Record>();
+                await foreach (var item in unitOfWork.DataStoreOperationState()) records.Add(item);
+
+                return records;
+            }
+        }
+
+        public static async IAsyncEnumerable<Record> DataStoreOperationState(this UnitOfWork unitOfWork)
+        {
+            {
+                foreach (var op in unitOfWork.DataStoreUpdateOperations.Union(
+                    unitOfWork.DataStoreCreateOperations.Union(
+                        unitOfWork.DataStoreDeleteOperations)))
                 {
-                    if (ChangeHasNotBeenCommittedOrWasRolledBack(history)) return false;
+                    var state = await op.GetRecordState();
+                    yield return new Record(op, state.state, state.superseded);
+                }
+            }
+        }
 
-                    return this.OperationType switch
+        private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
+        {
+            var results = new ConcurrentQueue<T>();
+            var tasks = source.Select(
+                async x =>
                     {
-                        var value when value == OperationTypes.Create || value == OperationTypes.Update
-                        => history.Last().UnitOfWorkId != this.UnitOfWorkId,
-                        _ => throw new DomainException("Operation Type Unknown")
-                    };
-                }
+                    if (await predicate(x))
+                    {
+                        results.Enqueue(x);
+                    }
+                    });
+            await Task.WhenAll(tasks);
+            return results;
+        }
 
-                async Task GetAggregateHistory(Guid aggregateId, string typename, Action<List<AggregateVersionInfo>> setHistory)
-                {
-                    MethodInfo readById = typeof(IDataStore).GetMethod(nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
+        public class Record
+        {
+            public readonly DataStoreUnitOfWorkItemExtensions.RecordState State;
 
-                    var result = await readById.InvokeAsync(
-                        MContext.DataStore,
-                        new object[]
-                        {
-                            aggregateId
-                        });
+            public readonly bool Superseded;
 
-                    //- relying on history never being null if the aggregate exists
-                    setHistory(((IAggregate)result)?.VersionHistory);
-                }
+            public readonly DataStoreUnitOfWorkItem UowItem;
 
+            public Record(DataStoreUnitOfWorkItem uowItem, DataStoreUnitOfWorkItemExtensions.RecordState state, bool superseded)
+            {
+                this.UowItem = uowItem;
+                this.State = state;
+                this.Superseded = superseded;
             }
         }
     }

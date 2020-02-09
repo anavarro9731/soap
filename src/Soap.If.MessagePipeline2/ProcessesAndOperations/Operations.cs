@@ -5,7 +5,6 @@
     using DataStore.Interfaces.LowLevel;
     using Serilog;
     using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.MessagePipeline2.MessagePipeline;
 
     public class Operations<T> : Operations where T : class, IAggregate, new()
     {

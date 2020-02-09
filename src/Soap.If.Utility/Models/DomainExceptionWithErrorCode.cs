@@ -1,9 +1,9 @@
-﻿namespace Soap.If.Utility.PureFunctions
+﻿namespace Soap.If.Utility.Models
 {
     using System;
     using System.Reflection;
     using Soap.If.Interfaces;
-    using Soap.If.Utility.PureFunctions.Extensions;
+    using Soap.If.Utility.Functions.Extensions;
 
     public class DomainExceptionWithErrorCode : Exception
     {

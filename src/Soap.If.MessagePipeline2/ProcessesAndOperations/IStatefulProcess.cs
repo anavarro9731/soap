@@ -2,7 +2,7 @@
 {
     using System.Threading.Tasks;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models;
+    using Soap.If.MessagePipeline.MessagePipeline;
 
     /// <summary>
     ///     a way to pull items out of the container not using a base class

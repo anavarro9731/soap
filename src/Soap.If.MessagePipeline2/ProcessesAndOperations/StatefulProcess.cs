@@ -7,13 +7,12 @@ namespace Soap.If.MessagePipeline.ProcessesAndOperations
     using DataStore.Interfaces;
     using Serilog;
     using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Messages.ProcessMessages;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.If.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.MessagePipeline2.MessagePipeline;
     using Soap.If.Utility;
-    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.Functions.Operations;
+    using Soap.If.Utility.Objects.Binary;
     using Soap.Pf.BusContext;
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>

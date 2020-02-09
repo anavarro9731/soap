@@ -4,7 +4,7 @@ namespace Soap.If.MessagePipeline.MessageAggregator
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.If.Utility.PureFunctions;
+    using Soap.If.Utility.Functions.Operations;
 
     public class MessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {
