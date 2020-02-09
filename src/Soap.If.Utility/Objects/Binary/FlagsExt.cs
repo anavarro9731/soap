@@ -1,8 +1,8 @@
-﻿namespace Soap.If.Utility.Objects.Binary
+﻿namespace Soap.Utility.Objects.Binary
 {
     using System;
     using System.Collections.Generic;
-    using Soap.If.Utility.Functions.Operations;
+    using Soap.Utility.Functions.Operations;
 
     /* stores a bunch of different flags in a single serialisable class
      avoids lots of bool properties and can also be used to represent 

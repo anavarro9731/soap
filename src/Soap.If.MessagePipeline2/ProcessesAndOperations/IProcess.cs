@@ -1,8 +1,8 @@
-﻿namespace Soap.If.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.MessagePipeline;
 
     /// <summary>
     ///     a way to pull items out of the container not using a base class

@@ -1,8 +1,8 @@
-﻿namespace Soap.If.MessagePipeline
+﻿namespace Soap.MessagePipeline
 {
     using System;
-    using Soap.If.Interfaces;
-    using Soap.If.Utility.Functions.Extensions;
+    using Soap.Interfaces;
+    using Soap.Utility.Functions.Extensions;
 
     public class GlobalErrorCodes : ErrorCode
     {

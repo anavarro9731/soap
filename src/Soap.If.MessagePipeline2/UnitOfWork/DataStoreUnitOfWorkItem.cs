@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.UnitOfWork
+﻿namespace Soap.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Collections.Generic;
@@ -7,9 +7,9 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
-    using Soap.If.Utility.Models;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Models;
 
     public class DataStoreUnitOfWorkItem
     {

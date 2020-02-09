@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.Functions.Operations
+﻿namespace Soap.Utility.Functions.Operations
 {
     using System;
 

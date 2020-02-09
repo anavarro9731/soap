@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.Enums
+﻿namespace Soap.Utility.Enums
 {
     public enum ErrorMessageSensitivity
     {

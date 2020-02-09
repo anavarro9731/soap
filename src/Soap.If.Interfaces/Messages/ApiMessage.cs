@@ -1,6 +1,7 @@
-﻿namespace Soap.If.Interfaces.Messages
+﻿namespace Soap.Interfaces.Messages
 {
     using System;
+    using CircuitBoard.Messages;
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
@@ -13,7 +14,7 @@
     a default impl so in most cases abstract classes are still preferable where a Is-A relation exists
      */
 
-    public abstract class ApiMessage
+    public abstract class ApiMessage : IMessage
     {
         public string IdentityToken { get; set; }
 

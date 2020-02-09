@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Interfaces
+﻿namespace Soap.Interfaces
 {
     using System;
     using System.Collections.Generic;

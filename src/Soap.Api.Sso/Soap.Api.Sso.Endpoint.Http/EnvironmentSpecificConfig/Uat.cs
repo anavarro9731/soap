@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sso.Endpoint.Http.EnvironmentSpecificConfig
+﻿anamespace Soap.Api.Sso.Endpoint.Http.EnvironmentSpecificConfig
 {
     using System;
     using System.Diagnostics;

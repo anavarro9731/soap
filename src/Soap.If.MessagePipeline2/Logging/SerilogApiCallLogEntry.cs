@@ -1,10 +1,10 @@
-﻿namespace Soap.If.MessagePipeline.Logging
+﻿namespace Soap.MessagePipeline.Logging
 {
     using System;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.MessagePipeline;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.MessagePipeline;
 
-    public abstract class SerilogApiMessageEntry
+    public abstract class SerilogApiCallLogEntry
     {
         public string ApplicationName { get; set; }
 
@@ -33,7 +33,7 @@
         public string UserName { get; set; }
     }
 
-    public class SuccessfulAttempt : SerilogApiMessageEntry
+    public class SuccessfulAttempt : SerilogApiCallLogEntry
     {
         public SuccessfulAttempt()
         {
@@ -41,7 +41,7 @@
         }
     }
 
-    public class FailedAttempt : SerilogApiMessageEntry
+    public class FailedAttempt : SerilogApiCallLogEntry
     {
         public FailedAttempt(FormattedExceptionInfo exceptionInfo)
         {

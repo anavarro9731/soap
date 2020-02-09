@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.Logging
+﻿namespace Soap.MessagePipeline.Logging
 {
     using System;
     using System.Collections.Generic;
@@ -6,12 +6,11 @@
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces.LowLevel;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.MessagePipeline;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
-    using Soap.If.Utility.Models;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.MessagePipeline.UnitOfWork;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Models;
 
     public static class MessageLogEntryExts
     {

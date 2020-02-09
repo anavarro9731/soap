@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.UnitOfWork
+﻿namespace Soap.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Threading.Tasks;

@@ -20,7 +20,6 @@
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Logic\Soap.Api.Sso.Domain.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Endpoint.Http\Soap.Api.Sso.Endpoint.Http.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Endpoint.Msmq\Soap.Api.Sso.Endpoint.Msmq.csproj" />
-    <ProjectReference Include="..\..\Soap.Pf.DomainTestsBase\Soap.Pf.DomainTestsBase.csproj" />
     <ProjectReference Include="..\..\Soap.Pf.HttpEndpointBase\Soap.Pf.HttpEndpointBase.csproj" />
   </ItemGroup>
 

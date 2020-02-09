@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.MessagePipeline
+﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
     using System.Collections.Generic;
@@ -9,22 +9,21 @@
     using CircuitBoard.Permissions;
     using DataStore;
     using DataStore.Interfaces;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
+    using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Logging;
+    using Soap.MessagePipeline.UnitOfWork;
     using Soap.Pf.MessageContractsBase.Commands;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
 
-    public static class IApiMessageExtensions
+    public static class ApiMessageExtensions
     {
         internal static void Authenticate(
             this ApiMessage message,
-            IAuthenticateUsers authenticator,
             Action<IIdentityWithPermissions> outIdentity)
         {
-            var identity = message.IdentityToken != null ? authenticator.Authenticate(message) : null;
+            var identity = message.IdentityToken != null ? MContext.Authenticate(message) : null;
             outIdentity(identity);
         }
 
@@ -160,7 +159,7 @@
                     instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
                 }
 
-                MContext.Bus.Send(instanceOfMesageFailedAllRetries);
+                MContext.BusContext.Send(instanceOfMesageFailedAllRetries);
             }
         }
 

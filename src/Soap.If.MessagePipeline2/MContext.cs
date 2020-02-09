@@ -1,45 +1,69 @@
-﻿namespace Soap.If.MessagePipeline
+﻿namespace Soap.MessagePipeline
 {
     using System;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Permissions;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.MessagePipeline.MessagePipeline;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
-    using Soap.If.Utility.Objects.Blended;
-    using Soap.Pf.BusContext;
+    using Soap.BusContext;
+    using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Logging;
+    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Objects.Blended;
 
     public static class MContext
     {
-        private static bool afterMessageLogEntryCreated;
-
-        public static IApplicationConfig AppConfig => CallContext.GetData(nameof(AppConfig)).As<IApplicationConfig>();
-
-        public static MessageBus Bus => CallContext.GetData(nameof(Bus)).As<MessageBus>();
-
-        public static IDataStore DataStore => CallContext.GetData(nameof(DataStore)).As<IDataStore>();
-
-        public static ILogger Logger => CallContext.GetData(nameof(Logger)).As<ILogger>();
-
-        public static IMessageAggregator MessageAggregator => CallContext.GetData(nameof(MessageAggregator)).As<IMessageAggregator>();
-
-        internal static void Set(
-            IApplicationConfig appConfig,
-            IDataStore dataStore,
-            IMessageAggregator messageAggregator,
-            ILogger logger,
-            IBusContext busContext)
+        public class PerCallStageOneVariables
         {
-            CallContext.SetData(nameof(AppConfig), appConfig);
-            CallContext.SetData(nameof(DataStore), dataStore);
-            CallContext.SetData(nameof(MessageAggregator), messageAggregator);
-            CallContext.SetData(nameof(Bus), busContext);
-            CallContext.SetData(nameof(Logger), logger);
+            public PerCallStageOneVariables(IAuthenticateUsers authenticator, ApplicationConfig appConfig, IDataStore dataStore, IMessageAggregator messageAggregator, ILogger logger, IBusContext busContext)
+            {
+                this.Authenticator = authenticator;
+                this.AppConfig = appConfig;
+                this.DataStore = dataStore;
+                this.MessageAggregator = messageAggregator;
+                this.Logger = logger;
+                this.BusContext = busContext;
+            }
+
+            public readonly IAuthenticateUsers Authenticator;
+
+            public readonly ApplicationConfig AppConfig;
+
+            public readonly IDataStore DataStore;
+
+            public readonly IMessageAggregator MessageAggregator;
+
+            public readonly ILogger Logger;
+
+            public readonly IBusContext BusContext;
+        }
+
+        private static bool AfterMessageLogEntrySet => (bool)CallContext.GetData(nameof(AfterMessageLogEntrySet));
+
+        public static ApplicationConfig AppConfig => CallContext.GetData(nameof(ApplicationConfig)).As<ApplicationConfig>();
+
+        public static MessageBus BusContext => CallContext.GetData(nameof(IBusContext)).As<MessageBus>();
+        
+        public static IDataStore DataStore => CallContext.GetData(nameof(IDataStore)).As<IDataStore>();
+        
+        public static ILogger Logger => CallContext.GetData(nameof(ILogger)).As<ILogger>();
+
+        public static IMessageAggregator MessageAggregator => CallContext.GetData(nameof(IMessageAggregator)).As<IMessageAggregator>();
+
+        public static Func<ApiMessage, IIdentityWithPermissions> Authenticate =>
+            CallContext.GetData(nameof(IAuthenticateUsers)).As<IAuthenticateUsers>().Authenticate;
+
+        internal static void SetForCall(PerCallStageOneVariables vars)
+        {
+            CallContext.SetData(nameof(ApplicationConfig), vars.AppConfig);
+            CallContext.SetData(nameof(IDataStore), vars.DataStore);
+            CallContext.SetData(nameof(IMessageAggregator), vars.MessageAggregator);
+            CallContext.SetData(nameof(IBusContext), vars.BusContext);
+            CallContext.SetData(nameof(ILogger), vars.Logger);
+            CallContext.SetData(nameof(IAuthenticateUsers), vars.Authenticator);
         }
 
         public static class AfterMessageLogEntryObtained
@@ -74,7 +98,7 @@
             internal static void UpdateContext(ApiMessage message, MessageLogEntry logEntry,
                 (DateTime receivedAt, long ticks) timeStamp, IIdentityWithPermissions identity)
             {
-                MContext.AfterMessageLogEntryObtained.Set(
+                MContext.AfterMessageLogEntryObtained.SetForCall(
                     new MessageMeta
                     {
                         StartTicks = timeStamp.ticks,
@@ -85,18 +109,18 @@
                     null, logEntry);
             }
 
-            private static void Set(MessageMeta meta, IMapErrorCodesFromDomainToMessageErrorCodes mapper, MessageLogEntry logEntry)
+            private static void SetForCall(MessageMeta meta, IMapErrorCodesFromDomainToMessageErrorCodes mapper, MessageLogEntry logEntry)
             {
                 CallContext.SetData(nameof(MessageMeta), meta);
                 CallContext.SetData(nameof(MessageLogEntry), logEntry);
                 CallContext.SetData(nameof(DomainToMessageErrorCodesMapper), mapper);
-                afterMessageLogEntryCreated = true;
+                CallContext.SetData(nameof(AfterMessageLogEntrySet), true);
             }
 
             private static void GuardTiming()
             {
                 Guard.Against(
-                    afterMessageLogEntryCreated == false,
+                    AfterMessageLogEntrySet == false,
                     $"Cannot access {nameof(AfterMessageLogEntryObtained)} properties until message entry has been created");
             }
         }

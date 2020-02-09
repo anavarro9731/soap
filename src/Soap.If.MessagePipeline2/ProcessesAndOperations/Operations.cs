@@ -1,10 +1,9 @@
-﻿namespace Soap.If.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Serilog;
-    using Soap.If.MessagePipeline.UnitOfWork;
 
     public class Operations<T> : Operations where T : class, IAggregate, new()
     {

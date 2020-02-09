@@ -1,7 +1,6 @@
-﻿namespace Soap.If.Interfaces.Messages
+﻿namespace Soap.Interfaces.Messages
 {
     using System;
-    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     /* these two classes should not inherit from each other so as to allow

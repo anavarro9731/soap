@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.Models
+﻿namespace Soap.Utility.Models
 {
     using System;
     using System.Reflection;

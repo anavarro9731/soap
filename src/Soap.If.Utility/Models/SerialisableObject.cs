@@ -1,9 +1,6 @@
-﻿namespace Soap.If.Utility.Models
+﻿namespace Soap.Utility.Models
 {
-    using System;
-    using System.Text.Json;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Extensions;
 
     public class SerialisableObject
     {

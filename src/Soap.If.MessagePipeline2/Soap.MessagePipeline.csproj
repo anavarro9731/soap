@@ -10,8 +10,8 @@
 
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.Utility\Soap.If.Utility.csproj" />
-    <ProjectReference Include="..\Soap.Pf.BusContext\Soap.Pf.BusContext.csproj" />
+    <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
+    <ProjectReference Include="..\Soap.Pf.BusContext\Soap.BusContext.csproj" />
     <ProjectReference Include="..\Soap.Pf.MessageContractsBase2\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
 </Project>

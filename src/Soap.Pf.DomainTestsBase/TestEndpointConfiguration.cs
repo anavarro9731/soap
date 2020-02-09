@@ -74,6 +74,18 @@
 
                     CreateLogger(sink, out logger);
 
+                    void CreateLogger(MessageAggregatorSink sink, out ILogger logger)
+                    {
+                        var loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", "Testing")
+                                                                           .Enrich.WithExceptionDetails()
+                                                                           .Destructure.UsingAttributes()
+                                                                           .WriteTo.Sink(sink)
+                                                                           .WriteTo.Console();
+
+                        logger = loggerConfiguration.CreateLogger(); // create serilog ILogger
+                        Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
+                    }
+
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
                         this.applicationConfig,
@@ -117,17 +129,7 @@
                 }
             }
 
-            void CreateLogger(MessageAggregatorSink sink, out ILogger logger)
-            {
-                var loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", "Testing")
-                                                                   .Enrich.WithExceptionDetails()
-                                                                   .Destructure.UsingAttributes()
-                                                                   .WriteTo.Sink(sink)
-                                                                   .WriteTo.Console();
 
-                logger = loggerConfiguration.CreateLogger(); // create serilog ILogger
-                Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
-            }
 
             void ApplyCustomApplicationConfigActions()
             {

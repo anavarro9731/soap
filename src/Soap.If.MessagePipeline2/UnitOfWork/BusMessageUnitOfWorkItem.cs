@@ -1,11 +1,11 @@
-﻿namespace Soap.If.MessagePipeline.UnitOfWork
+﻿namespace Soap.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.Utility.Models;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Logging;
+    using Soap.Utility.Models;
 
     public class BusMessageUnitOfWorkItem : SerialisableObject
     {

@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
-    <ProjectReference Include="..\Soap.Pf.ClientServerMessaging\Soap.Pf.ClientServerMessaging.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

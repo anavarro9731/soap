@@ -1,38 +1,15 @@
-﻿namespace Soap.Pf.BusContext
+﻿namespace Soap.BusContext
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using CircuitBoard.Messages;
     using Microsoft.Azure.ServiceBus;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-
-    public class QueuedPublishEvent : IQueuedBusOperation
-    {
-        public Func<Task> CommitClosure { get; set; }
-
-        public bool Committed { get; set; }
-
-        public ApiEvent EventToSend { get; set; }
-    }
-
-    public interface IQueuedBusOperation : IQueuedStateChange
-    {
-    }
-
-    public class QueuedCommandToSend : IQueuedBusOperation
-    {
-        public ApiCommand CommandToSend { get; set; }
-
-        public Func<Task> CommitClosure { get; set; }
-
-        public bool Committed { get; set; }
-    }
+    using Soap.Interfaces;
+    using Soap.Interfaces.Bus;
+    using Soap.Interfaces.Messages;
 
     public class MessageBus : IBusContext
     {

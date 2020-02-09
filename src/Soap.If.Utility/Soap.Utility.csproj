@@ -8,6 +8,6 @@
     <PackageReference Include="FluentValidation" Version="8.6.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
 </Project>

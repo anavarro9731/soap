@@ -1,4 +1,4 @@
-﻿namespace Soap.If.MessagePipeline.Permissions
+﻿namespace Soap.MessagePipeline.Permissions
 {
     using System;
     using CircuitBoard.Permissions;

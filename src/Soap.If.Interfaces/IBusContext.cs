@@ -1,7 +1,6 @@
-﻿namespace Soap.If.Interfaces
+﻿namespace Soap.Interfaces
 {
-    using System.Threading.Tasks;
-    using Soap.If.Interfaces.Messages;
+    using Soap.Interfaces.Messages;
 
     public interface IBusContext
     {

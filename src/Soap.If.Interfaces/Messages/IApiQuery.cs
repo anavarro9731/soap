@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Interfaces.Messages
+﻿namespace Soap.Interfaces.Messages
 {
     using System.Threading.Tasks;
 

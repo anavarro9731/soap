@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.PWDTK
+﻿namespace Soap.Utility.PWDTK
 {
     using System;
     using System.Linq;

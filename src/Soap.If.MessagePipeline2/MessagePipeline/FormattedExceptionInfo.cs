@@ -1,11 +1,11 @@
-﻿namespace Soap.If.MessagePipeline.MessagePipeline
+﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using FluentValidation;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Models;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Models;
 
     public class FormattedExceptionInfo 
     {

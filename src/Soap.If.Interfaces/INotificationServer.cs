@@ -1,6 +1,6 @@
-﻿namespace Soap.If.Interfaces
+﻿namespace Soap.Interfaces
 {
-    public interface INotifyUsers
+    public interface INotificationServer
     {
         void Notify(string text, string subject, string[] sendTo);
     }

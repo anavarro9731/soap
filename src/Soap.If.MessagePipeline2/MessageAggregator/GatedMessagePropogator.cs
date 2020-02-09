@@ -1,9 +1,9 @@
-namespace Soap.If.MessagePipeline.MessageAggregator
+namespace Soap.MessagePipeline.MessageAggregator
 {
     using System;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.If.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Extensions;
 
     public class GatedMessagePropogator<TMessage> : IPropogateMessages<TMessage> where TMessage : IMessage
     {

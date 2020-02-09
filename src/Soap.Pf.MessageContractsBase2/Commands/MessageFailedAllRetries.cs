@@ -3,7 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using FluentValidation;
-    using Soap.If.Interfaces;
+    using Soap.Interfaces;
 
     public class MessageFailedAllRetries<TFailedMessage> : MessageFailedAllRetries
     {

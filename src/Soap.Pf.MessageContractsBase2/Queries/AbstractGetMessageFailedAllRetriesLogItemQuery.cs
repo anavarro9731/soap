@@ -1,7 +1,7 @@
 ﻿namespace Soap.Pf.MessageContractsBase.Queries
 {
     using System;
-    using Soap.If.Interfaces.Messages;
+    using Soap.Interfaces.Messages;
 
     public abstract class AbstractGetMessageFailedAllRetriesLogItem<TResponse> : ApiCommand<TResponse>
         where TResponse : AbstractGetMessageFailedAllRetriesLogItem<TResponse>.AbstractResponseEvent, new()

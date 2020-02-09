@@ -1,7 +1,7 @@
-namespace Soap.If.Utility.Objects.Binary
+namespace Soap.Utility.Objects.Binary
 {
     using System;
-    using Soap.If.Utility.PWDTK;
+    using Soap.Utility.PWDTK;
 
     /// <summary>
     ///     This is a HMACSHA512 implementation of PBKDF2 With a 512-bit(64 bytes) random default salt and variable iterations

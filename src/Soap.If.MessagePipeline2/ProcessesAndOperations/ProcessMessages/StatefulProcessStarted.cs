@@ -1,4 +1,4 @@
-namespace Soap.If.MessagePipeline.ProcessesAndOperations.ProcessMessages
+namespace Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages
 {
     public class StatefulProcessStarted : ProcessStarted
     {

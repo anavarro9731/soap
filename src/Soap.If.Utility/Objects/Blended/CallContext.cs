@@ -1,4 +1,4 @@
-﻿namespace Soap.If.Utility.Objects.Blended
+﻿namespace Soap.Utility.Objects.Blended
 {
     using System.Collections.Concurrent;
     using System.Threading;

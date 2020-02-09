@@ -1,11 +1,10 @@
-﻿namespace Soap.If.MessagePipeline.MessageAggregator
+﻿namespace Soap.MessagePipeline.MessageAggregator
 {
     using System;
     using System.Collections.Generic;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
-    using Soap.If.Interfaces;
 
     /// <summary>
     ///     doesn't allow calls through unless they are DataStore or Bus operations which we always test

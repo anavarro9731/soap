@@ -1,4 +1,4 @@
-﻿namespace Soap.Pf.DomainModelsBase
+﻿ namespace Soap.Pf.DomainModelsBase
 {
     using System;
     using DataStore.Interfaces.LowLevel;

@@ -1,19 +1,16 @@
-﻿namespace Soap.If.MessagePipeline.UnitOfWork
+﻿namespace Soap.MessagePipeline.UnitOfWork
 {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.Remoting;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using DataStore.Models.Messages;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Models;
+    using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Logging;
+    using Soap.Utility.Models;
 
     public class UnitOfWork
     {

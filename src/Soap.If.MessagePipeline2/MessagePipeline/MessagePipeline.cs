@@ -1,33 +1,18 @@
-﻿namespace Soap.If.MessagePipeline.MessagePipeline
+﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
-    using System.Data;
-    using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
     using CircuitBoard.Permissions;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Logging;
+    using Soap.MessagePipeline.UnitOfWork;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
 
-    /// <summary>
-    ///     1. Build MetaData to the message
-    ///     2. Map it to a specific handler type
-    ///     3. Log the overall result of the attempted operation.
-    /// </summary>
-    public class MessagePipeline
+    public static class MessagePipeline
     {
-        private readonly IAuthenticateUsers authenticator;
-
-        public MessagePipeline(IAuthenticateUsers authenticator)
-        {
-            this.authenticator = authenticator;
-        }
-
-        public async Task Execute(string messageJson, string assemblyQualifiedName)
+        public static async Task Execute(string messageJson, string assemblyQualifiedName, Func<MContext.PerCallStageOneVariables> setCallVars)
         {
             {
                 var receivedAtTick = StopwatchOps.GetStopwatchTimestamp();
@@ -55,13 +40,19 @@
 
                     await m.CreateOrFindLogEntry(v => messageLogEntry = v);
 
-                    m.Authenticate(this.authenticator, v => identity = v);
+                    m.Authenticate(v => identity = v);
 
-                    MContext.AfterMessageLogEntryObtained.UpdateContext(m, messageLogEntry, (receivedAt, receivedAtTick), identity);
+                    MContext.AfterMessageLogEntryObtained.UpdateContext(
+                        m,
+                        messageLogEntry,
+                        (receivedAt, receivedAtTick),
+                        identity);
 
                     m.ValidateOrThrow();
 
-                    var result = await messageLogEntry.UnitOfWork.AttemptToFinishAPreviousAttempt(MContext.Bus, MContext.DataStore);
+                    var result = await messageLogEntry.UnitOfWork.AttemptToFinishAPreviousAttempt(
+                                     MContext.BusContext,
+                                     MContext.DataStore);
 
                     switch (result)
                     {
@@ -79,7 +70,7 @@
                                     break;
                                 case IApiQuery q:
                                     var responseEvent = await q.Handle();
-                                    MContext.Bus.Publish(responseEvent);
+                                    MContext.BusContext.Publish(responseEvent);
                                     break;
                                 case ApiCommand c:
                                     await c.Handle();
@@ -94,7 +85,7 @@
                             will fall into the catch block below and result in the message being retried
                             from the beginning but there will be no unit of work on the MessageLogEntry */
                             await QueuedStateChanges.CommitChanges();
-                            
+
                             m.SerilogSuccess();
                             break;
                     }
@@ -154,7 +145,8 @@
 
         public static class Constants
         {
-            public static readonly Guid ForceFailBeforeMessageCompletesAndFailErrorHandlerId = Guid.Parse("c7c607b3-fc47-4dbd-81da-8ef28c785a2f");
+            public static readonly Guid ForceFailBeforeMessageCompletesAndFailErrorHandlerId =
+                Guid.Parse("c7c607b3-fc47-4dbd-81da-8ef28c785a2f");
 
             public static readonly Guid ForceFailBeforeMessageCompletesId = Guid.Parse("006717f1-fe50-4d0b-b762-75b883ba4a65");
         }

@@ -1,15 +1,14 @@
-﻿namespace Soap.If.MessagePipeline.UnitOfWork
+﻿namespace Soap.MessagePipeline.UnitOfWork
 {
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
-    using DataStore;
     using DataStore.Interfaces;
     using DataStore.Models.Messages;
-    using Soap.If.MessagePipeline.Logging;
-    using Soap.If.Utility.Functions.Extensions;
-    using Soap.If.Utility.Functions.Operations;
+    using Soap.MessagePipeline.Logging;
+    using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
 
     /*
      * Executes queued changes via a closure.
@@ -50,7 +49,7 @@
             await SaveUnitOfWork();
             
             await MContext.DataStore.CommitChanges();
-            await MContext.Bus.CommitChanges();
+            await MContext.BusContext.CommitChanges();
             await MContext.AfterMessageLogEntryObtained.MessageLogEntry.CompleteUnitOfWork();
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. */

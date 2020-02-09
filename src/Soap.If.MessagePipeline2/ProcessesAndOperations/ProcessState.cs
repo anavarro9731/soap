@@ -1,8 +1,8 @@
-﻿namespace Soap.If.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System.Dynamic;
     using DataStore.Interfaces.LowLevel;
-    using Soap.If.Utility.Objects.Binary;
+    using Soap.Utility.Objects.Binary;
 
     /// <summary>
     ///     stores the data for a process instance

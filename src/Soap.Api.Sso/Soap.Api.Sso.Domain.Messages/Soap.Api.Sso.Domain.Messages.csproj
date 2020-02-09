@@ -10,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
+    <ProjectReference Include="..\..\Soap.If.Utility\Soap.Utility.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Constants\Soap.Api.Sso.Domain.Constants.csproj" />
     <ProjectReference Include="..\Soap.Api.Sso.Domain.Models\Soap.Api.Sso.Domain.Models.csproj" />
-    <ProjectReference Include="..\..\Soap.If.Utility\Soap.If.Utility.csproj" />
-    <ProjectReference Include="..\..\Soap.If.Interfaces\Soap.If.Interfaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>

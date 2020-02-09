@@ -2,7 +2,7 @@
 {
     using System;
     using FluentValidation;
-    using Soap.If.Interfaces.Messages;
+    using Soap.Interfaces.Messages;
 
     public abstract class AbstractPingCommand<TPongResponse> : ApiCommand<TPongResponse> where TPongResponse : ApiEvent, new()
     {
