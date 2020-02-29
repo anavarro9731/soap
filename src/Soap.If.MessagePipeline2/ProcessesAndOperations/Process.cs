@@ -6,6 +6,7 @@
     using Serilog;
     using Soap.BusContext;
     using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.Utility.Functions.Operations;
@@ -20,14 +21,19 @@
 
     public abstract class Process
     {
-        protected IDataStoreQueryCapabilities DataReader => MContext.DataStore.AsReadOnly();
+        private readonly ContextAfterMessageObtained context;
 
-        protected IWithoutEventReplay DirectDataReader => MContext.DataStore.WithoutEventReplay;
+        protected Process(ContextAfterMessageObtained context)
+        {
+            this.context = context;
+        }
 
-        protected ILogger Logger => MContext.Logger;
+        protected IDataStoreQueryCapabilities DataReader => this.context.DataStore.AsReadOnly();
 
-        protected IMessageAggregator MessageAggregator => MContext.MessageAggregator;
-        
+        protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
+
+        protected ILogger Logger => this.context.Logger;
+
         protected MessageBus MessageBus { get; private set; }
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
@@ -60,12 +66,12 @@
 
         private void RecordCompleted(ProcessCompleted processCompleted)
         {
-            MessageAggregator.Collect(processCompleted);
+            context.MessageAggregator.Collect(processCompleted);
         }
 
         private void RecordStarted(ProcessStarted statefulProcessStarted)
         {
-            MessageAggregator.Collect(statefulProcessStarted);
+            this.context.MessageAggregator.Collect(statefulProcessStarted);
         }
     }
 }

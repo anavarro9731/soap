@@ -23,11 +23,5 @@
         public Guid MessageId { get; set; }
 
         public DateTime? TimeOfCreationAtOrigin { get; set; }
-
-        public virtual void HandleFinalFailure()
-        {
-        }
-
-        public abstract void Validate();
     }
 }

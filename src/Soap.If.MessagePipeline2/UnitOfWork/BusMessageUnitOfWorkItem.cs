@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using DataStore.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.Utility.Models;
@@ -21,9 +22,9 @@
     public static class BusMessageUnitOfWorkItemExtensions
     {
         /* used on retries to know the state of a message */
-        public static Task<bool> IsComplete(this BusMessageUnitOfWorkItem item)
+        public static Task<bool> IsComplete(this BusMessageUnitOfWorkItem item, IDataStore dataStore)
         {
-            return QueryForCompleteness(item);
+            return QueryForCompleteness(item, dataStore);
         }
 
         /* checking completeness by using MessageLogEntry record does not guarantee the
@@ -31,9 +32,9 @@
          however MessageLog constraints will filter any duplicates solving that situation 
          and for our purposes of knowing whether to resend it is sufficiently consistent
          and will avoid duplicates in 99% of cases */
-        private static async Task<bool> QueryForCompleteness(this BusMessageUnitOfWorkItem item)
+        private static async Task<bool> QueryForCompleteness(this BusMessageUnitOfWorkItem item, IDataStore dataStore)
         {
-            var logEntry = (await MContext.DataStore.Read<MessageLogEntry>(x => x.id == item.MessageId)).SingleOrDefault();
+            var logEntry = (await dataStore.Read<MessageLogEntry>(x => x.id == item.MessageId)).SingleOrDefault();
             return logEntry != null;
         }
     }

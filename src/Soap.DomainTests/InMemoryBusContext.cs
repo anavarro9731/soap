@@ -31,6 +31,11 @@
                 });
         }
 
+        public Task CommitChanges()
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void Send(ApiCommand sendCommand)
         {
             this.messageAggregator.Collect(

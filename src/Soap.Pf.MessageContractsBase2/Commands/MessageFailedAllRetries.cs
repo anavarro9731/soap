@@ -16,17 +16,6 @@
         {
         }
 
-        public override void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
-        }
-
-        public override Task Handle()
-        {
-            throw new NotImplementedException();
-            //- TODO find extensions
-        }
-
         private class Validator : AbstractValidator<MessageFailedAllRetries>
         {
             public Validator()

@@ -12,6 +12,7 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
+    using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.MessagePipeline.MessagePipeline;
@@ -33,8 +34,9 @@
 
                 CreateBusContext(messageAggregator, out busContext);
 
-                var context = new MContext.PerCallStageOneVariables(
+                var context = new BootrappedContext(
                     authenticator: null, //TODO
+                    messageMapper: null, //TODO
                     appConfig: appConfig,
                     logger: logger,
                     busContext: busContext,

@@ -7,6 +7,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
@@ -59,12 +60,12 @@
         }
 
         /* used on retries to know the state of a message */
-        public static async Task<(RecordState state, bool superseded)> GetRecordState(this DataStoreUnitOfWorkItem item)
+        public static async Task<(RecordState state, bool superseded)> GetRecordState(this DataStoreUnitOfWorkItem item, IDataStore dataStore)
         {
             {
                 List<Aggregate.AggregateVersionInfo> history = null;
 
-                await GetAggregateHistory(item.ObjectId, (item.BeforeModel ?? item.AfterModel).TypeName, v => history = v);
+                await GetAggregateHistory(item.ObjectId, (item.BeforeModel ?? item.AfterModel).TypeName, dataStore, v => history = v);
                
                 var superseded = ChangeHasBeenSuperseded(history);
 
@@ -100,11 +101,11 @@
                 return history != null && history.Last().UnitOfWorkId != item.UnitOfWorkId;
             }
 
-            async Task GetAggregateHistory(Guid aggregateId, string typename, Action<List<Aggregate.AggregateVersionInfo>> setHistory)
+            async Task GetAggregateHistory(Guid aggregateId, string typename, IDataStore dataStore, Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
                 var readById = typeof(IDataStore).GetMethod(nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
 
-                var result = await readById.InvokeAsync(MContext.DataStore, aggregateId);
+                var result = await readById.InvokeAsync(dataStore, aggregateId);
 
                 //- relying on history never being null if the aggregate exists
                 setHistory(((IAggregate)result)?.VersionHistory);

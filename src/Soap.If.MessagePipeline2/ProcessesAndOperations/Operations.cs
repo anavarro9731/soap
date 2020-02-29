@@ -4,21 +4,36 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Serilog;
+    using Soap.MessagePipeline.Context;
 
     public class Operations<T> : Operations where T : class, IAggregate, new()
     {
-        protected IDataStoreWriteOnlyScoped<T> DataWriter => MContext.DataStore.AsWriteOnlyScoped<T>();
+        private readonly ContextAfterMessageLogEntryObtained context;
+
+        public Operations(ContextAfterMessageLogEntryObtained context)
+            : base(context)
+        {
+            this.context = context;
+        }
+
+        protected IDataStoreWriteOnlyScoped<T> DataWriter => this.context.DataStore.AsWriteOnlyScoped<T>();
     }
 
     public abstract class Operations
     {
-        protected IDataStoreQueryCapabilities DataReader => MContext.DataStore.AsReadOnly();
+        private readonly ContextAfterMessageLogEntryObtained context;
 
-        protected IWithoutEventReplay DirectDataReader => MContext.DataStore.WithoutEventReplay;
+        protected Operations(ContextAfterMessageLogEntryObtained context)
+        {
+            this.context = context;
+        }
 
-        protected ILogger Logger => MContext.Logger;
+        protected IDataStoreQueryCapabilities DataReader => this.context.DataStore.AsReadOnly();
 
-        protected IMessageAggregator MessageAggregator => MContext.MessageAggregator;
+        protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
+        protected ILogger Logger => this.context.Logger;
+
+        protected IMessageAggregator MessageAggregator => this.context.MessageAggregator;
     }
 }

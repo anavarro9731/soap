@@ -1,10 +1,7 @@
 ﻿namespace Soap.Interfaces.Messages
 {
-    using System.Threading.Tasks;
-
-    //- marker interface, since ApiCommand<T> is generic making x is y comparisons to identify it as a query difficult
-    public interface IApiQuery
+    //* marker interface, since ApiCommand<T> is generic making x is y comparisons to identify it as a query difficult
+    public interface IApiQuery : IApiCommand
     {
-        Task<ApiEvent> Handle();
     }
 }

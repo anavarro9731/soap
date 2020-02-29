@@ -10,11 +10,6 @@
 
         public string PingedBy { get; set; }
 
-        public override sealed void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
-        }
-
         public abstract class AbstractPongEvent : ApiEvent
         {
             public DateTime PingedAt { get; set; }
@@ -25,10 +20,6 @@
 
             public string PongedBy { get; set; }
 
-            public override void Validate()
-            {
-                new Validator().ValidateAndThrow(this);
-            }
 
             public class Validator : AbstractValidator<AbstractPongEvent>
             {

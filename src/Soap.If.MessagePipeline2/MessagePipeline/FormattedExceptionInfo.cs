@@ -4,13 +4,17 @@
     using System.Collections.Generic;
     using System.Linq;
     using FluentValidation;
+    using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
 
-    public class FormattedExceptionInfo 
+    public class FormattedExceptionInfo
     {
-        public FormattedExceptionInfo(Exception exception)
+        private readonly ContextAfterMessageLogEntryObtained context;
+
+        public FormattedExceptionInfo(Exception exception, ContextAfterMessageLogEntryObtained context)
         {
+            this.context = context;
             if (exception is ValidationException validationException)
             {
                 foreach (var validationExceptionError in validationException.Errors)
@@ -26,7 +30,7 @@
             else if (exception is DomainException)
             {
                 var externalErrorMessage = exception.Message == "#default-message#"
-                                               ? MContext.AppConfig.DefaultExceptionMessage
+                                               ? context.AppConfig.DefaultExceptionMessage
                                                : exception.Message;
 
                 Errors.Add((CodePrefixes.DOMAIN, null, externalErrorMessage));
@@ -35,9 +39,11 @@
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
-                var mapErrorCodesFromDomainToMessageErrorCodes = MContext.AfterMessageLogEntryObtained.DomainToMessageErrorCodesMapper;
-                var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error + Environment.NewLine
-                                                             + domainExceptionWithErrorCode.ToString().SubstringBefore("--- ");
+                var mapErrorCodesFromDomainToMessageErrorCodes = context.GetErrorCodeMapper();
+                var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error
+                                                                         + Environment.NewLine + domainExceptionWithErrorCode
+                                                                                                 .ToString()
+                                                                                                 .SubstringBefore("--- ");
 
                 if (domainExceptionWithErrorCode.Error.IsGlobal)
                 {
@@ -47,7 +53,7 @@
                 }
                 else if (mapErrorCodesFromDomainToMessageErrorCodes == null)
                 {
-                    Errors.Add((CodePrefixes.DOMAIN, null, MContext.AppConfig.DefaultExceptionMessage));
+                    Errors.Add((CodePrefixes.DOMAIN, null, context.AppConfig.DefaultExceptionMessage));
                     SensitiveInformation = $"No mapper defined in handler for: {errorMessageAppendixWhenNoMapperExists}";
                 }
                 else
@@ -62,7 +68,7 @@
                     }
                     else
                     {
-                        Errors.Add((CodePrefixes.DOMAIN, null, MContext.AppConfig.DefaultExceptionMessage));
+                        Errors.Add((CodePrefixes.DOMAIN, null, context.AppConfig.DefaultExceptionMessage));
                         SensitiveInformation =
                             $"Mapping {{domain error, msg error}} missing from mapper in handler for: {errorMessageAppendixWhenNoMapperExists}";
                     }
@@ -70,26 +76,28 @@
             }
             else if (exception is ExceptionHandlingException)
             {
-                Errors.Add((CodePrefixes.EXWHEX, null, MContext.AppConfig.DefaultExceptionMessage));
+                Errors.Add((CodePrefixes.EXWHEX, null, context.AppConfig.DefaultExceptionMessage));
                 SensitiveInformation = exception.ToString();
             }
             else
             {
-                Errors.Add((CodePrefixes.CLR, null, MContext.AppConfig.DefaultExceptionMessage));
+                Errors.Add((CodePrefixes.CLR, null, context.AppConfig.DefaultExceptionMessage));
                 SensitiveInformation = exception.ToString();
             }
 
-            ExternalErrorMessage = Errors.Select(x => $"{x.prefix}:{x.code}:{x.message}").Aggregate((a, b) => a + Environment.NewLine + b);
+            ExternalErrorMessage = Errors.Select(x => $"{x.prefix}:{x.code}:{x.message}")
+                                         .Aggregate((a, b) => a + Environment.NewLine + b);
 
-            ApplicationName = MContext.AppConfig.ApplicationName;
-            EnvironmentName = MContext.AppConfig.EnvironmentName;
+            ApplicationName = context.AppConfig.ApplicationName;
+            EnvironmentName = context.AppConfig.EnvironmentName;
         }
 
         public string ApplicationName { get; set; }
 
         public string EnvironmentName { get; set; }
 
-        public List<(string prefix, Guid? code, string message)> Errors { get; set; } = new List<(string prefix, Guid? code, string message)>();
+        public List<(string prefix, Guid? code, string message)> Errors { get; set; } =
+            new List<(string prefix, Guid? code, string message)>();
 
         public string ExternalErrorMessage { get; set; }
 
@@ -101,7 +109,7 @@
 
         public Exception ToEnvironmentSpecificError()
         {
-            if (MContext.AppConfig.ReturnExplicitErrorMessages)
+            if (this.context.AppConfig.ReturnExplicitErrorMessages)
             {
                 return new PipelineException(
                     ExternalErrorMessage + Environment.NewLine + "ERROR DETAILS" + Environment.NewLine + SensitiveInformation,

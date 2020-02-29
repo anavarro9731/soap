@@ -9,12 +9,7 @@
         where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseEvent, new()
     {
         public Guid MessageIdOfLogItem { get; set; }
-
-        public override sealed void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
-        }
-
+        
         public abstract class AbstractResponseEvent : ApiEvent
         {
             public string ClrTypeOfMessage { get; set; }

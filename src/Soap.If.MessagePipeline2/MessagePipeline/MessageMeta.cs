@@ -5,9 +5,16 @@
 
     public class MessageMeta
     {
-        public DateTime ReceivedAt { get; set; }
+        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, IIdentityWithPermissions requestedBy, string schema)
+        {
+            ReceivedAt = receivedAt;
+            RequestedBy = requestedBy;
+            Schema = schema;
+        }
 
-        public long StartTicks { get; set; }
+        internal MessageMeta() { }
+
+        public (DateTime DateTime, long Ticks) ReceivedAt { get; set; }
 
         public IIdentityWithPermissions RequestedBy { get; set; }
 

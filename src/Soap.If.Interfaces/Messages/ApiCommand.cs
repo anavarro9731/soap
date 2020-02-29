@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
 
     /* these two classes should not inherit from each other so as to allow
-     them to be constrained separately to be grouped in lists they both implement IApiCommand
+     them to be constrained separately to be grouped in lists they both implement ApiCommandBase
 
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
     contract assemblies. Use headers to implement variables logic. If you are going to use 
@@ -12,18 +12,18 @@
     which is not backwards compatible. 
      */
 
-    public abstract class ApiCommandBase : ApiMessage
+    public interface IApiCommand 
+    { 
+        Guid? StatefulProcessId { get; set; }
+    }
+
+    public abstract class ApiCommand : ApiMessage, IApiCommand
     {
         public Guid? StatefulProcessId { get; set; }
     }
 
-    public abstract class ApiCommand : ApiCommandBase
+    public abstract class ApiCommand<TResponse> : IApiQuery where TResponse : ApiEvent, new()
     {
-        public abstract Task Handle();
-    }
-
-    public abstract class ApiCommand<TResponse> : ApiCommandBase, IApiQuery where TResponse : ApiEvent, new()
-    {
-        public abstract Task<ApiEvent> Handle();
+        public Guid? StatefulProcessId { get; set; }
     }
 }
