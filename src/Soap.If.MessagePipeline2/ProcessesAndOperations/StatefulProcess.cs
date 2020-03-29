@@ -5,7 +5,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.BusContext;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
@@ -15,7 +15,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>
     {
-        protected StatefulProcess(ContextAfterMessageObtained context)
+        protected StatefulProcess(ContextWithMessage context)
             : base(context)
         {
         }
@@ -26,11 +26,11 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
     public abstract class StatefulProcess
     {
-        private readonly ContextAfterMessageObtained context;
+        private readonly ContextWithMessage context;
 
         private ProcessState processState;
 
-        protected StatefulProcess(ContextAfterMessageObtained context)
+        protected StatefulProcess(ContextWithMessage context)
         {
             this.context = context;
         }
@@ -41,7 +41,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
         protected ILogger Logger => this.context.Logger;
 
-        protected MessageBus MessageBus { get; private set; }
+        protected Bus Bus { get; private set; }
 
         protected Guid ProcessId => this.processState.id;
 

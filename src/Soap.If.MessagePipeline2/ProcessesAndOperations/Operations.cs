@@ -8,9 +8,9 @@
 
     public class Operations<T> : Operations where T : class, IAggregate, new()
     {
-        private readonly ContextAfterMessageLogEntryObtained context;
+        private readonly ContextWithMessageLogEntry context;
 
-        public Operations(ContextAfterMessageLogEntryObtained context)
+        public Operations(ContextWithMessageLogEntry context)
             : base(context)
         {
             this.context = context;
@@ -21,9 +21,9 @@
 
     public abstract class Operations
     {
-        private readonly ContextAfterMessageLogEntryObtained context;
+        private readonly ContextWithMessageLogEntry context;
 
-        protected Operations(ContextAfterMessageLogEntryObtained context)
+        protected Operations(ContextWithMessageLogEntry context)
         {
             this.context = context;
         }

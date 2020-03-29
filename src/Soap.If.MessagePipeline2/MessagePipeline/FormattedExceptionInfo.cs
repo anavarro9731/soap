@@ -10,9 +10,9 @@
 
     public class FormattedExceptionInfo
     {
-        private readonly ContextAfterMessageLogEntryObtained context;
+        private readonly ContextWithMessageLogEntry context;
 
-        public FormattedExceptionInfo(Exception exception, ContextAfterMessageLogEntryObtained context)
+        public FormattedExceptionInfo(Exception exception, ContextWithMessageLogEntry context)
         {
             this.context = context;
             if (exception is ValidationException validationException)

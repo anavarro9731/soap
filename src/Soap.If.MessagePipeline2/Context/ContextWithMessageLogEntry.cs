@@ -9,7 +9,7 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Models.Messages;
-    using Soap.Interfaces;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
@@ -19,9 +19,9 @@
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
 
-    public class ContextAfterMessageLogEntryObtained : ContextAfterMessageObtained
+    public class ContextWithMessageLogEntry : ContextWithMessage
     {
-        public ContextAfterMessageLogEntryObtained(MessageLogEntry messageLogEntry, ContextAfterMessageObtained current)
+        public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ContextWithMessage current)
             : base(current)
         {
             MessageLogEntry = messageLogEntry;
@@ -32,7 +32,7 @@
 
     public static class ContextAfterMessageLogEntryObtainedExtensions
     {
-        public static async Task CommitChanges(this ContextAfterMessageLogEntryObtained context)
+        public static async Task CommitChanges(this ContextWithMessageLogEntry context)
         {
             Guard.Against(
                 context.GetQueuedChanges().Count > 1 && context.GetQueuedChanges().Any(x => !IsDurableChange(x)),
@@ -46,8 +46,8 @@
             await context.SaveUnitOfWork();
 
             await context.DataStore.CommitChanges();
-            await context.BusContext.CommitChanges();
-            await context.MessageLogEntry.CompleteUnitOfWork(context.AppConfig.DatabaseSettings);
+            await context.Bus.CommitChanges();
+            await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. */
             foreach (var queuedStateChange in context.GetQueuedChanges())
@@ -57,13 +57,13 @@
             }
         }
 
-        public static void QueueChange(this ContextAfterMessageLogEntryObtained context, IQueuedStateChange queuedStateChange)
+        public static void QueueChange(this ContextWithMessageLogEntry context, IQueuedStateChange queuedStateChange)
         {
             /* any other arbitrary calls made e.g. to 3rd party API etc. */
             context.MessageAggregator.Collect(queuedStateChange);
         }
 
-        public static Task SaveUnitOfWork(this ContextAfterMessageLogEntryObtained context)
+        public static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
         {
             var u = context.MessageLogEntry.UnitOfWork;
 
@@ -109,13 +109,13 @@
                     }
                 }
 
-            return context.MessageLogEntry.UpdateUnitOfWork(u, context.AppConfig.DatabaseSettings);
+            return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
             /* from this point on we can crash, throw, lose power, it won't matter all
             will be continued when the message is next dequeued*/
         }
 
         internal static async Task<UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
-            this ContextAfterMessageLogEntryObtained context)
+            this ContextWithMessageLogEntry context)
         {
             {
                 /* check the ds UoW's look ahead first to see if there are potential conflicts
@@ -135,7 +135,7 @@
 
             static async Task<UnitOfWork.State> AttemptCompletion(
                 List<UnitOfWorkExtensions.Record> records,
-                ContextAfterMessageLogEntryObtained context)
+                ContextWithMessageLogEntry context)
             {
                 var messageLogEntry = context.MessageLogEntry;
 
@@ -160,16 +160,16 @@
 
                 static async Task<UnitOfWork.State> CompleteDataAndMessages(
                     List<UnitOfWorkExtensions.Record> records,
-                    ContextAfterMessageLogEntryObtained context)
+                    ContextWithMessageLogEntry context)
                 {
                     await SaveUnsavedData(records, context.DataStore);
                     return await CompleteMessages(context);
                 }
 
-                static async Task<UnitOfWork.State> CompleteMessages(ContextAfterMessageLogEntryObtained context)
+                static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
-                    await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.BusContext, context.DataStore);
-                    await context.MessageLogEntry.CompleteUnitOfWork(context.AppConfig.DatabaseSettings);
+                    await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus, context.DataStore);
+                    await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
                     return UnitOfWork.State.AllComplete;
                 }
 
@@ -265,7 +265,7 @@
                 }
             }
 
-            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBusContext busContext, IDataStore dataStore)
+            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
             {
                 /* cannot rollback messages, forward only,
             it's not the same risk as data though since there are no concurrency issues
@@ -288,7 +288,7 @@
         }
 
         internal static async Task MarkFailureInMessageLog(
-            this ContextAfterMessageLogEntryObtained context,
+            this ContextWithMessageLogEntry context,
             FormattedExceptionInfo exceptionInfo)
         {
             /* It is possible we could fail while handling a failed message but before we hit this block
@@ -370,12 +370,12 @@
                     instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
                 }
 
-                context.BusContext.Send(instanceOfMesageFailedAllRetries);
+                context.Bus.Send(instanceOfMesageFailedAllRetries);
             }
         }
 
         internal static void SerilogFailure(
-            this ContextAfterMessageLogEntryObtained context,
+            this ContextWithMessageLogEntry context,
             FormattedExceptionInfo exceptionInfo)
         {
             var message = context.Message;
@@ -400,7 +400,7 @@
             context.Logger.Error("Message: {@message}", serilogEntry);
         }
 
-        internal static void SerilogSuccess(this ContextAfterMessageLogEntryObtained context)
+        internal static void SerilogSuccess(this ContextWithMessageLogEntry context)
         {
             var meta = context.MessageLogEntry.MessageMeta;
             var message = context.Message;
@@ -425,7 +425,7 @@
             context.Logger.Information("Message: {@message}", serilogEntry);
         }
 
-        private static object CreateProfilingData(MessageMeta meta, ContextAfterMessageLogEntryObtained ctx)
+        private static object CreateProfilingData(MessageMeta meta, ContextWithMessageLogEntry ctx)
         {
             {
                 var initialTimestamp = meta.ReceivedAt.Ticks;
@@ -541,7 +541,7 @@
             }
         }
 
-        private static List<IQueuedStateChange> GetQueuedChanges(this ContextAfterMessageLogEntryObtained context)
+        private static List<IQueuedStateChange> GetQueuedChanges(this ContextWithMessageLogEntry context)
         {
             var queuedStateChanges = context.MessageAggregator.AllMessages.OfType<IQueuedStateChange>()
                                             .Where(c => !c.Committed)

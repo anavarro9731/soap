@@ -1,4 +1,4 @@
-﻿namespace Soap.BusContext
+﻿namespace Soap.Bus
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -7,29 +7,29 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Microsoft.Azure.ServiceBus;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Bus;
     using Soap.Interfaces.Messages;
 
-    public class MessageBus : IBusContext
+    public class Bus : IBus
     {
         private readonly IMessageAggregator messageAggregator;
 
-        //- TODO initialise 
         private readonly QueueClient queueClient = null;
 
         private readonly TopicClient topicClient = null;
 
-        public MessageBus(IMessageAggregator messageAggregator)
+        public Bus(IMessageAggregator messageAggregator, BusSettings settings)
         {
             this.messageAggregator = messageAggregator;
+            //- TODO initialise  clients from settings
         }
 
         private List<IQueuedBusOperation> QueuedChanges
         {
             get
             {
-                var queuedStateChanges = this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>().Where(c => !c.Committed).ToList();
+                var queuedStateChanges = this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>()
+                                             .Where(c => !c.Committed)
+                                             .ToList();
                 return queuedStateChanges;
             }
         }

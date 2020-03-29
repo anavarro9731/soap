@@ -4,7 +4,7 @@
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.BusContext;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
@@ -21,9 +21,9 @@
 
     public abstract class Process
     {
-        private readonly ContextAfterMessageObtained context;
+        private readonly ContextWithMessage context;
 
-        protected Process(ContextAfterMessageObtained context)
+        protected Process(ContextWithMessage context)
         {
             this.context = context;
         }
@@ -34,7 +34,7 @@
 
         protected ILogger Logger => this.context.Logger;
 
-        protected MessageBus MessageBus { get; private set; }
+        protected Bus Bus { get; private set; }
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {

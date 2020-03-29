@@ -10,22 +10,22 @@
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.Utility.Functions.Extensions;
 
-    public class ContextAfterMessageObtained : BootrappedContext, IMessageFunctions
+    public class ContextWithMessage : BoostrappedContext, IMessageFunctions
     {
         private readonly IMessageFunctions functions;
 
-        public ContextAfterMessageObtained(
+        public ContextWithMessage(
             ApiMessage message,
             (DateTime receivedTime, long receivedTicks) timeStamp,
-            BootrappedContext context)
+            BoostrappedContext context)
             : base(context)
         {
             Message = message;
             TimeStamp = timeStamp;
-            this.functions = context.MessageMapper.Map(message);
+            this.functions = base.MessageMapper.MapMessage(message);
         }
 
-        protected ContextAfterMessageObtained(ContextAfterMessageObtained c)
+        protected ContextWithMessage(ContextWithMessage c)
             : base(c)
         {
             Message = c.Message;
@@ -49,7 +49,7 @@
     internal static class ContextAfterMessageObtainedExtensions
     {
         internal static async Task CreateOrFindLogEntry(
-            this ContextAfterMessageObtained ctx,
+            this ContextWithMessage ctx,
             IIdentityWithPermissions identity,
             Action<MessageLogEntry> outLogEntry)
         {
@@ -70,7 +70,7 @@
 
             static async Task CreateNewLogEntry(
                 MessageMeta meta,
-                ContextAfterMessageObtained ctx,
+                ContextWithMessage ctx,
                 Action<MessageLogEntry> outLogEntry)
             {
                 var message = ctx.Message;
@@ -98,7 +98,7 @@
                 }
             }
 
-            static async Task FindLogEntry(ContextAfterMessageObtained ctx, Action<MessageLogEntry> outResult)
+            static async Task FindLogEntry(ContextWithMessage ctx, Action<MessageLogEntry> outResult)
             {
                 var message = ctx.Message;
 
@@ -122,11 +122,11 @@
             }
         }
 
-        internal static ContextAfterMessageLogEntryObtained Upgrade(
-            this ContextAfterMessageObtained current,
+        internal static ContextWithMessageLogEntry Upgrade(
+            this ContextWithMessage current,
             MessageLogEntry messageLogEntry)
         {
-            return new ContextAfterMessageLogEntryObtained(messageLogEntry, current);
+            return new ContextWithMessageLogEntry(messageLogEntry, current);
         }
     }
 }

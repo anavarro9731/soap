@@ -14,7 +14,7 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.Messages.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Transactions" />

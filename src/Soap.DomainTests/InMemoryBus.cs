@@ -1,18 +1,18 @@
 ﻿namespace Soap.DomainTests
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using Soap.Interfaces;
-    using Soap.Interfaces.Bus;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
 
-    public class InMemoryBusContext : IBusContext
+    public class InMemoryBus : IBus
     {
         private readonly IMessageAggregator messageAggregator;
 
-        public InMemoryBusContext(IMessageAggregator messageAggregator)
+        public InMemoryBus(IMessageAggregator messageAggregator)
         {
             this.messageAggregator = messageAggregator;
         }
@@ -20,6 +20,11 @@
         public IEnumerable<ApiCommand> Commands => this.messageAggregator.AllMessages.OfType<ApiCommand>();
 
         public IEnumerable<ApiEvent> Events => this.messageAggregator.AllMessages.OfType<ApiEvent>();
+
+        public Task CommitChanges()
+        {
+            throw new NotImplementedException();
+        }
 
         public void Publish(ApiEvent publishEvent)
         {
@@ -29,11 +34,6 @@
                     EventToSend = publishEvent,
                     CommitClosure = () => Task.CompletedTask
                 });
-        }
-
-        public Task CommitChanges()
-        {
-            throw new System.NotImplementedException();
         }
 
         public void Send(ApiCommand sendCommand)

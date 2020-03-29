@@ -4,18 +4,20 @@
     using CircuitBoard.MessageAggregator;
     using DataStore.Interfaces;
     using Serilog;
+    using Soap.Bus;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.MessagePipeline;
 
-    public class BootrappedContext
+    public class BoostrappedContext
     {
-        public IMapMessagesToFunctions MessageMapper { get; }
+        public readonly MapMessagesToFunctions MessageMapper;
 
         public readonly ApplicationConfig AppConfig;
 
         public readonly IAuthenticateUsers Authenticator;
 
-        public readonly IBusContext BusContext;
+        public readonly IBus Bus;
 
         public readonly IDataStore DataStore;
 
@@ -23,14 +25,14 @@
 
         public readonly IMessageAggregator MessageAggregator;
 
-        public BootrappedContext(
+        public BoostrappedContext(
             IAuthenticateUsers authenticator,
             ApplicationConfig appConfig,
             IDataStore dataStore,
             IMessageAggregator messageAggregator,
             ILogger logger,
-            IBusContext busContext,
-            IMapMessagesToFunctions messageMapper)
+            IBus bus,
+            MapMessagesToFunctions messageMapper)
         {
             MessageMapper = messageMapper;
             this.Authenticator = authenticator;
@@ -38,28 +40,44 @@
             this.DataStore = dataStore;
             this.MessageAggregator = messageAggregator;
             this.Logger = logger;
-            this.BusContext = busContext;
+            this.Bus = bus;
         }
 
-        protected BootrappedContext(BootrappedContext c)
+        protected BoostrappedContext(BoostrappedContext c)
         {
             this.Authenticator = c.Authenticator;
             this.AppConfig = c.AppConfig;
             this.DataStore = c.DataStore;
             this.MessageAggregator = c.MessageAggregator;
             this.Logger = c.Logger;
-            this.BusContext = c.BusContext;
+            this.Bus = c.Bus;
+        }
+
+        public class ApplicationConfig
+        {
+            public int NumberOfApiMessageRetries;
+
+            public string ApplicationName;
+
+            public string ApplicationVersion;
+
+            public string DefaultExceptionMessage;
+
+            public string EnvironmentName;
+
+            public bool ReturnExplicitErrorMessages;
+
         }
     }
 
     public static class BootstrapContextExtensions
     {
-        public static ContextAfterMessageObtained Upgrade(
-            this BootrappedContext current,
+        public static ContextWithMessage Upgrade(
+            this BoostrappedContext current,
             ApiMessage message,
             (DateTime receivedTime, long receivedTicks) timeStamp)
         {
-            return new ContextAfterMessageObtained(message, timeStamp, current);
+            return new ContextWithMessage(message, timeStamp, current);
         }
     }
 }

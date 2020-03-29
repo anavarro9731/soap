@@ -4,14 +4,14 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore" Version="9.0.3" />
+    <PackageReference Include="DataStore" Version="9.3.0" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="CircuitBoard" Version="2.0.0" />
 
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
-    <ProjectReference Include="..\Soap.Pf.BusContext\Soap.BusContext.csproj" />
+    <ProjectReference Include="..\Soap.Pf.BusContext\Soap.Bus.csproj" />
     <ProjectReference Include="..\Soap.Pf.MessageContractsBase2\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>
 </Project>

@@ -7,4 +7,7 @@
   <ItemGroup>
     <PackageReference Include="DataStore.Interfaces" Version="9.0.3" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
+  </ItemGroup>
 </Project>

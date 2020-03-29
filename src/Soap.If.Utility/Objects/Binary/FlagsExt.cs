@@ -67,7 +67,7 @@
     {
         public Flags(Enum initialState)
         {
-            FlagsExt.AddState(this, initialState);
+            this.AddState(initialState);
         }
 
         public List<int> Values = new List<int>();

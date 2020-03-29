@@ -1,17 +1,18 @@
 ﻿namespace Soap.DomainTests
 {
     using System;
+    using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Permissions;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
     using Serilog;
     using Serilog.Exceptions;
-    using Soap.Interfaces;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;
@@ -21,7 +22,12 @@
 
     public static class Test
     {
-        public static Task Execute(ApiMessage message, ITestOutputHelper testOutputHelper, out IDataStore dataStore, out IBusContext busContext)
+        public static Task Execute(
+            ApiMessage message,
+            ITestOutputHelper testOutputHelper,
+            IIdentityWithPermissions identity,
+            out IDataStore dataStore,
+            out IBus bus)
         {
             {
                 CreateMessageAggregator(out var messageAggregator);
@@ -30,16 +36,16 @@
 
                 CreateDataStore(messageAggregator, message, out dataStore);
 
-                CreateAppConfig(messageAggregator, out var appConfig);
+                CreateBusContext(messageAggregator, out bus);
 
-                CreateBusContext(messageAggregator, out busContext);
+                CreateAppConfig(out BoostrappedContext.ApplicationConfig appConfig);
 
-                var context = new BootrappedContext(
-                    authenticator: null, //TODO
-                    messageMapper: null, //TODO
+                var context = new BoostrappedContext(
+                    authenticator: new FakeMessageAuthenticator(identity),
+                    messageMapper: new MapMessagesToFunctions(),
                     appConfig: appConfig,
                     logger: logger,
-                    busContext: busContext,
+                    bus: bus,
                     dataStore: dataStore,
                     messageAggregator: messageAggregator);
 
@@ -51,9 +57,9 @@
                 messageAggregator = new MessageAggregatorForTesting();
             }
 
-            static void CreateBusContext(IMessageAggregator messageAggregator, out IBusContext busContext)
+            static void CreateBusContext(IMessageAggregator messageAggregator, out IBus busContext)
             {
-                busContext = new InMemoryBusContext(messageAggregator);
+                busContext = new InMemoryBus(messageAggregator);
             }
 
             static void CreateLogger(IMessageAggregator messageAggregator, ITestOutputHelper testOutputHelper, out ILogger logger)
@@ -78,9 +84,17 @@
                     DataStoreOptions.Create().SpecifyUnitOfWorkId(message.MessageId));
             }
 
-            static void CreateAppConfig(IMessageAggregator messageAggregator, out ApplicationConfig applicationConfig)
+            static void CreateAppConfig(out BoostrappedContext.ApplicationConfig applicationConfig)
             {
-                throw new NotImplementedException();
+                applicationConfig = new BoostrappedContext.ApplicationConfig()
+                {
+                    NumberOfApiMessageRetries = 1,
+                    EnvironmentName = "Test",
+                    ApplicationName = $"Test Application {Assembly.GetEntryAssembly().GetName().Name}",
+                    ReturnExplicitErrorMessages = true,
+                    DefaultExceptionMessage = "An Error Has Occurred",
+                    ApplicationVersion = "0.0.0"
+                };
             }
         }
     }

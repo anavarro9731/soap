@@ -13,7 +13,7 @@
 
     public static class MessagePipeline
     {
-        public static async Task Execute(string messageJson, string assemblyQualifiedName, Func<BootrappedContext> getContext)
+        public static async Task Execute(string messageJson, string assemblyQualifiedName, Func<BoostrappedContext> getContext)
         {
             {
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
@@ -28,7 +28,7 @@
 
                 if (!success) return;
 
-                ContextAfterMessageLogEntryObtained matureContext = null;
+                ContextWithMessageLogEntry matureContext = null;
                 try
                 {
                     await PrepareContext(contextAfterMessageObtained, v => matureContext = v);
@@ -51,8 +51,8 @@
                 }
             }
 
-            async Task PrepareContext(ContextAfterMessageObtained contextAfterMessageObtained,
-                Action<ContextAfterMessageLogEntryObtained> setContext)
+            async Task PrepareContext(ContextWithMessage contextAfterMessageObtained,
+                Action<ContextWithMessageLogEntry> setContext)
             {
                 IIdentityWithPermissions identity = null;
                 MessageLogEntry messageLogEntry = null;
@@ -73,8 +73,8 @@
                 string messageJson,
                 string assemblyQualifiedName,
                 (DateTime receivedTime, long receivedTicks) timeStamp,
-                BootrappedContext bootstrappedContext,
-                out ContextAfterMessageObtained contextAfterMessageObtained,
+                BoostrappedContext bootstrappedContext,
+                out ContextWithMessage contextAfterMessageObtained,
                 out bool success)
             {
                 try //* deserialise the message
@@ -96,7 +96,7 @@
                 }
             }
 
-            async Task ProcessMessage(ContextAfterMessageLogEntryObtained context)
+            async Task ProcessMessage(ContextWithMessageLogEntry context)
             {
                 var msg = context.Message;
                 msg.ValidateOrThrow(context);
@@ -119,7 +119,7 @@
                                 break;
                             case IApiQuery _:
                                 var responseEvent = await (Task<ApiEvent>)context.Handle(msg);
-                                context.BusContext.Publish(responseEvent);
+                                context.Bus.Publish(responseEvent);
                                 break;
                             case ApiCommand c:
                                 await context.Handle(c);
@@ -140,7 +140,7 @@
                 }
             }
 
-            async Task HandleFailure(ContextAfterMessageLogEntryObtained context, Exception exception)
+            async Task HandleFailure(ContextWithMessageLogEntry context, Exception exception)
             {
                 Exception finalException;
 

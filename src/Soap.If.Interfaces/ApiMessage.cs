@@ -23,5 +23,7 @@
         public Guid MessageId { get; set; }
 
         public DateTime? TimeOfCreationAtOrigin { get; set; }
+
+        
     }
 }

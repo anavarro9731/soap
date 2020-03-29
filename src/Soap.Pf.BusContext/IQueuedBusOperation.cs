@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces.Bus
+﻿namespace Soap.Bus
 {
     using CircuitBoard.Messages;
 

@@ -8,6 +8,7 @@
     using System.Text;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
 
     public class CachedSchema
@@ -19,7 +20,7 @@
 
         public string Schema { get; }
 
-        public static CachedSchema Create(ApplicationConfig applicationConfig, IList<ApiMessage> messages) 
+        public static CachedSchema Create(BoostrappedContext.ApplicationConfig applicationConfig, IList<ApiMessage> messages) 
         {
             var handlerTypes = messages.Select(h => h.GetType())
                                        .OrderBy(t => t.Name);
@@ -166,7 +167,7 @@
             }
         }
 
-        private static string GetSchemaOutput(ApplicationConfig applicationConfig, IEnumerable<Type> handlerTypes)
+        private static string GetSchemaOutput(BoostrappedContext.ApplicationConfig applicationConfig, IEnumerable<Type> handlerTypes)
         {
             {
                 var title = $"API Schema | {applicationConfig.ApplicationName} | {applicationConfig.ApplicationVersion}";

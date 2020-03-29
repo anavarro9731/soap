@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.EndpointTestsBase", "Soap.Pf.EndpointTestsBase\Soap.Pf.EndpointTestsBase.csproj", "{CFC3F5FE-90F1-4799-8A6B-5E788C73F506}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces", "Soap.If.Interfaces\Soap.Interfaces.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces.Messages", "Soap.If.Interfaces\Soap.Interfaces.Messages.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Tests", "Soap.Tests\Soap.Tests.csproj", "{CB23993A-B893-4883-A520-A770981C3FC6}"
 EndProject
@@ -63,9 +63,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.MessageContractsBas
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Pf.FunctionEndpointBase", "Soap.Pf.FunctionEndpointBase\Soap.Pf.FunctionEndpointBase.csproj", "{FD7C09A5-C813-444C-8704-15A30BB47C0E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.BusContext", "Soap.Pf.BusContext\Soap.BusContext.csproj", "{B35F3016-E4CE-44AF-ACA0-D3E426946798}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Bus", "Soap.Pf.BusContext\Soap.Bus.csproj", "{B35F3016-E4CE-44AF-ACA0-D3E426946798}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.DomainTests", "Soap.DomainTests\Soap.DomainTests.csproj", "{B6CE16D8-11A5-4A76-A1F5-FB2941ED6A1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Config", "Soap.Interfaces.Config\Soap.Config.csproj", "{17E36D63-0689-4DD0-B4F9-6B2A020F0928}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.NotificationServer", "Soap.NotificationServer\Soap.NotificationServer.csproj", "{5652E3A2-F507-4D98-B606-76B54B1748BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -365,6 +369,30 @@ Global
 		{B6CE16D8-11A5-4A76-A1F5-FB2941ED6A1B}.Release|x64.Build.0 = Release|Any CPU
 		{B6CE16D8-11A5-4A76-A1F5-FB2941ED6A1B}.Release|x86.ActiveCfg = Release|Any CPU
 		{B6CE16D8-11A5-4A76-A1F5-FB2941ED6A1B}.Release|x86.Build.0 = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|x64.Build.0 = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Debug|x86.Build.0 = Debug|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|x64.ActiveCfg = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|x64.Build.0 = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|x86.ActiveCfg = Release|Any CPU
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928}.Release|x86.Build.0 = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|x64.Build.0 = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Debug|x86.Build.0 = Debug|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|x64.ActiveCfg = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|x64.Build.0 = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|x86.ActiveCfg = Release|Any CPU
+		{5652E3A2-F507-4D98-B606-76B54B1748BD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -394,6 +422,8 @@ Global
 		{FD7C09A5-C813-444C-8704-15A30BB47C0E} = {865DCEFC-8653-4674-9F03-611EDD30CAB5}
 		{B35F3016-E4CE-44AF-ACA0-D3E426946798} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 		{B6CE16D8-11A5-4A76-A1F5-FB2941ED6A1B} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
+		{17E36D63-0689-4DD0-B4F9-6B2A020F0928} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
+		{5652E3A2-F507-4D98-B606-76B54B1748BD} = {1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E270405-DA3C-4A1A-826A-F993DF136CAA}

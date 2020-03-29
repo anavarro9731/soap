@@ -13,7 +13,7 @@
     {
         internal static void Authenticate(
             this ApiMessage message,
-            ContextAfterMessageObtained ctx,
+            ContextWithMessage ctx,
             Action<IIdentityWithPermissions> outIdentity)
         {
             var identity = message.IdentityToken != null ? ctx.Authenticator.Authenticate(message) : null;
@@ -25,7 +25,7 @@
             return m.GetType().AssemblyQualifiedName;
         }
 
-        internal static void ValidateOrThrow(this ApiMessage message, ContextAfterMessageLogEntryObtained context)
+        internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)
         {
             {
                 var messageLogEntry = context.MessageLogEntry;

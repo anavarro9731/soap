@@ -1,7 +1,6 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.Interfaces.Messages
 {
     using System;
-    using Soap.Interfaces.Messages;
 
     public abstract class MessageFailedAllRetries : ApiCommand
     {
