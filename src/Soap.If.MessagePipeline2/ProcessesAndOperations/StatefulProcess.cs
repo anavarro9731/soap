@@ -3,10 +3,11 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using DataStore;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.Bus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
@@ -15,27 +16,17 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
     public abstract class StatefulProcess<T> : StatefulProcess, IStatefulProcess<T>
     {
-        protected StatefulProcess(ContextWithMessage context)
-            : base(context)
-        {
-        }
-
         /* used to support accessing specific derived type from container by interface
          while maintaining access to underlying functionality */
     }
 
     public abstract class StatefulProcess
     {
-        private readonly ContextWithMessage context;
+        protected readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         private ProcessState processState;
 
-        protected StatefulProcess(ContextWithMessage context)
-        {
-            this.context = context;
-        }
-
-        protected IDataStoreQueryCapabilities DataReader => this.context.DataStore.AsReadOnly();
+        protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
         protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
@@ -59,7 +50,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
             RecordStarted(message, meta);
 
-            await process.BeginProcess(message, meta).ConfigureAwait(false);
+            await process.BeginProcess(message).ConfigureAwait(false);
 
             await this.context.DataStore.Update(this.processState).ConfigureAwait(false);
         }
@@ -77,7 +68,7 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
             RecordStarted(message, meta);
 
-            var result = await process.BeginProcess(message, meta);
+            var result = await process.BeginProcess(message);
 
             await this.context.DataStore.Update(this.processState).ConfigureAwait(false);
 

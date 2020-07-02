@@ -2,35 +2,33 @@ namespace Soap.MessagePipeline.MessageAggregator
 {
     using System.Collections.Generic;
     using System.Linq;
-    using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
-    using Soap.Interfaces.Messages;
+    using DataStore.Interfaces.Operations;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.UnitOfWork;
-    using Soap.Utility.Functions.Extensions;
 
     public abstract class MessageAggregatorForTestingBase
     {
-        protected readonly ReadOnlyCapableList<IMessage> allMessages = new ReadOnlyCapableList<IMessage>();
+        protected readonly List<IMessage> allMessages = new List<IMessage>();
 
         public IReadOnlyList<IMessage> AllMessages => this.allMessages;
 
-        public IReadOnlyList<ApiCommand> CommandsSent => new ReadOnlyCapableList<ApiCommand>().Op(
-            l => l.AddRange(AllMessages.OfType<QueuedApiCommand>().Select(co => co.Command).ToList()));
+        public IReadOnlyList<ApiCommand> CommandsSent =>
+            AllMessages.OfType<QueuedApiCommand>().Select(co => co.Command).ToList().AsReadOnly();
 
-        public IReadOnlyList<IDataStoreOperation> DataStoreOperations => new ReadOnlyCapableList<IDataStoreOperation>().Op(
-            l => l.AddRange(AllMessages.OfType<IDataStoreOperation>().ToList()));
+        public IReadOnlyList<IDataStoreOperation> DataStoreOperations =>
+            AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
 
-        public IReadOnlyList<ApiEvent> EventsPublished => new ReadOnlyCapableList<ApiEvent>().Op(
-            l => l.AddRange(AllMessages.OfType<QueuedApiEvent>().Select(peo => peo.Event).ToList()));
+        public IReadOnlyList<ApiEvent> EventsPublished =>
+            AllMessages.OfType<QueuedApiEvent>().Select(peo => peo.Event).ToList().AsReadOnly();
 
-        public IReadOnlyList<ILogMessage> LogEntries => new ReadOnlyCapableList<ILogMessage>().Op(l => l.AddRange(AllMessages.OfType<ILogMessage>().ToList()));
+        public IReadOnlyList<ILogMessage> LogEntries => AllMessages.OfType<ILogMessage>().ToList().AsReadOnly();
 
-        public IReadOnlyList<IQueuedStateChange> QueuedStateChanges => new ReadOnlyCapableList<IQueuedStateChange>().Op(
-            l => l.AddRange(AllMessages.OfType<IQueuedStateChange>().ToList()));
+        public IReadOnlyList<IQueuedStateChange> QueuedStateChanges =>
+            AllMessages.OfType<IQueuedStateChange>().ToList().AsReadOnly();
 
-        public IReadOnlyList<IStateOperation> StateOperations => new ReadOnlyCapableList<IStateOperation>().Op(
-            l => l.AddRange(AllMessages.OfType<IStateOperation>().ToList()));
+        public IReadOnlyList<IStateOperation> StateOperations => AllMessages.OfType<IStateOperation>().ToList().AsReadOnly();
 
         public void Collect(IMessage message)
         {

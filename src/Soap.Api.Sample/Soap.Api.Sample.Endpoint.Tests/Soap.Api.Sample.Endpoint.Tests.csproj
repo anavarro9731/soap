@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Soap.Api.Sample.Domain.Messages.csproj" />
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Soap.Api.Sample.Domain.Models.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Sample.Messages.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Sample.Models.csproj" />
   </ItemGroup>
 
 </Project>

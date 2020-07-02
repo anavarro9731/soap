@@ -1,8 +1,10 @@
-﻿namespace Soap.Api.Sample.Domain.Models.Aggregates
+﻿namespace Sample.Models.Aggregates
 {
-    using Soap.Pf.DomainModelsBase;
+    using DataStore.Interfaces.LowLevel;
+    using Soap.Utility.Objects.Binary;
 
-    public class ServiceState : AbstractServiceState
+    public class ServiceState : Aggregate
     {
+        public Flags DatabaseState { get; set; }
     }
 }

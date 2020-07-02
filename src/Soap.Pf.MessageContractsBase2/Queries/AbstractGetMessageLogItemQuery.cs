@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
     using FluentValidation;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public abstract class AbstractGetMessageLogItemQuery<TResponse> : ApiCommand<TResponse>
         where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseEvent, new()

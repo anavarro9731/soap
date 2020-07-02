@@ -1,27 +1,9 @@
-﻿namespace Soap.Api.Sample.Domain.Messages.Queries
+﻿namespace Sample.Messages.Queries
 {
-    using System;
+    using Sample.Messages.Events;
     using Soap.Pf.MessageContractsBase.Queries;
 
-    public class GetMessageFailedAllRetriesLogItemQuery : AbstractGetMessageFailedAllRetriesLogItem<
-        GetMessageFailedAllRetriesLogItemQuery.MessageFailedAllRetriesLogItemViewModel>
+    public class GetMessageFailedAllRetriesLogItemQuery : AbstractGetMessageFailedAllRetriesLogItem<GotMessageFailedAllRetriesLogItemEvent>
     {
-        public GetMessageFailedAllRetriesLogItemQuery(Guid idOfMessageYouWantResultsFor)
-            : base(idOfMessageYouWantResultsFor)
-        {
-        }
-
-        public GetMessageFailedAllRetriesLogItemQuery()
-        {
-        }
-
-        public class MessageFailedAllRetriesLogItemViewModel : AbstractResponseModel
-        {
-        }
-
-        public override void Validate()
-        {
-            
-        }
     }
 }

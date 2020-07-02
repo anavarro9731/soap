@@ -1,52 +1,43 @@
-﻿namespace Soap.Api.Sample.Domain.Logic.Processes
+﻿namespace Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
-    using DataStore.Interfaces;
-    using FluentValidation;
-    using Soap.Api.Sample.Domain.Constants;
-    using Soap.Api.Sample.Domain.Logic.Operations;
-    using Soap.Api.Sample.Domain.Messages.Commands;
-    using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.If.MessagePipeline.ProcessesAndOperations;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.Pf.DomainLogicBase;
+    using Sample.Logic.Operations;
+    using Sample.Messages.Commands;
+    using Sample.Models.Constants;
+    using Soap.Interfaces;
+    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.Pf.LogicBase;
+    using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Objects.Blended;
 
-    public class UpgradeTheDatabaseProcess : Process<UpgradeTheDatabaseProcess>, IBeginProcess<UpgradeTheDatabaseCommand>
+    public class UpgradeTheDatabaseProcess : Process, IBeginProcess<UpgradeTheDatabaseCommand>
     {
-        private readonly IDocumentRepository documentRepository;
+        private readonly ServiceStateOperations serviceStateOperations = new ServiceStateOperations();
 
-        private readonly ServiceStateOperations serviceStateOperations;
-
-        public UpgradeTheDatabaseProcess(ServiceStateOperations serviceStateOperations, IDocumentRepository documentRepository)
-        {
-            this.serviceStateOperations = serviceStateOperations;
-            this.documentRepository = documentRepository;
-        }
-
-        public async Task BeginProcess(UpgradeTheDatabaseCommand message, ApiMessageMeta meta)
-        {
-            {
-                if (message.ReSeed) await ClearDatabase.ExecuteOutsideTransaction(this.documentRepository,
-                    DataStoreReadOnly, message.EnvelopeId, meta);
-
-                switch (message.ReleaseVersion)
+        public Func<UpgradeTheDatabaseCommand, Task>
+            BeginProcess =>
+            async (message) =>
                 {
-                    case ReleaseVersions.v1:
-                        await V1();
-                        break;
-                    case ReleaseVersions.v2:
-                        await V2();
-                        break;
-                    default:
-                        Guard.Against(true, ErrorCodes.NoUpgradeScriptExistsForThisVersion);
-                        break;
-                }
-            }
+                    if (message.ReSeed)
+                    {
+                        await ClearDatabase.ExecuteOutsideTransaction(this.context.DataStore, this.context.MessageLogEntry);
+                    }
 
-        }
+                    switch (message.ReleaseVersion)
+                    {
+                        case ReleaseVersions.V1:
+                            await V1();
+                            break;
+                        case ReleaseVersions.V2:
+                            await V2();
+                            break;
+                        default:
+                            Guard.Against(true, ErrorCodes.NoUpgradeScriptExistsForThisVersion);
+                            break;
+                    }
+                };
 
         private async Task V1()
         {
@@ -64,7 +55,7 @@
 
             async Task SetDbVersion()
             {
-                await this.serviceStateOperations.SetDatabaseVersion(ReleaseVersions.v2);
+                await this.serviceStateOperations.SetDatabaseVersion(ReleaseVersions.V2);
             }
         }
 
@@ -79,6 +70,6 @@
                 "No Upgrade Script Exists For This Version");
         }
 
-
+        
     }
 }

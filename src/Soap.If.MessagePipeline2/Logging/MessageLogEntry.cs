@@ -3,11 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.Text.Json;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using Soap.Interfaces.Messages;
+    using DataStore.Options;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Extensions;
@@ -27,22 +29,29 @@
 
         public MessageLogEntry()
         {
-            //- satisfy DataStore new() constraint  
+            //* satisfy DataStore new() constraint and serialiser
         }
 
+        [JsonInclude]
         public List<Attempt> Attempts { get; internal set; } = new List<Attempt>();
 
+        [JsonInclude]
         public int MaxRetriesAllowed { get; internal set; }
 
+        [JsonInclude]
         public string MessageHash { get; internal set; }
 
+        [JsonInclude]
         public MessageMeta MessageMeta { get; internal set; }
 
+        [JsonInclude]
         public bool ProcessingComplete { get; internal set; }
 
+        [JsonInclude]
         public SerialisableObject SerialisedMessage { get; internal set; }
 
-        public UnitOfWork UnitOfWork { get; internal set; }
+        [JsonInclude]
+        public UnitOfWork UnitOfWork { get; set; }
 
         public class Attempt
         {
@@ -51,13 +60,15 @@
                 Errors = errors;
             }
 
-            internal Attempt()
+            public Attempt()
             {
                 //-serialiser
             }
 
+            [JsonInclude]
             public DateTime CompletedAt { get; internal set; } = DateTime.UtcNow;
 
+            [JsonInclude]
             public FormattedExceptionInfo Errors { get; internal set; }
         }
     }
@@ -89,7 +100,7 @@
         {
             /* update immediately, you would need find a way to get it to be persisted
              first so use different instance of ds instead*/
-            var d = new DataStore(databaseSettings.CreateRepository());
+            var d = new DataStore(databaseSettings.CreateRepository(), dataStoreOptions:DataStoreOptions.Create().DisableOptimisticConcurrency());
             await d.Update(messageLogEntry);
             await d.CommitChanges();
         }

@@ -2,6 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Text.Json.Serialization;
     using DataStore.Interfaces;
 
     public class UnitOfWork
@@ -20,16 +22,26 @@
             AllRolledBack
         }
 
-        public List<BusMessageUnitOfWorkItem> BusCommandMessages { get; internal set; }
+        public UnitOfWork()         {
+            //* serialiser
+        }
 
-        public List<BusMessageUnitOfWorkItem> BusEventMessages { get; internal set; }
+        [JsonInclude]
+        public List<BusMessageUnitOfWorkItem> BusCommandMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
-        public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; }
+        [JsonInclude]
+        public List<BusMessageUnitOfWorkItem> BusEventMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
-        public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; }
+        [JsonInclude]
+        public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
 
-        public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; }
+        [JsonInclude]
+        public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
 
+        [JsonInclude]
+        public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
+            
+        [JsonInclude]
         public bool OptimisticConcurrency { get; internal set; }
     }
 

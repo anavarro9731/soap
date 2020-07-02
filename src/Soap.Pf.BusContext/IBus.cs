@@ -1,7 +1,7 @@
 ﻿namespace Soap.Bus
 {
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public interface IBus
     {

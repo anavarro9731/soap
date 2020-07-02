@@ -9,7 +9,7 @@
     <PackageReference Include="Mailer.NET" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.Messages.csproj" />
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
   </ItemGroup>
 </Project>

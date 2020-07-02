@@ -2,7 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public class QueuedPublishEvent : IQueuedBusOperation
     {

@@ -1,5 +1,6 @@
 ﻿namespace Soap.Utility.Models
 {
+    using System.Text.Json.Serialization;
     using Soap.Utility.Functions.Extensions;
 
     public class SerialisableObject
@@ -12,8 +13,10 @@
 
         public SerialisableObject() { }
 
+        [JsonInclude]
         public string ObjectData { get; internal set; }
 
+        [JsonInclude]
         public string TypeName { get; internal set; }
 
         public T Deserialise<T>() where T : class

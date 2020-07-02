@@ -70,6 +70,10 @@
             this.AddState(initialState);
         }
 
-        public List<int> Values = new List<int>();
+        public Flags()
+        {
+        }
+
+        public List<int> Values { get; set; } = new List<int>();
     }
 }

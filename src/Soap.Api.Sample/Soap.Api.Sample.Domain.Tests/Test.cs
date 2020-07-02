@@ -1,67 +1,26 @@
-﻿namespace Soap.Api.Sample.Domain.Tests
+﻿namespace Sample.Tests
 {
-    using System.Linq;
-    using Soap.Api.Sample.Domain.Logic.Configuration;
-    using Soap.Api.Sample.Domain.Logic.Operations;
-    using Soap.Api.Sample.Domain.Messages.Commands;
-    using Soap.Api.Sample.Domain.Models;
-    using Soap.Api.Sample.Domain.Models.ValueObjects;
-    using Soap.Api.Sample.Domain.Models.ViewModels;
-    using Soap.Api.Sample.Endpoint.Http;
-    using Soap.Api.Sample.Endpoint.Msmq;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.Pf.DomainLogicBase;
-    using Soap.Pf.DomainTestsBase;
-    using Soap.Pf.EndpointInfrastructure;
+    using System;
+    using Sample.Logic;
+    using Soap.DomainTests;
+    using Soap.Interfaces;
+    using Xunit.Abstractions;
 
     public partial class Test
     {
-        public readonly TestEndpoint endPoint;
+        protected DomainTest.Result Result;
 
-        public Test()
-        {
-            this.endPoint = TestEndpoint.Configure<UserAuthenticator>(
-                                            typeof(ServiceStateOperations).Assembly,
-                                            typeof(UpgradeTheDatabaseCommand).Assembly,
-                                            typeof(SoapApiSampleEndpointMsmq).Assembly,
-                                            typeof(SoapApiSampleEndpointHttp).Assembly,
-                                            new ApplicationConfiguration("test", "0.0.0", new ApiEndpointSettings("httpAddress", "msmqAddress"), null, null, true))
-                                        .Start();
-        }
-    }
+        private readonly ITestOutputHelper output;
 
-    public static class TestEndpointExtensions
-    {
-        public static string GetIdentityToken(this User user)
+        public Test(ITestOutputHelper output)
         {
-            return SecurityToken.EncryptToken(user.ActiveSecurityTokens.First());
+            this.output = output;
         }
 
-        public static T HandleCommand<T>(this TestEndpoint testEndpoint, ApiCommand<T> command, User user) where T : class, new()
+        public void Execute(ApiMessage msg, IApiIdentity identity)
         {
-            SetMessageIdentityToken(command, user);
-
-            return testEndpoint.HandleCommand(command);
-        }
-
-        public static void HandleCommand(this TestEndpoint testEndpoint, ApiCommand command, User user)
-        {
-            SetMessageIdentityToken(command, user);
-
-            testEndpoint.HandleCommand(command);
-        }
-
-        public static T HandleQuery<T>(this TestEndpoint testEndpoint, ApiQuery<T> query, User user) where T : class, new()
-        {
-            SetMessageIdentityToken(query, user);
-
-            return testEndpoint.HandleQuery(query);
-        }
-
-        private static void SetMessageIdentityToken(IApiMessage message, User user)
-        {
-            message.IdentityToken = user?.GetIdentityToken();
+            if (msg.MessageId == Guid.Empty) msg.MessageId = Guid.NewGuid();
+            this.Result = DomainTest.WireExecute(new Mappings(), this.output)(msg, identity).Result;
         }
     }
 }

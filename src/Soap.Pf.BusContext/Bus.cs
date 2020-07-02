@@ -7,7 +7,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Microsoft.Azure.ServiceBus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public class Bus : IBus
     {

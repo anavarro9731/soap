@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces.Messages
+﻿namespace Soap.Interfaces
 {
     using System;
 

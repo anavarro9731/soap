@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Soap.Api.Sample.Domain.Logic.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Sample.Logic.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,61 +1,24 @@
-﻿namespace Soap.Pf.DomainLogicBase
+﻿namespace Soap.Pf.LogicBase
 {
-    using System;
     using System.Threading.Tasks;
+    using DataStore;
     using DataStore.Interfaces;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
+    using Soap.MessagePipeline.Logging;
 
     public static class ClearDatabase
     {
-        public static async Task ExecuteOutsideTransaction(
-            IDocumentRepository documentRepository,
-            IDataStoreQueryCapabilities readOperations,
-            Guid? envelopeId,
-            ApiMessageMeta currentMessageMeta)
+        public static async Task ExecuteOutsideTransaction(DataStore dataStore, MessageLogEntry logEntry)
         {
-            MessageLogItem envelopeMessage = null;
+            var repo = dataStore.DocumentRepository;
 
-            if (envelopeId.HasValue)
-            {
-                envelopeMessage = await readOperations.ReadActiveById<MessageLogItem>(envelopeId.Value);
-            }
+            //* delete everything
+            await ((IResetData)repo).NonTransactionalReset();
 
-            await ((IResetData)documentRepository).NonTransactionalReset();
+            //* re-add the entry for the current message 
+            var newSession = new DataStore(repo);
 
-            if (envelopeMessage != null)
-            {
-                await documentRepository.AddAsync(
-                    new ReplaceMessageLogItemOperation
-                    {
-                        Model = envelopeMessage
-                    });
-            }
-
-            await documentRepository.AddAsync(
-                new ReplaceMessageLogItemOperation
-                {
-                    Model = currentMessageMeta.MessageLogItem
-                });
-        }
-
-        public class ReplaceMessageLogItemOperation : IDataStoreWriteOperation<MessageLogItem>
-        {
-            public DateTime Created { get; set; }
-
-            public string MethodCalled { get; set; }
-
-            public MessageLogItem Model { get; set; }
-
-            public double StateOperationCost { get; set; }
-
-            public TimeSpan? StateOperationDuration { get; set; }
-
-            public long StateOperationStartTimestamp { get; set; }
-
-            public long? StateOperationStopTimestamp { get; set; }
-
-            public string TypeName { get; set; }
+            await newSession.Create(logEntry);
+            await newSession.CommitChanges();
         }
     }
 }

@@ -1,39 +1,25 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using CircuitBoard.MessageAggregator;
+    using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Serilog;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
 
-    public class Operations<T> : Operations where T : class, IAggregate, new()
+    public class Operations<T> : IOperation where T : class, IAggregate, new()
     {
-        private readonly ContextWithMessageLogEntry context;
+        private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        public Operations(ContextWithMessageLogEntry context)
-            : base(context)
-        {
-            this.context = context;
-        }
+        public DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
-        protected IDataStoreWriteOnlyScoped<T> DataWriter => this.context.DataStore.AsWriteOnlyScoped<T>();
-    }
+        public DataStoreWriteOnly<T> DataWriter => this.context.DataStore.AsWriteOnlyScoped<T>();
 
-    public abstract class Operations
-    {
-        private readonly ContextWithMessageLogEntry context;
+        public IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
-        protected Operations(ContextWithMessageLogEntry context)
-        {
-            this.context = context;
-        }
+        public ILogger Logger => this.context.Logger;
 
-        protected IDataStoreQueryCapabilities DataReader => this.context.DataStore.AsReadOnly();
-
-        protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
-
-        protected ILogger Logger => this.context.Logger;
-
-        protected IMessageAggregator MessageAggregator => this.context.MessageAggregator;
+        public IMessageAggregator MessageAggregator => this.context.MessageAggregator;
     }
 }

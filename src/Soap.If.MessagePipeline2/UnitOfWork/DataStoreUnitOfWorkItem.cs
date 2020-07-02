@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
@@ -16,15 +17,15 @@
     {
         public DataStoreUnitOfWorkItem(IAggregate beforeModel, IAggregate afterModel, Guid soapUnitOfWorkId, OperationTypes operationType)
         {
-            Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //- should never happen
+            if (beforeModel != null && afterModel != null) Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //* should never happen
             OperationType = operationType;
-            BeforeModel = beforeModel.ToSerialisableObject();
-            AfterModel = afterModel.ToSerialisableObject();
+            BeforeModel = beforeModel?.ToSerialisableObject();
+            AfterModel = afterModel?.ToSerialisableObject();
             UnitOfWorkId = soapUnitOfWorkId.ToString();
             ObjectId = afterModel.id;
         }
 
-        internal DataStoreUnitOfWorkItem()
+        public DataStoreUnitOfWorkItem()
         {
             //- serialiser
         }
@@ -38,14 +39,19 @@
             HardDelete
         }
 
+        [JsonInclude]
         public SerialisableObject AfterModel { get; internal set; }
 
+        [JsonInclude]
         public SerialisableObject BeforeModel { get; internal set; }
 
+        [JsonInclude]
         public Guid ObjectId { get; internal set; }
 
+        [JsonInclude]
         public OperationTypes OperationType { get; internal set; }
 
+        [JsonInclude]
         public string UnitOfWorkId { get; internal set; }
     }
 

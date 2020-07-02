@@ -16,7 +16,7 @@
         {
         }
 
-        internal DomainException()
+        public DomainException()
         {
         }
 

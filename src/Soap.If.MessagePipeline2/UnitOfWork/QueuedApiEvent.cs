@@ -1,6 +1,6 @@
 ﻿namespace Soap.MessagePipeline.UnitOfWork
 {
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public class QueuedApiEvent : QueuedStateChange
     {

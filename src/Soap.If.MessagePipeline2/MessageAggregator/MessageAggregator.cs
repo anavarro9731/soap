@@ -2,19 +2,20 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
 
     public class MessageAggregator : IMessageAggregator
     {
-        private readonly ReadOnlyCapableList<IMessage> allMessages = new ReadOnlyCapableList<IMessage>();
+        private readonly List<IMessage> allMessages = new List<IMessage>();
 
         public void Clear()
         {
             this.allMessages.Clear();
         }
 
-        public IReadOnlyList<IMessage> AllMessages => this.allMessages;
+        public IReadOnlyList<IMessage> AllMessages => this.allMessages.AsReadOnly();
 
         public static MessageAggregator Create()
         {

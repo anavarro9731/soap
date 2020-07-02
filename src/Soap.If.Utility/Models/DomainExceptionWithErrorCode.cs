@@ -2,8 +2,8 @@
 {
     using System;
     using System.Reflection;
-    using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Objects.Blended;
 
     public class DomainExceptionWithErrorCode : Exception
     {
@@ -14,7 +14,7 @@
             Error = error.Op(e => e.Active = true);
         }
 
-        internal DomainExceptionWithErrorCode()
+        public DomainExceptionWithErrorCode()
         {
         }
 

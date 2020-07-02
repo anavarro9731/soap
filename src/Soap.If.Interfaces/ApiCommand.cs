@@ -1,7 +1,6 @@
-﻿namespace Soap.Interfaces.Messages
+﻿namespace Soap.Interfaces
 {
     using System;
-    using System.Threading.Tasks;
 
     /* these two classes should not inherit from each other so as to allow
      them to be constrained separately to be grouped in lists they both implement ApiCommandBase

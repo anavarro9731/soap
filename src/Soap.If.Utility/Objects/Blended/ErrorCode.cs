@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.Utility.Objects.Blended
 {
     using System;
 

@@ -1,7 +1,8 @@
-﻿namespace Soap.Interfaces.Messages
+﻿namespace Soap.Interfaces
 {
     using System;
     using CircuitBoard.Messages;
+    using Soap.Pf.MessageContractsBase.Commands;
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
@@ -18,12 +19,11 @@
     {
         public string IdentityToken { get; set; }
 
-        public bool IsFailedAllRetriesMessage => this is MessageFailedAllRetries;
-
         public Guid MessageId { get; set; }
 
         public DateTime? TimeOfCreationAtOrigin { get; set; }
 
-        
+        public ApiPermission ApiPermission { get; set; }
+
     }
 }

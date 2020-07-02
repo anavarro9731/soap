@@ -1,11 +1,11 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
     using System.Threading.Tasks;
-    using CircuitBoard.MessageAggregator;
+    using DataStore;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.Bus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
@@ -18,23 +18,17 @@
     ///     It records StatefulProcessStarted/Completed events whose purpose is mainly log instrumentation but could be used in
     ///     unit testing as well.
     /// </summary>
-
-    public abstract class Process
+    public abstract class Process : IProcess
     {
-        private readonly ContextWithMessage context;
+        protected readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        protected Process(ContextWithMessage context)
-        {
-            this.context = context;
-        }
+        protected IBus Bus => this.context.Bus;
 
-        protected IDataStoreQueryCapabilities DataReader => this.context.DataStore.AsReadOnly();
+        protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
         protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
         protected ILogger Logger => this.context.Logger;
-
-        protected Bus Bus { get; private set; }
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
@@ -44,12 +38,13 @@
 
             RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.UserName));
 
-            await process.BeginProcess(message, meta);
+            await process.BeginProcess(message);
 
             RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));
         }
 
-        public async Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
+        public async Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta)
+            where TMessage : ApiCommand
         {
             var process = this as IBeginProcess<TMessage, TReturnType>;
 
@@ -57,7 +52,7 @@
 
             RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.UserName));
 
-            var result = await process.BeginProcess(message, meta);
+            var result = await process.BeginProcess(message);
 
             RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));
 
@@ -66,7 +61,7 @@
 
         private void RecordCompleted(ProcessCompleted processCompleted)
         {
-            context.MessageAggregator.Collect(processCompleted);
+            this.context.MessageAggregator.Collect(processCompleted);
         }
 
         private void RecordStarted(ProcessStarted statefulProcessStarted)

@@ -3,6 +3,7 @@
     using System;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Objects.Blended;
 
     public class GlobalErrorCodes : ErrorCode
     {

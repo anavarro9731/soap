@@ -4,15 +4,13 @@
     using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using CircuitBoard.Permissions;
     using DataStore;
-    using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
     using Serilog;
     using Serilog.Exceptions;
     using Soap.Bus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;
@@ -20,13 +18,16 @@
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
 
-    public static class Test
+
+
+    public static class DomainTest
     {
-        public static Task Execute(
+        private static Task Execute(
             ApiMessage message,
+            MapMessagesToFunctions messageMapper,
             ITestOutputHelper testOutputHelper,
-            IIdentityWithPermissions identity,
-            out IDataStore dataStore,
+            IApiIdentity identity,
+            out DataStore dataStore,
             out IBus bus)
         {
             {
@@ -38,11 +39,11 @@
 
                 CreateBusContext(messageAggregator, out bus);
 
-                CreateAppConfig(out BoostrappedContext.ApplicationConfig appConfig);
+                CreateAppConfig(out var appConfig);
 
                 var context = new BoostrappedContext(
-                    authenticator: new FakeMessageAuthenticator(identity),
-                    messageMapper: new MapMessagesToFunctions(),
+                    new FakeMessageAuthenticator(identity),
+                    messageMapper: messageMapper,
                     appConfig: appConfig,
                     logger: logger,
                     bus: bus,
@@ -76,7 +77,7 @@
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateDataStore(IMessageAggregator messageAggregator, ApiMessage message, out IDataStore dataStore)
+            static void CreateDataStore(IMessageAggregator messageAggregator, ApiMessage message, out DataStore dataStore)
             {
                 dataStore = new DataStore(
                     new InMemoryDocumentRepository(),
@@ -86,7 +87,7 @@
 
             static void CreateAppConfig(out BoostrappedContext.ApplicationConfig applicationConfig)
             {
-                applicationConfig = new BoostrappedContext.ApplicationConfig()
+                applicationConfig = new BoostrappedContext.ApplicationConfig
                 {
                     NumberOfApiMessageRetries = 1,
                     EnvironmentName = "Test",
@@ -96,6 +97,25 @@
                     ApplicationVersion = "0.0.0"
                 };
             }
+        }
+
+        public static Func<ApiMessage, IApiIdentity, Task<Result>> WireExecute(
+            MapMessagesToFunctions mapper,
+            ITestOutputHelper outputHelper)
+        {
+            return async (message, identity) =>
+                {
+                var x = new Result();
+                await Execute(message, mapper, outputHelper, identity, out x.DataStore, out x.MessageBus);
+                return x;
+                };
+        }
+
+        public class Result
+        {
+            public DataStore DataStore;
+
+            public IBus MessageBus;
         }
     }
 }

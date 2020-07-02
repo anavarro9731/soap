@@ -3,11 +3,11 @@
     using System;
     using System.Text.Json;
     using System.Threading.Tasks;
-    using CircuitBoard.Permissions;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.UnitOfWork;
+    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
@@ -43,6 +43,12 @@
 
                 try
                 {
+                    /* THIS MUST BE SET AT THIS LEVEL. SETTING IT LOWER WILL LOSE THE VALUE WHEN THE
+                     CALLSTACK POPS TO THIS LEVEL AND MEAN IT IS NOT AVAILABLE TO THE PROCESSMESSAGE CALL
+                    Floating the context via method-injection is too cumbersome and DI requires parameterised
+                    constructor which cannot be create via generics. */
+                    ContextWithMessageLogEntry.Instance.Value = matureContext;
+
                     await ProcessMessage(matureContext);
                 }
                 catch (Exception exception)
@@ -54,7 +60,7 @@
             async Task PrepareContext(ContextWithMessage contextAfterMessageObtained,
                 Action<ContextWithMessageLogEntry> setContext)
             {
-                IIdentityWithPermissions identity = null;
+                IApiIdentity identity = null;
                 MessageLogEntry messageLogEntry = null;
 
                 var msg = contextAfterMessageObtained.Message;
@@ -63,6 +69,7 @@
 
                 await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
 
+                //changes do not flow up thats the error
                 var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
 
                 setContext(context);
@@ -86,10 +93,10 @@
                 catch (Exception e)
                 {
                     bootstrappedContext.Logger.Fatal(
-                        "Cannot deserialise message: type {@type}, error {@error}, json {@json}",
+                        "Cannot deserialise message: type {@type}, error {@error}, json {@json} stack {@stack}",
                         assemblyQualifiedName,
                         e.Message,
-                        messageJson);
+                        messageJson, e.StackTrace);
 
                     contextAfterMessageObtained = null;
                     success = false;
@@ -114,8 +121,8 @@
 
                         switch (msg)
                         {
-                            case ApiCommand c when c.IsFailedAllRetriesMessage:
-                                await context.HandleFinalFailure(msg);
+                            case MessageFailedAllRetries m:
+                                await context.HandleFinalFailure(m);
                                 break;
                             case IApiQuery _:
                                 var responseEvent = await (Task<ApiEvent>)context.Handle(msg);

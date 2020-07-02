@@ -6,7 +6,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Soap.Bus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public class InMemoryBus : IBus
     {
@@ -23,7 +23,8 @@
 
         public Task CommitChanges()
         {
-            throw new NotImplementedException();
+            //* TODO
+            return Task.CompletedTask;
         }
 
         public void Publish(ApiEvent publishEvent)

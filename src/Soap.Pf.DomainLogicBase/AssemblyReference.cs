@@ -2,8 +2,8 @@
 {
     using System.Reflection;
 
-    public static class SoapPfDomainLogicBase
+    public static class SoapPfLogicBase
     {
-        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(SoapPfDomainLogicBase));
+        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(SoapPfLogicBase));
     }
 }

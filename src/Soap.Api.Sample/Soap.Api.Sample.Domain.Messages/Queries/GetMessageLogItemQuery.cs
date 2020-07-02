@@ -1,19 +1,9 @@
-﻿namespace Soap.Api.Sample.Domain.Messages.Queries
+﻿namespace Sample.Messages.Queries
 {
+    using Sample.Messages.Events;
     using Soap.Pf.MessageContractsBase.Queries;
 
-    public sealed class GetMessageLogItemQuery : AbstractGetMessageLogItemQuery<GetMessageLogItemQuery.GetMessageLogItemResponse>
+    public sealed class GetMessageLogItemQuery : AbstractGetMessageLogItemQuery<GotMessageLogItemEvent>.AbstractResponseEvent
     {
-        public sealed class GetMessageLogItemResponse : AbstractResponseModel
-        {
-            public sealed class FailedMessageViewModel : AbstractFailedMessageResult
-            {
-            }
-
-            public sealed class SuccessMessageViewModel : AbstractSuccessMessageResult
-            {
-            }
-        }
-
     }
 }

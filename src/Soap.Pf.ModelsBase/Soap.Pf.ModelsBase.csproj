@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
+    <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
+  </ItemGroup>
+
+</Project>

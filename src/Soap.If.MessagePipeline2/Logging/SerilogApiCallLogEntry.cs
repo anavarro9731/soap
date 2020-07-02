@@ -1,7 +1,7 @@
 ﻿namespace Soap.MessagePipeline.Logging
 {
     using System;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.MessagePipeline;
 
     public abstract class SerilogApiCallLogEntry

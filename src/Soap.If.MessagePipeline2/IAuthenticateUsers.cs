@@ -1,7 +1,6 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.MessagePipeline
 {
-    using CircuitBoard.Permissions;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     /// <summary>
     ///     allows people to write their own method of authenticating a user from a message
@@ -10,6 +9,6 @@
     /// </summary>
     public interface IAuthenticateUsers
     {
-        IIdentityWithPermissions Authenticate(ApiMessage message);
+        IApiIdentity Authenticate(ApiMessage message);
     }
 }

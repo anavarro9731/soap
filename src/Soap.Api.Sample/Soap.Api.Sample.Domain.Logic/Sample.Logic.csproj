@@ -1,0 +1,18 @@
+﻿  <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Version>0.0.0</Version>
+  </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="DataStore.Providers.CosmosDb" Version="12.0.3" />
+    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Processes\Stateful\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Soap.Pf.DomainLogicBase\Soap.Pf.LogicBase.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Constants\Sample.Constants.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Sample.Messages.csproj" />
+    <ProjectReference Include="..\Soap.Api.Sample.Domain.Models\Sample.Models.csproj" />
+  </ItemGroup>
+</Project>

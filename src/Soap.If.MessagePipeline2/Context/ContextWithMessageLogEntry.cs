@@ -4,13 +4,16 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Operations;
+    using DataStore.Models;
     using DataStore.Models.Messages;
     using Soap.Bus;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
@@ -21,12 +24,16 @@
 
     public class ContextWithMessageLogEntry : ContextWithMessage
     {
+        internal static readonly AsyncLocal<ContextWithMessageLogEntry> Instance = new AsyncLocal<ContextWithMessageLogEntry>();
+
+        public static ContextWithMessageLogEntry Current => Instance.Value;
+
         public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ContextWithMessage current)
             : base(current)
         {
             MessageLogEntry = messageLogEntry;
         }
-
+        
         public MessageLogEntry MessageLogEntry { get; }
     }
 
@@ -330,7 +337,7 @@
 
             catch (Exception e)
             {
-                throw new Exception($"Error logging failed message {context.Message.MessageId} result to DataStore", e);
+                throw new Exception($"Error logging failed message with id {context.Message.MessageId} to DataStore", e);
             }
 
             async Task AddThisFailureToTheMessageLog()
@@ -339,7 +346,7 @@
                 var logEntry = context.MessageLogEntry;
                 logEntry.AddFailedAttempt(exceptionInfo);
 
-                await context.DataStore.Update(logEntry);
+                await context.DataStore.Update(logEntry, o => o.DisableOptimisticConcurrency()); //etag has changed
             }
 
             bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage()
@@ -358,19 +365,19 @@
             {
                 var genericTypeWithParam = typeof(MessageFailedAllRetries<>).MakeGenericType(context.Message.GetType());
 
-                var instanceOfMesageFailedAllRetries =
-                    (MessageFailedAllRetries)Activator.CreateInstance(genericTypeWithParam, context.Message.MessageId);
+                var instanceOfMessageFailedAllRetries =
+                    (MessageFailedAllRetries)Activator.CreateInstance(genericTypeWithParam, context.Message);
 
-                instanceOfMesageFailedAllRetries.MessageId = Guid.NewGuid();
-                instanceOfMesageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
-                instanceOfMesageFailedAllRetries.IdOfMessageThatFailed = context.Message.MessageId;
+                instanceOfMessageFailedAllRetries.MessageId = Guid.NewGuid();
+                instanceOfMessageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
+                instanceOfMessageFailedAllRetries.IdOfMessageThatFailed = context.Message.MessageId;
 
                 if (context.Message is ApiCommand command)
                 {
-                    instanceOfMesageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
+                    instanceOfMessageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
                 }
 
-                context.Bus.Send(instanceOfMesageFailedAllRetries);
+                context.Bus.Send(instanceOfMessageFailedAllRetries);
             }
         }
 

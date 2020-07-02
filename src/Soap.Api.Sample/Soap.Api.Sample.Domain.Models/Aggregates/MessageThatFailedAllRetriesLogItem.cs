@@ -1,4 +1,4 @@
-﻿ namespace Soap.Pf.DomainModelsBase
+﻿ namespace Sample.Models.Aggregates
 {
     using System;
     using DataStore.Interfaces.LowLevel;

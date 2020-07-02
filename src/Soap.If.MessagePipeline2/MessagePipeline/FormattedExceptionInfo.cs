@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using FluentValidation;
+    using Newtonsoft.Json;
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
@@ -12,6 +13,7 @@
     {
         private readonly ContextWithMessageLogEntry context;
 
+        
         public FormattedExceptionInfo(Exception exception, ContextWithMessageLogEntry context)
         {
             this.context = context;
@@ -39,7 +41,7 @@
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
-                var mapErrorCodesFromDomainToMessageErrorCodes = context.GetErrorCodeMapper();
+                var mapErrorCodesFromDomainToMessageErrorCodes = context.GetErrorCodeMappings();
                 var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error
                                                                          + Environment.NewLine + domainExceptionWithErrorCode
                                                                                                  .ToString()
@@ -59,7 +61,6 @@
                 else
                 {
                     mapErrorCodesFromDomainToMessageErrorCodes
-                        .DefineMapper()
                         .TryGetValue(domainExceptionWithErrorCode.Error, out var messageErrorCode);
 
                     if (messageErrorCode != null) //- a mapping was setup
@@ -90,6 +91,11 @@
 
             ApplicationName = context.AppConfig.ApplicationName;
             EnvironmentName = context.AppConfig.EnvironmentName;
+        }
+
+        public FormattedExceptionInfo()
+        {
+            //* serialiser
         }
 
         public string ApplicationName { get; set; }

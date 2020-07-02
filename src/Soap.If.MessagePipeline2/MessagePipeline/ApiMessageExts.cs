@@ -2,8 +2,7 @@
 {
     using System;
     using System.Text.Json;
-    using CircuitBoard.Permissions;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.Utility.Functions.Extensions;
@@ -14,7 +13,7 @@
         internal static void Authenticate(
             this ApiMessage message,
             ContextWithMessage ctx,
-            Action<IIdentityWithPermissions> outIdentity)
+            Action<IApiIdentity> outIdentity)
         {
             var identity = message.IdentityToken != null ? ctx.Authenticator.Authenticate(message) : null;
             outIdentity(identity);

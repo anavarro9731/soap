@@ -1,11 +1,11 @@
-﻿namespace Soap.Api.Sample.Domain.Constants
+﻿namespace Sample.Models.Constants
 {
     public enum ReleaseVersions
     {
-        NULL,
+        Null,
 
-        v1,
+        V1,
 
-        v2
+        V2
     }
 }

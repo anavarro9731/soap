@@ -1,19 +1,18 @@
 ﻿namespace Soap.DomainTests
 {
-    using CircuitBoard.Permissions;
     using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline;
 
     internal class FakeMessageAuthenticator : IAuthenticateUsers
     {
-        private readonly IIdentityWithPermissions identity;
+        private readonly IApiIdentity identity;
 
-        public FakeMessageAuthenticator(IIdentityWithPermissions identity)
+        public FakeMessageAuthenticator(IApiIdentity identity)
         {
             this.identity = identity;
         }
 
-        public IIdentityWithPermissions Authenticate(ApiMessage message)
+        public IApiIdentity Authenticate(ApiMessage message)
         {
             return this.identity;
         }

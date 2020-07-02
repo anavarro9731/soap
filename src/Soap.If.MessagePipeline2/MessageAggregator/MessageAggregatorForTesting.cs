@@ -5,6 +5,7 @@
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.Operations;
 
     /// <summary>
     ///     doesn't allow calls through unless they are DataStore or Bus operations which we always test

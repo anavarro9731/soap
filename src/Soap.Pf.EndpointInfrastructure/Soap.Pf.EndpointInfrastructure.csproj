@@ -7,13 +7,13 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
-    <PackageReference Include="CircuitBoard" Version="2.0.0" />
-    <PackageReference Include="DataStore.Providers.CosmosDb" Version="6.10.0" />
+    <PackageReference Include="CircuitBoard" Version="3.0.0" />
+    <PackageReference Include="DataStore.Providers.CosmosDb" Version="12.0.3" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
     <PackageReference Include="Serilog.Exceptions" Version="2.5.0" />
     <PackageReference Include="Serilog.Sinks.ColoredConsole" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.Seq" Version="3.4.0" />
-    <PackageReference Include="DataStore" Version="7.11.0" />
+    <PackageReference Include="DataStore" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" />

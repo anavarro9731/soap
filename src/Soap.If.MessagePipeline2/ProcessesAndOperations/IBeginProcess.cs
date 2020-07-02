@@ -1,19 +1,21 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
+    using System;
     using System.Threading.Tasks;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.MessagePipeline;
 
     /// <summary>
     ///     a way to enforce the signature for handling a msg
     /// </summary>
+    
     public interface IBeginProcess<in TMessage, TReturnType> where TMessage : ApiCommand
     {
-        Task<TReturnType> BeginProcess(TMessage message, MessageMeta meta);
+        Func<TMessage, Task<TReturnType>> BeginProcess { get; }
     }
 
     public interface IBeginProcess<in TMessage> where TMessage : ApiCommand
     {
-        Task BeginProcess(TMessage message, MessageMeta meta);
+        Func<TMessage, Task> BeginProcess { get; }
     }
 }

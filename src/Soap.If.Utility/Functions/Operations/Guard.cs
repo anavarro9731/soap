@@ -1,9 +1,9 @@
 ﻿namespace Soap.Utility.Functions.Operations
 {
     using System;
-    using Soap.Interfaces;
     using Soap.Utility.Enums;
     using Soap.Utility.Models;
+    using Soap.Utility.Objects.Blended;
 
     public static class Guard
     {

@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.Messages.csproj" />
+    <ProjectReference Include="..\Soap.If.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

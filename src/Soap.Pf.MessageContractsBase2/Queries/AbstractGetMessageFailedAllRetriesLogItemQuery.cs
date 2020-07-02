@@ -1,7 +1,7 @@
 ﻿namespace Soap.Pf.MessageContractsBase.Queries
 {
     using System;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public abstract class AbstractGetMessageFailedAllRetriesLogItem<TResponse> : ApiCommand<TResponse>
         where TResponse : AbstractGetMessageFailedAllRetriesLogItem<TResponse>.AbstractResponseEvent, new()
@@ -11,8 +11,9 @@
             IdOfMessageYouWantResultsFor = idOfMessageYouWantResultsFor;
         }
 
-        protected AbstractGetMessageFailedAllRetriesLogItem()
+        protected internal AbstractGetMessageFailedAllRetriesLogItem()
         {
+            //serialiser
         }
 
         public Guid IdOfMessageYouWantResultsFor { get; internal set; }

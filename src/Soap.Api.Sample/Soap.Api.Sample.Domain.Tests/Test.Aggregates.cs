@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Domain.Tests
+﻿namespace Sample.Tests
 {
     public partial class Test
     {

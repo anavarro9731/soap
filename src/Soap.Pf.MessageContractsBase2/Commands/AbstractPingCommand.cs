@@ -1,8 +1,8 @@
-﻿namespace Soap.Pf.MessageContractsBase.CommSands
+﻿namespace Soap.Pf.MessageContractsBase.Commands
 {
     using System;
     using FluentValidation;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
 
     public abstract class AbstractPingCommand<TPongResponse> : ApiCommand<TPongResponse> where TPongResponse : ApiEvent, new()
     {

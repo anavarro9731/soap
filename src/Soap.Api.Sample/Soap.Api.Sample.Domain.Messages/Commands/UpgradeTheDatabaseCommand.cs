@@ -1,10 +1,10 @@
-﻿namespace Soap.Api.Sample.Domain.Messages.Commands
+﻿namespace Sample.Messages.Commands
 {
     using System;
     using FluentValidation;
-    using Soap.Api.Sample.Domain.Constants;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
+    using Sample.Models.Constants;
+    using Soap.Interfaces;
+    using Soap.Utility.Objects.Blended;
 
     public class UpgradeTheDatabaseCommand : ApiCommand
     {
@@ -13,6 +13,8 @@
             ReleaseVersion = releaseVersion;
             
         }
+
+        public UpgradeTheDatabaseCommand() {}
 
         public ReleaseVersions ReleaseVersion { get; set; }
 
@@ -31,16 +33,11 @@
                 "No Upgrade Script Exists For This Version");
         }
 
-        public override void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
-        }
-
         public class Validator : AbstractValidator<UpgradeTheDatabaseCommand>
         {
             public Validator()
             {
-                RuleFor(x => x.ReleaseVersion != ReleaseVersions.NULL);
+                RuleFor(x => x.ReleaseVersion != ReleaseVersions.Null);
             }
         }
     }

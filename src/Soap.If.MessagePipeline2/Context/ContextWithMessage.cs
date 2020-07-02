@@ -1,14 +1,16 @@
 ﻿namespace Soap.MessagePipeline.Context
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using CircuitBoard.Permissions;
     using DataStore;
+    using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
+    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Objects.Blended;
 
     public class ContextWithMessage : BoostrappedContext, IMessageFunctions
     {
@@ -37,11 +39,11 @@
 
         public (DateTime receivedTime, long receivedTicks) TimeStamp { get; }
 
-        public IMapErrorCodesFromDomainToMessageErrorCodes GetErrorCodeMapper() => this.functions.GetErrorCodeMapper();
+        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings() => this.functions.GetErrorCodeMappings();
 
         public Task Handle(ApiMessage msg) => this.functions.Handle(msg);
 
-        public Task HandleFinalFailure(ApiMessage msg) => this.functions.HandleFinalFailure(msg);
+        public Task HandleFinalFailure(MessageFailedAllRetries msg) => this.functions.HandleFinalFailure(msg);
 
         public void Validate(ApiMessage msg) => this.functions.Validate(msg);
     }
@@ -50,7 +52,7 @@
     {
         internal static async Task CreateOrFindLogEntry(
             this ContextWithMessage ctx,
-            IIdentityWithPermissions identity,
+            IApiIdentity identity,
             Action<MessageLogEntry> outLogEntry)
         {
             {
@@ -79,18 +81,19 @@
                 {
                     ctx.Logger.Debug($"Creating record for msg id {message.MessageId}");
 
-                    var newItem = await ctx.DataStore.Create(
-                                      new MessageLogEntry(
-                                          message,
-                                          meta,
-                                          ((DataStore)ctx.DataStore).DataStoreOptions.OptimisticConcurrency, //TODO
-                                          ctx.AppConfig.NumberOfApiMessageRetries));
+                    var messageLogEntry = new MessageLogEntry(
+                        message,
+                        meta,
+                        ((DataStore)ctx.DataStore).DataStoreOptions.OptimisticConcurrency, //TODO
+                        ctx.AppConfig.NumberOfApiMessageRetries);
+
+                    var newItem = await ctx.DataStore.Create(messageLogEntry);
 
                     await ctx.DataStore.CommitChanges();
 
                     ctx.Logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
 
-                    outLogEntry(newItem.Clone());
+                    outLogEntry(ObjectExt.Clone(newItem));
                 }
                 catch (Exception e)
                 {

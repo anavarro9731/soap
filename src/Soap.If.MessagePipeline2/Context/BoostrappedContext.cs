@@ -2,11 +2,11 @@
 {
     using System;
     using CircuitBoard.MessageAggregator;
+    using DataStore;
     using DataStore.Interfaces;
     using Serilog;
     using Soap.Bus;
     using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
 
     public class BoostrappedContext
@@ -19,7 +19,7 @@
 
         public readonly IBus Bus;
 
-        public readonly IDataStore DataStore;
+        public readonly DataStore DataStore;
 
         public readonly ILogger Logger;
 
@@ -28,7 +28,7 @@
         public BoostrappedContext(
             IAuthenticateUsers authenticator,
             ApplicationConfig appConfig,
-            IDataStore dataStore,
+            DataStore dataStore,
             IMessageAggregator messageAggregator,
             ILogger logger,
             IBus bus,
@@ -51,6 +51,7 @@
             this.MessageAggregator = c.MessageAggregator;
             this.Logger = c.Logger;
             this.Bus = c.Bus;
+            this.MessageMapper = c.MessageMapper;
         }
 
         public class ApplicationConfig

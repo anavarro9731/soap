@@ -2,9 +2,10 @@
 {
     using System;
     using System.Linq;
+    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
-    using Soap.Interfaces.Messages;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Logging;
     using Soap.Utility.Models;
 
@@ -16,7 +17,13 @@
             MessageId = x.MessageId;
         }
 
+        [JsonInclude]
         public Guid MessageId { get; internal set; }
+
+        public BusMessageUnitOfWorkItem()        {
+            //- serialiser
+        }
+
     }
 
     public static class BusMessageUnitOfWorkItemExtensions

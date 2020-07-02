@@ -1,4 +1,4 @@
-function Test-IsGitInstalled
+unction Test-IsGitInstalled
 {
     $32BitPrograms = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*
     $64BitPrograms = Get-ItemProperty     HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*

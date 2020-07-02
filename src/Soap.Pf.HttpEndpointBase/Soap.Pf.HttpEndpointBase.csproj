@@ -12,8 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Pf.DomainLogicBase\Soap.Pf.DomainLogicBase.csproj" />
-    <ProjectReference Include="..\Soap.Pf.DomainModelsBase\Soap.Pf.DomainModelsBase.csproj" />
+    <ProjectReference Include="..\Soap.Pf.DomainLogicBase\Soap.Pf.LogicBase.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
   </ItemGroup>
