@@ -5,5 +5,7 @@
         public string Body;
 
         public string Subject;
+
+        public string Recipient;
     }
 }

@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading.Tasks;
-    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Objects.Blended;
 
     public interface IMessageFunctions

@@ -26,14 +26,14 @@
     {
         internal static readonly AsyncLocal<ContextWithMessageLogEntry> Instance = new AsyncLocal<ContextWithMessageLogEntry>();
 
-        public static ContextWithMessageLogEntry Current => Instance.Value;
-
         public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ContextWithMessage current)
             : base(current)
         {
             MessageLogEntry = messageLogEntry;
         }
-        
+
+        public static ContextWithMessageLogEntry Current => Instance.Value;
+
         public MessageLogEntry MessageLogEntry { get; }
     }
 
@@ -222,11 +222,9 @@
                 }
             }
 
-            static bool IsEmpty(UnitOfWork u)
-            {
-                return !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
-                       && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
-            }
+            static bool IsEmpty(UnitOfWork u) =>
+                !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
+                && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
 
             static async Task SaveUnsavedData(List<UnitOfWorkExtensions.Record> records, IDataStore dataStore)
             {
@@ -349,17 +347,13 @@
                 await context.DataStore.Update(logEntry, o => o.DisableOptimisticConcurrency()); //etag has changed
             }
 
-            bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage()
-            {
+            bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage() =>
                 //- avoid infinite loop
-                return context.Message.GetType().InheritsOrImplements(typeof(MessageFailedAllRetries));
-            }
+                context.Message.GetType().InheritsOrImplements(typeof(MessageFailedAllRetries));
 
-            bool ThisFailureIsTheFinalFailure()
-            {
+            bool ThisFailureIsTheFinalFailure() =>
                 //- remember that total attempts is initial message + retries
-                return context.MessageLogEntry.Attempts.Count == context.AppConfig.NumberOfApiMessageRetries;
-            }
+                context.MessageLogEntry.Attempts.Count == context.AppConfig.NumberOfApiMessageRetries;
 
             void SendFinalFailureMessage()
             {
@@ -370,7 +364,6 @@
 
                 instanceOfMessageFailedAllRetries.MessageId = Guid.NewGuid();
                 instanceOfMessageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
-                instanceOfMessageFailedAllRetries.IdOfMessageThatFailed = context.Message.MessageId;
 
                 if (context.Message is ApiCommand command)
                 {
@@ -381,9 +374,7 @@
             }
         }
 
-        internal static void SerilogFailure(
-            this ContextWithMessageLogEntry context,
-            FormattedExceptionInfo exceptionInfo)
+        internal static void SerilogFailure(this ContextWithMessageLogEntry context, FormattedExceptionInfo exceptionInfo)
         {
             var message = context.Message;
             var meta = context.MessageLogEntry.MessageMeta;
@@ -531,20 +522,12 @@
                     return true;
                 }
 
-                bool IsInvalidTimestampValue(long? timestamp)
-                {
-                    return timestamp.HasValue == false || timestamp <= 0;
-                }
+                bool IsInvalidTimestampValue(long? timestamp) => timestamp.HasValue == false || timestamp <= 0;
 
-                bool IsStopTimestampBeforeStartTimestamp(long start, long? stop)
-                {
-                    return stop < start;
-                }
+                bool IsStopTimestampBeforeStartTimestamp(long start, long? stop) => stop < start;
 
-                bool IsStartTimestampBeforePrevoiusStopTimestamp(long previousStop, long currentStart)
-                {
-                    return currentStart < previousStop;
-                }
+                bool IsStartTimestampBeforePrevoiusStopTimestamp(long previousStop, long currentStart) =>
+                    currentStart < previousStop;
             }
         }
 
@@ -556,10 +539,8 @@
             return queuedStateChanges;
         }
 
-        private static bool IsDurableChange(IQueuedStateChange x)
-        {
-            return x is IQueuedDataStoreWriteOperation || x is IQueuedBusMessage;
-        }
+        private static bool IsDurableChange(IQueuedStateChange x) =>
+            x is IQueuedDataStoreWriteOperation || x is IQueuedBusMessage;
 
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
         {

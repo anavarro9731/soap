@@ -2,7 +2,6 @@
 {
     using System;
     using CircuitBoard.Messages;
-    using Soap.Pf.MessageContractsBase.Commands;
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 

@@ -6,6 +6,8 @@
     using Sample.Logic.Processes;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.Context;
+    using Soap.NotificationServer;
     using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Objects.Blended;
 
@@ -20,10 +22,7 @@
 
         public Task HandleFinalFailure(MessageFailedAllRetries<UpgradeTheDatabaseCommand> msg)
         {
-            var failed = msg.FailedMessage;
-
-            //* get context and put logic here or in a process? operation doesn't make sense cause its message specific really
-            return Task.CompletedTask;
+            return this.Get<NotifyOfFinalFailureProcess>().Exec(x => x.BeginProcess)(msg);
         }
 
         public void Validate(UpgradeTheDatabaseCommand msg)

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />
+    <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
     <ProjectReference Include="..\Soap.Pf.BusContext\Soap.Bus.csproj" />
     <ProjectReference Include="..\Soap.Pf.MessageContractsBase2\Soap.Pf.MessageContractsBase.csproj" />
   </ItemGroup>

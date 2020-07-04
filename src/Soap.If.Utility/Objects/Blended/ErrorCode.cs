@@ -2,20 +2,15 @@
 {
     using System;
 
-    public class ErrorCode : Enumeration
+    public class ErrorCode : Enumeration<ErrorCode>
     {
-        public static T Create<T>(Guid code, string messageSafeForInternalAndExternalClients) where T : ErrorCode, new()
-        {
-            return Create<T>(code.ToString(), messageSafeForInternalAndExternalClients);
-        }
-
-        public static new T Create<T>(string guid, string messageSafeForInternalAndExternalClients) where T : Enumeration, new()
-        {
-            //HACK hide the base method with it's confusing argument names
-            return Enumeration.Create<T>(Guid.Parse(guid).ToString(), messageSafeForInternalAndExternalClients);
-        }
-
         public bool IsGlobal { get; set; }
 
+        public static ErrorCode Create(Guid code, string messageSafeForInternalAndExternalClients) =>
+            Create(code.ToString(), messageSafeForInternalAndExternalClients);
+
+        public static new ErrorCode Create(string guid, string messageSafeForInternalAndExternalClients) =>
+            //HACK hide the base method with it's confusing argument names
+            Create(Guid.Parse(guid).ToString(), messageSafeForInternalAndExternalClients);
     }
 }

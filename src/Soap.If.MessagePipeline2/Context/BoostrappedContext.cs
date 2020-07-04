@@ -3,16 +3,14 @@
     using System;
     using CircuitBoard.MessageAggregator;
     using DataStore;
-    using DataStore.Interfaces;
     using Serilog;
     using Soap.Bus;
     using Soap.Interfaces;
     using Soap.MessagePipeline.MessagePipeline;
+    using Soap.NotificationServer;
 
     public class BoostrappedContext
     {
-        public readonly MapMessagesToFunctions MessageMapper;
-
         public readonly ApplicationConfig AppConfig;
 
         public readonly IAuthenticateUsers Authenticator;
@@ -25,6 +23,10 @@
 
         public readonly IMessageAggregator MessageAggregator;
 
+        public readonly MapMessagesToFunctions MessageMapper;
+
+        public readonly NotificationServer NotificationServer;
+
         public BoostrappedContext(
             IAuthenticateUsers authenticator,
             ApplicationConfig appConfig,
@@ -32,15 +34,17 @@
             IMessageAggregator messageAggregator,
             ILogger logger,
             IBus bus,
+            NotificationServer notificationServer,
             MapMessagesToFunctions messageMapper)
         {
-            MessageMapper = messageMapper;
+            this.MessageMapper = messageMapper;
             this.Authenticator = authenticator;
             this.AppConfig = appConfig;
             this.DataStore = dataStore;
             this.MessageAggregator = messageAggregator;
             this.Logger = logger;
             this.Bus = bus;
+            this.NotificationServer = notificationServer;
         }
 
         protected BoostrappedContext(BoostrappedContext c)
@@ -56,8 +60,6 @@
 
         public class ApplicationConfig
         {
-            public int NumberOfApiMessageRetries;
-
             public string ApplicationName;
 
             public string ApplicationVersion;
@@ -66,8 +68,9 @@
 
             public string EnvironmentName;
 
-            public bool ReturnExplicitErrorMessages;
+            public int NumberOfApiMessageRetries;
 
+            public bool ReturnExplicitErrorMessages;
         }
     }
 
@@ -76,9 +79,7 @@
         public static ContextWithMessage Upgrade(
             this BoostrappedContext current,
             ApiMessage message,
-            (DateTime receivedTime, long receivedTicks) timeStamp)
-        {
-            return new ContextWithMessage(message, timeStamp, current);
-        }
+            (DateTime receivedTime, long receivedTicks) timeStamp) =>
+            new ContextWithMessage(message, timeStamp, current);
     }
 }

@@ -21,7 +21,7 @@
 
         public string EnvironmentName;
 
-        public NotificationServerSettings NotificationServerSettings;
+        public NotificationServer.Settings NotificationServerSettings;
 
         public bool ReturnExplicitErrorMessages;
 
@@ -38,7 +38,7 @@
                 RuleFor(x => x.DatabaseSettings).NotNull();
                 RuleFor(x => x.DefaultExceptionMessage).NotEmpty();
                 RuleFor(x => x.EnvironmentName).NotEmpty();
-                RuleFor(x => x.NotificationServerSettings).NotNull().SetValidator(new NotificationServerSettings.Validator());
+                RuleFor(x => x.NotificationServerSettings).NotNull().SetValidator(new NotificationServer.Settings.Validator());
                 RuleFor(x => x.SeqLoggingSettings).NotNull().SetValidator(new SeqLoggingConfig.Validator());
             }
         }

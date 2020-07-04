@@ -5,29 +5,34 @@
     using System.Linq;
     using System.Reflection;
 
+    public abstract class Enumeration<T> : Enumeration where T : Enumeration, new()
+    {
+        public static T Create(string key, string displayName)
+        {
+            var t = new T
+            {
+                DisplayName = displayName, Key = key
+            };
+
+            return t;
+        }
+    }
+
     /// <summary>
     ///     https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/microservice-ddd-cqrs-patterns/enumeration-classes-over-enum-types
     /// </summary>
-    public abstract class Enumeration : IComparable, IEquatable<Enumeration>, IComparer<Enumeration>, IEqualityComparer<Enumeration>
+    public abstract class Enumeration : IComparable,
+                                        IEquatable<Enumeration>,
+                                        IComparer<Enumeration>,
+                                        IEqualityComparer<Enumeration>
     {
-        public static T Create<T>(string key, string displayName) where T : Enumeration, new()
-        {
-            var t = new T();
-            t.DisplayName = displayName;
-            t.Key = key;
-            return t;
-        }
-
         public bool Active { get; set; }
 
         public string DisplayName { get; set; }
 
         public string Key { get; set; }
 
-        public static bool Equals(Enumeration x, Enumeration y)
-        {
-            return x?.Key == y?.Key;
-        }
+        public static bool Equals(Enumeration x, Enumeration y) => x?.Key == y?.Key;
 
         public static T FromDisplayName<T>(string displayName) where T : Enumeration, new()
         {
@@ -58,25 +63,13 @@
             }
         }
 
-        public static bool operator ==(Enumeration left, Enumeration right)
-        {
-            return Equals(left, right);
-        }
+        public static bool operator ==(Enumeration left, Enumeration right) => Equals(left, right);
 
-        public static bool operator !=(Enumeration left, Enumeration right)
-        {
-            return !Equals(left, right);
-        }
+        public static bool operator !=(Enumeration left, Enumeration right) => !Equals(left, right);
 
-        public int Compare(Enumeration x, Enumeration y)
-        {
-            return x.Key.CompareTo(y.Key);
-        }
+        public int Compare(Enumeration x, Enumeration y) => x.Key.CompareTo(y.Key);
 
-        public int CompareTo(object other)
-        {
-            return Key.CompareTo(((Enumeration)other).Key);
-        }
+        public int CompareTo(object other) => Key.CompareTo(((Enumeration)other).Key);
 
         public override bool Equals(object obj)
         {
@@ -104,20 +97,11 @@
             }
         }
 
-        public int GetHashCode(Enumeration obj)
-        {
-            return Key.GetHashCode();
-        }
+        public int GetHashCode(Enumeration obj) => Key.GetHashCode();
 
-        public override string ToString()
-        {
-            return $"{DisplayName} ({this.Key}) {Active}";
-        }
+        public override string ToString() => $"{DisplayName} ({Key}) {Active}";
 
-        bool IEqualityComparer<Enumeration>.Equals(Enumeration x, Enumeration y)
-        {
-            return Equals(x, y);
-        }
+        bool IEqualityComparer<Enumeration>.Equals(Enumeration x, Enumeration y) => Equals(x, y);
 
         private static T parse<T, K>(K value, string description, Func<T, bool> predicate) where T : Enumeration, new()
         {

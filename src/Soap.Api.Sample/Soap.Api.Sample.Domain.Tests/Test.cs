@@ -9,6 +9,7 @@
     public partial class Test
     {
         protected DomainTest.Result Result;
+        private readonly DomainTest testContext = new DomainTest();
 
         private readonly ITestOutputHelper output;
 
@@ -20,7 +21,7 @@
         public void Execute(ApiMessage msg, IApiIdentity identity)
         {
             if (msg.MessageId == Guid.Empty) msg.MessageId = Guid.NewGuid();
-            this.Result = DomainTest.WireExecute(new Mappings(), this.output)(msg, identity).Result;
+            this.Result = this.testContext.WireExecute(new Mappings(), this.output)(msg, identity).Result;
         }
     }
 }

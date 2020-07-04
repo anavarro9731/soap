@@ -8,19 +8,20 @@ namespace Sample.Tests.Messages.Commands
     using Xunit;
     using Xunit.Abstractions;
 
-    public class WhenUpgradingTheDatabaseOnlyOnce : Test
+    public class UpgradingTheDatabaseMoreThanOnce : Test
     {
-        public WhenUpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
+        public UpgradingTheDatabaseMoreThanOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            Execute(Commands.UpgradeTheDatabaseToV2, Identities.UserOne);
         }
 
         [Fact]
         public void ItShouldSetTheServiceStateDbVersionTo1()
         {
             var ss = this.Result.DataStore.Read<ServiceState>().Result.Single();
-            ss.DatabaseState.HasState(ReleaseVersions.V1).Should().BeTrue();
+            ss.DatabaseState.HasState(ReleaseVersions.V2).Should().BeTrue();
         }
     }
 }

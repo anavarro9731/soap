@@ -17,7 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Soap.Pf.DomainLogicBase\Soap.Pf.LogicBase.csproj" />
     <ProjectReference Include="..\Soap.Pf.EndpointClients\Soap.Pf.EndpointClients.csproj" />
-    <ProjectReference Include="..\Soap.Pf.EndpointInfrastructure\Soap.Pf.EndpointInfrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Transactions" />

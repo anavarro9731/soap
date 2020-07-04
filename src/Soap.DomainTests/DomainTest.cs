@@ -1,6 +1,7 @@
 ﻿namespace Soap.DomainTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
@@ -15,40 +16,53 @@
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.MessagePipeline.MessagePipeline;
+    using Soap.NotificationServer;
+    using Soap.NotificationServer.Channels;
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
 
-
-
-    public static class DomainTest
+    public class DomainTest
     {
-        private static Task Execute(
+        private BoostrappedContext context;
+
+        private Task Execute(
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper testOutputHelper,
             IApiIdentity identity,
             out DataStore dataStore,
-            out IBus bus)
+            out NotificationServer notificationServer,
+            out InMemoryBus bus)
         {
             {
-                CreateMessageAggregator(out var messageAggregator);
+                if (this.context == null)
+                {
+                    CreateMessageAggregator(out var messageAggregator);
 
-                CreateLogger(messageAggregator, testOutputHelper, out var logger);
+                    CreateLogger(messageAggregator, testOutputHelper, out var logger);
 
-                CreateDataStore(messageAggregator, message, out dataStore);
+                    CreateDataStore(messageAggregator, message, out dataStore);
 
-                CreateBusContext(messageAggregator, out bus);
+                    CreateNotificationServer(out notificationServer);
 
-                CreateAppConfig(out var appConfig);
+                    CreateBusContext(messageAggregator, out bus);
 
-                var context = new BoostrappedContext(
-                    new FakeMessageAuthenticator(identity),
-                    messageMapper: messageMapper,
-                    appConfig: appConfig,
-                    logger: logger,
-                    bus: bus,
-                    dataStore: dataStore,
-                    messageAggregator: messageAggregator);
+                    CreateAppConfig(out var appConfig);
+
+                    context = new BoostrappedContext(
+                        new FakeMessageAuthenticator(identity),
+                        messageMapper: messageMapper,
+                        appConfig: appConfig,
+                        logger: logger,
+                        bus: bus,
+                        notificationServer: notificationServer,
+                        dataStore: dataStore,
+                        messageAggregator: messageAggregator);
+                }
+
+                dataStore = this.context.DataStore;
+                bus = (InMemoryBus)this.context.Bus;
+                notificationServer = this.context.NotificationServer;
 
                 return MessagePipeline.Execute(message.ToJson(), message.GetType().AssemblyQualifiedName, () => context);
             }
@@ -58,7 +72,7 @@
                 messageAggregator = new MessageAggregatorForTesting();
             }
 
-            static void CreateBusContext(IMessageAggregator messageAggregator, out IBus busContext)
+            static void CreateBusContext(IMessageAggregator messageAggregator, out InMemoryBus busContext)
             {
                 busContext = new InMemoryBus(messageAggregator);
             }
@@ -99,15 +113,30 @@
             }
         }
 
-        public static Func<ApiMessage, IApiIdentity, Task<Result>> WireExecute(
+        private void CreateNotificationServer(out NotificationServer notificationServer)
+        {
+            var settings = new NotificationServer.Settings()
+            {
+                ChannelSettings = new List<INotificationChannelSettings>()
+                {
+                    {
+                        new InMemoryChannel.Settings()
+                    }
+                }
+            };
+
+            notificationServer = settings.CreateServer();
+        }
+
+        public Func<ApiMessage, IApiIdentity, Task<Result>> WireExecute(
             MapMessagesToFunctions mapper,
             ITestOutputHelper outputHelper)
         {
             return async (message, identity) =>
                 {
-                var x = new Result();
-                await Execute(message, mapper, outputHelper, identity, out x.DataStore, out x.MessageBus);
-                return x;
+                    var x = new Result();
+                    await Execute(message, mapper, outputHelper, identity, out x.DataStore, out x.NotificationServer, out x.MessageBus);
+                    return x;
                 };
         }
 
@@ -115,7 +144,9 @@
         {
             public DataStore DataStore;
 
-            public IBus MessageBus;
+            public NotificationServer NotificationServer;
+
+            public InMemoryBus MessageBus;
         }
     }
 }

@@ -3,8 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DataStore;
-    using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
@@ -24,7 +22,7 @@
         {
             Message = message;
             TimeStamp = timeStamp;
-            this.functions = base.MessageMapper.MapMessage(message);
+            this.functions = this.MessageMapper.MapMessage(message);
         }
 
         protected ContextWithMessage(ContextWithMessage c)
@@ -70,10 +68,7 @@
                 outLogEntry(entry);
             }
 
-            static async Task CreateNewLogEntry(
-                MessageMeta meta,
-                ContextWithMessage ctx,
-                Action<MessageLogEntry> outLogEntry)
+            static async Task CreateNewLogEntry(MessageMeta meta, ContextWithMessage ctx, Action<MessageLogEntry> outLogEntry)
             {
                 var message = ctx.Message;
 
@@ -84,7 +79,7 @@
                     var messageLogEntry = new MessageLogEntry(
                         message,
                         meta,
-                        ((DataStore)ctx.DataStore).DataStoreOptions.OptimisticConcurrency, //TODO
+                        ctx.DataStore.DataStoreOptions.OptimisticConcurrency, //TODO
                         ctx.AppConfig.NumberOfApiMessageRetries);
 
                     var newItem = await ctx.DataStore.Create(messageLogEntry);
@@ -125,11 +120,7 @@
             }
         }
 
-        internal static ContextWithMessageLogEntry Upgrade(
-            this ContextWithMessage current,
-            MessageLogEntry messageLogEntry)
-        {
-            return new ContextWithMessageLogEntry(messageLogEntry, current);
-        }
+        internal static ContextWithMessageLogEntry Upgrade(this ContextWithMessage current, MessageLogEntry messageLogEntry) =>
+            new ContextWithMessageLogEntry(messageLogEntry, current);
     }
 }

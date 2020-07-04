@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using FluentValidation;
-    using Newtonsoft.Json;
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;

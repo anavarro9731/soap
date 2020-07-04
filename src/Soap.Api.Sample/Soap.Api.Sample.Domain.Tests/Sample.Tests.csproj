@@ -17,10 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Messages\Queries\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Soap.DomainTests\Soap.DomainTests.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Logic\Sample.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Domain.Messages\Sample.Messages.csproj" />

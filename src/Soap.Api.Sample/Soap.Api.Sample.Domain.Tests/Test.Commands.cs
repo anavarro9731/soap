@@ -1,7 +1,9 @@
 ﻿namespace Sample.Tests
 {
     using Sample.Messages.Commands;
+    using Sample.Messages.Queries;
     using Sample.Models.Constants;
+    using Soap.Interfaces;
 
     public partial class Test
     {
@@ -10,6 +12,12 @@
         public static class Commands
         {
             public static UpgradeTheDatabaseCommand UpgradeTheDatabaseToV1 = new UpgradeTheDatabaseCommand(ReleaseVersions.V1);
+            public static UpgradeTheDatabaseCommand UpgradeTheDatabaseToV2 = new UpgradeTheDatabaseCommand(ReleaseVersions.V2);
+        }
+
+        public static class Queries
+        {
+            public static GetMessageLogItemQuery GetMessageLogItem = new GetMessageLogItemQuery();
         }
     }
 }
