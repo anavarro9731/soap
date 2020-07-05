@@ -1,4 +1,4 @@
-﻿namespace Sample.Logic.Constants
+﻿namespace Sample.Logic
 {
     using System;
     using Soap.Interfaces;

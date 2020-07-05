@@ -1,11 +1,9 @@
-﻿namespace Soap.DomainTests
+﻿namespace Soap.Bus
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using Soap.Bus;
     using Soap.Interfaces;
 
     public class InMemoryBus : IBus
@@ -17,9 +15,9 @@
             this.messageAggregator = messageAggregator;
         }
 
-        public IEnumerable<ApiCommand> Commands => this.messageAggregator.AllMessages.OfType<ApiCommand>();
+        public IEnumerable<ApiCommand> Commands => this.messageAggregator.AllMessages.OfType<QueuedCommandToSend>().Select(x => x.CommandToSend);
 
-        public IEnumerable<ApiEvent> Events => this.messageAggregator.AllMessages.OfType<ApiEvent>();
+        public IEnumerable<ApiEvent> Events => this.messageAggregator.AllMessages.OfType<QueuedPublishEvent>().Select(x => x.EventToSend);
 
         public Task CommitChanges()
         {
@@ -27,7 +25,7 @@
             return Task.CompletedTask;
         }
 
-        public void Publish(ApiEvent publishEvent)
+        public Task Publish(ApiEvent publishEvent)
         {
             this.messageAggregator.Collect(
                 new QueuedPublishEvent
@@ -35,9 +33,10 @@
                     EventToSend = publishEvent,
                     CommitClosure = () => Task.CompletedTask
                 });
+            return Task.CompletedTask;
         }
 
-        public void Send(ApiCommand sendCommand)
+        public Task Send(ApiCommand sendCommand)
         {
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
@@ -45,6 +44,7 @@
                     CommandToSend = sendCommand,
                     CommitClosure = () => Task.CompletedTask
                 });
+            return Task.CompletedTask;
         }
 
         

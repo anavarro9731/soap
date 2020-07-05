@@ -17,6 +17,13 @@
             channelSettings.ForEach(s => this.channels.Add(s.CreateChannel()));
         }
 
+        /// <summary>
+        /// Remember calls to Notify are always non-transactional so do not use in a transaction unless it is the only operation.
+        /// Alternatively, send a Notify message on the bus.
+        /// </summary>
+        /// <param name="notification"></param>
+        /// <param name="selectedUserChannels"></param>
+        /// <returns></returns>
         public async Task Notify(Notification notification, params IUserChannelInfo[] selectedUserChannels)
         {
             foreach (var channelType in selectedUserChannels)

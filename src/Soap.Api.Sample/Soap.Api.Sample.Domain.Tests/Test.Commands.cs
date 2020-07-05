@@ -1,8 +1,7 @@
 ﻿namespace Sample.Tests
 {
+    using Sample.Constants;
     using Sample.Messages.Commands;
-    using Sample.Messages.Queries;
-    using Sample.Models.Constants;
     using Soap.Interfaces;
 
     public partial class Test
@@ -11,13 +10,16 @@
 
         public static class Commands
         {
-            public static UpgradeTheDatabaseCommand UpgradeTheDatabaseToV1 = new UpgradeTheDatabaseCommand(ReleaseVersions.V1);
-            public static UpgradeTheDatabaseCommand UpgradeTheDatabaseToV2 = new UpgradeTheDatabaseCommand(ReleaseVersions.V2);
+            public static C101UpgradeTheDatabase UpgradeTheDatabaseToV1 = new C101UpgradeTheDatabase(ReleaseVersions.V1);
+
+            public static C101UpgradeTheDatabase UpgradeTheDatabaseToV2 = new C101UpgradeTheDatabase(ReleaseVersions.V2);
+
+            public static C100Ping Ping = new C100Ping();
         }
 
         public static class Queries
         {
-            public static GetMessageLogItemQuery GetMessageLogItem = new GetMessageLogItemQuery();
+            public static C102GetServiceState GetServiceState = new C102GetServiceState();
         }
     }
 }

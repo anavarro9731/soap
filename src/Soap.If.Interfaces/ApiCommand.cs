@@ -21,8 +21,4 @@
         public Guid? StatefulProcessId { get; set; }
     }
 
-    public abstract class ApiCommand<TResponse> : IApiQuery where TResponse : ApiEvent, new()
-    {
-        public Guid? StatefulProcessId { get; set; }
-    }
 }

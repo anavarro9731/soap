@@ -7,9 +7,9 @@
 
     public class MapMessagesToFunctions
     {
-        private readonly Dictionary<Type, IMessageFunctions> messageMappings = new Dictionary<Type, IMessageFunctions>();
+        private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings = new Dictionary<Type, IMessageFunctionsServerSide>();
 
-        public void AddMapping<TMessage>(IMessageFunctions<TMessage> messageFunctions) where TMessage: ApiMessage
+        public void AddMapping<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage: ApiMessage
         {
             var messageType = typeof(TMessage);
 
@@ -18,7 +18,7 @@
             this.messageMappings.Add(messageType, new MessageFunctionsBridge<TMessage>(messageFunctions));
         }
 
-        internal IMessageFunctions MapMessage(ApiMessage message)
+        internal IMessageFunctionsServerSide MapMessage(ApiMessage message)
         {
             var messageType = message.GetType();
 

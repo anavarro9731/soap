@@ -20,6 +20,5 @@
 
         public ILogger Logger => this.context.Logger;
 
-        public IMessageAggregator MessageAggregator => this.context.MessageAggregator;
     }
 }

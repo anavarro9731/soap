@@ -1,4 +1,4 @@
-﻿namespace Soap.Pf.DomainLogicBase
+﻿namespace Soap.Pf.LogicBase
 {
     using System.Reflection;
 

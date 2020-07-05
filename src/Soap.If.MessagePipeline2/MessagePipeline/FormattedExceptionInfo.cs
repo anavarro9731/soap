@@ -7,12 +7,12 @@
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
+    using Soap.Utility.Objects.Blended;
 
     public class FormattedExceptionInfo
     {
         private readonly ContextWithMessageLogEntry context;
 
-        
         public FormattedExceptionInfo(Exception exception, ContextWithMessageLogEntry context)
         {
             this.context = context;
@@ -59,12 +59,20 @@
                 }
                 else
                 {
-                    mapErrorCodesFromDomainToMessageErrorCodes
-                        .TryGetValue(domainExceptionWithErrorCode.Error, out var messageErrorCode);
+                    mapErrorCodesFromDomainToMessageErrorCodes.TryGetValue(domainExceptionWithErrorCode.Error, out var msgCode);
 
-                    if (messageErrorCode != null) //- a mapping was setup
+                    //* allow people to map them either way in the dictionary: domain , msg or msg , domain
+                    if (msgCode == null)
                     {
-                        Errors.Add((CodePrefixes.DOMAIN, (Guid?)Guid.Parse(messageErrorCode.Key), messageErrorCode.DisplayName));
+                        var key = mapErrorCodesFromDomainToMessageErrorCodes
+                                  .SingleOrDefault(x => x.Value == domainExceptionWithErrorCode.Error)
+                                  .Key;
+                        msgCode = key;
+                    }
+
+                    if (msgCode != null) //- a mapping was setup
+                    {
+                        Errors.Add((CodePrefixes.DOMAIN, (Guid?)Guid.Parse(msgCode.Key), msgCode.DisplayName));
                     }
                     else
                     {

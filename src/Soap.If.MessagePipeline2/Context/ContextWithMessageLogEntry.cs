@@ -17,7 +17,6 @@
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
-    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
@@ -277,10 +276,10 @@
             it's really only infrastructure problems that would stop you here */
                 var incompleteCommands =
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList().ForEach(busContext.Send);
+                incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList().ForEach(async i => await busContext.Send(i));
 
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList().ForEach(busContext.Publish);
+                incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList().ForEach(async x => await busContext.Publish(x));
             }
 
             static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(UnitOfWork unitOfWork, IDataStore dataStore)

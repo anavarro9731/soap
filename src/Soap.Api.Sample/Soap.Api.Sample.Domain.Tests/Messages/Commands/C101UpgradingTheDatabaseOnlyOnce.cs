@@ -2,15 +2,15 @@ namespace Sample.Tests.Messages.Commands
 {
     using System.Linq;
     using FluentAssertions;
+    using Sample.Constants;
     using Sample.Models.Aggregates;
-    using Sample.Models.Constants;
     using Soap.Utility.Objects.Binary;
     using Xunit;
     using Xunit.Abstractions;
 
-    public class UpgradingTheDatabaseOnlyOnce : Test
+    public class C101UpgradingTheDatabaseOnlyOnce : Test
     {
-        public UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
+        public C101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
@@ -19,7 +19,7 @@ namespace Sample.Tests.Messages.Commands
         [Fact]
         public void ItShouldSetTheServiceStateDbVersionTo1()
         {
-            var ss = this.Result.DataStore.Read<ServiceState>().Result.Single();
+            var ss = Result.DataStore.Read<ServiceState>().Result.Single();
             ss.DatabaseState.HasState(ReleaseVersions.V1).Should().BeTrue();
         }
     }

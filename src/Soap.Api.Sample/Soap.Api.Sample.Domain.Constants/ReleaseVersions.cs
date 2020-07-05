@@ -1,4 +1,4 @@
-﻿namespace Sample.Models.Constants
+﻿namespace Sample.Constants
 {
     public enum ReleaseVersions
     {

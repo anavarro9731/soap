@@ -43,7 +43,7 @@
             }
         }
 
-        public void Publish(ApiEvent publishEvent)
+        public Task Publish(ApiEvent publishEvent)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonSerializer.Serialize(publishEvent)))
             {
@@ -57,9 +57,10 @@
                     EventToSend = publishEvent,
                     CommitClosure = async () => await this.topicClient?.SendAsync(queueMessage)
                 });
+            return Task.CompletedTask;
         }
 
-        public void Send(ApiCommand sendCommand)
+        public Task Send(ApiCommand sendCommand)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonSerializer.Serialize(sendCommand)))
             {
@@ -74,6 +75,7 @@
                     CommandToSend = sendCommand,
                     CommitClosure = async () => await this.queueClient?.SendAsync(queueMessage)
                 });
+            return Task.CompletedTask;
         }
     }
 }

@@ -2,24 +2,23 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Sample.Constants;
     using Sample.Logic.Operations;
     using Sample.Messages.Commands;
-    using Sample.Models.Constants;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Pf.LogicBase;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
 
-    public class UpgradeTheDatabaseProcess : Process, IBeginProcess<UpgradeTheDatabaseCommand>
+    public class UpgradeTheDatabaseProcess : Process, IBeginProcess<C101UpgradeTheDatabase>
     {
-        private readonly ServiceStateOperations serviceStateOperations = new ServiceStateOperations();
-
-        public Func<UpgradeTheDatabaseCommand, Task> BeginProcess =>
+        public Func<C101UpgradeTheDatabase, Task> BeginProcess =>
             async message =>
                 {
                 if (message.ReSeed)
                 {
-                    await ClearDatabase.ExecuteOutsideTransaction(this.context.DataStore, this.context.MessageLogEntry);
+                    await ClearDatabase.ExecuteOutsideTransactionUsingCurrentContext();
                 }
 
                 switch (message.ReleaseVersion)
@@ -40,9 +39,9 @@
         {
             await SetInitialServiceState();
 
-            async Task SetInitialServiceState()
+            Task SetInitialServiceState()
             {
-                await this.serviceStateOperations.CreateServiceState();
+                return this.Get<ServiceStateOperations>().Exec(x => x.CreateServiceState)();
             }
         }
 
@@ -50,18 +49,14 @@
         {
             await SetDbVersion();
 
-            async Task SetDbVersion()
+            Task SetDbVersion()
             {
-                await this.serviceStateOperations.SetDatabaseVersion(ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Exec(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
             }
         }
 
         public class ErrorCodes : ErrorCode
         {
-            public static readonly ErrorCode AttemptingToUpgradeDatabaseToOutdatedVersion = Create(
-                Guid.Parse("b866824e-ccc2-4f84-8399-15877bf735e9"),
-                "Attempting To Upgrade Database To Outdated Version");
-
             public static readonly ErrorCode NoUpgradeScriptExistsForThisVersion = Create(
                 Guid.Parse("8b19f630-0ccf-4b2d-91bb-4deb72ce3676"),
                 "No Upgrade Script Exists For This Version");

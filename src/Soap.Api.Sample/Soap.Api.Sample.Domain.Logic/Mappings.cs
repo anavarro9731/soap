@@ -7,7 +7,9 @@
     {
         public Mappings()
         {
-            AddMapping(new UpgradeDatabaseMapping());
+            AddMapping(new C100Mapping());
+            AddMapping(new C101Mapping());
+            AddMapping(new C102Mapping());
         }
     }
 }

@@ -3,14 +3,13 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Interfaces;
-    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Objects.Blended;
 
-    public class MessageFunctionsBridge<T> : IMessageFunctions where T : ApiMessage
+    public class MessageFunctionsBridge<T> : IMessageFunctionsServerSide where T : ApiMessage
     {
-        private readonly IMessageFunctions<T> messageFunctionsTyped;
+        private readonly IMessageFunctionsClientSide<T> messageFunctionsTyped;
 
-        public MessageFunctionsBridge(IMessageFunctions<T> messageFunctionsTyped)
+        public MessageFunctionsBridge(IMessageFunctionsClientSide<T> messageFunctionsTyped)
         {
             this.messageFunctionsTyped = messageFunctionsTyped;
         }

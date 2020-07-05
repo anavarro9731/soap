@@ -8,6 +8,7 @@
     </ItemGroup>
   <ItemGroup>
     <Folder Include="Processes\Stateful\" />
+    <Folder Include="Queries\Predicates\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.Pf.DomainLogicBase\Soap.Pf.LogicBase.csproj" />

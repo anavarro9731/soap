@@ -1,33 +1,23 @@
 ﻿namespace Soap.Pf.HttpEndpointBase
 {
-    using System.Threading.Tasks;
-    using System.Transactions;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.Pf.EndpointInfrastructure;
-
-    
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
     ///     TransactionScopeAsyncFlowOption.Enabled is requried to use tx with async/await
     /// </summary>
     public abstract class QueryHandler<TQuery, TResponseModel> : MessageHandlerBase, IMessageHandler where TQuery : ApiQuery<TResponseModel> where TResponseModel : class, new()
     
-        public async Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta)
-        {
-            return await HandleTyped((TQuery)message, meta).ConfigureAwait(false);
-        }
+    public async Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta)
+    {
+    return await HandleTyped((TQuery)message, meta).ConfigureAwait(false);
+    }
         
-        protected abstract Task<TResponseModel> Handle(TQuery message, AnpiMessageMeta meta);
+    protected abstract Task<TResponseModel> Handle(TQuery message, AnpiMessageMeta meta);
 
-        private async Task<TResponseModel> HandleTyped(TQuery message, ApiMessageMeta meta)
-        {
-            message.Validate();
+    private async Task<TResponseModel> HandleTyped(TQuery message, ApiMessageMeta meta)
+    {
+    message.Validate();
 
-            return await Handle(message, meta).ConfigureAwait(false);
-        }
+    return await Handle(message, meta).ConfigureAwait(false);
     }
 
     public abstract class CommandHandler<TCommand, TViewModel> : MessageHandlerBase, IMessageHandler where TCommand : ApiCommand<TViewModel> where TViewModel : class, new()
@@ -40,7 +30,7 @@
         }
 
         protected abstract Task<TViewModel> Handle(TCommand message, ApiMessageMeta meta);
-valueretur
+        valueretur
         private async Task<object> HandleTyped(TCommand message, ApiMessageMeta meta)
         {
             {
@@ -101,5 +91,6 @@ valueretur
                                .ConfigureAwait(false);
             }
         }
+    }
     }
 }

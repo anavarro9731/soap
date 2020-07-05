@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using Sample.Messages.Commands;
     using Sample.Models.Aggregates;
-    using Sample.Models.Constants;
     using Soap.Interfaces;
 
     public partial class Test

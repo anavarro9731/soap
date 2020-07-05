@@ -9,6 +9,7 @@
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
+    using Soap.NotificationServer;
     using Soap.Utility.Functions.Operations;
 
     /// <summary>
@@ -20,7 +21,7 @@
     /// </summary>
     public abstract class Process : IProcess
     {
-        protected readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
+        private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         protected IBus Bus => this.context.Bus;
 
@@ -29,6 +30,8 @@
         protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
         protected ILogger Logger => this.context.Logger;
+
+        protected NotificationServer NotificationServer => this.context.NotificationServer;
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {

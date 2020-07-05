@@ -6,13 +6,12 @@
     using Soap.Interfaces;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
-    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Objects.Blended;
 
-    public class ContextWithMessage : BoostrappedContext, IMessageFunctions
+    public class ContextWithMessage : BoostrappedContext, IMessageFunctionsServerSide
     {
-        private readonly IMessageFunctions functions;
+        private readonly IMessageFunctionsServerSide functions;
 
         public ContextWithMessage(
             ApiMessage message,

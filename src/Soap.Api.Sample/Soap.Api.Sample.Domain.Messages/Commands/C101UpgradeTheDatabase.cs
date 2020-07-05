@@ -2,18 +2,18 @@
 {
     using System;
     using FluentValidation;
-    using Sample.Models.Constants;
+    using Sample.Constants;
     using Soap.Interfaces;
     using Soap.Utility.Objects.Blended;
 
-    public class UpgradeTheDatabaseCommand : ApiCommand
+    public class C101UpgradeTheDatabase : ApiCommand
     {
-        public UpgradeTheDatabaseCommand(ReleaseVersions releaseVersion)
+        public C101UpgradeTheDatabase(ReleaseVersions releaseVersion)
         {
             ReleaseVersion = releaseVersion;
         }
 
-        public UpgradeTheDatabaseCommand()
+        public C101UpgradeTheDatabase()
         {
         }
 
@@ -34,7 +34,7 @@
                 "No Upgrade Script Exists For This Version");
         }
 
-        public class Validator : AbstractValidator<UpgradeTheDatabaseCommand>
+        public class Validator : AbstractValidator<C101UpgradeTheDatabase>
         {
             public Validator()
             {

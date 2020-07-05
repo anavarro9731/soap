@@ -2,22 +2,57 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Sample.Constants;
+    using Sample.Logic.Queries;
     using Sample.Models.Aggregates;
-    using Sample.Models.Constants;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Binary;
+    using Soap.Utility.Objects.Blended;
 
     public class ServiceStateOperations : Operations<ServiceState>
     {
         public static readonly Guid ServiceStateId = Guid.Parse("13de6317-9797-4cee-a69e-ecea7c5c8a5a");
 
+        public Func<Task<ServiceState>> CreateServiceState =>
+            () =>
+                {
+                {
+                    DetermineChange(out var serviceState);
+
+                    var result = DataWriter.Create(serviceState);
+
+                    return result;
+                }
+
+                void DetermineChange(out ServiceState serviceState)
+                {
+                    serviceState = new ServiceState
+                    {
+                        DatabaseState = new Flags(ReleaseVersions.V1), id = ServiceStateId
+                    };
+                }
+                };
+
         public Func<ReleaseVersions, Task<ServiceState>> SetDatabaseVersion =>
-            newState =>
+            async newState =>
                 {
                 {
+                    await Validate();
+
                     DetermineChange(out var changeDbVersion);
 
-                    return DataWriter.UpdateById(ServiceStateId, changeDbVersion);
+                    return await DataWriter.UpdateById(ServiceStateId, changeDbVersion);
+                }
+
+                async Task Validate()
+                {
+                    var s = await this.Get<ServiceStateQueries>().Exec(x => x.GetServiceState)();
+
+                    Guard.Against(
+                        s.DatabaseState.Values.Contains((int)newState),
+                        ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion);
                 }
 
                 void DetermineChange(out Action<ServiceState> changeDbVersion)
@@ -26,23 +61,11 @@
                 }
                 };
 
-        public Task<ServiceState> CreateServiceState()
+        public class ErrorCodes : ErrorCode
         {
-            {
-                DetermineChange(out var serviceState);
-
-                var result =  DataWriter.Create(serviceState);
-
-                return result;
-            }
-
-            void DetermineChange(out ServiceState serviceState)
-            {
-                serviceState = new ServiceState
-                {
-                    DatabaseState = new Flags(ReleaseVersions.V1), id = ServiceStateId
-                };
-            }
+            public static readonly ErrorCode AttemptingToUpgradeDatabaseToOutdatedVersion = Create(
+                Guid.Parse("b866824e-ccc2-4f84-8399-15877bf735e9"),
+                "Attempting To Upgrade Database To Outdated Version");
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using CircuitBoard.MessageAggregator;
     using FluentValidation;
+    using Soap.Interfaces;
 
     public class BusSettings
     {

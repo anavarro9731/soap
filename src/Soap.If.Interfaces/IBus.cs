@@ -1,15 +1,14 @@
-﻿namespace Soap.Bus
+﻿namespace Soap.Interfaces
 {
     using System.Threading.Tasks;
-    using Soap.Interfaces;
 
     public interface IBus
     {
         Task CommitChanges();
 
-        void Publish(ApiEvent publishEvent);
+        Task Publish(ApiEvent publishEvent);
 
-        void Send(ApiCommand sendCommand);
+        Task Send(ApiCommand sendCommand);
 
     }
 }

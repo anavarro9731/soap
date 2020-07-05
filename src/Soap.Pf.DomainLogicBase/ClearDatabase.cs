@@ -3,13 +3,18 @@
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
-    using Soap.MessagePipeline.Logging;
+    using Soap.MessagePipeline.Context;
 
     public static class ClearDatabase
     {
-        public static async Task ExecuteOutsideTransaction(DataStore dataStore, MessageLogEntry logEntry)
+        /// <summary>
+        /// *** WARNING DANGER USE ONLY UNDER SUPERVISION ***
+        /// </summary>
+        /// <returns></returns>
+        public static async Task ExecuteOutsideTransactionUsingCurrentContext()
         {
-            var repo = dataStore.DocumentRepository;
+            var context = ContextWithMessageLogEntry.Current;
+            var repo = context.DataStore.DocumentRepository;
 
             //* delete everything
             await ((IResetData)repo).NonTransactionalReset();
@@ -17,7 +22,7 @@
             //* re-add the entry for the current message 
             var newSession = new DataStore(repo);
 
-            await newSession.Create(logEntry);
+            await newSession.Create(context.MessageLogEntry);
             await newSession.CommitChanges();
         }
     }

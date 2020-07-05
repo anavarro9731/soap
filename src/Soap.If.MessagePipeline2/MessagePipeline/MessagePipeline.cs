@@ -7,7 +7,6 @@
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.UnitOfWork;
-    using Soap.Pf.MessageContractsBase.Commands;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
@@ -126,7 +125,7 @@
                                 break;
                             case IApiQuery _:
                                 var responseEvent = await (Task<ApiEvent>)context.Handle(msg);
-                                context.Bus.Publish(responseEvent);
+                                await context.Bus.Publish(responseEvent);
                                 break;
                             case ApiCommand c:
                                 await context.Handle(c);

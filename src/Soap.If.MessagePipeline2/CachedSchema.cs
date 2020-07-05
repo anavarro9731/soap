@@ -19,12 +19,13 @@
 
         public string Schema { get; }
 
-        public static CachedSchema Create(BoostrappedContext.ApplicationConfig applicationConfig, IList<ApiMessage> messages) 
+        public static Lazy<CachedSchema> Create(BoostrappedContext.ApplicationConfig applicationConfig, IList<ApiMessage> messages) 
         {
             var handlerTypes = messages.Select(h => h.GetType())
                                        .OrderBy(t => t.Name);
 
-            return new CachedSchema(GetSchemaOutput(applicationConfig, handlerTypes));
+
+            return new Lazy<CachedSchema>(() => new CachedSchema(GetSchemaOutput(applicationConfig, handlerTypes)));
         }
 
         private static string GetMessageSchemaFromHandlerTypes(IEnumerable<Type> handlerTypes)
