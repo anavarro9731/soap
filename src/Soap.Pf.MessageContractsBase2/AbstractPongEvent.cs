@@ -2,7 +2,7 @@
 {
     using System;
     using FluentValidation;
-    using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public abstract class AbstractPongEvent : ApiEvent
     {
@@ -13,7 +13,6 @@
         public DateTime PongedAt { get; set; }
 
         public string PongedBy { get; set; }
-
 
         public class Validator : AbstractValidator<AbstractPongEvent>
         {

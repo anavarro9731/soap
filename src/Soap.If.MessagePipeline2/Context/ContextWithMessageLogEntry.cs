@@ -14,6 +14,7 @@
     using DataStore.Models.Messages;
     using Soap.Bus;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
@@ -363,12 +364,7 @@
 
                 instanceOfMessageFailedAllRetries.MessageId = Guid.NewGuid();
                 instanceOfMessageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
-
-                if (context.Message is ApiCommand command)
-                {
-                    instanceOfMessageFailedAllRetries.StatefulProcessIdOfMessageThatFailed = command.StatefulProcessId;
-                }
-
+                
                 context.Bus.Send(instanceOfMessageFailedAllRetries);
             }
         }
@@ -387,7 +383,6 @@
                 Schema = message.GetType().FullName,
                 Message = message,
                 IsCommand = message is ApiCommand,
-                IsQuery = message is IApiQuery,
                 IsEvent = message is ApiEvent,
                 ProfilingData = meta != null ? CreateProfilingData(meta, context) : null,
                 EnvironmentName = context.AppConfig.EnvironmentName,
@@ -412,7 +407,6 @@
                 Schema = meta.Schema,
                 Message = message,
                 IsCommand = message is ApiCommand,
-                IsQuery = message is IApiQuery,
                 IsEvent = message is ApiEvent,
                 ProfilingData = CreateProfilingData(meta, context),
                 EnvironmentName = context.AppConfig.EnvironmentName,
@@ -547,10 +541,10 @@
             var tasks = source.Select(
                 async x =>
                     {
-                    if (await predicate(x))
-                    {
-                        results.Enqueue(x);
-                    }
+                        if (await predicate(x))
+                        {
+                            results.Enqueue(x);
+                        }
                     });
             await Task.WhenAll(tasks);
             return results;

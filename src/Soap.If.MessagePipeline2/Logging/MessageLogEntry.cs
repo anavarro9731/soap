@@ -10,6 +10,7 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Extensions;

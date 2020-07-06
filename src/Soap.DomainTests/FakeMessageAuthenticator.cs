@@ -1,6 +1,7 @@
 ﻿namespace Soap.DomainTests
 {
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
 
     internal class FakeMessageAuthenticator : IAuthenticateUsers

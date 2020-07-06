@@ -1,5 +1,6 @@
-﻿namespace Sample.Logic.Mappers
+﻿namespace Sample.Logic.Mappings
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation;
@@ -10,7 +11,10 @@
 
     public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper() => new Dictionary<ErrorCode, ErrorCode>();
+
+        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
+
+        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
 
         public Task Handle(C102GetServiceState msg)
         {

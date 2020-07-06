@@ -2,18 +2,12 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Soap.Interfaces;
-    using Soap.MessagePipeline.MessagePipeline;
+    using Soap.Interfaces.Messages;
 
     /// <summary>
     ///     a way to enforce the signature for handling a msg
     /// </summary>
-    
-    public interface IBeginProcess<in TMessage, TReturnType> where TMessage : ApiCommand
-    {
-        Func<TMessage, Task<TReturnType>> BeginProcess { get; }
-    }
-
+    /// can only be started with a command but can be continued by anything
     public interface IBeginProcess<in TMessage> where TMessage : ApiCommand
     {
         Func<TMessage, Task> BeginProcess { get; }

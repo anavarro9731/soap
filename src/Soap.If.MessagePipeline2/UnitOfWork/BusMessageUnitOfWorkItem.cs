@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.Utility.Models;
 

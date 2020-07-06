@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="CircuitBoard" Version="3.0.0" />
     <PackageReference Include="FluentValidation" Version="8.6.2" />
-    <PackageReference Include="Mailer.NET" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />

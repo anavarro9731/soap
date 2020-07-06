@@ -1,6 +1,7 @@
 ﻿namespace Soap.MessagePipeline
 {
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     /// <summary>
     ///     allows people to write their own method of authenticating a user from a message

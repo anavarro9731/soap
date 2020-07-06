@@ -1,5 +1,6 @@
-﻿namespace Sample.Logic.Mappers
+﻿namespace Sample.Logic.Mappings
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation;
@@ -13,7 +14,7 @@
     {
         /* Error Codes only need to be mapped if there is front-end logic that might depend on them
          otherwise the default error handling logic will do the job of returning the error message but without a specific code. */
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper() =>
+        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper =>
             new Dictionary<ErrorCode, ErrorCode>
             {
                 {
@@ -25,6 +26,8 @@
                     ServiceStateOperations.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion
                 }
             };
+
+        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
 
         public Task Handle(C101UpgradeTheDatabase msg)
         {

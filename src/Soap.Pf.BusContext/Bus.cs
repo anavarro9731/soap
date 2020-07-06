@@ -8,6 +8,7 @@
     using CircuitBoard.MessageAggregator;
     using Microsoft.Azure.ServiceBus;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class Bus : IBus
     {
@@ -66,9 +67,9 @@
             {
                 MessageId = sendCommand.MessageId.ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
-                CorrelationId = sendCommand.StatefulProcessId.ToString()
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString() 
             };
-
+            
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {

@@ -4,6 +4,7 @@
     using Sample.Logic;
     using Soap.DomainTests;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Xunit.Abstractions;
 
     public partial class Test
@@ -22,7 +23,7 @@
         public void Execute(ApiMessage msg, IApiIdentity identity)
         {
             if (msg.MessageId == Guid.Empty) msg.MessageId = Guid.NewGuid();
-            Result = this.testContext.WireExecute(new Mappings(), this.output)(msg, identity).Result;
+            Result = this.testContext.WireExecute(new MappingRegistration(), this.output)(msg, identity).Result;
         }
     }
 }

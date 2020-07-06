@@ -4,12 +4,13 @@
     using System.Collections.Generic;
     using DataStore.Models.PureFunctions;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class MapMessagesToFunctions
     {
         private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings = new Dictionary<Type, IMessageFunctionsServerSide>();
 
-        public void AddMapping<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage: ApiMessage
+        public void Register<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage: ApiMessage
         {
             var messageType = typeof(TMessage);
 

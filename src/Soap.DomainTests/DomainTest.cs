@@ -12,6 +12,7 @@
     using Serilog.Exceptions;
     using Soap.Bus;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;

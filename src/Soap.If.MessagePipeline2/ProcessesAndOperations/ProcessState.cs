@@ -9,7 +9,7 @@
     /// </summary>
     public class ProcessState : Aggregate
     {
-        public Flags Flags { get; set; }
+        public Flags Flags { get; set; } = new Flags();
 
         public ExpandoObject References { get; set; } = new ExpandoObject();
     }

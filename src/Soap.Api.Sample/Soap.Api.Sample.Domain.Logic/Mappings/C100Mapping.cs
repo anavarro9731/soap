@@ -1,5 +1,6 @@
-﻿namespace Sample.Logic.Mappers
+﻿namespace Sample.Logic.Mappings
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Sample.Logic.Processes;
@@ -9,7 +10,9 @@
 
     public class C100Mapping : IMessageFunctionsClientSide<C100Ping>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper() => new Dictionary<ErrorCode, ErrorCode>();
+        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
+
+        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
 
         public Task Handle(C100Ping msg)
         {

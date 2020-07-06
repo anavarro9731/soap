@@ -2,6 +2,7 @@
 {
     using System;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
 
     public abstract class SerilogApiCallLogEntry
@@ -15,8 +16,6 @@
         public bool IsEvent { get; set; }
 
         public ApiMessage Message { get; set; }
-
-        public bool IsQuery { get; set; }
 
         public Guid MessageId { get; set; }
 

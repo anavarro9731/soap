@@ -4,6 +4,7 @@
     using System.Text.Json;
     using System.Threading.Tasks;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.UnitOfWork;
@@ -68,7 +69,6 @@
 
                 await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
 
-                //changes do not flow up thats the error
                 var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
 
                 setContext(context);
@@ -122,10 +122,6 @@
                         {
                             case MessageFailedAllRetries m:
                                 await context.HandleFinalFailure(m);
-                                break;
-                            case IApiQuery _:
-                                var responseEvent = await (Task<ApiEvent>)context.Handle(msg);
-                                await context.Bus.Publish(responseEvent);
                                 break;
                             case ApiCommand c:
                                 await context.Handle(c);

@@ -12,7 +12,8 @@
             Schema = schema;
         }
 
-        public MessageMeta()        {
+        public MessageMeta()
+        {
             //- serialiser
         }
 

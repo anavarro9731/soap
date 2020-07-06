@@ -4,6 +4,7 @@
     using FluentValidation;
     using Sample.Constants;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Blended;
 
     public class C101UpgradeTheDatabase : ApiCommand
@@ -41,5 +42,7 @@
                 RuleFor(x => x.ReleaseVersion != ReleaseVersions.Null);
             }
         }
+
+        public override ApiPermission Permission { get; }
     }
 }

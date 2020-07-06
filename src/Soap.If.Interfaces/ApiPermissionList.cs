@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Soap.Interfaces.Messages;
 
     public abstract class ApiPermissionList
     {

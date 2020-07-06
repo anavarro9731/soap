@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class InMemoryBus : IBus
     {

@@ -7,7 +7,6 @@
       <PackageReference Include="DataStore.Providers.CosmosDb" Version="12.0.3" />
     </ItemGroup>
   <ItemGroup>
-    <Folder Include="Processes\Stateful\" />
     <Folder Include="Queries\Predicates\" />
   </ItemGroup>
   <ItemGroup>

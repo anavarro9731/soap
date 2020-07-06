@@ -4,10 +4,9 @@
     using DataStore;
     using DataStore.Interfaces;
     using Serilog;
-    using Soap.Bus;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.NotificationServer;
     using Soap.Utility.Functions.Operations;
@@ -44,22 +43,6 @@
             await process.BeginProcess(message);
 
             RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));
-        }
-
-        public async Task<TReturnType> BeginProcess<TMessage, TReturnType>(TMessage message, MessageMeta meta)
-            where TMessage : ApiCommand
-        {
-            var process = this as IBeginProcess<TMessage, TReturnType>;
-
-            Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
-
-            RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.UserName));
-
-            var result = await process.BeginProcess(message);
-
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));
-
-            return result;
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)
