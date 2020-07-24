@@ -1,6 +1,5 @@
 ﻿namespace Sample.Logic.Mappings
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation;
@@ -8,6 +7,7 @@
     using Sample.Logic.Processes;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class C101Mapping : IMessageFunctionsClientSide<C101UpgradeTheDatabase>
@@ -19,7 +19,7 @@
             {
                 {
                     C101UpgradeTheDatabase.ErrorCodes.NoUpgradeScriptExistsForThisVersion,
-                    UpgradeTheDatabaseProcess.ErrorCodes.NoUpgradeScriptExistsForThisVersion
+                    P102UpgradeTheDatabase.ErrorCodes.NoUpgradeScriptExistsForThisVersion
                 },
                 {
                     C101UpgradeTheDatabase.ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion,
@@ -27,17 +27,12 @@
                 }
             };
 
-        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
+        public IContinueProcess<C101UpgradeTheDatabase>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C101UpgradeTheDatabase msg)
-        {
-            return this.Get<UpgradeTheDatabaseProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task Handle(C101UpgradeTheDatabase msg) => this.Get<P102UpgradeTheDatabase>().Call(x => x.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C101UpgradeTheDatabase> msg)
-        {
-            return this.Get<NotifyOfFinalFailureProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task HandleFinalFailure(MessageFailedAllRetries<C101UpgradeTheDatabase> msg) =>
+            this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C101UpgradeTheDatabase msg)
         {

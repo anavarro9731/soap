@@ -5,6 +5,7 @@
     using System.Runtime.InteropServices;
     using System.Text.Json.Serialization;
     using DataStore.Interfaces;
+    using Newtonsoft.Json;
 
     public class UnitOfWork
     {
@@ -26,22 +27,22 @@
             //* serialiser
         }
 
-        [JsonInclude]
+        [JsonProperty]
         public List<BusMessageUnitOfWorkItem> BusCommandMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
-        [JsonInclude]
+        [JsonProperty]
         public List<BusMessageUnitOfWorkItem> BusEventMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
-        [JsonInclude]
+        [JsonProperty]
         public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
 
-        [JsonInclude]
+        [JsonProperty]
         public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
 
-        [JsonInclude]
+        [JsonProperty]
         public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
             
-        [JsonInclude]
+        [JsonProperty]
         public bool OptimisticConcurrency { get; internal set; }
     }
 

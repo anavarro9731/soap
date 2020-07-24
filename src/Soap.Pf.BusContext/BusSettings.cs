@@ -23,7 +23,7 @@
 
     public static class BusSettingsExtensions
     {
-        public static IBus CreateBus(this BusSettings busSettings, IMessageAggregator messageAggregator) =>
-            new Bus(messageAggregator, busSettings);
+        public static IBusInternal CreateBus(this BusSettings busSettings, IMessageAggregator messageAggregator) =>
+            new AzureBus(messageAggregator, busSettings);
     }
 }

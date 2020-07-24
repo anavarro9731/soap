@@ -6,31 +6,15 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-    using System.Text.Json;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using Soap.Utility.Models;
 
     public static class ObjectExt
     {
-        private static JsonSerializerOptions serialiserOptions = new JsonSerializerOptions()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            IgnoreReadOnlyProperties = true,
-            WriteIndented = true
-        };
-
-        public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
-        {
-            dynamic awaitable = @this.Invoke(obj, parameters);
-            await awaitable;
-            return awaitable.GetAwaiter().GetResult();
-        }
-
         private static readonly char[] SystemTypeChars =
         {
-            '<',
-            '>',
-            '+'
+            '<', '>', '+'
         };
 
         /// <summary>
@@ -39,31 +23,115 @@
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static T As<T>(this object obj) where T : class
+        public static T As<T>(this object obj) where T : class => obj as T;
+
+        public static string AsTypeNameString(this Type type, bool useFullyQualifiedAssemblyName = false)
         {
-            return obj as T;
+            var typesToShortNames = new Dictionary<Type, string>
+            {
+                {
+                    typeof(string), "string"
+                },
+                {
+                    typeof(object), "object"
+                },
+                {
+                    typeof(bool), "bool"
+                },
+                {
+                    typeof(byte), "byte"
+                },
+                {
+                    typeof(char), "char"
+                },
+                {
+                    typeof(decimal), "decimal"
+                },
+                {
+                    typeof(double), "double"
+                },
+                {
+                    typeof(short), "short"
+                },
+                {
+                    typeof(int), "int"
+                },
+                {
+                    typeof(long), "long"
+                },
+                {
+                    typeof(sbyte), "sbyte"
+                },
+                {
+                    typeof(float), "float"
+                },
+                {
+                    typeof(ushort), "ushort"
+                },
+                {
+                    typeof(uint), "uint"
+                },
+                {
+                    typeof(ulong), "ulong"
+                },
+                {
+                    typeof(void), "void"
+                }
+            };
+
+            if (typesToShortNames.TryGetValue(type, out var nameAsString))
+            {
+                return nameAsString;
+            }
+
+            nameAsString = NameOrFullName(type);
+
+            if (type.IsGenericType)
+            {
+                var backtick = nameAsString.IndexOf('`');
+                if (backtick > 0)
+                {
+                    nameAsString = nameAsString.Remove(backtick);
+                }
+
+                nameAsString += "<";
+                var typeParameters = type.GetGenericArguments();
+                for (var i = 0; i < typeParameters.Length; i++)
+                {
+                    var typeParamName = typeParameters[i].AsTypeNameString();
+                    nameAsString += i == 0 ? typeParamName : ", " + typeParamName;
+                }
+
+                nameAsString += ">";
+            }
+
+            if (type.IsArray)
+            {
+                return type.GetElementType().AsTypeNameString(useFullyQualifiedAssemblyName) + "[]";
+            }
+
+            return nameAsString;
+
+            string NameOrFullName(Type t)
+            {
+                var name = t.Name;
+                if (t.IsNested)
+                {
+                    var tempT = t;
+
+                    do
+                    {
+                        name = $"{tempT.DeclaringType.Name}+{name}";
+                        tempT = t.DeclaringType;
+                    }
+                    while (tempT != null && tempT.IsNested);
+                }
+
+                return useFullyQualifiedAssemblyName ? $"{t.Namespace}.{name}" : name;
+            }
         }
 
-        public static T Clone<T>(this T source, params string[] exclude) where T : class, new()
-        {
-            var instance = Activator.CreateInstance<T>();
-            source.CopyProperties(instance, exclude);
-            return instance;
-        }
-
-        /// <summary>
-        ///     uses CopyProperties() to clone an object irrespective of type-safety
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="exclude"></param>
-        /// <returns></returns>
-        public static T Clone<T>(this object source, params string[] exclude) where T : class, new()
-        {
-            var n = new T();
-            source.CopyProperties(n, exclude);
-            return n;
-        }
+        public static T Clone<T>(this T source) => source.ToNewtonsoftJson().FromJson<T>();
 
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
@@ -84,29 +152,33 @@
             var results = from srcProp in typeSrc.GetProperties()
                           let targetProperty = typeDest.GetProperty(srcProp.Name)
                           where srcProp.CanRead && targetProperty != null && targetProperty.GetSetMethod(true) != null
-                                && !targetProperty.GetSetMethod(true).IsPrivate && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
-                                && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType) && !exclude.Contains(targetProperty.Name)
+                                && !targetProperty.GetSetMethod(true).IsPrivate
+                                && (targetProperty.GetSetMethod(true).Attributes & MethodAttributes.Static) == 0
+                                && targetProperty.PropertyType.IsAssignableFrom(srcProp.PropertyType)
+                                && !exclude.Contains(targetProperty.Name)
                           select new
                           {
-                              sourceProperty = srcProp,
-                              targetProperty
+                              sourceProperty = srcProp, targetProperty
                           };
 
             // map the properties
-            foreach (var props in results) props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
+            foreach (var props in results)
+                props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
         public static T FromJson<T>(this string json)
         {
-            var obj = JsonSerializer.Deserialize<T>(json, serialiserOptions);
+            var obj = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings());
             return obj;
         }
 
-        public static T FromJsonToInterface<T>(this string json, string typeName) where T: class
+        public static T FromJsonToInterface<T>(this string json, string typeName) where T : class
         {
-            var obj = JsonSerializer.Deserialize(json, Type.GetType(typeName), serialiserOptions).As<T>();
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(typeName), new JsonSerializerSettings()).As<T>();
             return obj.As<T>();
         }
+
+        public static T FromSerialisableObject<T>(this SerialisableObject s) where T : class => s.Deserialise<T>();
 
         /// <summary>
         ///     get property name from current instance
@@ -115,11 +187,9 @@
         /// <param name="type"></param>
         /// <param name="propertyRefExpr"></param>
         /// <returns></returns>
-        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr)
-        {
+        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr) =>
             // usage: obj.GetPropertyName(o => o.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
+            GetPropertyNameCore(propertyRefExpr.Body);
 
         /// <summary>
         ///     get property name from any class
@@ -127,11 +197,9 @@
         /// <typeparam name="TObject"></typeparam>
         /// <param name="propertyRefExpr"></param>
         /// <returns></returns>
-        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr)
-        {
+        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr) =>
             // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
-            return GetPropertyNameCore(propertyRefExpr.Body);
-        }
+            GetPropertyNameCore(propertyRefExpr.Body);
 
         /// <summary>
         ///     get static property name from any class
@@ -139,11 +207,9 @@
         /// <typeparam name="TResult"></typeparam>
         /// <param name="expression"></param>
         /// <returns></returns>
-        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression)
-        {
+        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression) =>
             // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
-            return GetPropertyNameCore(expression);
-        }
+            GetPropertyNameCore(expression);
 
         /// <summary>
         ///     checks if a class inherits from or implements a base class/interface.
@@ -163,7 +229,7 @@
                 if (parent == currentChild || //this get a direct match 
                     parent == currentChild.BaseType || //this gets a specific generic impl BaseType<SomeType>
                     HasAnyInterfaces(parent, currentChild))
-                //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
+                    //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
                 {
                     return true;
                 }
@@ -178,10 +244,14 @@
             return false;
         }
 
-        public static bool Is(this object child, Type t)
+        public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
         {
-            return child.GetType().InheritsOrImplements(t);
+            dynamic awaitable = @this.Invoke(obj, parameters);
+            await awaitable;
+            return awaitable.GetAwaiter().GetResult();
         }
+
+        public static bool Is(this object child, Type t) => child.GetType().InheritsOrImplements(t);
 
         public static bool IsAnonymousType(this Type type)
         {
@@ -192,20 +262,10 @@
             return isAnonymousType;
         }
 
-        public static SerialisableObject ToSerialisableObject(this object o)
-        {
-            return new SerialisableObject(o);
-        }
+        public static bool IsSystemType(this Type type) =>
+            type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
 
-        public static T FromSerialisableObject<T>(this SerialisableObject s) where T: class
-        {
-            return s.Deserialise<T>();
-        }
-
-        public static bool IsSystemType(this Type type)
-        {
-            return type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
-        }   
+        public static To Map<T, To>(this T obj, Func<T, To> map) => map(obj);
 
         /// <summary>
         ///     perform an operation on any class inline, (e.g. new Object().Op(o => someoperationon(o));
@@ -220,92 +280,13 @@
             return obj;
         }
 
-        public static To Map<T, To>(this T obj, Func<T, To> map)
+        public static string ToNewtonsoftJson(this object instance, bool prettyPrint = false)
         {
-            return map(obj);
-        }
-
-        public static string AsTypeNameString(this Type type, bool useFullyQualifiedAssemblyName = false)
-        {
-            Dictionary<Type, string> typesToShortNames = new Dictionary<Type, string>
-            {
-                { typeof(string), "string" },
-                { typeof(object), "object" },
-                { typeof(bool), "bool" },
-                { typeof(byte), "byte" },
-                { typeof(char), "char" },
-                { typeof(decimal), "decimal" },
-                { typeof(double), "double" },
-                { typeof(short), "short" },
-                { typeof(int), "int" },
-                { typeof(long), "long" },
-                { typeof(sbyte), "sbyte" },
-                { typeof(float), "float" },
-                { typeof(ushort), "ushort" },
-                { typeof(uint), "uint" },
-                { typeof(ulong), "ulong" },
-                { typeof(void), "void" }
-            };
-
-            if (typesToShortNames.TryGetValue(type, out string nameAsString))
-            {
-                return nameAsString;
-            }
-
-            nameAsString = NameOrFullName(type);
-
-            if (type.IsGenericType)
-            {
-                int backtick = nameAsString.IndexOf('`');
-                if (backtick > 0)
-                {
-                    nameAsString = nameAsString.Remove(backtick);
-                }
-                nameAsString += "<";
-                Type[] typeParameters = type.GetGenericArguments();
-                for (int i = 0; i < typeParameters.Length; i++)
-                {
-                    string typeParamName = typeParameters[i].AsTypeNameString();
-                    nameAsString += (i == 0 ? typeParamName : ", " + typeParamName);
-                }
-                nameAsString += ">";
-            }
-
-            if (type.IsArray)
-            {
-                return type.GetElementType().AsTypeNameString(useFullyQualifiedAssemblyName) + "[]";
-            }
-
-            return nameAsString;
-
-            string NameOrFullName(Type t)
-            {
-                string name = t.Name;
-                if (t.IsNested)
-                {
-                    Type tempT = t;
-
-                    do
-                    {
-                        name = $"{tempT.DeclaringType.Name}+{name}";
-                        tempT = t.DeclaringType;
-                    }
-                    while (tempT != null && tempT.IsNested);
-                }
-
-                return useFullyQualifiedAssemblyName ? $"{t.Namespace}.{name}" : name;
-            }
-        }
-
-        public static string ToJson(this object instance, bool prettyPrint = false)
-        {
-            var json = JsonSerializer.Serialize(instance, new JsonSerializerOptions()
-            {
-                WriteIndented = prettyPrint,
-                IgnoreReadOnlyProperties = true
-            });
+            var json = JsonConvert.SerializeObject(instance, Formatting.Indented, new JsonSerializerSettings());
             return json;
         }
+
+        public static SerialisableObject ToSerialisableObject(this object o) => new SerialisableObject(o);
 
         private static string GetPropertyNameCore(Expression propertyRefExpr)
         {
@@ -315,7 +296,8 @@
             if (memberExpr == null)
             {
                 var unaryExpr = propertyRefExpr as UnaryExpression;
-                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert) memberExpr = unaryExpr.Operand as MemberExpression;
+                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
+                    memberExpr = unaryExpr.Operand as MemberExpression;
             }
 
             if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;
@@ -329,9 +311,11 @@
                         .Any(
                             childInterface =>
                                 {
-                                    var currentInterface = childInterface.IsGenericType ? childInterface.GetGenericTypeDefinition() : childInterface;
+                                var currentInterface = childInterface.IsGenericType
+                                                           ? childInterface.GetGenericTypeDefinition()
+                                                           : childInterface;
 
-                                    return currentInterface == parent;
+                                return currentInterface == parent;
                                 });
         }
 

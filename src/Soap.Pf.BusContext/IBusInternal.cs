@@ -1,15 +1,10 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.Bus
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Interfaces.Messages;
 
-    public interface IBus 
+    public interface IBusInternal
     {
-        List<ApiCommand> CommandsSent { get; }
-
-        List<ApiEvent> EventsPublished { get; }
-
         Task CommitChanges();
 
         Task Publish(ApiEvent publishEvent);

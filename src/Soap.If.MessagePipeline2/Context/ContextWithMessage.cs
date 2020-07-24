@@ -74,7 +74,7 @@
 
                 try
                 {
-                    ctx.Logger.Debug($"Creating record for msg id {message.MessageId}");
+                    ctx.Logger.Debug($"Creating record for msg id {message.Headers.GetMessageId()}");
 
                     var messageLogEntry = new MessageLogEntry(
                         message,
@@ -86,13 +86,13 @@
 
                     await ctx.DataStore.CommitChanges();
 
-                    ctx.Logger.Debug($"Created record with id {newItem.id} for msg id {message.MessageId}");
+                    ctx.Logger.Debug($"Created record with id {newItem.id} for msg id {message.Headers.GetMessageId()}");
 
-                    outLogEntry(ObjectExt.Clone(newItem));
+                    outLogEntry(newItem.Clone());
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"Could not write message {message.MessageId} to store", e);
+                    throw new Exception($"Could not write message {message.Headers.GetMessageId()} to store", e);
                 }
             }
 
@@ -102,20 +102,20 @@
 
                 try
                 {
-                    ctx.Logger.Debug($"Looking for msg id {message.MessageId}");
+                    ctx.Logger.Debug($"Looking for msg id {message.Headers.GetMessageId()}");
 
-                    var result = await ctx.DataStore.ReadActiveById<MessageLogEntry>(message.MessageId);
+                    var result = await ctx.DataStore.ReadActiveById<MessageLogEntry>(message.Headers.GetMessageId());
 
                     ctx.Logger.Debug(
                         result == null
-                            ? $"Failed to find record for msg id {message.MessageId}"
-                            : $"Found record with id {result.id} for msg with id {message.MessageId}");
+                            ? $"Failed to find record for msg id {message.Headers.GetMessageId()}"
+                            : $"Found record with id {result.id} for msg with id {message.Headers.GetMessageId()}");
 
                     outResult(result);
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"Could not read message {message.MessageId} from store", e);
+                    throw new Exception($"Could not read message {message.Headers.GetMessageId()} from store", e);
                 }
             }
         }

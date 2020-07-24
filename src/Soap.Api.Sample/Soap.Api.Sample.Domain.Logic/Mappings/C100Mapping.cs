@@ -1,28 +1,23 @@
 ﻿namespace Sample.Logic.Mappings
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Sample.Logic.Processes;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class C100Mapping : IMessageFunctionsClientSide<C100Ping>
     {
         public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
-        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
+        public IContinueProcess<C100Ping>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C100Ping msg)
-        {
-            return this.Get<PingPongProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task Handle(C100Ping msg) => this.Get<P101PingPong>().Call(x => x.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C100Ping> msg)
-        {
-            return this.Get<NotifyOfFinalFailureProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task HandleFinalFailure(MessageFailedAllRetries<C100Ping> msg) =>
+            this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C100Ping msg)
         {

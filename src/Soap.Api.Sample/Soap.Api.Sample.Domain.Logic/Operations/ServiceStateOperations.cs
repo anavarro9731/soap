@@ -48,7 +48,7 @@
 
                 async Task Validate()
                 {
-                    var s = await this.Get<ServiceStateQueries>().Exec(x => x.GetServiceState)();
+                    var s = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();
 
                     Guard.Against(
                         s.DatabaseState.Values.Contains((int)newState),

@@ -17,8 +17,8 @@ namespace Sample.Tests.Messages.Commands.Ping
         [Fact]
         public void ItShouldPublishAPongEvent()
         {
-            Result.MessageBus.Events.Should().ContainSingle();
-            Result.MessageBus.Events.Single().Should().BeOfType<E150Pong>();
+            Result.MessageBus.EventsPublished.Should().ContainSingle();
+            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E150Pong>();
         }
     }
 }

@@ -6,8 +6,9 @@
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
-    public class InMemoryBus : IBus
+    public class InMemoryBus : IBusInternal
     {
         private readonly IMessageAggregator messageAggregator;
 
@@ -15,14 +16,9 @@
         {
             this.messageAggregator = messageAggregator;
         }
-
-        public IEnumerable<ApiCommand> Commands => this.messageAggregator.AllMessages.OfType<QueuedCommandToSend>().Select(x => x.CommandToSend);
-
-        public IEnumerable<ApiEvent> Events => this.messageAggregator.AllMessages.OfType<QueuedPublishEvent>().Select(x => x.EventToSend);
-
+            
         public Task CommitChanges()
         {
-            //* TODO
             return Task.CompletedTask;
         }
 
@@ -31,8 +27,7 @@
             this.messageAggregator.Collect(
                 new QueuedPublishEvent
                 {
-                    EventToSend = publishEvent,
-                    CommitClosure = () => Task.CompletedTask
+                    EventToPublish = publishEvent, CommitClosure = () => Task.CompletedTask
                 });
             return Task.CompletedTask;
         }
@@ -42,12 +37,9 @@
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {
-                    CommandToSend = sendCommand,
-                    CommitClosure = () => Task.CompletedTask
+                    CommandToSend = sendCommand, CommitClosure = () => Task.CompletedTask
                 });
             return Task.CompletedTask;
         }
-
-        
     }
 }

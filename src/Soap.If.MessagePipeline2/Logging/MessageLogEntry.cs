@@ -2,13 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
+    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
@@ -20,11 +19,11 @@
     {
         public MessageLogEntry(ApiMessage message, MessageMeta meta, bool optimisticConcurrency, int numberOfRetries)
         {
-            id = message.MessageId;
+            id = message.Headers.GetMessageId();
             MessageMeta = meta;
             MaxRetriesAllowed = numberOfRetries + 1;
             SerialisedMessage = message.ToSerialisableObject();
-            MessageHash = JsonSerializer.Serialize(message).ToMd5Hash();
+            MessageHash = JsonConvert.SerializeObject(message).ToMd5Hash();
             UnitOfWork = new UnitOfWork(optimisticConcurrency);
         }
 
@@ -33,25 +32,25 @@
             //* satisfy DataStore new() constraint and serialiser
         }
 
-        [JsonInclude]
+        [JsonProperty]
         public List<Attempt> Attempts { get; internal set; } = new List<Attempt>();
 
-        [JsonInclude]
+        [JsonProperty]
         public int MaxRetriesAllowed { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public string MessageHash { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public MessageMeta MessageMeta { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public bool ProcessingComplete { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public SerialisableObject SerialisedMessage { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public UnitOfWork UnitOfWork { get; set; }
 
         public class Attempt
@@ -66,10 +65,10 @@
                 //-serialiser
             }
 
-            [JsonInclude]
+            [JsonProperty]
             public DateTime CompletedAt { get; internal set; } = DateTime.UtcNow;
 
-            [JsonInclude]
+            [JsonProperty]
             public FormattedExceptionInfo Errors { get; internal set; }
         }
     }
@@ -101,7 +100,9 @@
         {
             /* update immediately, you would need find a way to get it to be persisted
              first so use different instance of ds instead*/
-            var d = new DataStore(databaseSettings.CreateRepository(), dataStoreOptions:DataStoreOptions.Create().DisableOptimisticConcurrency());
+            var d = new DataStore(
+                databaseSettings.CreateRepository(),
+                dataStoreOptions: DataStoreOptions.Create().DisableOptimisticConcurrency());
             await d.Update(messageLogEntry);
             await d.CommitChanges();
         }

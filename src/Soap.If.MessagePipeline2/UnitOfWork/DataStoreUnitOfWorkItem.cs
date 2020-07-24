@@ -8,6 +8,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using Newtonsoft.Json;
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
@@ -39,19 +40,19 @@
             HardDelete
         }
 
-        [JsonInclude]
+        [JsonProperty]
         public SerialisableObject AfterModel { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public SerialisableObject BeforeModel { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public Guid ObjectId { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public OperationTypes OperationType { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public string UnitOfWorkId { get; internal set; }
     }
 

@@ -1,13 +1,20 @@
 namespace Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages
 {
-    public class StatefulProcessStarted : ProcessStarted
+    using System;
+
+    public class StatefulProcessStarted : ProcessStarted, IAssociateProcessStateWithAMessage
     {
-        public StatefulProcessStarted(string processType, string username, ProcessState initialState)
+        public StatefulProcessStarted(string processType, string username, ProcessState stateBeforeHandling, Guid byMessage)
             : base(processType, username)
         {
-            InitialState = initialState;
+            StateBeforeHandling = stateBeforeHandling;
+            ByMessage = byMessage;
         }
 
-        public ProcessState InitialState { get; set; }
+        public ProcessState StateBeforeHandling { get; set; }
+
+        public Guid ByMessage { get; }
+
+        public Guid ProcessStateId => StateBeforeHandling.id;
     }
 }

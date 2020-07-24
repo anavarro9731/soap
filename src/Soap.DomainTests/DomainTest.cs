@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
@@ -17,6 +18,8 @@
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.MessagePipeline.MessagePipeline;
+    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.NotificationServer;
     using Soap.NotificationServer.Channels;
     using Soap.Utility.Functions.Extensions;
@@ -26,46 +29,91 @@
     {
         private BoostrappedContext context;
 
-        private Task Execute(
+        public Func<ApiMessage, IApiIdentity, Task<Result>> GetExecute(
+            MapMessagesToFunctions mapper,
+            ITestOutputHelper outputHelper)
+        {
+            return async (message, identity) =>
+                {
+                var x = new Result();
+                await Execute(message, mapper, outputHelper, identity, x);
+                return x;
+                };
+        }
+
+        private async Task Execute(
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper testOutputHelper,
             IApiIdentity identity,
-            out DataStore dataStore,
-            out NotificationServer notificationServer,
-            out InMemoryBus bus)
+            Result result)
         {
             {
-                if (this.context == null)
+                CreateMessageAggregator(out var messageAggregator);
+
+                CreateLogger(messageAggregator, testOutputHelper, out var logger);
+
+                CreateDataStore(messageAggregator, message, out var dataStore);
+
+                CreateNotificationServer(out var notificationServer);
+
+                CreateBusContext(messageAggregator, out var bus);
+
+                CreateAppConfig(out var appConfig);
+
+                this.context = new BoostrappedContext(
+                    new FakeMessageAuthenticator(identity),
+                    messageMapper: messageMapper,
+                    appConfig: appConfig,
+                    logger: logger,
+                    bus: bus,
+                    notificationServer: notificationServer,
+                    dataStore: dataStore,
+                    messageAggregator: messageAggregator);
+
+                await MessagePipeline.Execute(message.ToNewtonsoftJson(), message.GetType().AssemblyQualifiedName, () => this.context);
+
+                /*  what we are primarily trying to achieve is to make sure that each execute set the activeprocesstate,
+                 if there is a statefulprocess handling the message, to the statefulprocess that it affects. 
+                Not being able to see directly into the pipeline makes this challenging,
+                and just looking at the list of processstates in play will not help as that will include items from previous
+                executes. what we will do is look at the debug messages created in the bus for THIS message and find if there 
+                are any statefulprocessstarted or continued events we can use to determine the id of the processtate to return. */
+
+                var statefulProcessLaunchedByThisMessage = messageAggregator
+                                                           .AllMessages
+                                                           .Where(
+                                                               m => m.GetType()
+                                                                     .InheritsOrImplements(
+                                                                         typeof(IAssociateProcessStateWithAMessage)))
+                                                           .SingleOrDefault(
+                                                               m => ((IAssociateProcessStateWithAMessage)m).ByMessage
+                                                                    == message.Headers.GetMessageId())
+                                                           .As<IAssociateProcessStateWithAMessage>();
+
+                if (statefulProcessLaunchedByThisMessage != null)
                 {
-                    CreateMessageAggregator(out var messageAggregator);
-
-                    CreateLogger(messageAggregator, testOutputHelper, out var logger);
-
-                    CreateDataStore(messageAggregator, message, out dataStore);
-
-                    CreateNotificationServer(out notificationServer);
-
-                    CreateBusContext(messageAggregator, out bus);
-
-                    CreateAppConfig(out var appConfig);
-
-                    context = new BoostrappedContext(
-                        new FakeMessageAuthenticator(identity),
-                        messageMapper: messageMapper,
-                        appConfig: appConfig,
-                        logger: logger,
-                        bus: bus,
-                        notificationServer: notificationServer,
-                        dataStore: dataStore,
-                        messageAggregator: messageAggregator);
+                    var processStateId = statefulProcessLaunchedByThisMessage.ProcessStateId;
+                    var activeProcessState = await dataStore.ReadById<ProcessState>(processStateId);
+                    result.ActiveProcessState = activeProcessState;
                 }
 
-                dataStore = this.context.DataStore;
-                bus = (InMemoryBus)this.context.Bus;
-                notificationServer = this.context.NotificationServer;
+                result.MessageBus = bus;
+                result.DataStore = dataStore;
+                result.NotificationServer = notificationServer;
+            }
 
-                return MessagePipeline.Execute(message.ToJson(), message.GetType().AssemblyQualifiedName, () => context);
+            static void CreateNotificationServer(out NotificationServer notificationServer)
+            {
+                var settings = new NotificationServer.Settings
+                {
+                    ChannelSettings = new List<INotificationChannelSettings>
+                    {
+                        new InMemoryChannel.Settings()
+                    }
+                };
+
+                notificationServer = settings.CreateServer();
             }
 
             static void CreateMessageAggregator(out IMessageAggregator messageAggregator)
@@ -73,9 +121,9 @@
                 messageAggregator = new MessageAggregatorForTesting();
             }
 
-            static void CreateBusContext(IMessageAggregator messageAggregator, out InMemoryBus busContext)
+            static void CreateBusContext(IMessageAggregator messageAggregator, out IBus busContext)
             {
-                busContext = new InMemoryBus(messageAggregator);
+                busContext = new Bus(new InMemoryBus(messageAggregator), messageAggregator);
             }
 
             static void CreateLogger(IMessageAggregator messageAggregator, ITestOutputHelper testOutputHelper, out ILogger logger)
@@ -92,12 +140,12 @@
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateDataStore(IMessageAggregator messageAggregator, ApiMessage message, out DataStore dataStore)
+            void CreateDataStore(IMessageAggregator messageAggregator, ApiMessage message, out DataStore dataStore)
             {
                 dataStore = new DataStore(
-                    new InMemoryDocumentRepository(),
+                    this.context?.DataStore.DocumentRepository ?? new InMemoryDocumentRepository(),
                     messageAggregator,
-                    DataStoreOptions.Create().SpecifyUnitOfWorkId(message.MessageId));
+                    DataStoreOptions.Create().SpecifyUnitOfWorkId(message.Headers.GetMessageId()));
             }
 
             static void CreateAppConfig(out BoostrappedContext.ApplicationConfig applicationConfig)
@@ -114,40 +162,15 @@
             }
         }
 
-        private void CreateNotificationServer(out NotificationServer notificationServer)
-        {
-            var settings = new NotificationServer.Settings()
-            {
-                ChannelSettings = new List<INotificationChannelSettings>()
-                {
-                    {
-                        new InMemoryChannel.Settings()
-                    }
-                }
-            };
-
-            notificationServer = settings.CreateServer();
-        }
-
-        public Func<ApiMessage, IApiIdentity, Task<Result>> WireExecute(
-            MapMessagesToFunctions mapper,
-            ITestOutputHelper outputHelper)
-        {
-            return async (message, identity) =>
-                {
-                    var x = new Result();
-                    await Execute(message, mapper, outputHelper, identity, out x.DataStore, out x.NotificationServer, out x.MessageBus);
-                    return x;
-                };
-        }
-
         public class Result
         {
+            public ProcessState ActiveProcessState;
+
             public DataStore DataStore;
 
-            public NotificationServer NotificationServer;
+            public IBus MessageBus;
 
-            public InMemoryBus MessageBus;
+            public NotificationServer NotificationServer;
         }
     }
 }

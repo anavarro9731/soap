@@ -18,12 +18,13 @@
             this.output = output;
         }
 
-        protected DomainTest.Result Result { get; private set; }
+        protected DomainTest.Result Result { get; private set; } = new DomainTest.Result();
 
         public void Execute(ApiMessage msg, IApiIdentity identity)
         {
-            if (msg.MessageId == Guid.Empty) msg.MessageId = Guid.NewGuid();
-            Result = this.testContext.WireExecute(new MappingRegistration(), this.output)(msg, identity).Result;
+            msg.Headers.EnsureRequiredHeaders();
+
+            Result = this.testContext.GetExecute(new MappingRegistration(), this.output)(msg, identity).Result;
         }
     }
 }

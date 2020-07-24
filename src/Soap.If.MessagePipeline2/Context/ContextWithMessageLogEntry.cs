@@ -335,7 +335,7 @@
 
             catch (Exception e)
             {
-                throw new Exception($"Error logging failed message with id {context.Message.MessageId} to DataStore", e);
+                throw new Exception($"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore", e);
             }
 
             async Task AddThisFailureToTheMessageLog()
@@ -362,9 +362,6 @@
                 var instanceOfMessageFailedAllRetries =
                     (MessageFailedAllRetries)Activator.CreateInstance(genericTypeWithParam, context.Message);
 
-                instanceOfMessageFailedAllRetries.MessageId = Guid.NewGuid();
-                instanceOfMessageFailedAllRetries.TimeOfCreationAtOrigin = DateTime.UtcNow;
-                
                 context.Bus.Send(instanceOfMessageFailedAllRetries);
             }
         }
@@ -379,7 +376,7 @@
                 SapiReceivedAt = meta?.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
                 UserName = meta?.RequestedBy?.UserName,
-                MessageId = message.MessageId,
+                MessageId = message.Headers.GetMessageId(),
                 Schema = message.GetType().FullName,
                 Message = message,
                 IsCommand = message is ApiCommand,
@@ -403,7 +400,7 @@
                 SapiReceivedAt = meta.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
                 UserName = meta.RequestedBy?.UserName,
-                MessageId = message.MessageId,
+                MessageId = message.Headers.GetMessageId(),
                 Schema = meta.Schema,
                 Message = message,
                 IsCommand = message is ApiCommand,
@@ -532,8 +529,12 @@
             return queuedStateChanges;
         }
 
-        private static bool IsDurableChange(IQueuedStateChange x) =>
-            x is IQueuedDataStoreWriteOperation || x is IQueuedBusMessage;
+        private static bool IsDurableChange(IQueuedStateChange x)
+        {
+            var result =  x is IQueuedDataStoreWriteOperation || x is IQueuedBusOperation;
+
+            return result;
+        }
 
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
         {

@@ -5,6 +5,7 @@
     using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
+    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
@@ -15,10 +16,10 @@
         public BusMessageUnitOfWorkItem(ApiMessage x)
             : base(x)
         {
-            MessageId = x.MessageId;
+            MessageId = x.Headers.GetMessageId();
         }
 
-        [JsonInclude]
+        [JsonProperty]
         public Guid MessageId { get; internal set; }
 
         public BusMessageUnitOfWorkItem()        {

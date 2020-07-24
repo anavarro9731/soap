@@ -10,6 +10,8 @@
             Register(new C100Mapping());
             Register(new C101Mapping());
             Register(new C102Mapping());
+            Register(new C103Mapping());
+            Register(new E150Mapping());
         }
     }
 }

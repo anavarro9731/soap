@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text.Json;
+    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
@@ -16,7 +17,7 @@
             ContextWithMessage ctx,
             Action<IApiIdentity> outIdentity)
         {
-            var identity = message.IdentityToken != null ? ctx.Authenticator.Authenticate(message) : null;
+            var identity = message.Headers.GetIdentityToken() != null ? ctx.Authenticator.Authenticate(message) : null;
             outIdentity(identity);
         }
 
@@ -30,7 +31,7 @@
             {
                 var messageLogEntry = context.MessageLogEntry;
 
-                Guard.Against(message.MessageId == Guid.Empty, "All ApiMessages must have a unique MessageId property value");
+                Guard.Against(message.Headers.GetMessageId() == Guid.Empty, "All ApiMessages must have a unique MessageId property value");
 
                 Guard.Against(
                     IsADifferentMessageButWithTheSameId(messageLogEntry, message),
@@ -62,7 +63,7 @@
 
             bool IsADifferentMessageButWithTheSameId(MessageLogEntry messageLogEntry, ApiMessage message)
             {
-                var messageAsJson = JsonSerializer.Serialize(message);
+                var messageAsJson = JsonConvert.SerializeObject(message);
                 var hashMatches = messageAsJson.Verify(messageLogEntry.MessageHash);
                 return !hashMatches;
             }

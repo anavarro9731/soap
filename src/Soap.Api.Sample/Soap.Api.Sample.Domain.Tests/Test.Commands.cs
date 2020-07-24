@@ -1,5 +1,6 @@
 ﻿namespace Sample.Tests
 {
+    using System;
     using Sample.Constants;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
@@ -14,7 +15,10 @@
 
             public static C101UpgradeTheDatabase UpgradeTheDatabaseToV2 = new C101UpgradeTheDatabase(ReleaseVersions.V2);
 
-            public static C100Ping Ping = new C100Ping();
+            public static C100Ping Ping = new C100Ping()
+            {
+                PingedAt = DateTime.UtcNow
+            };
         }
 
         public static class Queries

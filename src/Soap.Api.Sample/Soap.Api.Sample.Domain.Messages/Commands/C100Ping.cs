@@ -1,6 +1,5 @@
 ﻿namespace Sample.Messages.Commands
 {
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Pf.MessageContractsBase;
 

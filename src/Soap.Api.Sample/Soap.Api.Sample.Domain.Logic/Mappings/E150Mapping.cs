@@ -4,26 +4,23 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Sample.Logic.Processes;
-    using Sample.Logic.Processes.Stateful;
     using Sample.Messages.Events;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class E150Mapping : IMessageFunctionsClientSide<E150Pong>
     {
         public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
-        public Type[] MessageCanContinueTheseStatefulProcesses { get; } =
+        public IContinueProcess<E150Pong>[] HandleWithTheseStatefulProcesses { get; } =
         {
-            typeof(PingAndWaitForPongProcess)
+            new S100PingAndWaitForPong()
         };
 
-        public Task Handle(E150Pong msg) => throw new NotImplementedException();
+        public Task Handle(E150Pong msg) => Task.CompletedTask;
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<E150Pong> msg)
-        {
-            return this.Get<NotifyOfFinalFailureProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task HandleFinalFailure(MessageFailedAllRetries<E150Pong> msg) => this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(E150Pong msg)
         {

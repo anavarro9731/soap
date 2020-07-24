@@ -2,6 +2,7 @@
 {
     using System;
     using System.Text.Json.Serialization;
+    using Newtonsoft.Json;
 
     public class MessageMeta
     {
@@ -17,13 +18,13 @@
             //- serialiser
         }
 
-        [JsonInclude]
+        [JsonProperty]
         public (DateTime DateTime, long Ticks) ReceivedAt { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public IApiIdentity RequestedBy { get; internal set; }
 
-        [JsonInclude]
+        [JsonProperty]
         public string Schema { get; internal set; }
 
     }

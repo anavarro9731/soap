@@ -18,7 +18,7 @@ namespace Sample.Tests.Messages.Commands
         }
 
         [Fact]
-        public void ItShouldSetTheServiceStateDbVersionTo1()
+        public void ItShouldSetTheServiceStateDbVersionTo2()
         {
             var ss = Result.DataStore.Read<ServiceState>().Result.Single();
             ss.DatabaseState.HasState(ReleaseVersions.V2).Should().BeTrue();

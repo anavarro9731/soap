@@ -6,9 +6,11 @@
 
     public abstract class AbstractPongEvent : ApiEvent
     {
-        public DateTime PingedAt { get; set; }
+        public DateTime? PingedAt { get; set; }
 
         public string PingedBy { get; set; }
+
+        public Guid PingReference { get; set; }
 
         public DateTime PongedAt { get; set; }
 

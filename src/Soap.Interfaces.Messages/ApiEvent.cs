@@ -10,6 +10,5 @@
      */
     public abstract class ApiEvent : ApiMessage
     {
-        public DateTime OccurredAt { get; set; }
     }
 }

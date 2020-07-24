@@ -3,6 +3,7 @@
     using System;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
@@ -85,7 +86,7 @@
             {
                 try //* deserialise the message
                 {
-                    var msg = JsonSerializer.Deserialize(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
+                    var msg = JsonConvert.DeserializeObject(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
                     contextAfterMessageObtained = bootstrappedContext.Upgrade(msg, timeStamp);
                     success = true;
                 }

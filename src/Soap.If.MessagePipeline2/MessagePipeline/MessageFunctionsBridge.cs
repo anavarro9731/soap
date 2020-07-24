@@ -1,16 +1,11 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+    using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.Utility;
-    using Soap.Utility.Enums;
-    using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     public class MessageFunctionsBridge<T> : IMessageFunctionsServerSide where T : ApiMessage
     {
@@ -21,41 +16,38 @@
             this.messageFunctionsTyped = messageFunctionsTyped;
         }
 
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings() => this.messageFunctionsTyped.GetErrorCodeMapper ?? new Dictionary<ErrorCode, ErrorCode>();
+        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings() =>
+            this.messageFunctionsTyped.GetErrorCodeMapper ?? new Dictionary<ErrorCode, ErrorCode>();
 
         public async Task Handle(ApiMessage msg)
         {
             if (msg.Headers.HasStatefulProcessId())
             {
-                var permId = msg.Headers.GetStatefulProcessId();
-                foreach (var type in this.messageFunctionsTyped.MessageCanContinueTheseStatefulProcesses)
+                //* is continuation
+                foreach (var process in this.messageFunctionsTyped.HandleWithTheseStatefulProcesses)
                 {
-                    OriginalTypeNameAttribute myAttribute =
-                        (OriginalTypeNameAttribute) Attribute.GetCustomAttribute(type, typeof (OriginalTypeNameAttribute));
-
-                    var originalName = myAttribute.OriginalName;
-
-                    var currentName = type.FullName;
-
-                    if (originalName == msg.Headers.GetStatefulProcessId().TypeId
-                        || currentName == msg.Headers.GetStatefulProcessId().TypeId)
+                    var asIContinueStatefulProcess = ((IContinueStatefulProcess)process);
+                    ;
+                    if (IsOfCorrectType(asIContinueStatefulProcess))
                     {
-                        StatefulProcess process = ((StatefulProcess)Activator.CreateInstance(type));
-                        await process.ContinueProcess(msg);
+                        await asIContinueStatefulProcess.ContinueProcess((T)msg);
                     }
-                    else
-                    {
-                        Guard.Against(true, $"Could not find a Stateful Process with the Id {permId}", ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
-                    }
-                    
                 }
-            } else 
+            }
+            else
+            {
+
                 await this.messageFunctionsTyped.Handle((T)msg);
-        } 
+            }
+
+            bool IsOfCorrectType(IContinueStatefulProcess process) =>
+                process.GetType()
+                       .InheritsOrImplements(System.Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
+        }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.messageFunctionsTyped.HandleFinalFailure((MessageFailedAllRetries<T>)msg);
-         
+
         public void Validate(ApiMessage msg) => this.messageFunctionsTyped.Validate((T)msg);
     }
 }

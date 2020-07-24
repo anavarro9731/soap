@@ -1,30 +1,24 @@
 ﻿namespace Sample.Logic.Mappings
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation;
     using Sample.Logic.Processes;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>
     {
-
         public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
-        public Type[] MessageCanContinueTheseStatefulProcesses { get; }
+        public IContinueProcess<C102GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C102GetServiceState msg)
-        {
-            return this.Get<GetServiceStateProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task Handle(C102GetServiceState msg) => this.Get<P100GetServiceState>().Call(x => x.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C102GetServiceState> msg)
-        {
-            return this.Get<NotifyOfFinalFailureProcess>().Exec(x => x.BeginProcess)(msg);
-        }
+        public Task HandleFinalFailure(MessageFailedAllRetries<C102GetServiceState> msg) =>
+            this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C102GetServiceState msg)
         {

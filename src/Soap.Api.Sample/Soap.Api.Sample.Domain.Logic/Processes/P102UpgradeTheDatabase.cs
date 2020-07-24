@@ -11,7 +11,7 @@
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
 
-    public class UpgradeTheDatabaseProcess : Process, IBeginProcess<C101UpgradeTheDatabase>
+    public class P102UpgradeTheDatabase : Process, IBeginProcess<C101UpgradeTheDatabase>
     {
         public Func<C101UpgradeTheDatabase, Task> BeginProcess =>
             async message =>
@@ -41,7 +41,7 @@
 
             Task SetInitialServiceState()
             {
-                return this.Get<ServiceStateOperations>().Exec(x => x.CreateServiceState)();
+                return this.Get<ServiceStateOperations>().Call(x => x.CreateServiceState)();
             }
         }
 
@@ -51,7 +51,7 @@
 
             Task SetDbVersion()
             {
-                return this.Get<ServiceStateOperations>().Exec(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
             }
         }
 

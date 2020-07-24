@@ -11,6 +11,6 @@
 
         public bool Committed { get; set; }
 
-        public ApiEvent EventToSend { get; set; }
+        public ApiEvent EventToPublish { get; set; }
     }
 }
