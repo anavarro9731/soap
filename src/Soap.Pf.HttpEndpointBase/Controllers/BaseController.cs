@@ -1,15 +1,5 @@
 namespace Soap.Pf.HttpEndpointBase.Controllers
 {
-    using System;
-    using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json.Linq;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.MessagePipeline;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
-
     public abstract class BaseController : Controller
     {
         protected readonly IApplicationConfig ApplicationConfig;
@@ -28,7 +18,9 @@ namespace Soap.Pf.HttpEndpointBase.Controllers
             {
                 var apiMessage = message.ToObject();
 
-                Guard.Against(!(apiMessage is TApiMessage), $"'{apiMessage?.GetType().FullName ?? "???"}' API message must be of type '{typeof(TApiMessage)}'");
+                Guard.Against(
+                    !(apiMessage is TApiMessage),
+                    $"'{apiMessage?.GetType().FullName ?? "???"}' API message must be of type '{typeof(TApiMessage)}'");
 
                 try
                 {

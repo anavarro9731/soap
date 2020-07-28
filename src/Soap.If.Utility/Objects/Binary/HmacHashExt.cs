@@ -1,6 +1,5 @@
 namespace Soap.Utility.Objects.Binary
 {
-    using System;
     using Soap.Utility.PWDTK;
 
     /// <summary>
@@ -14,25 +13,26 @@ namespace Soap.Utility.Objects.Binary
             return new HmacHash(textString, currentHmacHash.IterationsUsed, saltHex);
         }
 
-        public static bool EqualsString(this HmacHash hmacHash, string @string)
-        {
-            return PWDTK.ComparePasswordToHash(PWDTK.HashHexStringToBytes(hmacHash.HexSalt), @string, PWDTK.HashHexStringToBytes(hmacHash.HexHash), hmacHash.IterationsUsed);
-        }
+        public static bool EqualsString(this HmacHash hmacHash, string @string) =>
+            PWDTK.ComparePasswordToHash(
+                PWDTK.HashHexStringToBytes(hmacHash.HexSalt),
+                @string,
+                PWDTK.HashHexStringToBytes(hmacHash.HexHash),
+                hmacHash.IterationsUsed);
     }
 
     public class HmacHash
     {
+        public const int CurrentIterations = 12000;
+
         public HmacHash(string @string, int iterations, string saltHex)
         {
-
             var passwordHashHex = PWDTK.PasswordToHashHexString(PWDTK.HashHexStringToBytes(saltHex), @string, iterations);
 
             HexHash = passwordHashHex;
             HexSalt = saltHex;
             IterationsUsed = iterations;
         }
-
-        public const int CurrentIterations = 12000;
 
         public string HexHash { get; internal set; }
 
@@ -62,14 +62,10 @@ namespace Soap.Utility.Objects.Binary
             }
         }
 
-        public override string ToString()
-        {
-            return $"{HexSalt}:{HexHash}:{IterationsUsed}:";
-        }
+        public override string ToString() => $"{HexSalt}:{HexHash}:{IterationsUsed}:";
 
-        protected bool Equals(HmacHash other)
-        {
-            return String.Equals(HexSalt, other.HexSalt) && IterationsUsed == other.IterationsUsed && String.Equals(HexHash, other.HexHash);
-        }
+        protected bool Equals(HmacHash other) =>
+            string.Equals(HexSalt, other.HexSalt) && IterationsUsed == other.IterationsUsed
+                                                  && string.Equals(HexHash, other.HexHash);
     }
 }

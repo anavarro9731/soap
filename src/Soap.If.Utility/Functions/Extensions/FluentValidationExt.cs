@@ -8,12 +8,16 @@
 
     public static class FluentValidationExt
     {
-        public static IRuleBuilderOptions<T, TProperty> In<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, IEnumerable<TProperty> enumerable)
+        public static IRuleBuilderOptions<T, TProperty> In<T, TProperty>(
+            this IRuleBuilder<T, TProperty> ruleBuilder,
+            IEnumerable<TProperty> enumerable)
         {
             return ruleBuilder.SetValidator(new InValidator<TProperty>(enumerable));
         }
 
-        public static IRuleBuilderOptions<T, TProperty> MaxLength<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, int maxLength)
+        public static IRuleBuilderOptions<T, TProperty> MaxLength<T, TProperty>(
+            this IRuleBuilder<T, TProperty> ruleBuilder,
+            int maxLength)
         {
             return ruleBuilder.SetValidator(new MaxLengthValidator(maxLength));
         }

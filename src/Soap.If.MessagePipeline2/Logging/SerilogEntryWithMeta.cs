@@ -11,13 +11,10 @@ namespace Soap.MessagePipeline.Logging
 
         private ILogMessage Message { get; set; }
 
-        public static SerilogEntryWithMeta Create(ILogMessage logMessage)
-        {
-            return new SerilogEntryWithMeta
+        public static SerilogEntryWithMeta Create(ILogMessage logMessage) =>
+            new SerilogEntryWithMeta
             {
-                Message = logMessage,
-                Created = DateTime.UtcNow
+                Message = logMessage, Created = DateTime.UtcNow
             };
-        }
     }
 }

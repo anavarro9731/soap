@@ -1,4 +1,4 @@
-namespace Sample.Tests.Messages.Commands
+namespace Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
@@ -8,19 +8,20 @@ namespace Sample.Tests.Messages.Commands
     using Xunit;
     using Xunit.Abstractions;
 
-    public class C101UpgradingTheDatabaseOnlyOnce : Test
+    public class TestC101UpgradingTheDatabaseMoreThanOnce : BaseTest
     {
-        public C101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
+        public TestC101UpgradingTheDatabaseMoreThanOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            Execute(Commands.UpgradeTheDatabaseToV2, Identities.UserOne);
         }
 
         [Fact]
-        public void ItShouldSetTheServiceStateDbVersionTo1()
+        public void ItShouldSetTheServiceStateDbVersionTo2()
         {
             var ss = Result.DataStore.Read<ServiceState>().Result.Single();
-            ss.DatabaseState.HasState(ReleaseVersions.V1).Should().BeTrue();
+            ss.DatabaseState.HasState(ReleaseVersions.V2).Should().BeTrue();
         }
     }
 }

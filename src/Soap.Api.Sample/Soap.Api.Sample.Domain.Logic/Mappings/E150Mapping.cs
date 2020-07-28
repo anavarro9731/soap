@@ -1,6 +1,5 @@
 ﻿namespace Sample.Logic.Mappings
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Sample.Logic.Processes;
@@ -15,12 +14,13 @@
 
         public IContinueProcess<E150Pong>[] HandleWithTheseStatefulProcesses { get; } =
         {
-            new S100PingAndWaitForPong()
+            new S888PingAndWaitForPong()
         };
 
         public Task Handle(E150Pong msg) => Task.CompletedTask;
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<E150Pong> msg) => this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+        public Task HandleFinalFailure(MessageFailedAllRetries<E150Pong> msg) =>
+            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(E150Pong msg)
         {

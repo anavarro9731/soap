@@ -9,9 +9,6 @@
 
         public class C103Validator : AbstractValidator<C103StartPingPong>
         {
-            public C103Validator()
-            {
-            }
         }
     }
 }

@@ -1,13 +1,5 @@
 ﻿namespace Soap.Pf.EndpointTestsBase
 {
-    using System;
-    using System.Threading.Tasks;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.Utility.PureFunctions.Extensions;
-    using Soap.Pf.MessageContractsBase.Commands;
-    using Soap.Pf.MessageContractsBase.Queries;
-    using Xunit;
-
     public class AbstractWhenPingingTheServiceViaMsmq<TPing, TPingResponse, TGetMessageLogItem, TGetMessageLogItemResponse>
         where TPing : AbstractPingCommandForMsmq<TPingResponse>, new()
         where TPingResponse : class, IApiCommand, new()

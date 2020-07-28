@@ -1,19 +1,5 @@
 ﻿namespace Soap.Pf.EndpointClients
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Rebus.Activation;
-    using Rebus.Bus;
-    using Rebus.Config;
-    using Rebus.Routing;
-    using Rebus.Routing.TypeBased;
-    using Serilog;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.Pf.ClientServerMessaging.Routing.Routes;
-
     public class BusApiClient : IDisposable, IBusContext
     {
         private readonly Action<RebusConfigurer> applyConfiguration;
@@ -28,8 +14,6 @@
 
         private IBus bus;
 
-        public bool IsOneWay { get; set; }
-
         public BusApiClient(
             IEnumerable<MsmqMessageRoute> routingDefinitions,
             Action<RebusConfigurer> applyConfiguration = null,
@@ -37,17 +21,15 @@
             Action<IApiMessage> mutateMessageBeforeSending = null,
             Action onBusStarted = null)
         {
-            
-                this.applyConfiguration = applyConfiguration ?? (r =>
-                                                                                    {
-                                                                                    r.Transport(a => a.UseMsmqAsOneWayClient());
-                                                                                    this.IsOneWay = true;
-                                                                                    });
-                this.mutateMessageBeforeSending = mutateMessageBeforeSending ?? (m => { });
-                this.configurer = configurer ?? Configure.With(new BuiltinHandlerActivator());
-                this.onBusStarted = onBusStarted ?? (() => { });
-                this.routingDefinitions = routingDefinitions?.ToList() ?? throw new ArgumentNullException(nameof(routingDefinitions));
-            
+            this.applyConfiguration = applyConfiguration ?? (r =>
+                                                                    {
+                                                                    r.Transport(a => a.UseMsmqAsOneWayClient());
+                                                                    IsOneWay = true;
+                                                                    });
+            this.mutateMessageBeforeSending = mutateMessageBeforeSending ?? (m => { });
+            this.configurer = configurer ?? Configure.With(new BuiltinHandlerActivator());
+            this.onBusStarted = onBusStarted ?? (() => { });
+            this.routingDefinitions = routingDefinitions?.ToList() ?? throw new ArgumentNullException(nameof(routingDefinitions));
         }
 
         public BusApiClient(MsmqMessageRoute route)
@@ -63,6 +45,8 @@
         {
             Dispose(false);
         }
+
+        public bool IsOneWay { get; set; }
 
         public void Dispose()
         {
@@ -97,12 +81,11 @@
         //.. send command to self
         public async Task SendLocal(IApiCommand command)
         {
-                if (command.MessageId == Guid.Empty) command.MessageId = Guid.NewGuid();
+            if (command.MessageId == Guid.Empty) command.MessageId = Guid.NewGuid();
 
-                if (command.TimeOfCreationAtOrigin.HasValue == false) command.TimeOfCreationAtOrigin = DateTime.UtcNow;
+            if (command.TimeOfCreationAtOrigin.HasValue == false) command.TimeOfCreationAtOrigin = DateTime.UtcNow;
 
-                await this.bus.SendLocal(command).ConfigureAwait(false);
-            
+            await this.bus.SendLocal(command).ConfigureAwait(false);
         }
 
         public Task Start()
@@ -134,7 +117,7 @@
                 foreach (var routingDefinitionMessageType in routingDefinition.MessageTypes)
                     typeBasedRouter.Map(routingDefinitionMessageType, routingDefinition.MsmqEndpointAddress.ToString());
             }
-            
+
             this.configurer.Routing(RouterConfig);
 
             this.applyConfiguration(this.configurer);

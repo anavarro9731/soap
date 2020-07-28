@@ -6,15 +6,7 @@
 
     public static class Md5HashExt
     {
-        public static string ToMd5Hash(this Guid input)
-        {
-            return input.ToString().ToMd5Hash();
-        }
-
-        public static string ToMd5SaltedHash(this Guid input, string salt)
-        {
-            return input.ToString().ToMd5SaltedHash(salt);
-        }
+        public static string ToMd5Hash(this Guid input) => input.ToString().ToMd5Hash();
 
         // Hash an input string and return the hash as
         // a 32 character hexadecimal string.
@@ -26,6 +18,8 @@
 
             return ConvertHashDataToHexString(data);
         }
+
+        public static string ToMd5SaltedHash(this Guid input, string salt) => input.ToString().ToMd5SaltedHash(salt);
 
         public static string ToMd5SaltedHash(this string input, string salt)
         {

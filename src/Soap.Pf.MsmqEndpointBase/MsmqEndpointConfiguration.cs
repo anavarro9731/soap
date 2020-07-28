@@ -1,23 +1,5 @@
 ﻿namespace Soap.Pf.MsmqEndpointBase
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Reflection;
-    using Autofac;
-    using CircuitBoard.MessageAggregator;
-    using DataStore.Interfaces;
-    using Serilog;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline;
-    using Soap.If.MessagePipeline.MessageAggregator;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.Pf.DomainLogicBase;
-    using Soap.Pf.EndpointInfrastructure;
-    using Topshelf;
-
     public class MsmqEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {
         private readonly ILogger logger;
@@ -34,7 +16,11 @@
             {
                 CreateLogger(out this.logger);
 
-                this.service = new Startup(addBusToContainerFunc, documentRepositoryFactory, domainLogicAssembly, domainMessagesAssembly);
+                this.service = new Startup(
+                    addBusToContainerFunc,
+                    documentRepositoryFactory,
+                    domainLogicAssembly,
+                    domainMessagesAssembly);
             }
             catch (Exception ex)
             {
@@ -62,8 +48,7 @@
             return this;
         }
 
-        public void 
-            Start(MsmqEndpointWindowsServiceSettings serviceSettings, IApiCommand startupCommand = null)
+        public void Start(MsmqEndpointWindowsServiceSettings serviceSettings, IApiCommand startupCommand = null)
         {
             {
                 try
@@ -76,7 +61,10 @@
                             x.OnException(
                                 exception =>
                                     {
-                                    this.logger.Error(exception, "Unhandled Exception in MSMQ Endpoint Startup {Message}.", exception.Message);
+                                    this.logger.Error(
+                                        exception,
+                                        "Unhandled Exception in MSMQ Endpoint Startup {Message}.",
+                                        exception.Message);
                                     Log.CloseAndFlush(); //make sur we get the error before the thread dies 
                                     });
 
@@ -132,8 +120,7 @@
 
             private readonly IEnumerable<Assembly> handlerAssemblies = new[]
             {
-                Assembly.GetEntryAssembly(),
-                Assembly.GetExecutingAssembly()
+                Assembly.GetEntryAssembly(), Assembly.GetExecutingAssembly()
             };
 
             private IContainer container;
@@ -192,22 +179,27 @@
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
                         EnvironmentConfig.Variables,
-                        new[] { this.domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
-                        new[] { this.domainMessagesAssembly }.ToList(),
+                        new[]
+                        {
+                            this.domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly
+                        }.ToList(),
+                        new[]
+                        {
+                            this.domainMessagesAssembly
+                        }.ToList(),
                         MessageAggregator.Create,
                         this.ContainerActions);
 
                     AddHandlers(builder, this.handlerAssemblies); //push down?
 
-                    
                     builder.RegisterType<RebusCommandHandler>().AsSelf().AsImplementedInterfaces().InstancePerDependency();
-                                        
+
                     this.container = builder.Build();
 
                     this.addBusToContainerFunc(this.container);
 
                     EndpointSetup.ValidateContainer(this.container);
-                    
+
                     //event sub and reg
 
                     Log.Logger.Information("Ready to receive messages");
@@ -215,10 +207,7 @@
                     if (startupCommand != null) SendStartupMessage();
                 }
 
-                void SendStartupMessage()
-                {
-                    this.container.Resolve<IBusContext>().SendLocal(startupCommand);
-                }
+                void SendStartupMessage() => this.container.Resolve<IBusContext>().SendLocal(startupCommand);
             }
 
             public void Stop()

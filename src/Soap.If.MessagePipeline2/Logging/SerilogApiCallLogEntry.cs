@@ -1,7 +1,6 @@
 ﻿namespace Soap.MessagePipeline.Logging
 {
     using System;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
 
@@ -49,6 +48,5 @@
         }
 
         public FormattedExceptionInfo ExceptionFormatteds { get; internal set; }
-
     }
 }

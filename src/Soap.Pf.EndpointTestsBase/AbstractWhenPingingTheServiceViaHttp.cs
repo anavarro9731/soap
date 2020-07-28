@@ -1,14 +1,5 @@
 ﻿namespace Soap.Pf.EndpointTestsBase
 {
-    using System;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Newtonsoft.Json.Linq;
-    using Soap.If.Utility.PureFunctions.Extensions;
-    using Soap.Pf.MessageContractsBase.Commands;
-    using Soap.Pf.MessageContractsBase.Queries;
-    using Xunit;
-
     public class AbstractWhenPingingTheServiceViaHttp<TPing, TPingResponse, TGetMessageLogItem, TGetMessageLogItemResponse>
         where TPing : AbstractPingCommandForHttp<TPingResponse>, new()
         where TPingResponse : AbstractPingCommandForHttp<TPingResponse>.AbstractResponseModel, new()
@@ -38,9 +29,10 @@
         {
             await Setup();
 
-            var response = await TestUtils.Assert.CommandSuccess<TGetMessageLogItem, TGetMessageLogItemResponse>(this.pingCommandId);
+            var response =
+                await TestUtils.Assert.CommandSuccess<TGetMessageLogItem, TGetMessageLogItemResponse>(this.pingCommandId);
 
-            var typedResponse = (response.SuccessfulAttempt.ReturnValue as JObject);
+            var typedResponse = response.SuccessfulAttempt.ReturnValue as JObject;
 
             typedResponse.ToObject<TPingResponse>().PingedBy.Should().Be(this.testName);
         }
@@ -53,8 +45,8 @@
             var message = new TPing().Op(
                 p =>
                     {
-                        p.PingedBy = this.testName;
-                        p.MessageId = this.pingCommandId;
+                    p.PingedBy = this.testName;
+                    p.MessageId = this.pingCommandId;
                     });
 
             //act

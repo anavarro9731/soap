@@ -1,18 +1,11 @@
 ﻿namespace Soap.Pf.MsmqEndpointBase
 {
-    using System.Threading.Tasks;
-    using System.Transactions;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.Pf.EndpointInfrastructure;
-
     /// <summary>
     ///     these classes defines a smaller pipeline for processing a single message
     ///     TransactionScopeAsyncFlowOption.Enabled is required to use tx with async/await
     /// </summary>
-    public abstract class CommandHandler<TCommand, R> : MessageHandlerBase, IMessageHandler where TCommand : ApiCommand<R> where R : class, IApiCommand, new()
+    public abstract class CommandHandler<TCommand, R> : MessageHandlerBase, IMessageHandler
+        where TCommand : ApiCommand<R> where R : class, IApiCommand, new()
     {
         public async Task<object> HandleAny(IApiMessage message, ApiMessageMeta meta)
         {
@@ -39,7 +32,9 @@
                     //TODO: verify reply
                     UnitOfWork.SendCommand(reply);
 
-                    await UnitOfWork.ExecuteChanges().ConfigureAwait(false); //perform changes in the unit of work, queries are excluded they perform no changes
+                    await UnitOfWork.ExecuteChanges()
+                                    .ConfigureAwait(
+                                        false); //perform changes in the unit of work, queries are excluded they perform no changes
 
                     transactionScope.Complete();
                 }
@@ -48,7 +43,9 @@
             async Task RecordSuccessfulResult(object returnValue)
             {
                 //log inside the txn so it will write only if the parent succeeds
-                await DataStore.UpdateById<MessageLogItem>(message.MessageId, obj => MessageLogItemOperations.AddSuccessfulMessageResult(obj, returnValue))
+                await DataStore.UpdateById<MessageLogItem>(
+                                   message.MessageId,
+                                   obj => MessageLogItemOperations.AddSuccessfulMessageResult(obj, returnValue))
                                .ConfigureAwait(false);
             }
         }
@@ -67,14 +64,16 @@
         private async Task HandleTyped(TCommand message, ApiMessageMeta meta)
         {
             message.Validate();
-            
+
             await Handle(message, meta).ConfigureAwait(false);
 
             using (var transactionScope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await RecordSuccessfulResult().ConfigureAwait(false); // queries are excluded from messagelog entries
 
-                await UnitOfWork.ExecuteChanges().ConfigureAwait(false); //perform changes in the unit of work, queries are excluded they perform no changes
+                await UnitOfWork.ExecuteChanges()
+                                .ConfigureAwait(
+                                    false); //perform changes in the unit of work, queries are excluded they perform no changes
 
                 transactionScope.Complete();
             }
@@ -82,7 +81,9 @@
             async Task RecordSuccessfulResult()
             {
                 //log inside the txn so it will write only if the parent succeeds
-                await DataStore.UpdateById<MessageLogItem>(message.MessageId, logItem => MessageLogItemOperations.AddSuccessfulMessageResult(logItem))
+                await DataStore.UpdateById<MessageLogItem>(
+                                   message.MessageId,
+                                   logItem => MessageLogItemOperations.AddSuccessfulMessageResult(logItem))
                                .ConfigureAwait(false);
             }
         }

@@ -6,7 +6,7 @@
     using Sample.Messages.Events;
     using Soap.MessagePipeline.ProcessesAndOperations;
 
-    public class P101PingPong : Process, IBeginProcess<C100Ping>
+    public class P559PingPong : Process, IBeginProcess<C100Ping>
     {
         public Func<C100Ping, Task> BeginProcess =>
             async message =>
@@ -17,7 +17,7 @@
                         PingedAt = message.PingedAt,
                         PingedBy = message.PingedBy,
                         PongedAt = DateTime.UtcNow,
-                        PongedBy = nameof(P101PingPong)
+                        PongedBy = nameof(P559PingPong)
                     });
                 };
     }

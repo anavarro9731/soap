@@ -3,7 +3,6 @@
     using System;
     using System.Threading.Tasks;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.ProcessesAndOperations;
 
     public interface ICanCall<in T>
     {

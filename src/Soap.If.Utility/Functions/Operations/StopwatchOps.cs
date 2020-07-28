@@ -11,16 +11,19 @@
             {
                 return null;
             }
+
             return CalculateLatency(startStopwatchTimestamp.Value, stopStopwatchTimestamp.Value);
         }
 
-        public static TimeSpan? CalculateLatency(long startStopwatchTimestamp, long stopStopwatchTimestamp)
-        {
-            return CalculateLatency(startStopwatchTimestamp, stopStopwatchTimestamp, Stopwatch.IsHighResolution, Stopwatch.Frequency);
-        }
+        public static TimeSpan? CalculateLatency(long startStopwatchTimestamp, long stopStopwatchTimestamp) =>
+            CalculateLatency(startStopwatchTimestamp, stopStopwatchTimestamp, Stopwatch.IsHighResolution, Stopwatch.Frequency);
 
         // See http://referencesource.microsoft.com/#System/services/monitoring/system/diagnosticts/Stopwatch.cs
-        public static TimeSpan? CalculateLatency(long startStopwatchTimestamp, long stopStopwatchTimestamp, bool isHighResolution, long frequency)
+        public static TimeSpan? CalculateLatency(
+            long startStopwatchTimestamp,
+            long stopStopwatchTimestamp,
+            bool isHighResolution,
+            long frequency)
         {
             TimeSpan? latency = null;
             if (startStopwatchTimestamp > 0 && stopStopwatchTimestamp > 0)
@@ -51,6 +54,7 @@
                     latency = TimeSpan.FromTicks(elapsedTicks);
                 }
             }
+
             return latency;
         }
 
@@ -66,6 +70,7 @@
             {
                 stopStopwatchTimestamp = 0;
             }
+
             return latency;
         }
 
@@ -77,12 +82,10 @@
                 var stopStopwatchTimestamp = GetStopwatchTimestamp();
                 latency = CalculateLatency(startStopwatchTimestamp, stopStopwatchTimestamp);
             }
+
             return latency;
         }
 
-        public static long GetStopwatchTimestamp()
-        {
-            return Stopwatch.GetTimestamp();
-        }
+        public static long GetStopwatchTimestamp() => Stopwatch.GetTimestamp();
     }
 }

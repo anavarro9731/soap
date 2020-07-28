@@ -2,23 +2,22 @@
 {
     using System;
     using System.Collections.Generic;
-    using Sample.Messages.Commands;
     using Sample.Models.Aggregates;
     using Soap.Interfaces;
 
-    public partial class Test
+    public partial class BaseTest
     {
         //all variables in here must remain constant for tests to be correct
 
-        public static class Identities
+        protected static class Identities
         {
-            public static User UserOne = new User()
+            public static readonly User UserOne = new User
             {
                 id = Guid.NewGuid(),
                 UserName = "User One",
-                ApiPermissionGroups = new List<ApiPermissionGroup>()
+                ApiPermissionGroups = new List<ApiPermissionGroup>
                 {
-                    new ApiPermissionGroup()
+                    new ApiPermissionGroup
                     {
                         Name = "Upgrade Database"
                     }

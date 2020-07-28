@@ -1,7 +1,6 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
-    using System.Text.Json;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Soap.Interfaces;
@@ -38,7 +37,8 @@
                 {
                     contextAfterMessageObtained.Logger.Fatal(
                         "Cannot complete context preparation: partial context {@context}, error {@error}",
-                        contextAfterMessageObtained, exception);
+                        contextAfterMessageObtained,
+                        exception);
                     return;
                 }
 
@@ -58,7 +58,8 @@
                 }
             }
 
-            async Task PrepareContext(ContextWithMessage contextAfterMessageObtained,
+            async Task PrepareContext(
+                ContextWithMessage contextAfterMessageObtained,
                 Action<ContextWithMessageLogEntry> setContext)
             {
                 IApiIdentity identity = null;
@@ -73,7 +74,6 @@
                 var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
 
                 setContext(context);
-
             }
 
             void DeserialiseMessage(
@@ -96,7 +96,8 @@
                         "Cannot deserialise message: type {@type}, error {@error}, json {@json} stack {@stack}",
                         assemblyQualifiedName,
                         e.Message,
-                        messageJson, e.StackTrace);
+                        messageJson,
+                        e.StackTrace);
 
                     contextAfterMessageObtained = null;
                     success = false;

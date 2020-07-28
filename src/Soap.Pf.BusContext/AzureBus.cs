@@ -7,9 +7,7 @@
     using CircuitBoard.MessageAggregator;
     using Microsoft.Azure.ServiceBus;
     using Newtonsoft.Json;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using JsonSerializer = System.Text.Json.JsonSerializer;
 
     public class AzureBus : IBusInternal
     {
@@ -53,9 +51,10 @@
             };
 
             this.messageAggregator.Collect(
-                new QueuedPublishEvent
+                new QueuedEventToPublish
                 {
-                    EventToPublish = publishEvent, CommitClosure = async () => await this.topicClient?.SendAsync(queueMessage)
+                    EventToPublish = publishEvent,
+                    CommitClosure = async () => await this.topicClient?.SendAsync(queueMessage)
                 });
             return Task.CompletedTask;
         }

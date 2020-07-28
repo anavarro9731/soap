@@ -1,7 +1,5 @@
 ﻿namespace Soap.Interfaces.Messages
 {
-    using System;
-
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
     contract assemblies. Use headers to implement variables logic. If you are going to use 

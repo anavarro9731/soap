@@ -1,10 +1,5 @@
 ﻿namespace Soap.Pf.MsmqEndpointBase
 {
-    using System.Threading.Tasks;
-    using Rebus.Handlers;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline.MessagePipeline;
-
     public class RebusCommandHandler : IHandleMessages<IApiCommand>
     {
         private readonly MessagePipeline messagePipeline;

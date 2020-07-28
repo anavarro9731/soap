@@ -4,7 +4,6 @@
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using Serilog;
-    using Soap.Bus;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;

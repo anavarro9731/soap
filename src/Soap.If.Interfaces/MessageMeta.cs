@@ -1,7 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
     using System;
-    using System.Text.Json.Serialization;
     using Newtonsoft.Json;
 
     public class MessageMeta
@@ -26,6 +25,5 @@
 
         [JsonProperty]
         public string Schema { get; internal set; }
-
     }
 }

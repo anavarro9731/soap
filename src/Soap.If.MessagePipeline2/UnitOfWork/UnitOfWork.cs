@@ -2,8 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Text.Json.Serialization;
     using DataStore.Interfaces;
     using Newtonsoft.Json;
 
@@ -12,6 +10,11 @@
         public UnitOfWork(bool optimisticConcurrency)
         {
             OptimisticConcurrency = optimisticConcurrency;
+        }
+
+        public UnitOfWork()
+        {
+            //* serialiser
         }
 
         public enum State
@@ -23,10 +26,6 @@
             AllRolledBack
         }
 
-        public UnitOfWork()         {
-            //* serialiser
-        }
-
         [JsonProperty]
         public List<BusMessageUnitOfWorkItem> BusCommandMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
@@ -34,14 +33,17 @@
         public List<BusMessageUnitOfWorkItem> BusEventMessages { get; internal set; } = new List<BusMessageUnitOfWorkItem>();
 
         [JsonProperty]
-        public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
+        public List<DataStoreUnitOfWorkItem> DataStoreCreateOperations { get; internal set; } =
+            new List<DataStoreUnitOfWorkItem>();
 
         [JsonProperty]
-        public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
+        public List<DataStoreUnitOfWorkItem> DataStoreDeleteOperations { get; internal set; } =
+            new List<DataStoreUnitOfWorkItem>();
 
         [JsonProperty]
-        public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; } = new List<DataStoreUnitOfWorkItem>();
-            
+        public List<DataStoreUnitOfWorkItem> DataStoreUpdateOperations { get; internal set; } =
+            new List<DataStoreUnitOfWorkItem>();
+
         [JsonProperty]
         public bool OptimisticConcurrency { get; internal set; }
     }

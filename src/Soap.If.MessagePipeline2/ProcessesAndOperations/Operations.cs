@@ -1,6 +1,5 @@
 ﻿namespace Soap.MessagePipeline.ProcessesAndOperations
 {
-    using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -19,6 +18,5 @@
         public IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
         public ILogger Logger => this.context.Logger;
-
     }
 }

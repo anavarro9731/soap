@@ -25,20 +25,11 @@
             return flags;
         }
 
-        public static bool Contains(this Flags flags, int item)
-        {
-            return flags.Values.Contains(item);
-        }
+        public static bool Contains(this Flags flags, int item) => flags.Values.Contains(item);
 
-        public static int Count(this Flags flags)
-        {
-            return flags.Values.Count;
-        }
+        public static int Count(this Flags flags) => flags.Values.Count;
 
-        public static bool HasState<T>(this Flags flags, T state)
-        {
-            return flags.Values.Contains(Convert.ToInt32(state));
-        }
+        public static bool HasState<T>(this Flags flags, T state) => flags.Values.Contains(Convert.ToInt32(state));
 
         public static Flags RemoveState<T>(this Flags flags, T state)
         {
@@ -63,7 +54,7 @@
     }
 
     //- doesn't inherit from List<int> to ensure easy serialisation back to Flags
-    public class Flags 
+    public class Flags
     {
         public Flags(Enum initialState)
         {

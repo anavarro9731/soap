@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
     using Soap.Interfaces.Messages;
 
-    public interface IBus 
+    public interface IBus
     {
         List<ApiCommand> CommandsSent { get; }
 

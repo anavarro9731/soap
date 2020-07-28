@@ -1,6 +1,5 @@
 ﻿namespace Soap.Interfaces
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Interfaces.Messages;
@@ -18,12 +17,14 @@
         void Validate(ApiMessage msg);
     }
 
-    public interface IMessageFunctionsClientSide<T> : ICanCall<IOperation>, ICanCall<IProcess>, ICanCall<IQuery>, ICanCall<IStatefulProcess>
-        where T : ApiMessage
+    public interface IMessageFunctionsClientSide<T> : ICanCall<IOperation>,
+                                                      ICanCall<IProcess>,
+                                                      ICanCall<IQuery>,
+                                                      ICanCall<IStatefulProcess> where T : ApiMessage
     {
         Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
-        IContinueProcess<T>[]  HandleWithTheseStatefulProcesses { get; } 
+        IContinueProcess<T>[] HandleWithTheseStatefulProcesses { get; }
 
         Task Handle(T msg);
 
@@ -31,5 +32,4 @@
 
         void Validate(T msg);
     }
-
 }

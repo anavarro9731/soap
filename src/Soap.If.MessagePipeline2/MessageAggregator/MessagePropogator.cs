@@ -32,7 +32,9 @@ namespace Soap.MessagePipeline.MessageAggregator
 
             if (result is Task)
             {
-                (result as Task).ContinueWith(_ => CaptureStopTimestampAndCalculateLatency(this.message as IStateOperation)).GetAwaiter().GetResult();
+                (result as Task).ContinueWith(_ => CaptureStopTimestampAndCalculateLatency(this.message as IStateOperation))
+                                .GetAwaiter()
+                                .GetResult();
             }
             else
             {

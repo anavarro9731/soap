@@ -1,11 +1,14 @@
 ﻿namespace Soap.Interfaces.Messages
 {
     using System;
-    using System.Collections.Generic;
 
-    public class ApiPermission 
+    public class ApiPermission
     {
-        public ApiPermission(Guid id, string permissionName, Guid permissionRequiredToAdministerThisPermission, int displayOrder = 99)
+        public ApiPermission(
+            Guid id,
+            string permissionName,
+            Guid permissionRequiredToAdministerThisPermission,
+            int displayOrder = 99)
         {
             Id = id;
             PermissionName = permissionName;
@@ -44,10 +47,7 @@
             return a.Equals(b);
         }
 
-        public static bool operator !=(ApiPermission a, ApiPermission b)
-        {
-            return !(a == b);
-        }
+        public static bool operator !=(ApiPermission a, ApiPermission b) => !(a == b);
 
         public override bool Equals(object obj)
         {
@@ -57,14 +57,8 @@
             return Equals((ApiPermission)obj);
         }
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
+        public override int GetHashCode() => Id.GetHashCode();
 
-        protected bool Equals(ApiPermission other)
-        {
-            return Id.Equals(other.Id);
-        }
+        protected bool Equals(ApiPermission other) => Id.Equals(other.Id);
     }
 }

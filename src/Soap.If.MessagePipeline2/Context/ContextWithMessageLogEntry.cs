@@ -12,6 +12,7 @@
     using DataStore.Interfaces.Operations;
     using DataStore.Models;
     using DataStore.Models.Messages;
+    using Serilog;
     using Soap.Bus;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -56,7 +57,8 @@
             await context.Bus.CommitChanges();
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
-            /* any other arbitrary calls made e.g. to 3rd party API etc. */
+            /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
+             hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. */
             foreach (var queuedStateChange in context.GetQueuedChanges())
             {
                 await queuedStateChange.CommitClosure();
@@ -81,12 +83,12 @@
 
                     switch (queuedStateChange)
                     {
-                        case QueuedApiCommand c:
-                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(c.Command));
+                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedCommandToSend)):
+                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend));
                             break;
 
-                        case QueuedApiEvent e:
-                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(e.Event));
+                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedEventToPublish)):
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish));
                             break;
 
                         case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedCreateOperation<>)):
@@ -98,7 +100,7 @@
                                     DataStoreUnitOfWorkItem.OperationTypes.Create));
                             break;
                         case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedHardDeleteOperation<>)):
-                            u.DataStoreCreateOperations.Add(
+                            u.DataStoreDeleteOperations.Add(
                                 new DataStoreUnitOfWorkItem(
                                     d1.PreviousModel,
                                     d1.NewModel,
@@ -106,12 +108,15 @@
                                     DataStoreUnitOfWorkItem.OperationTypes.HardDelete));
                             break;
                         case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedUpdateOperation<>)):
-                            u.DataStoreCreateOperations.Add(
+                            u.DataStoreUpdateOperations.Add(
                                 new DataStoreUnitOfWorkItem(
                                     d1.PreviousModel,
                                     d1.NewModel,
                                     soapUnitOfWorkId,
                                     DataStoreUnitOfWorkItem.OperationTypes.Update));
+                            break;
+                        default:
+                            context.Logger.Debug("Could not save durable item to unit of work.");
                             break;
                     }
                 }
@@ -135,8 +140,8 @@
 
                 return context.MessageLogEntry.UnitOfWork switch
                 {
-                    var u when IsEmpty(u) => UnitOfWork.State.New,
-                    _ => await AttemptCompletion(records, context)
+                    var u when IsEmpty(u) => UnitOfWork.State.New,  //* hasn't been saved yet, msg not processed yet
+                    _ => await AttemptCompletion(records, context) 
                 };
             }
 
@@ -152,7 +157,7 @@
                 {
                     var r when HasNotStartedDataButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
                     var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r),
-                    var r when PartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
+                    var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
                     var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
@@ -181,7 +186,7 @@
                 }
 
                 //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
-                static bool PartiallyCompletedDataAndCanFinish(List<UnitOfWorkExtensions.Record> records)
+                static bool NotStartedOrPartiallyCompletedDataAndCanFinish(List<UnitOfWorkExtensions.Record> records)
                 {
                     return records.Any(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack
@@ -335,7 +340,9 @@
 
             catch (Exception e)
             {
-                throw new Exception($"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore", e);
+                throw new Exception(
+                    $"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore",
+                    e);
             }
 
             async Task AddThisFailureToTheMessageLog()
@@ -531,7 +538,7 @@
 
         private static bool IsDurableChange(IQueuedStateChange x)
         {
-            var result =  x is IQueuedDataStoreWriteOperation || x is IQueuedBusOperation;
+            var result = x is IQueuedDataStoreWriteOperation || x is IQueuedBusOperation;
 
             return result;
         }
@@ -542,10 +549,10 @@
             var tasks = source.Select(
                 async x =>
                     {
-                        if (await predicate(x))
-                        {
-                            results.Enqueue(x);
-                        }
+                    if (await predicate(x))
+                    {
+                        results.Enqueue(x);
+                    }
                     });
             await Task.WhenAll(tasks);
             return results;

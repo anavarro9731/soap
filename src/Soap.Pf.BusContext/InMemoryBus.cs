@@ -1,12 +1,8 @@
 ﻿namespace Soap.Bus
 {
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Extensions;
 
     public class InMemoryBus : IBusInternal
     {
@@ -16,16 +12,13 @@
         {
             this.messageAggregator = messageAggregator;
         }
-            
-        public Task CommitChanges()
-        {
-            return Task.CompletedTask;
-        }
+
+        public Task CommitChanges() => Task.CompletedTask;
 
         public Task Publish(ApiEvent publishEvent)
         {
             this.messageAggregator.Collect(
-                new QueuedPublishEvent
+                new QueuedEventToPublish
                 {
                     EventToPublish = publishEvent, CommitClosure = () => Task.CompletedTask
                 });

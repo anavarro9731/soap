@@ -6,19 +6,10 @@
     {
         private static readonly Random Random = new Random();
 
-        public static string NewString()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
+        public static string NewString() => Guid.NewGuid().ToString("N");
 
-        public static string NewString(int maxLength)
-        {
-            return NewString().Substring(0, maxLength);
-        }
+        public static string NewString(int maxLength) => NewString().Substring(0, maxLength);
 
-        public static int RandomInt(int maxValue, int minValue = 1)
-        {
-            return Random.Next(minValue, maxValue);
-        }
+        public static int RandomInt(int maxValue, int minValue = 1) => Random.Next(minValue, maxValue);
     }
 }

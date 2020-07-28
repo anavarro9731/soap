@@ -3,9 +3,8 @@ namespace Soap.MessagePipeline.MessageAggregator
     using System.Collections.Generic;
     using System.Linq;
     using CircuitBoard.Messages;
-    using DataStore.Interfaces;
     using DataStore.Interfaces.Operations;
-    using Soap.Interfaces;
+    using Soap.Bus;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.UnitOfWork;
 
@@ -16,13 +15,13 @@ namespace Soap.MessagePipeline.MessageAggregator
         public IReadOnlyList<IMessage> AllMessages => this.allMessages;
 
         public IReadOnlyList<ApiCommand> CommandsSent =>
-            AllMessages.OfType<QueuedApiCommand>().Select(co => co.Command).ToList().AsReadOnly();
+            AllMessages.OfType<QueuedCommandToSend>().Select(co => co.CommandToSend).ToList().AsReadOnly();
 
         public IReadOnlyList<IDataStoreOperation> DataStoreOperations =>
             AllMessages.OfType<IDataStoreOperation>().ToList().AsReadOnly();
 
         public IReadOnlyList<ApiEvent> EventsPublished =>
-            AllMessages.OfType<QueuedApiEvent>().Select(peo => peo.Event).ToList().AsReadOnly();
+            AllMessages.OfType<QueuedEventToPublish>().Select(peo => peo.EventToPublish).ToList().AsReadOnly();
 
         public IReadOnlyList<ILogMessage> LogEntries => AllMessages.OfType<ILogMessage>().ToList().AsReadOnly();
 

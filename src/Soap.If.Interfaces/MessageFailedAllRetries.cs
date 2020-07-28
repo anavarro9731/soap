@@ -1,6 +1,5 @@
 ﻿namespace Soap.Interfaces
 {
-    using System;
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
@@ -15,6 +14,8 @@
         {
         }
 
+        public override ApiPermission Permission { get; }
+
         private class Validator : AbstractValidator<MessageFailedAllRetries>
         {
             public Validator()
@@ -22,13 +23,10 @@
                 RuleFor(x => x.FailedMessage).NotEmpty();
             }
         }
-
-        public override ApiPermission Permission { get; }
     }
 
     public abstract class MessageFailedAllRetries : ApiCommand
     {
         public ApiMessage FailedMessage { get; set; }
-
     }
 }

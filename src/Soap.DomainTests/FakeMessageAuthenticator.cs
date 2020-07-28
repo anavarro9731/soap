@@ -13,9 +13,6 @@
             this.identity = identity;
         }
 
-        public IApiIdentity Authenticate(ApiMessage message)
-        {
-            return this.identity;
-        }
+        public IApiIdentity Authenticate(ApiMessage message) => this.identity;
     }
 }

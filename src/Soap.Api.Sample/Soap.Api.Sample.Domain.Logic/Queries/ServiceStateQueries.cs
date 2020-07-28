@@ -8,7 +8,7 @@
 
     public class ServiceStateQueries : Query
     {
-        public Func<Task<ServiceState>> GetServiceState => async () => 
-            await DataReader.ReadById<ServiceState>(ServiceStateOperations.ServiceStateId);
+        public Func<Task<ServiceState>> GetServiceState =>
+            async () => await DataReader.ReadById<ServiceState>(ServiceStateOperations.ServiceStateId);
     }
 }

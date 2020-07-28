@@ -4,8 +4,8 @@
     {
         public string Body;
 
-        public string Subject;
-
         public string Recipient;
+
+        public string Subject;
     }
 }

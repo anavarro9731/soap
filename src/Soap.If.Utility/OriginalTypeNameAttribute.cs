@@ -5,11 +5,11 @@
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class OriginalTypeNameAttribute : Attribute
     {
-        public string OriginalName { get; }
-
         public OriginalTypeNameAttribute(string originalName)
         {
             OriginalName = originalName;
         }
+
+        public string OriginalName { get; }
     }
 }

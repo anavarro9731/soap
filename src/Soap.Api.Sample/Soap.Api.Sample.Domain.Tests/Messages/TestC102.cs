@@ -1,4 +1,4 @@
-﻿namespace Sample.Tests.Messages.Queries
+﻿namespace Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
@@ -6,9 +6,9 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class C102GetServiceState : Test
+    public class TestC102 : BaseTest
     {
-        public C102GetServiceState(ITestOutputHelper outputHelper)
+        public TestC102(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);

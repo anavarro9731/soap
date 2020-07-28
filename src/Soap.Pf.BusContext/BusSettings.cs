@@ -2,13 +2,12 @@
 {
     using CircuitBoard.MessageAggregator;
     using FluentValidation;
-    using Soap.Interfaces;
 
     public class BusSettings
     {
-        public string QueueConnectionString;
-
         public byte NumberOfApiMessageRetries;
+
+        public string QueueConnectionString;
 
         public class Validator : AbstractValidator<BusSettings>
         {
@@ -16,7 +15,6 @@
             {
                 RuleFor(x => x.QueueConnectionString).NotEmpty();
                 RuleFor(x => x.NumberOfApiMessageRetries).GreaterThanOrEqualTo(x => 0);
-
             }
         }
     }

@@ -1,11 +1,12 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Blended;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
 
     public class MessageFunctionsBridge<T> : IMessageFunctionsServerSide where T : ApiMessage
     {
@@ -26,7 +27,7 @@
                 //* is continuation
                 foreach (var process in this.messageFunctionsTyped.HandleWithTheseStatefulProcesses)
                 {
-                    var asIContinueStatefulProcess = ((IContinueStatefulProcess)process);
+                    var asIContinueStatefulProcess = (IContinueStatefulProcess)process;
                     ;
                     if (IsOfCorrectType(asIContinueStatefulProcess))
                     {
@@ -36,13 +37,11 @@
             }
             else
             {
-
                 await this.messageFunctionsTyped.Handle((T)msg);
             }
 
             bool IsOfCorrectType(IContinueStatefulProcess process) =>
-                process.GetType()
-                       .InheritsOrImplements(System.Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
+                process.GetType().InheritsOrImplements(Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
         }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>

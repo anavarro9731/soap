@@ -6,7 +6,6 @@
     using System.ComponentModel;
     using System.Linq;
     using System.Text;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
@@ -20,11 +19,11 @@
 
         public string Schema { get; }
 
-        public static Lazy<CachedSchema> Create(BoostrappedContext.ApplicationConfig applicationConfig, IList<ApiMessage> messages) 
+        public static Lazy<CachedSchema> Create(
+            BoostrappedContext.ApplicationConfig applicationConfig,
+            IList<ApiMessage> messages)
         {
-            var handlerTypes = messages.Select(h => h.GetType())
-                                       .OrderBy(t => t.Name);
-
+            var handlerTypes = messages.Select(h => h.GetType()).OrderBy(t => t.Name);
 
             return new Lazy<CachedSchema>(() => new CachedSchema(GetSchemaOutput(applicationConfig, handlerTypes)));
         }
@@ -65,6 +64,7 @@
                         schema.AppendLine("  Request");
                         schema.AppendLine("  -------");
                     }
+
                     AppendObjectToSchema(reqType, depth);
 
                     if (isQuery)
@@ -133,7 +133,8 @@
 
                         var nestedType = descriptor.PropertyType;
 
-                        if (typeof(IEnumerable).IsAssignableFrom(descriptor.PropertyType) && descriptor.PropertyType.IsGenericType)
+                        if (typeof(IEnumerable).IsAssignableFrom(descriptor.PropertyType)
+                            && descriptor.PropertyType.IsGenericType)
                         {
                             nestedType = descriptor.PropertyType.GenericTypeArguments.First();
                         }
@@ -153,6 +154,7 @@
                         typeName =
                             $"{typeName.Substring(0, typeName.LastIndexOf('`'))}<{string.Join(", ", type.GenericTypeArguments.Select(g => g.IsSystemType() ? g.Name : g.FullName))}>";
                     }
+
                     return typeName;
                 }
 
@@ -161,14 +163,18 @@
                     var typeName = type.Name;
                     if (type.IsGenericType)
                     {
-                        typeName = $"{typeName.Substring(0, typeName.LastIndexOf('`'))}<{string.Join(", ", type.GenericTypeArguments.Select(g => g.Name))}>";
+                        typeName =
+                            $"{typeName.Substring(0, typeName.LastIndexOf('`'))}<{string.Join(", ", type.GenericTypeArguments.Select(g => g.Name))}>";
                     }
+
                     return typeName;
                 }
             }
         }
 
-        private static string GetSchemaOutput(BoostrappedContext.ApplicationConfig applicationConfig, IEnumerable<Type> handlerTypes)
+        private static string GetSchemaOutput(
+            BoostrappedContext.ApplicationConfig applicationConfig,
+            IEnumerable<Type> handlerTypes)
         {
             {
                 var title = $"API Schema | {applicationConfig.ApplicationName} | {applicationConfig.ApplicationVersion}";
@@ -179,7 +185,12 @@
 
                 if (string.IsNullOrWhiteSpace(schemaText)) schemaText = "No supported API Messages";
 
-                return new StringBuilder().AppendLine(border).AppendLine(title).AppendLine(border).AppendLine().AppendLine(schemaText).ToString();
+                return new StringBuilder().AppendLine(border)
+                                          .AppendLine(title)
+                                          .AppendLine(border)
+                                          .AppendLine()
+                                          .AppendLine(schemaText)
+                                          .ToString();
             }
         }
     }

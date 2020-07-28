@@ -2,10 +2,9 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class QueuedPublishEvent : IQueuedBusOperation
+    public class QueuedEventToPublish : IQueuedBusOperation
     {
         public Func<Task> CommitClosure { get; set; }
 

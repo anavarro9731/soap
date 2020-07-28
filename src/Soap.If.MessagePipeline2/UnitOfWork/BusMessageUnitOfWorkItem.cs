@@ -2,11 +2,9 @@
 {
     using System;
     using System.Linq;
-    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using Newtonsoft.Json;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Soap.Utility.Models;
@@ -19,22 +17,20 @@
             MessageId = x.Headers.GetMessageId();
         }
 
-        [JsonProperty]
-        public Guid MessageId { get; internal set; }
-
-        public BusMessageUnitOfWorkItem()        {
+        public BusMessageUnitOfWorkItem()
+        {
             //- serialiser
         }
 
+        [JsonProperty]
+        public Guid MessageId { get; internal set; }
     }
 
     public static class BusMessageUnitOfWorkItemExtensions
     {
         /* used on retries to know the state of a message */
-        public static Task<bool> IsComplete(this BusMessageUnitOfWorkItem item, IDataStore dataStore)
-        {
-            return QueryForCompleteness(item, dataStore);
-        }
+        public static Task<bool> IsComplete(this BusMessageUnitOfWorkItem item, IDataStore dataStore) =>
+            QueryForCompleteness(item, dataStore);
 
         /* checking completeness by using MessageLogEntry record does not guarantee the
          message has not already been sent as race condition can occur,

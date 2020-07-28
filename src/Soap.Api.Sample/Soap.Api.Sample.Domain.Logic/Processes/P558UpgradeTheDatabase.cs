@@ -11,7 +11,7 @@
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
 
-    public class P102UpgradeTheDatabase : Process, IBeginProcess<C101UpgradeTheDatabase>
+    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101UpgradeTheDatabase>
     {
         public Func<C101UpgradeTheDatabase, Task> BeginProcess =>
             async message =>

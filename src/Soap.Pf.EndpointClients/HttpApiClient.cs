@@ -1,18 +1,5 @@
 ﻿namespace Soap.Pf.EndpointClients
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.If.Utility.PureFunctions.Extensions;
-    using Soap.Pf.ClientServerMessaging.Commands;
-    using Soap.Pf.ClientServerMessaging.Routing.Routes;
-
     public class HttpApiClient : IDisposable
     {
         private readonly HttpClient http = new HttpClient();
@@ -33,10 +20,7 @@
             }
         }
 
-        public void Dispose()
-        {
-            this.http?.Dispose();
-        }
+        public void Dispose() => this.http?.Dispose();
 
         // Forward to BusClient CommandToForward
         public async Task SendCommand(IApiCommand command)
@@ -60,32 +44,24 @@
         }
 
         // Request / Response CommandToForward With Static Return Type
-        public async Task<TResponse> SendCommand<TResponse>(ApiCommand<TResponse> command) where TResponse : class, new()
-        {
-            return await SendAndWait<TResponse>(GetEndpointUri(command), command).ConfigureAwait(false);
-        }
+        public async Task<TResponse> SendCommand<TResponse>(ApiCommand<TResponse> command) where TResponse : class, new() =>
+            await SendAndWait<TResponse>(GetEndpointUri(command), command).ConfigureAwait(false);
 
         // Request / Response CommandToForward With Dynamic Return Type
-        public async Task<dynamic> SendCommand(ApiCommand command)
-        {
-            return await SendAndWait<dynamic>(GetEndpointUri(command), command).ConfigureAwait(false);
-        }
+        public async Task<dynamic> SendCommand(ApiCommand command) =>
+            await SendAndWait<dynamic>(GetEndpointUri(command), command).ConfigureAwait(false);
 
         /* Request+Result (success/failed result)
          * TODO 
          */
 
         // Query With Static Return Type
-        public async Task<TResponse> SendQuery<TResponse>(ApiQuery<TResponse> query) where TResponse : class, new()
-        {
-            return await SendAndWait<TResponse>(GetEndpointUri(query), query).ConfigureAwait(false);
-        }
+        public async Task<TResponse> SendQuery<TResponse>(ApiQuery<TResponse> query) where TResponse : class, new() =>
+            await SendAndWait<TResponse>(GetEndpointUri(query), query).ConfigureAwait(false);
 
         // Query Without Dynamic Return Type
-        public async Task<dynamic> SendQuery(ApiQuery query)
-        {
-            return await SendAndWait<dynamic>(GetEndpointUri(query), query).ConfigureAwait(false);
-        }
+        public async Task<dynamic> SendQuery(ApiQuery query) =>
+            await SendAndWait<dynamic>(GetEndpointUri(query), query).ConfigureAwait(false);
 
         private Uri GetEndpointUri(IApiMessage message)
         {
@@ -118,7 +94,8 @@
 
             if (!responseMessage.IsSuccessStatusCode)
             {
-                throw new Exception($"The server returned status code: {((int)responseMessage.StatusCode).ToString()} {responseMessage.StatusCode.ToString()}");
+                throw new Exception(
+                    $"The server returned status code: {((int)responseMessage.StatusCode).ToString()} {responseMessage.StatusCode.ToString()}");
             }
 
             var responseContent = await responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -134,7 +111,9 @@
                     var serverSideExceptionMessage = responseContent.FromJson<ErrorHttpResponse>();
                     if (serverSideExceptionMessage.Error != null)
                     {
-                        throw new Exception("An error occurred on the server processing this message", new Exception(serverSideExceptionMessage.Error));
+                        throw new Exception(
+                            "An error occurred on the server processing this message",
+                            new Exception(serverSideExceptionMessage.Error));
                     }
 
                     throw new Exception("An error occurred on the server processing this message", e);
@@ -152,4 +131,3 @@
         public string Error { get; set; }
     }
 }
-

@@ -3,27 +3,30 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.Json.Serialization;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
-    using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
 
     public class DataStoreUnitOfWorkItem
     {
-        public DataStoreUnitOfWorkItem(IAggregate beforeModel, IAggregate afterModel, Guid soapUnitOfWorkId, OperationTypes operationType)
+        public DataStoreUnitOfWorkItem(
+            IAggregate beforeModel,
+            IAggregate afterModel,
+            Guid soapUnitOfWorkId,
+            OperationTypes operationType)
         {
-            if (beforeModel != null && afterModel != null) Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //* should never happen
+            if (beforeModel != null && afterModel != null)
+                Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //* should never happen
             OperationType = operationType;
             BeforeModel = beforeModel?.ToSerialisableObject();
             AfterModel = afterModel?.ToSerialisableObject();
             UnitOfWorkId = soapUnitOfWorkId.ToString();
-            ObjectId = afterModel.id;
+            ObjectId = afterModel?.id ?? beforeModel.id; //* consider delete and create scenarios where only one side is populated
         }
 
         public DataStoreUnitOfWorkItem()
@@ -67,13 +70,19 @@
         }
 
         /* used on retries to know the state of a message */
-        public static async Task<(RecordState state, bool superseded)> GetRecordState(this DataStoreUnitOfWorkItem item, IDataStore dataStore)
+        public static async Task<(RecordState state, bool superseded)> GetRecordState(
+            this DataStoreUnitOfWorkItem item,
+            IDataStore dataStore)
         {
             {
                 List<Aggregate.AggregateVersionInfo> history = null;
 
-                await GetAggregateHistory(item.ObjectId, (item.BeforeModel ?? item.AfterModel).TypeName, dataStore, v => history = v);
-               
+                await GetAggregateHistory(
+                    item.ObjectId,
+                    (item.BeforeModel ?? item.AfterModel).TypeName,
+                    dataStore,
+                    v => history = v);
+
                 var superseded = ChangeHasBeenSuperseded(history);
 
                 return history switch
@@ -93,22 +102,21 @@
                     _ => throw new DomainException("Operation Type Unknown")
                 };
 
-                bool AggregateExists(List<Aggregate.AggregateVersionInfo> history)
-                {
-                    return history != null;
-                }
+                bool AggregateExists(List<Aggregate.AggregateVersionInfo> history) => history != null;
             }
 
             /* dont rely on eTag where, too many dependencies on that feature will make it brittle
              checking the now consistent history is equally as good. etag will still be the ultimate
              arbiter of all subsequent changes during retries. This is simply used to skip rollbacks
              where they have already been superseded. */
-            bool ChangeHasBeenSuperseded(List<Aggregate.AggregateVersionInfo> history)
-            {
-                return history != null && history.Last().UnitOfWorkId != item.UnitOfWorkId;
-            }
+            bool ChangeHasBeenSuperseded(List<Aggregate.AggregateVersionInfo> history) =>
+                history != null && history.Last().UnitOfWorkId != item.UnitOfWorkId;
 
-            async Task GetAggregateHistory(Guid aggregateId, string typename, IDataStore dataStore, Action<List<Aggregate.AggregateVersionInfo>> setHistory)
+            async Task GetAggregateHistory(
+                Guid aggregateId,
+                string typename,
+                IDataStore dataStore,
+                Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
                 var readById = typeof(IDataStore).GetMethod(nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
 
@@ -118,7 +126,6 @@
                 setHistory(((IAggregate)result)?.VersionHistory);
             }
         }
-
 
         public static Task Rollback(
             this DataStoreUnitOfWorkItem item,
@@ -130,7 +137,8 @@
             {
                 DataStoreUnitOfWorkItem.OperationTypes.Create => delete(item.AfterModel.FromSerialisableObject<IAggregate>()),
                 DataStoreUnitOfWorkItem.OperationTypes.Update => resetTo(item.BeforeModel.FromSerialisableObject<IAggregate>()),
-                DataStoreUnitOfWorkItem.OperationTypes.HardDelete => create(item.BeforeModel.FromSerialisableObject<IAggregate>()),
+                DataStoreUnitOfWorkItem.OperationTypes.HardDelete =>
+                create(item.BeforeModel.FromSerialisableObject<IAggregate>()),
                 _ => throw new DomainException("Unhandled Operation Type")
             };
             return task;

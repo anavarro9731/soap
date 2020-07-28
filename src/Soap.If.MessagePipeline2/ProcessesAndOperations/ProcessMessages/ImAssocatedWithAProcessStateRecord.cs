@@ -4,7 +4,8 @@ namespace Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages
 
     public interface IAssociateProcessStateWithAMessage
     {
-        Guid ProcessStateId { get; }
         Guid ByMessage { get; }
+
+        Guid ProcessStateId { get; }
     }
 }

@@ -1,17 +1,9 @@
 ﻿namespace Soap.Pf.MsmqEndpointBase.Handlers.Commands
 {
-    using System;
-    using System.Threading.Tasks;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.Pf.MessageContractsBase.Commands;
-    using Soap.Pf.MessageContractsBase.Events;
-    using Soap.Pf.MsmqEndpointBase;
-
     public class AbstractPingHandlerForMsmq<TPing, TPongCommand, TPongEvent> : CommandHandler<TPing, TPongCommand>
         where TPongCommand : AbstractPongCommand, new()
         where TPongEvent : AbstractPongEvent, new()
-    where TPing : AbstractPingCommandForMsmq<TPongCommand>, new()
+        where TPing : AbstractPingCommandForMsmq<TPongCommand>, new()
     {
         protected override Task<TPongCommand> Handle(TPing message, ApiMessageMeta meta)
         {

@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
     using Destructurama;
     using Serilog;
@@ -29,16 +30,41 @@
     {
         private BoostrappedContext context;
 
+        //* copies over each call of Add and Execute retaining state across the whole test
+        private DataStore rollingStore;
+
+        public TAggregate GetAdd<TAggregate>(
+            TAggregate aggregate,
+            ITestOutputHelper outputHelper) where TAggregate : Aggregate, new()
+        {
+            CreateDataStore(new MessageAggregatorForTesting(), Guid.NewGuid(),  out var dataStore);
+            
+            var result = dataStore.Create(aggregate).Result;
+            dataStore.CommitChanges();
+            return result;
+
+        }
+
         public Func<ApiMessage, IApiIdentity, Task<Result>> GetExecute(
             MapMessagesToFunctions mapper,
             ITestOutputHelper outputHelper)
         {
             return async (message, identity) =>
                 {
+                message.Headers.EnsureRequiredHeaders();
                 var x = new Result();
                 await Execute(message, mapper, outputHelper, identity, x);
                 return x;
                 };
+        }
+
+        private void CreateDataStore(IMessageAggregator messageAggregator, Guid unitOfWorkId, out DataStore dataStore)
+        {
+            dataStore = new DataStore(
+                this.rollingStore?.DocumentRepository ?? new InMemoryDocumentRepository(),
+                messageAggregator,
+                DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId));
+            this.rollingStore = dataStore;
         }
 
         private async Task Execute(
@@ -53,7 +79,7 @@
 
                 CreateLogger(messageAggregator, testOutputHelper, out var logger);
 
-                CreateDataStore(messageAggregator, message, out var dataStore);
+                CreateDataStore(messageAggregator, message.Headers.GetMessageId(), out var dataStore);
 
                 CreateNotificationServer(out var notificationServer);
 
@@ -71,7 +97,10 @@
                     dataStore: dataStore,
                     messageAggregator: messageAggregator);
 
-                await MessagePipeline.Execute(message.ToNewtonsoftJson(), message.GetType().AssemblyQualifiedName, () => this.context);
+                await MessagePipeline.Execute(
+                    message.ToNewtonsoftJson(),
+                    message.GetType().AssemblyQualifiedName,
+                    () => this.context);
 
                 /*  what we are primarily trying to achieve is to make sure that each execute set the activeprocesstate,
                  if there is a statefulprocess handling the message, to the statefulprocess that it affects. 
@@ -138,14 +167,6 @@
 
                 logger = loggerConfiguration.CreateLogger(); // create serilog ILogger
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
-            }
-
-            void CreateDataStore(IMessageAggregator messageAggregator, ApiMessage message, out DataStore dataStore)
-            {
-                dataStore = new DataStore(
-                    this.context?.DataStore.DocumentRepository ?? new InMemoryDocumentRepository(),
-                    messageAggregator,
-                    DataStoreOptions.Create().SpecifyUnitOfWorkId(message.Headers.GetMessageId()));
             }
 
             static void CreateAppConfig(out BoostrappedContext.ApplicationConfig applicationConfig)

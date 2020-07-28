@@ -7,7 +7,6 @@
     using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
-    using Soap.Utility.Objects.Blended;
 
     public class FormattedExceptionInfo
     {

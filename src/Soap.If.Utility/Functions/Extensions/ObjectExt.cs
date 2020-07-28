@@ -297,7 +297,9 @@
             {
                 var unaryExpr = propertyRefExpr as UnaryExpression;
                 if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
+                {
                     memberExpr = unaryExpr.Operand as MemberExpression;
+                }
             }
 
             if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;

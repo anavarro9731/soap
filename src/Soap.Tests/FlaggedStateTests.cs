@@ -1,11 +1,5 @@
 ﻿namespace Soap.Tests
 {
-    using System;
-    using Newtonsoft.Json;
-    using Soap.If.Utility;
-    using Soap.If.Utility.PureFunctions;
-    using Xunit;
-
     public class FlaggedStateTests
     {
         public enum StatesSample
@@ -28,22 +22,13 @@
             }
 
             [Fact]
-            public void ItShouldContainTheDefaultState()
-            {
-                Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State1)));
-            }
+            public void ItShouldContainTheDefaultState() => Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State1)));
 
             [Fact]
-            public void ItShouldContainTheNewState()
-            {
-                Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State2)));
-            }
+            public void ItShouldContainTheNewState() => Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State2)));
 
             [Fact]
-            public void ItShouldNotContainAnyOtherStates()
-            {
-                Assert.Equal(2, this.x.Count);
-            }
+            public void ItShouldNotContainAnyOtherStates() => Assert.Equal(2, this.x.Count);
         }
 
         public class WhenWeCreateAFlaggedState
@@ -56,16 +41,10 @@
             }
 
             [Fact]
-            public void ItShouldContainNoOtherStates()
-            {
-                Assert.Equal(1, this.x.Count);
-            }
+            public void ItShouldContainNoOtherStates() => Assert.Equal(1, this.x.Count);
 
             [Fact]
-            public void ItShouldContainTheDefaultState()
-            {
-                Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State1)));
-            }
+            public void ItShouldContainTheDefaultState() => Assert.True(this.x.Contains(Convert.ToInt32(StatesSample.State1)));
         }
 
         public class WhenWeDeserialize
@@ -92,16 +71,10 @@
             }
 
             [Fact]
-            public void ItShouldNotRemoveAnyOtherStates()
-            {
-                Assert.Equal(1, this.x.Count);
-            }
+            public void ItShouldNotRemoveAnyOtherStates() => Assert.Equal(1, this.x.Count);
 
             [Fact]
-            public void ItShouldRemoveTheState()
-            {
-                Assert.True(!this.x.Contains(Convert.ToInt32(StatesSample.State1)));
-            }
+            public void ItShouldRemoveTheState() => Assert.True(!this.x.Contains(Convert.ToInt32(StatesSample.State1)));
         }
 
         public class WhenWeRemoveTheDefaultState

@@ -3,7 +3,6 @@
     using System;
     using FluentValidation;
     using Sample.Constants;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Blended;
 
@@ -19,6 +18,8 @@
         }
 
         public Guid? EnvelopeId { get; set; }
+
+        public override ApiPermission Permission { get; }
 
         public ReleaseVersions ReleaseVersion { get; set; }
 
@@ -42,7 +43,5 @@
                 RuleFor(x => x.ReleaseVersion != ReleaseVersions.Null);
             }
         }
-
-        public override ApiPermission Permission { get; }
     }
 }

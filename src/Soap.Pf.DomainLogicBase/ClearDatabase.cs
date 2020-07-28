@@ -8,7 +8,7 @@
     public static class ClearDatabase
     {
         /// <summary>
-        /// *** WARNING DANGER USE ONLY UNDER SUPERVISION ***
+        ///     *** WARNING DANGER USE ONLY UNDER SUPERVISION ***
         /// </summary>
         /// <returns></returns>
         public static async Task ExecuteOutsideTransactionUsingCurrentContext()

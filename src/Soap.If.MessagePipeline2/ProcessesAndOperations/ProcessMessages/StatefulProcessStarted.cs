@@ -11,10 +11,10 @@ namespace Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages
             ByMessage = byMessage;
         }
 
-        public ProcessState StateBeforeHandling { get; set; }
-
         public Guid ByMessage { get; }
 
         public Guid ProcessStateId => StateBeforeHandling.id;
+
+        public ProcessState StateBeforeHandling { get; set; }
     }
 }

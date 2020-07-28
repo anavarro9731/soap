@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using CircuitBoard.Messages;
 
     /*
@@ -25,20 +24,15 @@
 
     public class MessageHeaders : Dictionary<string, string>
     {
-        public MessageHeaders()
-        {
-
-        }
     }
 
     public static class MessageHeaderExtensions
     {
-
         public static void EnsureRequiredHeaders(this MessageHeaders headers)
         {
             /* needs to be called everywhere you can send a message (e.g. tests, bus)
              using constructors will just be avoided and since you have to have
-            public paramaterless ctor for serialsation no point, and 
+            public parameterless ctor for serialisation no point, and 
             properties just break serialisation*/
 
             headers.SetTimeOfCreationAtOrigin();
@@ -47,37 +41,31 @@
 
         public static string GetIdentityToken(this MessageHeaders m)
         {
-            m.TryGetValue(Keys.IdentityToken, out string x);
+            m.TryGetValue(Keys.IdentityToken, out var x);
             return x;
         }
 
         public static Guid GetMessageId(this MessageHeaders m)
         {
-            m.TryGetValue(Keys.MessageId, out string x);
-            Guid.TryParse(x, out Guid result);
+            m.TryGetValue(Keys.MessageId, out var x);
+            Guid.TryParse(x, out var result);
             return result;
         }
 
         public static StatefulProcessId? GetStatefulProcessId(this MessageHeaders m)
         {
-            m.TryGetValue(Keys.StatefulProcessId, out string x);
+            m.TryGetValue(Keys.StatefulProcessId, out var x);
             if (x is null) return null;
 
             var values = x.Split(':');
             return new StatefulProcessId
             {
-                InstanceId = Guid.Parse(values[1]),
-                TypeId = values[0]
+                InstanceId = Guid.Parse(values[1]), TypeId = values[0]
             };
         }
 
-        public static void SetTimeOfCreationAtOrigin(this MessageHeaders m)
-        {
-            m[MessageHeaderExtensions.Keys.TimeOfCreationAtOrigin] = DateTime.UtcNow.ToString("s");
-        }
         public static DateTime? GetTimeOfCreationAtOrigin(this MessageHeaders m)
         {
-            
             var x = m[Keys.TimeOfCreationAtOrigin];
             var y = string.IsNullOrWhiteSpace(x) ? (DateTime?)null : DateTime.Parse(x);
             return y;
@@ -100,15 +88,21 @@
         public static void SetStatefulProcessId(this MessageHeaders m, StatefulProcessId id) =>
             m[Keys.StatefulProcessId] = id.ToString();
 
+        public static void SetTimeOfCreationAtOrigin(this MessageHeaders m)
+        {
+            var s = DateTime.UtcNow.ToString("s");
+            m[Keys.TimeOfCreationAtOrigin] = s;
+        }
+
         public class Keys
         {
-            internal const string IdentityToken = nameof(IdentityToken);
-
             public const string MessageId = nameof(MessageId);
 
-            internal const string StatefulProcessId = nameof(StatefulProcessId);
-
             public const string TimeOfCreationAtOrigin = nameof(TimeOfCreationAtOrigin);
+
+            internal const string IdentityToken = nameof(IdentityToken);
+
+            internal const string StatefulProcessId = nameof(StatefulProcessId);
         }
     }
 }

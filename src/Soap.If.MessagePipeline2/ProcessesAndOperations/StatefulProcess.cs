@@ -16,8 +16,6 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
     public abstract class StatefulProcess : IStatefulProcess
     {
-        private ContextWithMessageLogEntry context => ContextWithMessageLogEntry.Current;
-
         private StatefulProcessId Id;
 
         private ProcessState processState;
@@ -29,27 +27,29 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
             Completed = 95839
         }
 
-        public StateClass State => new StateClass(this.processState, this.context.DataStore);
+        public StateClass State => new StateClass(this.processState, context.DataStore);
 
-        protected BusWrapper Bus => new BusWrapper(this.context.Bus, this.Id);
+        protected BusWrapper Bus => new BusWrapper(context.Bus, this.Id);
 
-        protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
+        protected DataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
 
-        protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
+        protected IWithoutEventReplay DirectDataReader => context.DataStore.WithoutEventReplay;
 
-        protected ILogger Logger => this.context.Logger;
+        protected ILogger Logger => context.Logger;
 
-        protected NotificationServer NotificationServer => this.context.NotificationServer;
+        protected NotificationServer NotificationServer => context.NotificationServer;
 
         protected dynamic References => this.processState.References;
 
-        async Task IBeginStatefulProcess.BeginProcess<TMessage>(TMessage message) 
+        private ContextWithMessageLogEntry context => ContextWithMessageLogEntry.Current;
+
+        async Task IBeginStatefulProcess.BeginProcess<TMessage>(TMessage message)
         {
             var process = this as IBeginProcess<TMessage>;
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            this.processState = await this.context.DataStore.Create(new ProcessState()).ConfigureAwait(false);
+            this.processState = await context.DataStore.Create(new ProcessState()).ConfigureAwait(false);
 
             this.Id = new StatefulProcessId(GetType().AssemblyQualifiedName, this.processState.id);
 
@@ -59,10 +59,10 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
             await process.BeginProcess(message).ConfigureAwait(false);
 
-            await this.context.DataStore.Update(this.processState).ConfigureAwait(false);
+            await context.DataStore.Update(this.processState).ConfigureAwait(false);
         }
 
-        async Task IContinueStatefulProcess.ContinueProcess<TMessage>(TMessage message) 
+        async Task IContinueStatefulProcess.ContinueProcess<TMessage>(TMessage message)
         {
             var process = this as IContinueProcess<TMessage>;
 
@@ -70,9 +70,10 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
             Guard.Against(!message.Headers.HasStatefulProcessId(), "Message does not have correlation Id");
 
-            this.processState = await this.context.DataStore
-                                          .ReadActiveById<ProcessState>(message.Headers.GetStatefulProcessId().Value.InstanceId)
-                                          .ConfigureAwait(false);
+            this.processState = await context
+                                      .DataStore.ReadActiveById<ProcessState>(
+                                          message.Headers.GetStatefulProcessId().Value.InstanceId)
+                                      .ConfigureAwait(false);
 
             Guard.Against(this.processState.Flags.HasState(BuiltInStates.Completed), "Stateful Process Already Completed");
 
@@ -80,27 +81,27 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
 
             await process.ContinueProcess(message);
 
-            await this.context.DataStore.Update(this.processState).ConfigureAwait(false);
+            await context.DataStore.Update(this.processState).ConfigureAwait(false);
         }
 
         protected void CompleteProcess()
         {
-            var username = this.context.MessageLogEntry.MessageMeta.RequestedBy?.UserName;
+            var username = context.MessageLogEntry.MessageMeta.RequestedBy?.UserName;
             RecordCompleted(username);
         }
 
         private void RecordCompleted(string username)
         {
             this.processState.Flags.AddState(BuiltInStates.Completed);
-            this.context.MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username, this.processState));
+            context.MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username, this.processState));
         }
 
         private void RecordContinued<TMessage>(TMessage message) where TMessage : ApiMessage
         {
-            this.context.MessageAggregator.Collect(
+            context.MessageAggregator.Collect(
                 new StatefulProcessContinued(
                     GetType().Name,
-                    this.context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
+                    context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -109,10 +110,10 @@ namespace Soap.MessagePipeline.ProcessesAndOperations
         {
             this.processState.Flags.AddState(BuiltInStates.Started);
 
-            this.context.MessageAggregator.Collect(
+            context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
                     GetType().Name,
-                    this.context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
+                    context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
                     this.processState,
                     message.Headers.GetMessageId()));
         }

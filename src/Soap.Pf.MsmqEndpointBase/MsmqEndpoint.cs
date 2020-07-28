@@ -1,17 +1,5 @@
 namespace Soap.Pf.MsmqEndpointBase
 {
-    using System;
-    using System.Reflection;
-    using Autofac;
-    using DataStore.Interfaces;
-    using Rebus.Autofac;
-    using Rebus.Backoff;
-    using Rebus.Config;
-    using Rebus.Persistence.InMem;
-    using Rebus.Retry.Simple;
-    using Rebus.TransactionScopes;
-    using Soap.If.Interfaces;
-    using Soap.Pf.ClientServerMessaging.Routing.Routes;
     using Soap.Pf.EndpointClients;
 
     public static class MsmqEndpoint
@@ -20,19 +8,22 @@ namespace Soap.Pf.MsmqEndpointBase
             Assembly domainLogicAssembly,
             Assembly domainMessagesAssembly,
             Action<IContainer> addBusToContainerFunc,
-            Func<IDocumentRepository> buildDocumentRepositoryFunc) where TUserAuthenticator : IAuthenticateUsers
-        {
-            return new MsmqEndpointConfiguration<TUserAuthenticator>(
+            Func<IDocumentRepository> buildDocumentRepositoryFunc) where TUserAuthenticator : IAuthenticateUsers =>
+            new MsmqEndpointConfiguration<TUserAuthenticator>(
                 domainLogicAssembly,
                 domainMessagesAssembly,
                 addBusToContainerFunc,
                 buildDocumentRepositoryFunc);
-        }
 
-        public static void CreateBusContext(IApplicationConfig appConfig, IContainer container, params MsmqMessageRoute[] messageRoutes)
+        public static void CreateBusContext(
+            IApplicationConfig appConfig,
+            IContainer container,
+            params MsmqMessageRoute[] messageRoutes)
         {
             {
-                var bus = new BusApiClient(messageRoutes, ConfigureRebus, 
+                var bus = new BusApiClient(
+                    messageRoutes,
+                    ConfigureRebus,
                     Rebus.Config.Configure.With(new AutofacContainerAdapter(container)));
 
                 //hotswap tx, ms msg storage
@@ -53,7 +44,7 @@ namespace Soap.Pf.MsmqEndpointBase
             }
 
             void ConfigureRebus(RebusConfigurer configurer)
-            {                
+            {
                 configurer.Transport(t => t.UseMsmq(appConfig.ApiEndpointSettings.MsmqEndpointName))
                           .Options(
                               o =>
@@ -66,15 +57,18 @@ namespace Soap.Pf.MsmqEndpointBase
                                   //not used if swapped?
                                   o.HandleMessagesInsideTransactionScope();
 
-                                  o.SimpleRetryStrategy($"{appConfig.ApiEndpointSettings.MsmqEndpointName}.error", appConfig.NumberOfApiMessageRetries + 1, false);
+                                  o.SimpleRetryStrategy(
+                                      $"{appConfig.ApiEndpointSettings.MsmqEndpointName}.error",
+                                      appConfig.NumberOfApiMessageRetries + 1,
+                                      false);
 
                                   //o.SetBackoffTimes(TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(1000));
-                                  
+
                                   o.SetNumberOfWorkers(1);
                                   o.SetMaxParallelism(1);
                                   o.LogPipeline();
                                   })
-                        .Subscriptions(s => s.StoreInMemory());
+                          .Subscriptions(s => s.StoreInMemory());
             }
         }
     }

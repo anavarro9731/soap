@@ -1,42 +1,15 @@
 ﻿namespace Soap.Pf.HttpEndpointBase
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using Autofac;
-    using Autofac.Extensions.DependencyInjection;
-    using CircuitBoard.MessageAggregator;
-    using DataStore.Interfaces;
-    using Microsoft.AspNetCore.Builder;
-    using Microsoft.AspNetCore.Hosting;
-    using Microsoft.Extensions.DependencyInjection;
-    using Newtonsoft.Json.Serialization;
-    using Serilog;
-    using Soap.If.Interfaces;
-    using Soap.If.Interfaces.Messages;
-    using Soap.If.MessagePipeline;
-    using Soap.If.MessagePipeline.MessageAggregator;
-    using Soap.If.MessagePipeline.Messages;
-    using Soap.If.MessagePipeline.UnitOfWork;
-    using Soap.Pf.DomainLogicBase;
-    using Soap.Pf.EndpointClients;
-    using Soap.Pf.EndpointInfrastructure;
-
     public class HttpEndpointConfiguration<TUserAuthenticator> where TUserAuthenticator : IAuthenticateUsers
     {
         private static readonly List<Action<ContainerBuilder>> containerActions = new List<Action<ContainerBuilder>>();
 
         private static readonly IEnumerable<Assembly> handlerAssemblies = new[]
         {
-            Assembly.GetEntryAssembly(),
-            Assembly.GetExecutingAssembly()
+            Assembly.GetEntryAssembly(), Assembly.GetExecutingAssembly()
         };
 
         private static Func<IBusContext> busContextFactory;
-
 
         private static Assembly domainLogicAssembly;
 
@@ -49,8 +22,7 @@
         public HttpEndpointConfiguration(
             Assembly domainLogicAssembly,
             Assembly domainMessagesAssembly,
-            Func<IBusContext> busContextFactory
-            )
+            Func<IBusContext> busContextFactory)
         {
             HttpEndpointConfiguration<TUserAuthenticator>.domainLogicAssembly = domainLogicAssembly;
             HttpEndpointConfiguration<TUserAuthenticator>.domainMessagesAssembly = domainMessagesAssembly;
@@ -78,7 +50,8 @@
             }
         }
 
-        private static IHttpEnvironmentSpecificConfiguration EnvironmentConfig => (IHttpEnvironmentSpecificConfiguration)EndpointSetup.GetConfiguration();
+        private static IHttpEnvironmentSpecificConfiguration EnvironmentConfig =>
+            (IHttpEnvironmentSpecificConfiguration)EndpointSetup.GetConfiguration();
 
         public HttpEndpointConfiguration<TUserAuthenticator> ConfigureContainer(Action<ContainerBuilder> configureContainerAction)
         {
@@ -124,6 +97,54 @@
 
         public class Startup
         {
+            public static void AddHandlers(ContainerBuilder builder, IEnumerable<Assembly> handlerAssemblies)
+            {
+                foreach (var handlerAssembly in handlerAssemblies)
+                {
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(QueryHandler<,>))
+                           .OnActivated(
+                               e =>
+                                   {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                                   })
+                           .InstancePerLifetimeScope();
+
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<>))
+                           .OnActivated(
+                               e =>
+                                   {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                                   })
+                           .InstancePerLifetimeScope();
+
+                    builder.RegisterAssemblyTypes(handlerAssembly)
+                           .As<IMessageHandler>()
+                           .AsClosedTypesOf(typeof(CommandHandler<,>))
+                           .OnActivated(
+                               e =>
+                                   {
+                                   (e.Instance as MessageHandlerBase).SetDependencies(
+                                       e.Context.Resolve<IDataStore>(),
+                                       e.Context.Resolve<UnitOfWork>(),
+                                       e.Context.Resolve<ILogger>(),
+                                       e.Context.Resolve<IMessageAggregator>());
+                                   })
+                           .InstancePerLifetimeScope();
+                }
+            }
+
             /* This method gets called by the runtime. Order #2
              * Essentially we use this for Tags which run after the container is setup.
              * or for Tags MS has designed to be called here (e.g. appBuilder.useXXXX() methods) 
@@ -147,10 +168,7 @@
                     if (startupCommand != null) SendStartupCommand();
                 }
 
-                void LogEndpointReady()
-                {
-                    logger.Information("Ready to receive messages");
-                }
+                void LogEndpointReady() => logger.Information("Ready to receive messages");
 
                 void ConfigureCorsPolicy(IApplicationBuilder appBuilder)
                 {
@@ -170,11 +188,9 @@
                 void SendStartupCommand()
                 {
                     var bus = rootLifetimeScope.Resolve<IBusContext>();
-                    bus.SendLocal((startupCommand));
+                    bus.SendLocal(startupCommand);
                 }
             }
-
-
 
             /* This method gets called by the runtime. Order #1
              * Use this method to add "services" to the built-in aspnetContainer
@@ -194,13 +210,19 @@
                     EndpointSetup.ConfigureCore<TUserAuthenticator>(
                         builder,
                         EnvironmentConfig.Variables,
-                        new[] { domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly }.ToList(),
-                        new[] { domainMessagesAssembly }.ToList(),
+                        new[]
+                        {
+                            domainLogicAssembly, SoapPfDomainLogicBase.GetAssembly
+                        }.ToList(),
+                        new[]
+                        {
+                            domainMessagesAssembly
+                        }.ToList(),
                         MessageAggregator.Create,
                         containerActions);
-                    
+
                     AddHandlers(builder, handlerAssemblies);
-                    
+
                     //we want to build this here even though we could pass in an instance
                     //because we want to ensure that the serilog global logger has been setup
                     builder.RegisterInstance(busContextFactory()).As<IBusContext>();
@@ -212,21 +234,12 @@
                     return AutofacContainerAsIServiceProvider(container);
                 }
 
+                IServiceProvider AutofacContainerAsIServiceProvider(IComponentContext container) =>
+                    new AutofacServiceProvider(container);
 
-                IServiceProvider AutofacContainerAsIServiceProvider(IComponentContext container)
-                {
-                    return new AutofacServiceProvider(container);
-                }
+                void AddCorsFramework(IServiceCollection aspnetContainer) => aspnetContainer.AddCors(); // for web server
 
-                void AddCorsFramework(IServiceCollection aspnetContainer)
-                {
-                    aspnetContainer.AddCors(); // for web server
-                }
-
-                void AddInMemoryCaching(IServiceCollection aspnetContainer)
-                {
-                    aspnetContainer.AddMemoryCache();
-                }
+                void AddInMemoryCaching(IServiceCollection aspnetContainer) => aspnetContainer.AddMemoryCache();
 
                 void CopyItemFromAspNetContainerToAutofacBuilder(IServiceCollection aspnetContainer, out ContainerBuilder builder)
                 {
@@ -241,59 +254,9 @@
                                        options =>
                                            {
                                            // force WebApi to serialise in camelCase
-                                           options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                                           options.SerializerSettings.ContractResolver =
+                                               new CamelCasePropertyNamesContractResolver();
                                            });
-                    
-
-                }
-            }
-
-
-            public static void AddHandlers(ContainerBuilder builder, IEnumerable<Assembly> handlerAssemblies)
-            {
-                foreach (var handlerAssembly in handlerAssemblies)
-                {
-                    builder.RegisterAssemblyTypes(handlerAssembly)
-                           .As<IMessageHandler>()
-                           .AsClosedTypesOf(typeof(QueryHandler<,>))
-                           .OnActivated(
-                               e =>
-                               {
-                                   (e.Instance as MessageHandlerBase).SetDependencies(
-                                       e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<UnitOfWork>(),
-                                       e.Context.Resolve<ILogger>(),
-                                       e.Context.Resolve<IMessageAggregator>());
-                               })
-                           .InstancePerLifetimeScope();
-
-                    builder.RegisterAssemblyTypes(handlerAssembly)
-                           .As<IMessageHandler>()
-                           .AsClosedTypesOf(typeof(CommandHandler<>))
-                           .OnActivated(
-                               e =>
-                               {
-                                   (e.Instance as MessageHandlerBase).SetDependencies(
-                                       e.Context.Resolve<IDataStore>(),
-                                       e.Context.Resolve<UnitOfWork>(),
-                                       e.Context.Resolve<ILogger>(),
-                                       e.Context.Resolve<IMessageAggregator>());
-                               })
-                           .InstancePerLifetimeScope();
-
-                    builder.RegisterAssemblyTypes(handlerAssembly)
-                           .As<IMessageHandler>()
-                           .AsClosedTypesOf(typeof(CommandHandler<,>))
-                           .OnActivated(
-                               e =>
-                               {
-                                   (e.Instance as MessageHandlerBase).SetDependencies(
-                                           e.Context.Resolve<IDataStore>(),
-                                           e.Context.Resolve<UnitOfWork>(),
-                                           e.Context.Resolve<ILogger>(),
-                                           e.Context.Resolve<IMessageAggregator>());
-                               })
-                           .InstancePerLifetimeScope();
                 }
             }
         }

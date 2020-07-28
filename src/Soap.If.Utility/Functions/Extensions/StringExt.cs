@@ -4,11 +4,7 @@
 
     public static class StringExt
     {
-
-        public static string AppendTimestamp(string value)
-        {
-            return $"{value}-{DateTime.UtcNow:yyyyMMddHHmmssfff}";
-        }
+        public static string AppendTimestamp(string value) => $"{value}-{DateTime.UtcNow:yyyyMMddHHmmssfff}";
 
         /// <summary>
         ///     Return the substring after to but not including the first instance of 'c'.

@@ -14,10 +14,10 @@
 
         public IContinueProcess<C100Ping>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C100Ping msg) => this.Get<P101PingPong>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C100Ping msg) => this.Get<P559PingPong>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries<C100Ping> msg) =>
-            this.Get<P103NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C100Ping msg)
         {

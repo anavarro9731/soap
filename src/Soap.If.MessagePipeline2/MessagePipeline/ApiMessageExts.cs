@@ -1,7 +1,6 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
-    using System.Text.Json;
     using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -12,26 +11,22 @@
 
     public static class ApiMessageExtensions
     {
-        internal static void Authenticate(
-            this ApiMessage message,
-            ContextWithMessage ctx,
-            Action<IApiIdentity> outIdentity)
+        internal static void Authenticate(this ApiMessage message, ContextWithMessage ctx, Action<IApiIdentity> outIdentity)
         {
             var identity = message.Headers.GetIdentityToken() != null ? ctx.Authenticator.Authenticate(message) : null;
             outIdentity(identity);
         }
 
-        internal static string GetSchema(this ApiMessage m)
-        {
-            return m.GetType().AssemblyQualifiedName;
-        }
+        internal static string GetSchema(this ApiMessage m) => m.GetType().AssemblyQualifiedName;
 
         internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)
         {
             {
                 var messageLogEntry = context.MessageLogEntry;
 
-                Guard.Against(message.Headers.GetMessageId() == Guid.Empty, "All ApiMessages must have a unique MessageId property value");
+                Guard.Against(
+                    message.Headers.GetMessageId() == Guid.Empty,
+                    "All ApiMessages must have a unique MessageId property value");
 
                 Guard.Against(
                     IsADifferentMessageButWithTheSameId(messageLogEntry, message),
@@ -48,18 +43,14 @@
                 context.Validate(message);
             }
 
-            bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry)
-            {
+            bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry) =>
                 //- safeguard, cannot think of a reason it would happen 
-                return messageLogEntry.UnitOfWork != null && messageLogEntry.ProcessingComplete;
-            }
+                messageLogEntry.UnitOfWork != null && messageLogEntry.ProcessingComplete;
 
-            bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogEntry)
-            {
+            bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogEntry) =>
                 //should never happen, unless message broker/bus it configured to retry message more times
                 //than the pipeline is configured to allow
-                return messageLogEntry.Attempts.Count > context.AppConfig.NumberOfApiMessageRetries;
-            }
+                messageLogEntry.Attempts.Count > context.AppConfig.NumberOfApiMessageRetries;
 
             bool IsADifferentMessageButWithTheSameId(MessageLogEntry messageLogEntry, ApiMessage message)
             {

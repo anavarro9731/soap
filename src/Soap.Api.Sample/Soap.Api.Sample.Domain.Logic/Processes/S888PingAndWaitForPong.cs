@@ -7,7 +7,7 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.ProcessesAndOperations;
 
-    public class S100PingAndWaitForPong : StatefulProcess, IBeginProcess<C103StartPingPong>, IContinueProcess<E150Pong>
+    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103StartPingPong>, IContinueProcess<E150Pong>
     {
         public enum States
         {
@@ -25,7 +25,7 @@
                 {
                 var pingCommand = new C100Ping
                 {
-                    PingedAt = DateTime.UtcNow, PingedBy = nameof(S100PingAndWaitForPong)
+                    PingedAt = DateTime.UtcNow, PingedBy = nameof(S888PingAndWaitForPong)
                 };
 
                 await Bus.Send(pingCommand);

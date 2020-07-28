@@ -1,15 +1,8 @@
 ﻿namespace Soap.Pf.HttpEndpointBase.Handlers.Queries
 {
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentValidation;
-    using Soap.If.Interfaces;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.MessagePipeline.Models.Aggregates;
-    using Soap.Pf.MessageContractsBase.Queries;
-
     public class AbstractGetMessageLogItemHandler<TQuery, TResponse> : QueryHandler<TQuery, TResponse>
-        where TQuery : AbstractGetMessageLogItemQuery<TResponse>, new() where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
+        where TQuery : AbstractGetMessageLogItemQuery<TResponse>, new()
+        where TResponse : AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel, new()
     {
         private readonly IApplicationConfig applicationConfig;
 
@@ -27,7 +20,6 @@
 
                 return viewModel;
             }
-
         }
 
         private static TResponse ToViewModel(MessageLogItem message, IApplicationConfig applicationConfig)
@@ -44,11 +36,12 @@
             };
         }
 
-        private static AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult ToViewModel(MessageLogItem.SuccessMessageResult success)
+        private static AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult ToViewModel(
+            MessageLogItem.SuccessMessageResult success)
         {
             if (success == null) return null;
 
-            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult()
+            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractSuccessMessageResult
             {
                 ReturnValue = success.ReturnValue, SucceededAt = success.SucceededAt
             };
@@ -60,7 +53,7 @@
         {
             if (failure == null) return null;
 
-            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractFailedMessageResult()
+            return new AbstractGetMessageLogItemQuery<TResponse>.AbstractResponseModel.AbstractFailedMessageResult
             {
                 Error = failure.Errors.ToEnvironmentSpecificError(applicationConfig), FailedAt = failure.FailedAt
             };

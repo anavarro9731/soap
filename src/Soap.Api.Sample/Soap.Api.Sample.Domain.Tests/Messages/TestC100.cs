@@ -1,4 +1,4 @@
-namespace Sample.Tests.Messages.Commands.Ping
+namespace Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
@@ -6,9 +6,9 @@ namespace Sample.Tests.Messages.Commands.Ping
     using Xunit;
     using Xunit.Abstractions;
 
-    public class C100PingPong : Test
+    public class TestC100 : BaseTest
     {
-        public C100PingPong(ITestOutputHelper outputHelper)
+        public TestC100(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.Ping, Identities.UserOne);

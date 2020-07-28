@@ -5,7 +5,5 @@
     public interface IIdentityWithApiPermissionGroups
     {
         List<ApiPermissionGroup> ApiPermissionGroups { get; set; }
-
-        
     }
 }

@@ -18,8 +18,9 @@
         }
 
         /// <summary>
-        /// Remember calls to Notify are always non-transactional so do not use in a transaction unless it is the only operation.
-        /// Alternatively, send a Notify message on the bus.
+        ///     Remember calls to Notify are always non-transactional so do not use in a transaction unless it is the only
+        ///     operation.
+        ///     Alternatively, send a Notify message on the bus.
         /// </summary>
         /// <param name="notification"></param>
         /// <param name="selectedUserChannels"></param>
@@ -43,6 +44,10 @@
 
         public class Settings
         {
+            public List<INotificationChannelSettings> ChannelSettings { get; set; } = new List<INotificationChannelSettings>();
+
+            public NotificationServer CreateServer() => new NotificationServer(this, ChannelSettings);
+
             public class Validator : AbstractValidator<Settings>
             {
                 public Validator()
@@ -50,10 +55,6 @@
                     RuleFor(x => x.ChannelSettings).NotNull();
                 }
             }
-
-            public List<INotificationChannelSettings> ChannelSettings { get; set; } = new List<INotificationChannelSettings>();
-
-            public NotificationServer CreateServer() => new NotificationServer(this, ChannelSettings);
         }
     }
 }

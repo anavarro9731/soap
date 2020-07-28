@@ -6,12 +6,10 @@ namespace Soap.MessagePipeline.Logging
     {
         public string Text { get; set; }
 
-        public static SerilogEntry Create(string text)
-        {
-            return new SerilogEntry
+        public static SerilogEntry Create(string text) =>
+            new SerilogEntry
             {
                 Text = text
             };
-        }
     }
 }

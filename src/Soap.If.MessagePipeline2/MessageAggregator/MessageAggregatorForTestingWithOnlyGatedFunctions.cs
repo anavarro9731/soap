@@ -5,13 +5,17 @@
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
 
-    public class MessageAggregatorForTestingWithOnlyGatedFunctions : MessageAggregatorForTestingBase, IMessageAggregator, IMockGatedFunctions
+    public class MessageAggregatorForTestingWithOnlyGatedFunctions : MessageAggregatorForTestingBase,
+                                                                     IMessageAggregator,
+                                                                     IMockGatedFunctions
     {
         public Dictionary<string, Queue<object>> ReturnValues = new Dictionary<string, Queue<object>>();
 
-        public static MessageAggregatorForTesting Create()
+        public static MessageAggregatorForTesting Create() => new MessageAggregatorForTesting();
+
+        public void Clear()
         {
-            return new MessageAggregatorForTesting();
+            this.allMessages.Clear();
         }
 
         public IPropogateMessages<TMessage> CollectAndForward<TMessage>(TMessage message) where TMessage : IMessage
@@ -30,17 +34,12 @@
                     you have registered responses. Please register additional return values.");
             }
 
-            return new GatedMessagePropogator<TMessage>(message, this.ReturnValues.ContainsKey(eventType) ? this.ReturnValues[eventType].Dequeue() : null);
+            return new GatedMessagePropogator<TMessage>(
+                message,
+                this.ReturnValues.ContainsKey(eventType) ? this.ReturnValues[eventType].Dequeue() : null);
         }
 
-        public void Clear()
-        {
-            this.allMessages.Clear();
-        }
-
-        public IValueReturner When<TMessage>() where TMessage : IMessage
-        {
-            return new ValueReturner(this.ReturnValues, typeof(TMessage).FullName);
-        }
+        public IValueReturner When<TMessage>() where TMessage : IMessage =>
+            new ValueReturner(this.ReturnValues, typeof(TMessage).FullName);
     }
 }

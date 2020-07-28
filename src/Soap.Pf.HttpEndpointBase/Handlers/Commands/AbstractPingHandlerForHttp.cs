@@ -1,11 +1,7 @@
 ﻿namespace Soap.Pf.HttpEndpointBase.Handlers.Commands
 {
-    using System.Threading.Tasks;
-    using Soap.If.MessagePipeline.Models;
-    using Soap.If.Utility.PureFunctions;
-    using Soap.Pf.MessageContractsBase.Commands;
-
-    public class AbstractPingHandlerForHttp<TPing, TPongResponseViewModel, TPongCommand> : CommandHandler<TPing, TPongResponseViewModel>
+    public class
+        AbstractPingHandlerForHttp<TPing, TPongResponseViewModel, TPongCommand> : CommandHandler<TPing, TPongResponseViewModel>
         where TPing : AbstractPingCommandForHttp<TPongResponseViewModel>, new()
         where TPongResponseViewModel : AbstractPingCommandForHttp<TPongResponseViewModel>.AbstractResponseModel, new()
         where TPongCommand : AbstractPongCommand, new()

@@ -8,9 +8,10 @@
 
     public class MapMessagesToFunctions
     {
-        private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings = new Dictionary<Type, IMessageFunctionsServerSide>();
+        private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings =
+            new Dictionary<Type, IMessageFunctionsServerSide>();
 
-        public void Register<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage: ApiMessage
+        public void Register<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage : ApiMessage
         {
             var messageType = typeof(TMessage);
 

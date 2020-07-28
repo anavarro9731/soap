@@ -7,7 +7,6 @@
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Extensions;
 
     public class Bus : IBus
     {
@@ -27,7 +26,6 @@
 
         public async Task CommitChanges()
         {
-
             await this.bus.CommitChanges();
 
             this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>()
@@ -41,7 +39,7 @@
                             case QueuedCommandToSend c:
                                 CommandsSent.Add(c.CommandToSend); //TODO: clone to prevent changes, need specific type?
                                 break;
-                            case QueuedPublishEvent e:
+                            case QueuedEventToPublish e:
                                 EventsPublished.Add(e.EventToPublish);
                                 break;
                             default: throw new ArgumentOutOfRangeException();
