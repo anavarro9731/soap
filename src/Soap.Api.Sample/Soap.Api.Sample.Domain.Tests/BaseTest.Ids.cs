@@ -59,11 +59,11 @@
 
          /* while attempting to rollback on the second retry we encounter items that have been hard deleted since we
           updated them so we should just skip over those while rolling back */
-         public static readonly Guid RollbackSkipsoVerItemsDeletedSinceWeChangedThem = Guid.NewGuid();
+         public static readonly Guid RollbackSkipsOverItemsDeletedSinceWeChangedThem = Guid.NewGuid();
 
          /* while attempting to rollback on the second retry we encounter items that have been hard deleted since we
           created them so we should just skip over those while rolling back */
-         public static readonly Guid RollbackSkipsoVerItemsDeletedSinceWeCreatedThem = Guid.NewGuid();
+         public static readonly Guid RollbackSkipsOverItemsDeletedSinceWeCreatedThem = Guid.NewGuid();
 
 
 
