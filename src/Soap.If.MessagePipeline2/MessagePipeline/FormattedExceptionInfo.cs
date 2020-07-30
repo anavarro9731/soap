@@ -124,7 +124,8 @@
             if (this.context.AppConfig.ReturnExplicitErrorMessages)
             {
                 return new PipelineException(
-                    ExternalErrorMessage + Environment.NewLine + "ERROR DETAILS" + Environment.NewLine + SensitiveInformation,
+                    ExternalErrorMessage +  Environment.NewLine + Environment.NewLine + 
+                    "ERROR DETAILS BELOW" + Environment.NewLine + Environment.NewLine + SensitiveInformation,
                     Errors.Where(e => e.code.HasValue).Select(e => e.code.Value.ToString()).ToList());
             }
 
@@ -143,16 +144,16 @@
 
             public const string SYNTAX = nameof(SYNTAX);
         }
+    }
 
-        public class PipelineException : Exception
+    public class PipelineException : Exception
+    {
+        public PipelineException(string message, List<string> errors)
+            : base(message)
         {
-            public PipelineException(string message, List<string> errors)
-                : base(message)
-            {
-                Errors = errors;
-            }
-
-            public List<string> Errors { get; set; }
+            Errors = errors;
         }
+
+        public List<string> Errors { get; set; }
     }
 }

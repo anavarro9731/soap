@@ -1,6 +1,8 @@
 ﻿namespace Sample.Tests
 {
     using System;
+    using System.Threading.Tasks;
+    using DataStore;
     using DataStore.Interfaces.LowLevel;
     using Soap.DomainTests;
     using Soap.Interfaces;
@@ -38,7 +40,7 @@
             Result = this.testContext.GetExecute(this.mappingRegistration, this.output, 0)(msg, identity).Result;
         }
 
-        protected void ExecuteWithRetries<T>(T msg, IApiIdentity identity, int retries)
+        protected async Task ExecuteWithRetries<T>(T msg, IApiIdentity identity, int retries, Func<DataStore, int, Task> beforeRunHook = null)
             where T : ApiMessage
         {
             msg = msg.Clone(); //make sure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
@@ -56,9 +58,10 @@
                     + Environment.NewLine);
                 try
                 {
-                    Result = this.testContext.GetExecute(this.mappingRegistration, this.output, retries)(msg, identity).Result;
+                    if(beforeRunHook != null) await beforeRunHook.Invoke(new DataStore(this.testContext.rollingStore.DocumentRepository), run);
+                    Result = await this.testContext.GetExecute(this.mappingRegistration, this.output, retries)(msg, identity);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     var lastRun = availableRuns == 1;
                     if (lastRun) throw;

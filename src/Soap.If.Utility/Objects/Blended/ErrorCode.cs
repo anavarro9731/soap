@@ -12,5 +12,7 @@
         public static new ErrorCode Create(string guid, string messageSafeForInternalAndExternalClients) =>
             //HACK hide the base method with it's confusing argument names
             Enumeration<ErrorCode>.Create(Guid.Parse(guid).ToString(), messageSafeForInternalAndExternalClients);
+
+        public override string ToString() => $"{Key}";
     }
 }

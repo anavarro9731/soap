@@ -1,6 +1,7 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
+    using System.Data;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Soap.Interfaces;
@@ -10,6 +11,7 @@
     using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Models;
 
     public static class MessagePipeline
     {
@@ -118,9 +120,12 @@
                     case UnitOfWork.State.AllComplete:
                         context.SerilogSuccess();
                         return;
-
-                    case UnitOfWork.State.New:
                     case UnitOfWork.State.AllRolledBack:
+                        //* don't try again after a rollback as you may be out of retries to rollback again
+                        throw new DomainExceptionWithErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
+                    
+                    case UnitOfWork.State.New:
+              
 
                         switch (msg)
                         {

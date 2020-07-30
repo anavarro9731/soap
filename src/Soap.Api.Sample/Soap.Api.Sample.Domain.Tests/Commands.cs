@@ -24,7 +24,7 @@
             TestUnitOfWork(Guid? messageId = null) =>
             new C104TestUnitOfWork
             {
-                HansSoloNewName = "Harrison Ford"
+                HansSoloNewName = "Hairy-son Ford"
             }.Op(x => x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully));
 
         public static C101UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101UpgradeTheDatabase(ReleaseVersions.V1);

@@ -8,6 +8,7 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
+    using Soap.Utility.Enums;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
@@ -21,17 +22,22 @@
             OperationTypes operationType)
         {
             if (beforeModel != null && afterModel != null)
+            {
                 Guard.Against(beforeModel.id != afterModel.id, "Model mismatch"); //* should never happen
+            }
+
             OperationType = operationType;
             BeforeModel = beforeModel?.ToSerialisableObject();
             AfterModel = afterModel?.ToSerialisableObject();
-            UnitOfWorkId = soapUnitOfWorkId.ToString();
+            UnitOfWorkAfterSuccessfulCommit = soapUnitOfWorkId.ToString(); //* this will be the id if the object commits
             ObjectId = afterModel?.id ?? beforeModel.id; //* consider delete and create scenarios where only one side is populated
+            //* this will be the id if the object has not yet committed
+            UnitOfWorkBeforeSuccessfulUpdate = beforeModel?.VersionHistory.FirstOrDefault()?.UnitOfWorkId;
         }
 
-        public DataStoreUnitOfWorkItem()
+        [JsonConstructor]
+        private DataStoreUnitOfWorkItem()
         {
-            //- serialiser
         }
 
         public enum OperationTypes
@@ -56,7 +62,10 @@
         public OperationTypes OperationType { get; internal set; }
 
         [JsonProperty]
-        public string UnitOfWorkId { get; internal set; }
+        public string UnitOfWorkAfterSuccessfulCommit { get; internal set; }
+        
+        [JsonProperty]
+        public string UnitOfWorkBeforeSuccessfulUpdate { get; internal set; }
     }
 
     public static class DataStoreUnitOfWorkItemExtensions
@@ -83,12 +92,10 @@
                     dataStore,
                     v => history = v);
 
-                var superseded = ChangeHasBeenSuperseded(history);
-
                 return history switch
                 {
-                    var h when ChangeHasNotBeenCommittedOrWasRolledBack(h) => (RecordState.NotCommittedOrRolledBack, superseded),
-                    _ => (RecordState.Committed, superseded)
+                    var h when ChangeHasNotBeenCommittedOrWasRolledBack(h) => (RecordState.NotCommittedOrRolledBack, HasChangeBeenSupersededForUncommittedRecords(history, item.OperationType)),
+                    _ => (RecordState.Committed, HasChangeBeenSupersededForCommittedRecords(history, item.OperationType))
                 };
             }
 
@@ -98,7 +105,7 @@
                 {
                     DataStoreUnitOfWorkItem.OperationTypes.Create => !AggregateExists(history),
                     DataStoreUnitOfWorkItem.OperationTypes.HardDelete => AggregateExists(history),
-                    DataStoreUnitOfWorkItem.OperationTypes.Update => !history.Exists(v => v.UnitOfWorkId == item.UnitOfWorkId),
+                    DataStoreUnitOfWorkItem.OperationTypes.Update => !history.Exists(v => v.UnitOfWorkId == item.UnitOfWorkAfterSuccessfulCommit),
                     _ => throw new DomainException("Operation Type Unknown")
                 };
 
@@ -109,26 +116,74 @@
              checking the now consistent history is equally as good. etag will still be the ultimate
              arbiter of all subsequent changes during retries. This is simply used to skip rollbacks
              where they have already been superseded. */
-            bool ChangeHasBeenSuperseded(List<Aggregate.AggregateVersionInfo> history)
+            bool HasChangeBeenSupersededForCommittedRecords(
+                List<Aggregate.AggregateVersionInfo> history,
+                DataStoreUnitOfWorkItem.OperationTypes itemOperationType)
             {
-                if (history != null)
+                if (item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Create ||
+                    item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Update) //* on deleted items there will be no history
                 {
-                    var ourChangeWasAlreadyCommittedDuringPreviousAttempt =
-                        history.Exists(h => h.UnitOfWorkId == item.UnitOfWorkId);
-                    var thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork = history.Last().UnitOfWorkId != item.UnitOfWorkId;
-                    return ourChangeWasAlreadyCommittedDuringPreviousAttempt
-                           && thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork;
+                    Guard.Against(
+                        !history.Exists(h => h.UnitOfWorkId == item.UnitOfWorkAfterSuccessfulCommit),
+                        "Something is wrong record should always exist if the change has been committed",
+                        ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+
+                    var thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork =
+                        history.First( /* first means latest */).UnitOfWorkId != item.UnitOfWorkAfterSuccessfulCommit;
+                    return thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork;
                 }
-                else return false;
+
+                if (item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.HardDelete)
+                {
+                    Guard.Against(
+                        itemOperationType != DataStoreUnitOfWorkItem.OperationTypes.HardDelete,
+                        "Something is wrong if history is null operation type should always be hard delete",
+                        ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+                    return false;
+                }
+                throw new ArgumentOutOfRangeException();
             }
             
+            /* dont rely on eTag where, too many dependencies on that feature will make it brittle
+             checking the now consistent history is equally as good. etag will still be the ultimate
+             arbiter of all subsequent changes during retries This is used to skip attempting to commit
+            and start rolling back when it's clear the commit will fail due to etag violation as etag
+            is saved on the initial attempt and not recalculated */
+            bool HasChangeBeenSupersededForUncommittedRecords(
+                List<Aggregate.AggregateVersionInfo> history,
+                DataStoreUnitOfWorkItem.OperationTypes itemOperationType)
+            {
+                if (item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.HardDelete) return false; //azure and datastore don't stop deletes with outdated eTags
+                
+                if (item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Update) 
+                {
+                    var thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork =
+                        history.First( /* first means latest */).UnitOfWorkId != item.UnitOfWorkBeforeSuccessfulUpdate;
+                    return thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork;   
+                }
+
+                if (item.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Create)
+                {
+                    Guard.Against(
+                        history == null && itemOperationType != DataStoreUnitOfWorkItem.OperationTypes.Create,
+                        "Something is wrong if history is null operation type should always be create",
+                        ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+                    return false;
+                }
+                throw new ArgumentOutOfRangeException();
+            }
+
             async Task GetAggregateHistory(
                 Guid aggregateId,
                 string typename,
                 IDataStore dataStore,
                 Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
-                var readById = typeof(IDataStore).GetMethods().Single(m => m.GetGenericArguments().Length == 1 && m.Name == nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
+                var readById = typeof(IDataStore).GetMethods()
+                                                 .Single(
+                                                     m => m.GetGenericArguments().Length == 1
+                                                          && m.Name == nameof(DataStore.ReadById))
+                                                 .MakeGenericMethod(Type.GetType(typename));
 
                 var result = await readById.InvokeAsync(dataStore, aggregateId, null, null);
 

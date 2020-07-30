@@ -12,7 +12,8 @@
             OptimisticConcurrency = optimisticConcurrency;
         }
 
-        public UnitOfWork()
+        [JsonConstructor]
+        private UnitOfWork()
         {
             //* serialiser
         }

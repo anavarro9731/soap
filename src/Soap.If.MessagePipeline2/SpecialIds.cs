@@ -22,14 +22,7 @@ namespace Soap.MessagePipeline
          public static readonly Guid RetryHappyPath = Guid.NewGuid();
 
          public static readonly Guid RollbackHappyPath = Guid.NewGuid();
-
-         /* message dies after committing uow and knows before starting the retry, which retries the message without
-          skipping the existing uow. likely it just dies after the max retries as the thing stopping it is unlikely
-          to ever be removed unless it is rolled back itself but i think this was just the easiest way to handle it
-          the only other option would be to throw an error which would result in retries anyway so might as well give
-          it a chance if it doesn't cost you anything. skipping the retries altogether would mean more complex code */
-         public static readonly Guid GiveUpOnRetry = Guid.NewGuid();
-
+         
          /* message dies after committing then the retry dies because an item to be updated has been changed or removed
           resulting in a rollback of the previously committed items (1x create and 1 x delete and 1x softdelete) */
          public static readonly Guid UpdateFailsOnRetry = Guid.NewGuid();

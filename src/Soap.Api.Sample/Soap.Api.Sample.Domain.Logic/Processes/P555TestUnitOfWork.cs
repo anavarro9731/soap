@@ -15,14 +15,14 @@
                 {
                 //* create x 2
                 await this.Get<UserOperations>().Call(x => x.AddBobaAndLando)();
-                
-                //* update x 2
-                await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.HansSoloNewName);
-                await this.Get<UserOperations>().Call(x => x.ArchivePrincessLeia)();
-                
+
                 //* delete x 2
-                await this.Get<UserOperations>().Call(x => x.DeleteLukeSkywalker)();
+                await this.Get<UserOperations>().Call(x => x.ArchivePrincessLeia)();
                 await this.Get<UserOperations>().Call(x => x.DeleteDarthVader)();
+                
+                //* update 2 
+                await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.HansSoloNewName);
+                await this.Get<UserOperations>().Call(x => x.ChangeLukeSkywalkersName)();
                 
                 //* publish 1 event
                 await PublishE150();

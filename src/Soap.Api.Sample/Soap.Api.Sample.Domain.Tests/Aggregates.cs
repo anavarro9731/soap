@@ -11,7 +11,7 @@
             new User { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader };
 
         public static User HanSolo =>
-            new User { UserName = "hans.solo", FirstName = "Alec", LastName = "Guiness", id = Ids.HanSolo };
+            new User { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo };
 
         public static User LukeSkywalker =>
             new User { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker };

@@ -21,7 +21,6 @@
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
-    using Soap.Utility.Objects.Blended;
 
     public class ContextWithMessageLogEntry : ContextWithMessage
     {
@@ -36,7 +35,6 @@
         public static ContextWithMessageLogEntry Current => Instance.Value;
 
         public MessageLogEntry MessageLogEntry { get; }
-        
     }
 
     public static class ContextAfterMessageLogEntryObtainedExtensions
@@ -55,16 +53,17 @@
             await context.SaveUnitOfWork();
 
             Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.RetryHappyPath &&
-                context.MessageLogEntry.Attempts.Count == 0, SpecialIds.RetryHappyPath.ToString());
-
+                context.Message.Headers.GetMessageId() == SpecialIds.RetryHappyPath
+                && context.MessageLogEntry.Attempts.Count == 0,
+                SpecialIds.RetryHappyPath.ToString());
 
             await context.DataStore.CommitChanges();
-            
+
             Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.SendUnsentMessages &&
-                context.MessageLogEntry.Attempts.Count == 0, SpecialIds.SendUnsentMessages.ToString());
-            
+                context.Message.Headers.GetMessageId() == SpecialIds.SendUnsentMessages
+                && context.MessageLogEntry.Attempts.Count == 0,
+                SpecialIds.SendUnsentMessages.ToString());
+
             await context.Bus.CommitChanges();
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
@@ -83,64 +82,6 @@
             context.MessageAggregator.Collect(queuedStateChange);
         }
 
-        private static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
-        {
-            Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.MessageThatDiesWhileSavingUnitOfWork, SpecialIds.MessageThatDiesWhileSavingUnitOfWork.ToString());
-            
-            var u = context.MessageLogEntry.UnitOfWork;
-
-            foreach (var queuedStateChange in context.GetQueuedChanges())
-                if (IsDurableChange(queuedStateChange))
-                {
-                    var soapUnitOfWorkId = context.MessageLogEntry.id;
-
-                    switch (queuedStateChange)
-                    {
-                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedCommandToSend)):
-                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend));
-                            break;
-
-                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedEventToPublish)):
-                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish));
-                            break;
-
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedCreateOperation<>)):
-                            u.DataStoreCreateOperations.Add(
-                                new DataStoreUnitOfWorkItem(
-                                    d1.PreviousModel,
-                                    d1.NewModel,
-                                    soapUnitOfWorkId,
-                                    DataStoreUnitOfWorkItem.OperationTypes.Create));
-                            break;
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedHardDeleteOperation<>)):
-                            u.DataStoreDeleteOperations.Add(
-                                new DataStoreUnitOfWorkItem(
-                                    d1.PreviousModel,
-                                    d1.NewModel,
-                                    soapUnitOfWorkId,
-                                    DataStoreUnitOfWorkItem.OperationTypes.HardDelete));
-                            break;
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedUpdateOperation<>)):
-                            u.DataStoreUpdateOperations.Add(
-                                new DataStoreUnitOfWorkItem(
-                                    d1.PreviousModel,
-                                    d1.NewModel,
-                                    soapUnitOfWorkId,
-                                    DataStoreUnitOfWorkItem.OperationTypes.Update));
-                            break;
-                        default:
-                            context.Logger.Debug("Could not save durable item to unit of work.");
-                            break;
-                    }
-                }
-
-            /* updates using another datastore instance not in session */
-            return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
-            /* from this point on we can crash, throw, lose power, it won't matter all
-            will be continued when the message is next dequeued*/
-        }
-
         internal static async Task<UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
             this ContextWithMessageLogEntry context)
         {
@@ -149,7 +90,8 @@
                  if there are then we can assume that is why we failed last time and we should rollback any remaining items
                  starting with the creates and updates since they are the ones that other people could have seen
                  and finally returning AllRolledBack */
-
+                
+                
                 //- don't recalculate these expensive ops
                 var records = await WaitForAllRecords(context.MessageLogEntry.UnitOfWork, context.DataStore);
 
@@ -170,21 +112,37 @@
 
                 return records switch
                 {
-                    
-                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r),
+                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r, context.DataStore.DocumentRepository),
                     var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
-                    var r when HasNotStartedDataButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
                     var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
                 };
 
-                static async Task<UnitOfWork.State> RollbackRemaining(List<UnitOfWorkExtensions.Record> records)
+                static async Task<UnitOfWork.State> RollbackRemaining(List<UnitOfWorkExtensions.Record> records, IDocumentRepository documentRepository)
                 {
                     foreach (var record in records.Where(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed))
-                        await record.UowItem.Rollback(null, null, null);
+                        await record.UowItem.Rollback(Delete, Create, ResetTo);
                     return UnitOfWork.State.AllRolledBack;
+                    
+                    Task Delete(IAggregate arg)
+                    {
+                        return documentRepository.DeleteAsync(arg);
+                    }
+                    
+                    Task Create(IAggregate arg)
+                    {
+                        return documentRepository.CreateAsync(arg);
+                    }
+                    
+                    Task ResetTo(IAggregate arg)
+                    {
+                        arg.Etag = null; //* disable concurrency checks
+                        return documentRepository.UpdateAsync(arg);
+                    }
                 }
+                
 
                 static async Task<UnitOfWork.State> CompleteDataAndMessages(
                     List<UnitOfWorkExtensions.Record> records,
@@ -204,13 +162,14 @@
                 //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
                 static bool NotStartedOrPartiallyCompletedDataAndCanFinish(List<UnitOfWorkExtensions.Record> records)
                 {
-                    return records.Any(
+                    var result = records.Any(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack
                              && !ThereAreRecordsThatCannotBeCompleted(records));
+                    return result;
                 }
 
                 //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
-                static bool HasNotStartedDataButCannotFinish(
+                static bool HasNotStartedOrWasRolledBackButCannotFinish(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
@@ -313,6 +272,8 @@
             }
         }
 
+ 
+
         internal static async Task MarkFailureInMessageLog(
             this ContextWithMessageLogEntry context,
             FormattedExceptionInfo exceptionInfo)
@@ -359,7 +320,6 @@
                  */
                 await context.DataStore.CommitChanges();
                 await context.Bus.CommitChanges();
-                
             }
 
             catch (Exception e)
@@ -565,6 +525,71 @@
             var result = x is IQueuedDataStoreWriteOperation || x is IQueuedBusOperation;
 
             return result;
+        }
+
+        private static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
+        {
+            Guard.Against(
+                context.Message.Headers.GetMessageId() == SpecialIds.MessageThatDiesWhileSavingUnitOfWork,
+                SpecialIds.MessageThatDiesWhileSavingUnitOfWork.ToString());
+
+            /* if its the first attempt the uow will be empty but you want to
+             clear out anything existing as there could be a different 
+            uow generated if the message is retried */
+
+            var optimisticConcurrency = context.MessageLogEntry.UnitOfWork.OptimisticConcurrency;
+            context.MessageLogEntry.UnitOfWork = new UnitOfWork(optimisticConcurrency);
+            var u = context.MessageLogEntry.UnitOfWork;
+
+            foreach (var queuedStateChange in context.GetQueuedChanges())
+                if (IsDurableChange(queuedStateChange))
+                {
+                    var soapUnitOfWorkId = Guid.Parse(context.DataStore.DataStoreOptions.UnitOfWorkId);
+
+                    switch (queuedStateChange)
+                    {
+                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedCommandToSend)):
+                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend));
+                            break;
+
+                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedEventToPublish)):
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish));
+                            break;
+
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedCreateOperation<>)):
+                            u.DataStoreCreateOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.Create));
+                            break;
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedHardDeleteOperation<>)):
+                            u.DataStoreDeleteOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.HardDelete));
+                            break;
+                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedUpdateOperation<>)):
+                            u.DataStoreUpdateOperations.Add(
+                                new DataStoreUnitOfWorkItem(
+                                    d1.PreviousModel,
+                                    d1.NewModel,
+                                    soapUnitOfWorkId,
+                                    DataStoreUnitOfWorkItem.OperationTypes.Update));
+                            break;
+                        default:
+                            context.Logger.Debug("Could not save durable item to unit of work.");
+                            break;
+                    }
+                }
+
+            /* updates using another datastore instance not in session */
+            return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
+            /* from this point on we can crash, throw, lose power, it won't matter all
+            will be continued when the message is next dequeued*/
         }
 
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)

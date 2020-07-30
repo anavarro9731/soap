@@ -25,5 +25,10 @@
                 Guid.Parse("52e3bc56-3c5c-4054-a222-57374e219090"),
                 "This message has already been processed successfully")
             .Op(m => m.IsGlobal = true);
+        
+        public static readonly ErrorCode UnitOfWorkFailedUnitOfWorkRolledBack = Create(
+                Guid.Parse("36312a82-ca04-4b09-978f-5bb9e2809c2d"),
+                "Unit of work was rolled back successfully and cannot be processed again due to concurrency issues")
+            .Op(m => m.IsGlobal = true);
     }
 }

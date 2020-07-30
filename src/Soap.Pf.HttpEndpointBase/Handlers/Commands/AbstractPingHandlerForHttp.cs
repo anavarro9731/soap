@@ -30,7 +30,7 @@
             switch (ping.PingedBy)
             {
                 case "SpecialInvalidParamSeeCodeInHandler": //fail first time only
-                    Guard.Against(meta.MessageLogItem.FailedAttempts.Count == 0, "Parameter Invalid");
+                    Guard.Against(meta.MessageLogItem.Failed.Attempts.Count == 0, "Parameter Invalid");
                     break;
             }
         }

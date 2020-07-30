@@ -7,11 +7,11 @@
 
     public class User : Aggregate, IApiIdentity
     {
-        public List<ApiPermissionGroup> ApiPermissionGroups { get; set; }
+        public List<ApiPermissionGroup> ApiPermissionGroups { get; set; } = new List<ApiPermissionGroup>();
 
-        public List<DatabasePermissionInstance> DatabasePermissions { get; set; }
+        public List<DatabasePermissionInstance> DatabasePermissions { get; set; } = new List<DatabasePermissionInstance>();
 
-        public List<Role> Roles { get; set; }
+        public List<Role> Roles { get; set; } = new List<Role>();
 
         public string UserName { get; set; }
         public string FirstName { get; set; }

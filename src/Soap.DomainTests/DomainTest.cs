@@ -31,7 +31,7 @@
         private BoostrappedContext context;
 
         //* copies over each call of Add and Execute retaining state across the whole test
-        private DataStore rollingStore;
+        internal DataStore rollingStore;
 
         public TAggregate GetAdd<TAggregate>(
             TAggregate aggregate,
