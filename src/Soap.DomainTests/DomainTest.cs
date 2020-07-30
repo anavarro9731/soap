@@ -47,13 +47,13 @@
 
         public Func<ApiMessage, IApiIdentity, Task<Result>> GetExecute(
             MapMessagesToFunctions mapper,
-            ITestOutputHelper outputHelper)
+            ITestOutputHelper outputHelper, int retries)
         {
             return async (message, identity) =>
                 {
                 message.Headers.EnsureRequiredHeaders();
                 var x = new Result();
-                await Execute(message, mapper, outputHelper, identity, x);
+                await Execute(message, mapper, outputHelper, identity, x, retries);
                 return x;
                 };
         }
@@ -72,7 +72,8 @@
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper testOutputHelper,
             IApiIdentity identity,
-            Result result)
+            Result result,
+            int retries)
         {
             {
                 CreateMessageAggregator(out var messageAggregator);
@@ -85,7 +86,7 @@
 
                 CreateBusContext(messageAggregator, out var bus);
 
-                CreateAppConfig(out var appConfig);
+                CreateAppConfig(retries, out var appConfig);
 
                 this.context = new BoostrappedContext(
                     new FakeMessageAuthenticator(identity),
@@ -169,11 +170,11 @@
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateAppConfig(out BoostrappedContext.ApplicationConfig applicationConfig)
+            static void CreateAppConfig(int retries, out BoostrappedContext.ApplicationConfig applicationConfig)
             {
                 applicationConfig = new BoostrappedContext.ApplicationConfig
                 {
-                    NumberOfApiMessageRetries = 1,
+                    NumberOfApiMessageRetries = retries,
                     EnvironmentName = "Test",
                     ApplicationName = $"Test Application {Assembly.GetEntryAssembly().GetName().Name}",
                     ReturnExplicitErrorMessages = true,

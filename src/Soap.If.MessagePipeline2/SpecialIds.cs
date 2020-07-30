@@ -1,27 +1,26 @@
-﻿namespace Sample.Tests
+﻿// -----------------------------------------------------------------------
+// <copyright file="$FILENAME$" company="$COMPANYNAME$">
+// $COPYRIGHT$
+// </copyright>
+// <summary>
+// $SUMMARY$
+// </summary>
+
+
+namespace Soap.MessagePipeline
 {
     using System;
-    using DataStore.Models.PureFunctions.Extensions;
-    using Sample.Constants;
-    using Sample.Messages.Commands;
-    using Soap.Interfaces.Messages;
 
-    public partial class BaseTest
-    {
-        /* all variables in here must remain constant for tests to be correct,
-        HOWEVER they must ALWAYS use arrows and not equal on the property assignment because
-        they are static and you will share message instances and have concurrency problems otherwise */
-
-        protected static class Ids
+    /// <summary>
+    /// Ids used to identify special message behaviour in testing
+    /// </summary>
+    public static class SpecialIds
         {
-         //* message is retried max times and thrown out as poison
+        
          public static readonly Guid MessageThatDiesWhileSavingUnitOfWork = Guid.NewGuid();
 
-         //* message dies after commiting uow and then retries everything successfully on the first retry attempt
          public static readonly Guid RetryHappyPath = Guid.NewGuid();
 
-         //* message dies after commiting uow and then retries everything but fails on the last item so it rolls everything
-         //back successfully
          public static readonly Guid RollbackHappyPath = Guid.NewGuid();
 
          /* message dies after committing uow and knows before starting the retry, which retries the message without
@@ -39,8 +38,8 @@
           resulting in a rollback of the previously committed items (1x create and 2 x update[1 x softdelete and regular update]) */
          public static readonly Guid DeleteFailsOnRetry = Guid.NewGuid();
 
-         //* data complete bus messages not complete, so send the incomplete ones
-         public static readonly Guid SentUnsentMessages = Guid.NewGuid();
+
+         public static readonly Guid SendUnsentMessages = Guid.NewGuid();
 
          /* message fails while attempting to commit uncommitted data due to etag conflict which
           should then on the 3rd try result in a rollback of everything committed so far.  */
@@ -72,5 +71,4 @@
 
          public static readonly Guid MessageThatDiesInExceptionHandlerSecondStage = Guid.NewGuid();
         }
-    }
 }

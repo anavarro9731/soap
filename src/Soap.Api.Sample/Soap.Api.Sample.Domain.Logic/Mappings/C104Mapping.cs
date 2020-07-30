@@ -6,6 +6,7 @@
     using Sample.Logic.Processes;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline;
     using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 

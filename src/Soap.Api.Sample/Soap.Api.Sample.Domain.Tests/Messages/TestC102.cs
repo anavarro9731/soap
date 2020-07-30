@@ -6,13 +6,13 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC102 : BaseTest
+    public class TestC102 : Test
     {
         public TestC102(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
-            Execute(Queries.GetServiceState, Identities.UserOne);
+            Execute(Commands.GetServiceState, Identities.UserOne);
         }
 
         [Fact]

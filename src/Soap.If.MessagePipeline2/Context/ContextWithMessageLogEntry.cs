@@ -12,7 +12,6 @@
     using DataStore.Interfaces.Operations;
     using DataStore.Models;
     using DataStore.Models.Messages;
-    using Serilog;
     using Soap.Bus;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -22,6 +21,7 @@
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
+    using Soap.Utility.Objects.Blended;
 
     public class ContextWithMessageLogEntry : ContextWithMessage
     {
@@ -36,6 +36,7 @@
         public static ContextWithMessageLogEntry Current => Instance.Value;
 
         public MessageLogEntry MessageLogEntry { get; }
+        
     }
 
     public static class ContextAfterMessageLogEntryObtainedExtensions
@@ -50,10 +51,20 @@
                 + " to the perimeter");
 
             /* from this point on we can crash, throw, lose power, it won't matter all
-            will be continued when the message is next dequeued*/
+            will be continued when the message is next dequeued, updates using a new datastore instance not in session */
             await context.SaveUnitOfWork();
 
+            Guard.Against(
+                context.Message.Headers.GetMessageId() == SpecialIds.RetryHappyPath &&
+                context.MessageLogEntry.Attempts.Count == 0, SpecialIds.RetryHappyPath.ToString());
+
+
             await context.DataStore.CommitChanges();
+            
+            Guard.Against(
+                context.Message.Headers.GetMessageId() == SpecialIds.SendUnsentMessages &&
+                context.MessageLogEntry.Attempts.Count == 0, SpecialIds.SendUnsentMessages.ToString());
+            
             await context.Bus.CommitChanges();
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
@@ -72,8 +83,11 @@
             context.MessageAggregator.Collect(queuedStateChange);
         }
 
-        public static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
+        private static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
         {
+            Guard.Against(
+                context.Message.Headers.GetMessageId() == SpecialIds.MessageThatDiesWhileSavingUnitOfWork, SpecialIds.MessageThatDiesWhileSavingUnitOfWork.ToString());
+            
             var u = context.MessageLogEntry.UnitOfWork;
 
             foreach (var queuedStateChange in context.GetQueuedChanges())
@@ -121,6 +135,7 @@
                     }
                 }
 
+            /* updates using another datastore instance not in session */
             return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
             /* from this point on we can crash, throw, lose power, it won't matter all
             will be continued when the message is next dequeued*/
@@ -140,8 +155,8 @@
 
                 return context.MessageLogEntry.UnitOfWork switch
                 {
-                    var u when IsEmpty(u) => UnitOfWork.State.New,  //* hasn't been saved yet, msg not processed yet
-                    _ => await AttemptCompletion(records, context) 
+                    var u when IsEmpty(u) => UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
+                    _ => await AttemptCompletion(records, context)
                 };
             }
 
@@ -155,9 +170,10 @@
 
                 return records switch
                 {
-                    var r when HasNotStartedDataButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
+                    
                     var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r),
                     var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
+                    var r when HasNotStartedDataButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
                     var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
@@ -335,7 +351,15 @@
 
                 await AddThisFailureToTheMessageLog();
 
-                await context.CommitChanges(); //* commit just the failure entry
+                /* commit just the failure entry and possibly finalfailuremessage,
+                 don't use context.CommitChanges as you don't want to save the unit of work here 
+                 the uow is already cleared when the message retries you don't want it thinking the uow
+                 is the failed message log entry saving that and then exiting. it also makes testing failures
+                 in context.commitchanges easier since that method is not used here as well creating a loop
+                 */
+                await context.DataStore.CommitChanges();
+                await context.Bus.CommitChanges();
+                
             }
 
             catch (Exception e)

@@ -5,12 +5,15 @@
     using System.Threading.Tasks;
     using DataStore.Models.PureFunctions;
     using Sample.Models.Aggregates;
+    using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline;
+    using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class UserOperations : Operations<User>
     {
-        public Func<Task> AddTestUsers =>
+        public Func<Task> AddBobaAndLando =>
             async () =>
                 {
                 {
@@ -31,18 +34,18 @@
                     {
                         new User
                         {
-                            UserName = "luke.skywalker"
+                            UserName = "boba.fett"
                         },
                         new User
                         {
-                            UserName = "leia.organa"
+                            UserName = "lando.calrissian"
                         }
                     };
                 }
 
                 async Task Execute(User[] usersToAdd)
                 {
-                    foreach (var user in usersToAdd) DataWriter.Create(user);
+                    foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
                 };
 
@@ -82,39 +85,97 @@
                         };
                 }
 
-                async Task Execute(Guid id, Action<User> nameChange) => DataWriter.UpdateById(id, nameChange);
+                async Task Execute(Guid id, Action<User> nameChange) => await DataWriter.UpdateById(id, nameChange);
                 };
-
-        public class ErrorCodes : ErrorCode
-        {
-        }
-
-        public Func<Task> RemoveDarthVader =>
+        
+        public Func<Task> DeleteLukeSkywalker =>
             async () =>
                 {
                 {
-                    Guid darthId = Guid.Empty;
-                    
+                    Guid lukeId = Guid.Empty;
+
                     await Validate();
 
-                    DetermineChange(v => darthId = v);
+                    DetermineChange(v => lukeId = v);
 
-                    await Execute(darthId);
+                    await Execute(lukeId);
                 }
 
                 async Task Validate()
                 {
                 }
 
-                async Task DetermineChange(Action<Guid> setDarthId)
+                async Task DetermineChange(Action<Guid> setLukeId)
                 {
-                    setDarthId((await DataReader.Read<User>(x => x.UserName == "darth.vader")).Single().id);
+                    setLukeId((await DataReader.Read<User>(x => x.UserName == "luke.skywalker")).Single().id);
                 }
 
-                async Task Execute(Guid darthId)
+                async Task Execute(Guid lukeId)
                 {
-                    DataWriter.DeleteById<User>(darthId, options => options.Permanently());
+                    await DataWriter.DeleteById<User>(lukeId, o => o.Permanently());
                 }
                 };
+
+        public Func<Task> DeleteDarthVader =>
+            async () =>
+                {
+                {
+                    User darth = null;
+
+                    await Validate();
+
+                    DetermineChange(v => darth = v);
+
+                    await Execute(darth);
+                }
+
+                async Task Validate()
+                {
+                }
+
+                async Task DetermineChange(Action<User> setDarth)
+                {
+                    setDarth((await DataReader.Read<User>(x => x.UserName == "darth.vader")).Single());
+                }
+
+                async Task Execute(User darth)
+                {
+                    if (ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId() == SpecialIds.RollbackHappyPath)
+                        darth.Etag = "something that will fail this record";
+                    await DataWriter.Delete(darth, o => o.Permanently());
+                }
+                };
+        
+        public Func<Task> ArchivePrincessLeia =>
+            async () =>
+                {
+                {
+                    User leia = null;
+
+                    await Validate();
+
+                    DetermineChange(v => leia = v);
+
+                    await Execute(leia);
+                }
+
+                async Task Validate()
+                {
+                }
+
+                async Task DetermineChange(Action<User> setLeia)
+                {
+                    setLeia((await DataReader.Read<User>(x => x.UserName == "leia.organa")).Single());
+                }
+
+                async Task Execute(User leia)
+                {
+                    await DataWriter.Delete(leia);
+                }
+                };
+
+        public class ErrorCodes : ErrorCode
+        {
+        }
     }
 }

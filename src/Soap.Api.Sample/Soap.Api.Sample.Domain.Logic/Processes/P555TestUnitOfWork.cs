@@ -13,10 +13,20 @@
         public Func<C104TestUnitOfWork, Task> BeginProcess =>
             async message =>
                 {
+                //* create x 2
+                await this.Get<UserOperations>().Call(x => x.AddBobaAndLando)();
+                
+                //* update x 2
                 await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.HansSoloNewName);
-                await this.Get<UserOperations>().Call(x => x.AddTestUsers)();
-                await this.Get<UserOperations>().Call(x => x.RemoveDarthVader)();
+                await this.Get<UserOperations>().Call(x => x.ArchivePrincessLeia)();
+                
+                //* delete x 2
+                await this.Get<UserOperations>().Call(x => x.DeleteLukeSkywalker)();
+                await this.Get<UserOperations>().Call(x => x.DeleteDarthVader)();
+                
+                //* publish 1 event
                 await PublishE150();
+                //* send 1 command
                 await SendC100();
 
                 async Task PublishE150()

@@ -109,18 +109,28 @@
              checking the now consistent history is equally as good. etag will still be the ultimate
              arbiter of all subsequent changes during retries. This is simply used to skip rollbacks
              where they have already been superseded. */
-            bool ChangeHasBeenSuperseded(List<Aggregate.AggregateVersionInfo> history) =>
-                history != null && history.Last().UnitOfWorkId != item.UnitOfWorkId;
-
+            bool ChangeHasBeenSuperseded(List<Aggregate.AggregateVersionInfo> history)
+            {
+                if (history != null)
+                {
+                    var ourChangeWasAlreadyCommittedDuringPreviousAttempt =
+                        history.Exists(h => h.UnitOfWorkId == item.UnitOfWorkId);
+                    var thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork = history.Last().UnitOfWorkId != item.UnitOfWorkId;
+                    return ourChangeWasAlreadyCommittedDuringPreviousAttempt
+                           && thereHasBeenASubsequentChangeMadeByAnotherUnitOfWork;
+                }
+                else return false;
+            }
+            
             async Task GetAggregateHistory(
                 Guid aggregateId,
                 string typename,
                 IDataStore dataStore,
                 Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
-                var readById = typeof(IDataStore).GetMethod(nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
+                var readById = typeof(IDataStore).GetMethods().Single(m => m.GetGenericArguments().Length == 1 && m.Name == nameof(DataStore.ReadById)).MakeGenericMethod(Type.GetType(typename));
 
-                var result = await readById.InvokeAsync(dataStore, aggregateId);
+                var result = await readById.InvokeAsync(dataStore, aggregateId, null, null);
 
                 //- relying on history never being null if the aggregate exists
                 setHistory(((IAggregate)result)?.VersionHistory);

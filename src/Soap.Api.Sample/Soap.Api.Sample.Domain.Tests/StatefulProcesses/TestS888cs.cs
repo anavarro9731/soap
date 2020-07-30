@@ -11,7 +11,7 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class S100Test : BaseTest
+    public class S100Test : Test
     {
         public S100Test(ITestOutputHelper output)
             : base(output)

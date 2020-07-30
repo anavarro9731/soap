@@ -8,7 +8,7 @@ namespace Sample.Tests.Messages
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC101UpgradingTheDatabaseMoreThanOnce : BaseTest
+    public class TestC101UpgradingTheDatabaseMoreThanOnce : Test
     {
         public TestC101UpgradingTheDatabaseMoreThanOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)

@@ -33,9 +33,9 @@
             /* needs to be called everywhere you can send a message (e.g. tests, bus)
              using constructors will just be avoided and since you have to have
             public parameterless ctor for serialisation no point, and 
-            properties just break serialisation*/
+            properties just break serialisation. */
 
-            headers.SetTimeOfCreationAtOrigin();
+            if (headers.GetTimeOfCreationAtOrigin() == null) headers.SetTimeOfCreationAtOrigin();
             if (headers.GetMessageId() == Guid.Empty) headers.SetMessageId(Guid.NewGuid());
         }
 
@@ -66,7 +66,7 @@
 
         public static DateTime? GetTimeOfCreationAtOrigin(this MessageHeaders m)
         {
-            var x = m[Keys.TimeOfCreationAtOrigin];
+            m.TryGetValue(Keys.TimeOfCreationAtOrigin, out var x);
             var y = string.IsNullOrWhiteSpace(x) ? (DateTime?)null : DateTime.Parse(x);
             return y;
         }

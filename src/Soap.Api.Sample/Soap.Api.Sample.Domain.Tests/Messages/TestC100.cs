@@ -6,7 +6,7 @@ namespace Sample.Tests.Messages
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC100 : BaseTest
+    public class TestC100 : Test
     {
         public TestC100(ITestOutputHelper outputHelper)
             : base(outputHelper)

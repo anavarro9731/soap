@@ -132,6 +132,8 @@
         }
 
         public static T Clone<T>(this T source) => source.ToNewtonsoftJson().FromJson<T>();
+        
+        
 
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
@@ -247,8 +249,8 @@
         public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
         {
             dynamic awaitable = @this.Invoke(obj, parameters);
-            await awaitable;
-            return awaitable.GetAwaiter().GetResult();
+           await awaitable;
+           return awaitable.GetAwaiter().GetResult();
         }
 
         public static bool Is(this object child, Type t) => child.GetType().InheritsOrImplements(t);
