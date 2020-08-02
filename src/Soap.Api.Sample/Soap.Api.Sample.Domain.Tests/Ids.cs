@@ -12,7 +12,7 @@
 
         public static readonly Guid UserOne = Guid.NewGuid();
         
-        public static readonly Guid PrincessLeia = Guid.NewGuid();
+        public static readonly Guid PrincessLeia = Guid.Parse("715fb00d-f856-42b9-822e-fc0510c6fab5");
         
         public static readonly Guid LukeSkywalker = Guid.NewGuid();
         

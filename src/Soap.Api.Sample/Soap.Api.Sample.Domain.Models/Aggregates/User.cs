@@ -13,7 +13,7 @@
 
         public List<Role> Roles { get; set; } = new List<Role>();
 
-        public string UserName { get; set; }
+        public virtual string UserName { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
     }

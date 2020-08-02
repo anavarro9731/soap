@@ -3,10 +3,8 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataStore;
     using DataStore.Models.PureFunctions;
     using Sample.Models.Aggregates;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Context;
@@ -14,6 +12,7 @@
 
     public class UserOperations : Operations<User>
     {
+        
         public Func<Task> AddBobaAndLando =>
             async () =>
                 {
@@ -22,7 +21,6 @@
 
                     await Execute(usersToAdd);
                 }
-
 
                 void DetermineChange(out User[] usersToAdd)
                 {
@@ -50,12 +48,11 @@
                 {
                 {
                     User leia = null;
-                    
+
                     await DetermineChange(v => leia = v);
 
                     await Execute(leia);
                 }
-
 
                 async Task DetermineChange(Action<User> setLeia)
                 {
@@ -94,16 +91,26 @@
 
                 void DetermineChange(out Action<User> nameChange)
                 {
-                    {
-                        var names = newName.Split(' ');
-                        var first = names[0];
-                        var last = names[1];
-                        nameChange = user =>
-                            {
+                    var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
+                    var currentMessageLogEntry = ContextWithMessageLogEntry.Current.MessageLogEntry;
+
+
+                    nameChange = user =>
+                        {
+                        if (currentMessageId == SpecialIds.ProcessesSomeDataButThenFailsCompletesSuccessfullyOnRetry
+                            && currentMessageLogEntry.Attempts.Count == 0)
+                        {
+                            user.Etag = "123456";
+                        }
+                        else
+                        {
+                            var names = newName.Split(' ');
+                            var first = names[0];
+                            var last = names[1];
                             user.FirstName = first;
                             user.LastName = last;
-                            };
-                    }
+                        }
+                        };
                 }
 
                 async Task Execute(Guid id, Action<User> nameChange) => await DataWriter.UpdateById(id, nameChange);
@@ -131,8 +138,9 @@
                 {
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
 
-                    if (currentMessageId == SpecialIds.RollbackHappyPath &&
-                        ContextWithMessageLogEntry.Current.MessageLogEntry.Attempts.Count == 0)
+                    if (currentMessageId == SpecialIds.ProcessesSomeThenRollsBackSuccessfully || currentMessageId == SpecialIds.ConsideredAsRolledBackWhenFirstItemFails ||
+                        currentMessageId == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry
+                        && ContextWithMessageLogEntry.Current.MessageLogEntry.Attempts.Count == 0)
                     {
                         /* causes dbconcurrency exception on first attempt luke's record never commits
                         in reality there is a tiny window between loading a saving an update so the eTag
@@ -141,8 +149,11 @@
                         to reflect an outside change before the uow is retried so it will give up and not
                         try to reprocess the message which would just keep erroring */
                         changeLuke = luke => luke.Etag = "something that breaks";
-                    } else 
-                     changeLuke = luke => luke.LastName = "Spywalker";
+                    }
+                    else
+                    {
+                        changeLuke = luke => luke.LastName = "Spywalker";
+                    }
                 }
 
                 async Task Execute(Guid lukeId, Action<User> changeLuke)
@@ -154,7 +165,6 @@
         public Func<Task> DeleteDarthVader =>
             async () =>
                 {
-                
                 {
                     User darth = null;
 

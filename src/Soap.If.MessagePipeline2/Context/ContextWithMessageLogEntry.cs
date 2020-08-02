@@ -53,18 +53,19 @@
             await context.SaveUnitOfWork();
 
             Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.RetryHappyPath
+                context.Message.Headers.GetMessageId() == SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully
                 && context.MessageLogEntry.Attempts.Count == 0,
-                SpecialIds.RetryHappyPath.ToString());
+                SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully.ToString());
 
             await context.DataStore.CommitChanges();
 
             Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.SendUnsentMessages
+                context.Message.Headers.GetMessageId() == SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully
                 && context.MessageLogEntry.Attempts.Count == 0,
-                SpecialIds.SendUnsentMessages.ToString());
+                SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully.ToString());
 
             await context.Bus.CommitChanges();
+            
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
@@ -112,18 +113,27 @@
 
                 return records switch
                 {
-                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r, context.DataStore.DocumentRepository),
-                    var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
-                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
-                    var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
+                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r, context.DataStore.DocumentRepository, context),  
+                    var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context), 
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack, 
+                    var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context), 
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
                 };
 
-                static async Task<UnitOfWork.State> RollbackRemaining(List<UnitOfWorkExtensions.Record> records, IDocumentRepository documentRepository)
+                static async Task<UnitOfWork.State> RollbackRemaining(
+                    List<UnitOfWorkExtensions.Record> records,
+                    IDocumentRepository documentRepository,
+                    ContextWithMessageLogEntry context)
                 {
                     foreach (var record in records.Where(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed))
+                    {
+                        Guard.Against(context.Message.Headers.GetMessageId() == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry && 
+                                      context.MessageLogEntry.Attempts.Count == 1 &&
+                                      record.UowItem.ObjectId == Guid.Parse("715fb00d-f856-42b9-822e-fc0510c6fab5"), SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
+                        
                         await record.UowItem.Rollback(Delete, Create, ResetTo);
+                    }
                     return UnitOfWork.State.AllRolledBack;
                     
                     Task Delete(IAggregate arg)
@@ -168,14 +178,12 @@
                     return result;
                 }
 
-                //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
+                //* a rollback was completed or we failed committing the first item (e.g. first item failed concurrency check)
                 static bool HasNotStartedOrWasRolledBackButCannotFinish(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
-                    return records.All(
-                        x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack
-                             && messageLogEntry.ProcessingComplete == false);
+                    return records.All(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
                 }
 
                 /* could be from messages or just the complete flag itself, in any case the complete
@@ -202,9 +210,13 @@
                 }
             }
 
-            static bool IsEmpty(UnitOfWork u) =>
+            static bool IsEmpty(UnitOfWork u) 
+            {
+                var result = 
                 !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
-                && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
+                    && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
+                return result;
+            }
 
             static async Task SaveUnsavedData(List<UnitOfWorkExtensions.Record> records, IDataStore dataStore)
             {
@@ -530,8 +542,8 @@
         private static Task SaveUnitOfWork(this ContextWithMessageLogEntry context)
         {
             Guard.Against(
-                context.Message.Headers.GetMessageId() == SpecialIds.MessageThatDiesWhileSavingUnitOfWork,
-                SpecialIds.MessageThatDiesWhileSavingUnitOfWork.ToString());
+                context.Message.Headers.GetMessageId() == SpecialIds.MessageDiesWhileSavingUnitOfWork,
+                SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
 
             /* if its the first attempt the uow will be empty but you want to
              clear out anything existing as there could be a different 
