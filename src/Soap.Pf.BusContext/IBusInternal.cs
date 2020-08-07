@@ -5,8 +5,6 @@
 
     public interface IBusInternal
     {
-        Task CommitChanges();
-
         Task Publish(ApiEvent publishEvent);
 
         Task Send(ApiCommand sendCommand);

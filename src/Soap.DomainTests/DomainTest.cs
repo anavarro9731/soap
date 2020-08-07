@@ -33,6 +33,8 @@
         //* copies over each call of Add and Execute retaining state across the whole test
         internal DataStore rollingStore;
 
+        internal Bus rollingBus;
+
         public TAggregate GetAdd<TAggregate>(
             TAggregate aggregate,
             ITestOutputHelper outputHelper) where TAggregate : Aggregate, new()
@@ -84,7 +86,7 @@
 
                 CreateNotificationServer(out var notificationServer);
 
-                CreateBusContext(messageAggregator, out var bus);
+                CreateBusContext(messageAggregator, retries > 0, out var bus);
 
                 CreateAppConfig(retries, out var appConfig);
 
@@ -151,9 +153,14 @@
                 messageAggregator = new MessageAggregatorForTesting();
             }
 
-            static void CreateBusContext(IMessageAggregator messageAggregator, out IBus busContext)
+            void CreateBusContext(IMessageAggregator messageAggregator, bool hasRetries, out IBus busContext)
             {
-                busContext = new Bus(new InMemoryBus(messageAggregator), messageAggregator);
+                if (this.rollingBus == null && hasRetries)//* roll bus during retries since messages are resent across runs
+                {
+                    this.rollingBus = new Bus(new InMemoryBus(), messageAggregator);
+                }  
+
+                busContext = this.rollingBus ?? new Bus(new InMemoryBus(), messageAggregator);
             }
 
             static void CreateLogger(IMessageAggregator messageAggregator, ITestOutputHelper testOutputHelper, out ILogger logger)

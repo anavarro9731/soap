@@ -27,6 +27,13 @@
 
                 //* create x 2
                 await this.Get<UserOperations>().Call(x => x.AddBobaAndLando)();
+                
+                if (ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId()
+                    == SpecialIds.FailsEarlyInReplayThenCompletesRemainderOfUow)
+                {
+                    await this.Get<UserOperations>().Call(x => x.ChangeLukeSkywalkersName)();
+                    await this.Get<UserOperations>().Call(x => x.AddR2D2AndC3PO)();
+                }
 
                 //* delete x 2
                 await this.Get<UserOperations>().Call(x => x.ArchivePrincessLeia)();

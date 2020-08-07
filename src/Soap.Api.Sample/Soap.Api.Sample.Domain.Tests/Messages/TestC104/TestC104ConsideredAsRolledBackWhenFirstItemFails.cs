@@ -20,6 +20,10 @@
         }
 
         [Fact]
+        /*  Run 1 etag failure on the first item in the uow
+            PreRun Check no records were changed
+            Run 2 fails because etag is still broken 
+         */
         public async void CheckConsideredAsRolledBackWhenFirstItemFails()
         {
             async Task beforeRunHook(DataStore store, int run)

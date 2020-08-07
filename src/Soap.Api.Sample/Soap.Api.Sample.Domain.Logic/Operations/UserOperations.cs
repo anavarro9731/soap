@@ -42,7 +42,37 @@
                     foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
                 };
+        
+        public Func<Task> AddR2D2AndC3PO =>
+            async () =>
+                {
+                {
+                    DetermineChange(out var usersToAdd);
 
+                    await Execute(usersToAdd);
+                }
+
+                void DetermineChange(out User[] usersToAdd)
+                {
+                    usersToAdd = new[]
+                    {
+                        new User
+                        {
+                            UserName = "r2d2"
+                        },
+                        new User
+                        {
+                            UserName = "c3po"
+                        }
+                    };
+                }
+
+                async Task Execute(User[] usersToAdd)
+                {
+                    foreach (var user in usersToAdd) await DataWriter.Create(user);
+                }
+                };
+        
         public Func<Task> ArchivePrincessLeia =>
             async () =>
                 {
@@ -139,13 +169,15 @@
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
 
                     if (currentMessageId == SpecialIds.ProcessesSomeThenRollsBackSuccessfully || currentMessageId == SpecialIds.ConsideredAsRolledBackWhenFirstItemFails ||
-                        currentMessageId == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry
+                        currentMessageId == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry || currentMessageId == SpecialIds.FailsEarlyInReplayThenCompletesRemainderOfUow ||
+                        currentMessageId == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem || currentMessageId == SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem ||
+                        currentMessageId == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeCreatedThem || currentMessageId == SpecialIds.RollbackSkipsOverItemsUpdatedSinceWeCreatedThem
                         && ContextWithMessageLogEntry.Current.MessageLogEntry.Attempts.Count == 0)
                     {
                         /* causes dbconcurrency exception on first attempt luke's record never commits
                         in reality there is a tiny window between loading a saving an update so the eTag
                         violation we are simulating here is pretty much impossible to trigger in a test
-                        the important part is we have to be sure in the body of the test to change the underlying record
+                        the important par    t is we have to be sure in the body of the test to change the underlying record
                         to reflect an outside change before the uow is retried so it will give up and not
                         try to reprocess the message which would just keep erroring */
                         changeLuke = luke => luke.Etag = "something that breaks";

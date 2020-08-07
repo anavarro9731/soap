@@ -21,8 +21,12 @@
         }
 
         [Fact]
-        //* message dies after commiting uow due to eTag violation and then sees it will be unable to retry and
-        //fails permanently rolling everything back
+        /* Run 1 message dies after commiting uow due to eTag violation
+        * Prerun fix underlying data to match with etag violation in run 1
+        * Run 2 sees it will be unable to retry starts rolling everything 
+        * Prerun Assert Rollback
+        * Run 3 message fails all items rolled back
+        */
         public async void ProcessesSomeThenRollsBackSuccessfully()
         {
             async Task beforeRunHook(DataStore store, int run)
@@ -89,7 +93,7 @@
                 await ExecuteWithRetries(
                     c104TestUnitOfWork,
                     Identities.UserOne,
-                    3,
+                    2,
                     beforeRunHook); //should succeed on first retry
             }
             catch (PipelineException e)

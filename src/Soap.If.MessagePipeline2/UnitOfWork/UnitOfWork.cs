@@ -54,6 +54,7 @@
         public static async IAsyncEnumerable<Record> DataStoreOperationState(this UnitOfWork unitOfWork, IDataStore dataStore)
         {
             {
+                
                 foreach (var op in unitOfWork.DataStoreUpdateOperations.Union(
                     unitOfWork.DataStoreCreateOperations.Union(
                         unitOfWork.DataStoreDeleteOperations)))

@@ -173,18 +173,20 @@
             var obj = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings());
             return obj;
         }
-
-        public static T FromJsonToInterface<T>(this string json, string typeName) where T : class
+            
+           public static T FromJsonToInterface<T>(this string json, string typeName) where T : class //* t = interface
         {
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(typeName), new JsonSerializerSettings()).As<T>();
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(typeName), new JsonSerializerSettings());//.As<T>();
             return obj.As<T>();
         }
-
+        
         public static T FromSerialisableObject<T>(this SerialisableObject s) where T : class => s.Deserialise<T>();
 
         /// <summary>
         ///     get property name from current instance
-        /// </summary>
+        /// </
+        ///
+        /// 
         /// <typeparam name="TObject"></typeparam>
         /// <param name="type"></param>
         /// <param name="propertyRefExpr"></param>

@@ -2,6 +2,7 @@
 {
     using System.Threading.Tasks;
     using DataStore;
+    using FluentAssertions;
     using Sample.Models.Aggregates;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
@@ -17,19 +18,34 @@
         }
 
         [Fact]
-        //* message dies after commiting uow and then retries everything successfully on the first retry attempt
+        /* Run 1 message dies with eTag failure
+           PreRun change underlying record so it reflects the new eTag removing the violation
+           Run 2 Retry completes successfully 
+        */
         public async void ProcessesSomeDataButThenFailsCompletesSuccessfullyOnRetry()
         {
             //act
             var c104TestUnitOfWork =
                 Commands.TestUnitOfWork(SpecialIds.ProcessesSomeDataButThenFailsCompletesSuccessfullyOnRetry);
 
-            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook, c104TestUnitOfWork.Headers.GetMessageId()); //should succeed on first retry
+            await ExecuteWithRetries(
+                c104TestUnitOfWork,
+                Identities.UserOne,
+                1,
+                beforeRunHook,
+                c104TestUnitOfWork.Headers.GetMessageId()); //should succeed on first retry
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
             CountDataStoreOperationsSaved(log);
             CountMessagesSaved(log);
+            CountMessagesSent();
+
+            void CountMessagesSent()
+            {
+                Result.MessageBus.CommandsSent.Count.Should().Be(1);
+                Result.MessageBus.EventsPublished.Count.Should().Be(1);
+            }
 
             async Task beforeRunHook(DataStore store, int run)
             {

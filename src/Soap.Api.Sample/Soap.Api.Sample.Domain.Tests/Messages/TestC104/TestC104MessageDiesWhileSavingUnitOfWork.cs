@@ -14,8 +14,9 @@
         }
 
         [Fact]
-        /* message is retried max times and thrown out as poison when there is an error
-        saving the unit of work */
+        /* Run 1 message fails due to guard 
+           Run 2 same
+           Run 3 same  */
         public async void MessageDiesWhileSavingUnitOfWork()
         {
             //act
@@ -32,8 +33,6 @@
             {
                 e.Message.Should().Contain(SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
             }
-
-            ;
         }
     }
 }

@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore" Version="13.0.0-alpha" />
+    <PackageReference Include="DataStore" Version="13.4.0-alpha" />
     <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="CircuitBoard" Version="3.0.0" />
 

@@ -26,9 +26,8 @@
 
         public async Task CommitChanges()
         {
-            await this.bus.CommitChanges();
-
             this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>()
+                .Where(m => m.Committed == false)
                 .ToList()
                 .ForEach(
                     m =>
@@ -50,13 +49,23 @@
         public Task Publish(ApiEvent publishEvent)
         {
             publishEvent.Headers.EnsureRequiredHeaders();
-            return this.bus.Publish(publishEvent);
+            this.messageAggregator.Collect(
+                new QueuedEventToPublish
+                {
+                    EventToPublish = publishEvent, CommitClosure = () => Task.CompletedTask
+                });
+            return Task.CompletedTask;
         }
 
         public Task Send(ApiCommand sendCommand)
         {
             sendCommand.Headers.EnsureRequiredHeaders();
-            return this.bus.Send(sendCommand);
+            this.messageAggregator.Collect(
+                new QueuedCommandToSend
+                {
+                    CommandToSend = sendCommand, CommitClosure = () => Task.CompletedTask
+                });
+            return Task.CompletedTask;
         }
     }
 }

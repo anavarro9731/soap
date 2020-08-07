@@ -64,8 +64,15 @@
                 && context.MessageLogEntry.Attempts.Count == 0,
                 SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully.ToString());
 
+            //* messages may be resent but will be thrown out if they have already been sent, importantly they will not change ids
             await context.Bus.CommitChanges();
-            
+
+            Guard.Against(
+                context.Message.Headers.GetMessageId()
+                == SpecialIds.ProcessesDataAndMessagesButFailsBeforeMarkingCompleteThenRetriesSuccessfully
+                && context.MessageLogEntry.Attempts.Count == 0,
+                SpecialIds.ProcessesDataAndMessagesButFailsBeforeMarkingCompleteThenRetriesSuccessfully.ToString());
+
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
@@ -91,8 +98,7 @@
                  if there are then we can assume that is why we failed last time and we should rollback any remaining items
                  starting with the creates and updates since they are the ones that other people could have seen
                  and finally returning AllRolledBack */
-                
-                
+
                 //- don't recalculate these expensive ops
                 var records = await WaitForAllRecords(context.MessageLogEntry.UnitOfWork, context.DataStore);
 
@@ -113,10 +119,13 @@
 
                 return records switch
                 {
-                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(r, context.DataStore.DocumentRepository, context),  
-                    var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context), 
-                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack, 
-                    var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context), 
+                    var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(
+                                                                               r,
+                                                                               context.DataStore.DocumentRepository,
+                                                                               context),
+                    var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
+                    var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
                 };
@@ -126,33 +135,48 @@
                     IDocumentRepository documentRepository,
                     ContextWithMessageLogEntry context)
                 {
-                    foreach (var record in records.Where(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed))
+                    //* arrange in the manner so that records most likely to be affected by other Uows are rolled back first
+                    var recordsToRollback = records.Where(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed)
+                                                   .OrderBy(x => x.Superseded == false) //* if its already superseded no rush
+                                                   .ThenBy(
+                                                       x => x.UowItem.OperationType
+                                                            == DataStoreUnitOfWorkItem
+                                                               .OperationTypes
+                                                               .Create) //* probably biggest risk as we have to remove them
+                                                   .ThenBy(
+                                                       x => x.UowItem.OperationType
+                                                            == DataStoreUnitOfWorkItem.OperationTypes.Update); //* no one can really delete a deleted record (save edge cases eg. where another uow rolling back resurrects it)
+                    
+                    foreach (var record in recordsToRollback)
                     {
-                        Guard.Against(context.Message.Headers.GetMessageId() == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry && 
-                                      context.MessageLogEntry.Attempts.Count == 1 &&
-                                      record.UowItem.ObjectId == Guid.Parse("715fb00d-f856-42b9-822e-fc0510c6fab5"), SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
+                        Guard.Against(
+                            context.Message.Headers.GetMessageId() == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry
+                            && context.MessageLogEntry.Attempts.Count == 1
+                            && record.UowItem.ObjectId == Guid.Parse("715fb00d-f856-42b9-822e-fc0510c6fab5"),
+                            SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
                         
-                        await record.UowItem.Rollback(Delete, Create, ResetTo);
-                    }
+                        if (!record.Superseded)
+                        {
+                            await record.UowItem.Rollback(Delete, Create, ResetTo);
+                        }
+                    } 
+
                     return UnitOfWork.State.AllRolledBack;
-                    
-                    Task Delete(IAggregate arg)
-                    {
-                        return documentRepository.DeleteAsync(arg);
-                    }
-                    
-                    Task Create(IAggregate arg)
-                    {
-                        return documentRepository.CreateAsync(arg);
-                    }
-                    
-                    Task ResetTo(IAggregate arg)
+
+                    Task Delete<T>(T arg) where T : IAggregate => documentRepository.DeleteAsync(arg);
+
+                    Task Create<T>(T arg) where T : IAggregate => documentRepository.CreateAsync(arg);
+
+                    async Task ResetTo<T>(T arg) where T : IAggregate
                     {
                         arg.Etag = null; //* disable concurrency checks
-                        return documentRepository.UpdateAsync(arg);
+                        var itemExists = await documentRepository.Exists(arg);
+                        if (itemExists)
+                        {
+                            await documentRepository.UpdateAsync(arg);
+                        }
                     }
                 }
-                
 
                 static async Task<UnitOfWork.State> CompleteDataAndMessages(
                     List<UnitOfWorkExtensions.Record> records,
@@ -183,7 +207,9 @@
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
-                    return records.All(x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
+                    var result = records.All(
+                        x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
+                    return result;
                 }
 
                 /* could be from messages or just the complete flag itself, in any case the complete
@@ -192,40 +218,44 @@
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
-                    return records.All(
+                    var result = records.All(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed
                              && messageLogEntry.ProcessingComplete == false);
+                    return result;
                 }
 
                 static bool PartiallyCompletedDataButCannotFinish(List<UnitOfWorkExtensions.Record> records)
                 {
-                    return ThereAreRecordsThatCannotBeCompleted(records) && records.Any(
-                               x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed);
+                    var result = ThereAreRecordsThatCannotBeCompleted(records) && records.Any(
+                                     x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.Committed);
+                    return result;
                 }
 
                 static bool ThereAreRecordsThatCannotBeCompleted(List<UnitOfWorkExtensions.Record> records)
                 {
-                    return records.Any(
+                    var result = records.Any(
                         r => r.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack && r.Superseded);
+                    return result;
                 }
             }
 
-            static bool IsEmpty(UnitOfWork u) 
+            static bool IsEmpty(UnitOfWork u)
             {
-                var result = 
-                !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
-                    && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
+                var result = !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
+                             && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
                 return result;
             }
 
             static async Task SaveUnsavedData(List<UnitOfWorkExtensions.Record> records, IDataStore dataStore)
             {
                 {
-                    /* use order least vulnerable to rollbacks,
-                 take updates which and prioritize those that are modified recently 
-                 then take creates, because deletes are always allowed through both physically
-                 and logically (I don't think we care about race condition when deleting) and if a create
-                 fails it means less to rollback if the deletes have not been done yet*/
+                    /* use order most likely to cause an eTag violation so that we minimize the number of items
+                     needing to be rolled back. 
+                     Take updates first whose records probably existed for a while and prioritize those that are modified recently.
+                     Deletes dont cause eTag violations and neither do creates so doesn't really matter there
+                     but we'll take items being deleted whose model was modified recently as a sign of activity on that 
+                     aggregate and take those first
+                    */
 
                     var incompleteRecords = records
                                             .Where(
@@ -233,9 +263,8 @@
                                                                 .RecordState.NotCommittedOrRolledBack)
                                             .OrderBy(
                                                 x => x.UowItem.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Update)
-                                            .ThenBy(x => x.UowItem.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Create)
                                             .ThenByDescending(
-                                                x => x.UowItem.BeforeModel?.Deserialise<IAggregate>()
+                                                x => x.UowItem.BeforeModel?.Deserialise<IAggregate>() 
                                                       .ModifiedAsMillisecondsEpochTime)
                                             .ToList();
 
@@ -269,10 +298,14 @@
             it's really only infrastructure problems that would stop you here */
                 var incompleteCommands =
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList().ForEach(async i => await busContext.Send(i));
+                var commands = incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList();
+                commands.ForEach(async i => await busContext.Send(i));
 
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList().ForEach(async x => await busContext.Publish(x));
+                var events = incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList();
+                events.ForEach(async x => await busContext.Publish(x));
+
+                await busContext.CommitChanges();
             }
 
             static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(UnitOfWork unitOfWork, IDataStore dataStore)
@@ -283,8 +316,6 @@
                 return records;
             }
         }
-
- 
 
         internal static async Task MarkFailureInMessageLog(
             this ContextWithMessageLogEntry context,
@@ -545,12 +576,12 @@
                 context.Message.Headers.GetMessageId() == SpecialIds.MessageDiesWhileSavingUnitOfWork,
                 SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
 
-            /* if its the first attempt the uow will be empty but you want to
-             clear out anything existing as there could be a different 
-            uow generated if the message is retried */
-
-            var optimisticConcurrency = context.MessageLogEntry.UnitOfWork.OptimisticConcurrency;
-            context.MessageLogEntry.UnitOfWork = new UnitOfWork(optimisticConcurrency);
+            // /* if its the first attempt the uow will be empty but you want to
+            //  clear out anything existing as there could be a different 
+            // uow generated if the message is retried */
+            //
+            // var optimisticConcurrency = context.MessageLogEntry.UnitOfWork.OptimisticConcurrency;
+            // context.MessageLogEntry.UnitOfWork = new UnitOfWork(optimisticConcurrency);
             var u = context.MessageLogEntry.UnitOfWork;
 
             foreach (var queuedStateChange in context.GetQueuedChanges())

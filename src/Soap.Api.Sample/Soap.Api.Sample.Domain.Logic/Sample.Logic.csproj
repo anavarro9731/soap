@@ -4,7 +4,7 @@
     <Version>0.0.0</Version>
   </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="DataStore.Providers.CosmosDb" Version="13.0.0-alpha" />
+      <PackageReference Include="DataStore.Providers.CosmosDb" Version="13.4.0-alpha" />
     </ItemGroup>
   <ItemGroup>
     <Folder Include="Queries\Predicates\" />

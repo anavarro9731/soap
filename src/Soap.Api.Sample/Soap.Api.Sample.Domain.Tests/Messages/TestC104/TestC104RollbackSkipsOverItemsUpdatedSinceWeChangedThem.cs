@@ -13,25 +13,32 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC104FailsDuringRollbackFinishesRollbackOnNextRetry : TestC104
+    public class TestC104RollbackSkipsOverItemsUpdatedSinceWeChangedThem : TestC104
     {
-        public TestC104FailsDuringRollbackFinishesRollbackOnNextRetry(ITestOutputHelper output)
+        public TestC104RollbackSkipsOverItemsUpdatedSinceWeChangedThem(ITestOutputHelper output)
             : base(output)
         {
         }
 
         [Fact]
-        /*
-         * Run 1 message dies after commiting uow due to eTag violation
-         * Run 2 sees it will be unable to retry starts rolling everything back fails rolling back due to test guard
-         * Run 3 finally completes rollback
-         * Run 4 assert */
-        public async void FailsDuringRollbackFinishesRollbackOnNextRetry()
+        /* Run 1 message dies after commiting uow due to eTag violation
+         * Prerun fix underlying data to match with etag violation in run 1 and update solos record 
+         * Run 2 sees it will be unable to retry starts rolling everything back but skipping over solos record leaving the last update in place
+         * Prerun Assert Rollback
+         * Run 3 message fails all items rolled back except solos
+         * 
+         * Summary: While attempting to rollback we encounter items that have already been updated again since our
+         *  update and so we should just skip over those while rolling back.
+         *
+         * There is an edge case if both updates are in the same UOW but datastore will catch that and collapse
+         * the updates before it ever reaches the SOAP code
+        */
+        public async void RollbackSkipsOverItemsUpdatedSinceWeChangedThem()
         {
             async Task beforeRunHook(DataStore store, int run)
             {
                 await SimulateAnotherUnitOfWorkChangingLukesRecord();
-                await AssertGuardFail();
+                await SimulateAnotherUnitOfWorkUpdatingSolosRecord();
                 await AssertRollback();
 
                 async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
@@ -46,35 +53,28 @@
                         await store.CommitChanges();
                     }
                 }
-
-                async Task AssertGuardFail()
+                
+                async Task SimulateAnotherUnitOfWorkUpdatingSolosRecord()
                 {
-                    if (run == 3)
+                    if (run == 2)
                     {
-                        //Assert guard fail
-                        var c104TestUnitOfWork =
-                            Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
-                        var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                        log.Attempts[0] //* 0 is latest attempt they are inserted
-                           .Errors.Errors[0]
-                           .message.Should()
-                           .Be(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
+                        await store.UpdateById<User>(Ids.HanSolo, han => han.FirstName = "Harry");
+                        await store.CommitChanges();
                     }
                 }
 
                 async Task AssertRollback()
                 {
-                    if (run == 4)
+                    if (run == 3)
                     {
                         //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork =
-                            Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
+                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
-                        await RecordsShouldBeReturnToOriginalState(store);
+                        await RecordsShouldBeReturnToOriginalStateExceptSolo(store);
                     }
 
-                    async Task RecordsShouldBeReturnToOriginalState(DataStore store)
+                    async Task RecordsShouldBeReturnToOriginalStateExceptSolo(DataStore store)
                     {
                         //*creations
                         var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian")).SingleOrDefault();
@@ -84,9 +84,9 @@
                         boba.Should().BeNull();
 
                         //* updates
-                        var han = await store.ReadById<User>(Ids.HanSolo);
-                        han.FirstName.Should().Be(Aggregates.HanSolo.FirstName);
-                        han.LastName.Should().Be(Aggregates.HanSolo.LastName);
+                        var han = await store.ReadById<User>(Ids.HanSolo);  //* the change to han is not rolled back
+                        han.FirstName.Should().Be("Harry");
+                        han.LastName.Should().Be("Ford");
 
                         var leia = await store.ReadById<User>(Ids.PrincessLeia);
                         leia.Active.Should().BeTrue();
@@ -102,7 +102,7 @@
             }
 
             //act
-            var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
+            var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
 
             try
             {
