@@ -25,7 +25,7 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully);
 
-            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1); //should succeed on first retry
+            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook); 
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());

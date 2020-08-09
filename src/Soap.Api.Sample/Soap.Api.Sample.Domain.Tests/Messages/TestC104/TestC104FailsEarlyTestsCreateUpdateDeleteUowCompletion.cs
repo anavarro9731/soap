@@ -28,7 +28,12 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsEarlyInReplayThenCompletesRemainderOfUow);
 
-            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook, c104TestUnitOfWork.Headers.GetMessageId()); //should succeed on first retry
+            await ExecuteWithRetries(
+                c104TestUnitOfWork,
+                Identities.UserOne,
+                1,
+                beforeRunHook,
+                c104TestUnitOfWork.Headers.GetMessageId()); 
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
@@ -45,13 +50,13 @@
             void CountDataStoreOperationsSaved(MessageLogEntry log)
             {
                 log.UnitOfWork.DataStoreCreateOperations.Count.Should().Be(4);
-                log.UnitOfWork.DataStoreUpdateOperations.Count.Should().Be(4);
+                log.UnitOfWork.DataStoreUpdateOperations.Count.Should().Be(3);
                 log.UnitOfWork.DataStoreDeleteOperations.Count.Should().Be(1);
             }
 
             async Task beforeRunHook(DataStore store, int run)
             {
-                await FixLukesBrokenEtagSoItSucceeds();  
+                await FixLukesBrokenEtagSoItSucceeds();
                 /* this requires you to set the unitofworkid in the executewithretries call above
                  so that this history for lukes record will look like it was saved with the eTag
                  123456 below the first time. */

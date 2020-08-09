@@ -1,6 +1,5 @@
 ﻿namespace Sample.Tests.Messages
 {
-    using System.ComponentModel.Design;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
@@ -53,12 +52,14 @@
                         await store.CommitChanges();
                     }
                 }
-                
+
                 async Task SimulateAnotherUnitOfWorkUpdatingLandosRecord()
                 {
                     if (run == 2)
                     {
-                        await store.UpdateWhere<User>(u => u.UserName == "lando.calrissian", lando => lando.LastName = "Californian" );
+                        await store.UpdateWhere<User>(
+                            u => u.UserName == "lando.calrissian",
+                            lando => lando.LastName = "Californian");
                         await store.CommitChanges();
                     }
                 }
@@ -68,7 +69,8 @@
                     if (run == 3)
                     {
                         //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
+                        var c104TestUnitOfWork =
+                            Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
                         await RecordsShouldBeReturnToOriginalStateExceptLando(store);
@@ -111,7 +113,7 @@
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     2,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook); 
             }
             catch (PipelineException e)
             {

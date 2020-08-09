@@ -1,5 +1,10 @@
 ﻿namespace Soap.Tests
 {
+    using System;
+    using Newtonsoft.Json;
+    using Soap.Utility.Models;
+    using Xunit;
+
     public class FlaggedStateTests
     {
         public enum StatesSample

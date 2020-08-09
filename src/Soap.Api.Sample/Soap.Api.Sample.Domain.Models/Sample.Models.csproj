@@ -4,9 +4,9 @@
     <Version>0.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="13.4.0-alpha" />
+    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="13.7.0-alpha" />
     <PackageReference Include="Destructurama.Attributed" Version="1.1.0" />
-    <PackageReference Include="CircuitBoard" Version="3.0.0" />
+    <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Entities\" />

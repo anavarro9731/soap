@@ -9,6 +9,11 @@
     {
         private readonly List<IMessage> allMessages = new List<IMessage>();
 
+        public void Remove(IMessage message)
+        {
+            this.allMessages.Remove(message);
+        }
+
         public IReadOnlyList<IMessage> AllMessages => this.allMessages.AsReadOnly();
 
         public static MessageAggregator Create() => new MessageAggregator();

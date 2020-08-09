@@ -81,6 +81,7 @@
 
                         var luke = await store.ReadById<User>(Ids.LukeSkywalker);
                         luke.Should().NotBeNull();
+                        luke.LastName.Should().Be("Hamill");
                     }
                 }
             }
@@ -94,7 +95,7 @@
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     2,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook); 
             }
             catch (PipelineException e)
             {

@@ -1,5 +1,4 @@
-﻿
-namespace Sample.Tests.Messages
+﻿namespace Sample.Tests.Messages
 {
     using System.Linq;
     using System.Threading.Tasks;
@@ -54,7 +53,7 @@ namespace Sample.Tests.Messages
                         await store.CommitChanges();
                     }
                 }
-                
+
                 async Task SimulateAnotherUnitOfWorkDeletingLandosRecord()
                 {
                     if (run == 2)
@@ -69,7 +68,8 @@ namespace Sample.Tests.Messages
                     if (run == 3)
                     {
                         //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeCreatedThem);
+                        var c104TestUnitOfWork =
+                            Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeCreatedThem);
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
                         await RecordsShouldBeReturnToOriginalStateExceptLando(store);
@@ -78,7 +78,8 @@ namespace Sample.Tests.Messages
                     async Task RecordsShouldBeReturnToOriginalStateExceptLando(DataStore store)
                     {
                         //*creations
-                        var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian")).SingleOrDefault();  //* should ignore original state
+                        var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian"))
+                            .SingleOrDefault(); //* should ignore original state
                         lando.Should().BeNull();
 
                         var boba = (await store.Read<User>(x => x.UserName == "boba.fett")).SingleOrDefault();
@@ -88,7 +89,6 @@ namespace Sample.Tests.Messages
                         var han = await store.ReadById<User>(Ids.HanSolo);
                         han.FirstName.Should().Be(Aggregates.HanSolo.FirstName);
                         han.LastName.Should().Be(Aggregates.HanSolo.LastName);
-
 
                         var leia = await store.ReadById<User>(Ids.PrincessLeia);
                         leia.Active.Should().BeTrue();
@@ -112,7 +112,7 @@ namespace Sample.Tests.Messages
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     2,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook);
             }
             catch (PipelineException e)
             {

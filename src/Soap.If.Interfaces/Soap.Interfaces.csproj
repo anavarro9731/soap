@@ -5,7 +5,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces" Version="13.4.0-alpha" />
+    <PackageReference Include="DataStore.Interfaces" Version="13.7.0-alpha" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.If.Utility\Soap.Utility.csproj" />

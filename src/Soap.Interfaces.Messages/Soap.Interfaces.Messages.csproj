@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CircuitBoard" Version="3.0.0" />
+    <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
   </ItemGroup>
 
 </Project>

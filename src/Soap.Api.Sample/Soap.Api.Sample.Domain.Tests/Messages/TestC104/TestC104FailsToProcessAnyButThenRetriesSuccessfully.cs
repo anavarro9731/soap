@@ -26,7 +26,7 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully);
 
-            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook); //should succeed on first retry
+            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook); 
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
@@ -41,7 +41,7 @@
             }
         }
 
-        async Task beforeRunHook(DataStore store, int run)
+        private async Task beforeRunHook(DataStore store, int run)
         {
             await AssertGuardFail();
 

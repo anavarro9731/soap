@@ -5,6 +5,7 @@
     using DataStore;
     using FluentAssertions;
     using Sample.Models.Aggregates;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Logging;
@@ -22,7 +23,7 @@
         [Fact]
         /*  Run 1 etag failure on the first item in the uow
             PreRun Check no records were changed
-            Run 2 fails because etag is still broken 
+            Run 2 won't process because it see's first record as uncommittable an considers everything as rolled back
          */
         public async void CheckConsideredAsRolledBackWhenFirstItemFails()
         {
@@ -39,13 +40,20 @@
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
                         await RecordsShouldBeReturnToOriginalState(store);
+                        await SimulateAnotherUnitOfWorkChangingLukesRecord();
                     }
-
-                    void CountDataStoreOperationsSaved(MessageLogEntry log)
+                }
+                
+                async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
+                {
+                    //* luke's record is the only one not yet committed but since we faked a concurrency error in
+                    //the change we now need to reflect that in the underlying data for the next run to calculate correctly
+                    if (run == 2)
                     {
-                        log.UnitOfWork.DataStoreCreateOperations.Count.Should().Be(2);
-                        log.UnitOfWork.DataStoreUpdateOperations.Count.Should().Be(4); //* includes extra one for this test 
-                        log.UnitOfWork.DataStoreDeleteOperations.Count.Should().Be(1);
+                        await store.UpdateById<User>(
+                            Ids.LukeSkywalker,
+                            luke => luke.Roles.Add(new Role { Name = "doesnt matter just make a change to add a history item" }));
+                        await store.CommitChanges();
                     }
                 }
 
@@ -72,6 +80,7 @@
 
                     var luke = await store.ReadById<User>(Ids.LukeSkywalker);
                     luke.Should().NotBeNull();
+                    luke.LastName.Should().Be("Hamill");
                 }
             }
 
@@ -84,7 +93,7 @@
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     1,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook); 
             }
             catch (PipelineException e)
             {

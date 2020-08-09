@@ -21,6 +21,11 @@
             this.allMessages.Clear();
         }
 
+        public void Remove(IMessage message)
+        {
+            this.allMessages.Remove(message);
+        }
+
         public IPropogateMessages<TMessage> CollectAndForward<TMessage>(TMessage message) where TMessage : IMessage
         {
             this.allMessages.Add(message);

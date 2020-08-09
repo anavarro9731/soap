@@ -25,7 +25,7 @@
                 await ExecuteWithRetries(
                     Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork),
                     Identities.UserOne,
-                    3);
+                    2);
 
                 throw new Exception("Should not reach this");
             }

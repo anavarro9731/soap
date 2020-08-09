@@ -53,7 +53,7 @@
                         await store.CommitChanges();
                     }
                 }
-                
+
                 async Task SimulateAnotherUnitOfWorkUpdatingSolosRecord()
                 {
                     if (run == 2)
@@ -68,7 +68,8 @@
                     if (run == 3)
                     {
                         //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
+                        var c104TestUnitOfWork =
+                            Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
                         await RecordsShouldBeReturnToOriginalStateExceptSolo(store);
@@ -84,7 +85,7 @@
                         boba.Should().BeNull();
 
                         //* updates
-                        var han = await store.ReadById<User>(Ids.HanSolo);  //* the change to han is not rolled back
+                        var han = await store.ReadById<User>(Ids.HanSolo); //* the change to han is not rolled back
                         han.FirstName.Should().Be("Harry");
                         han.LastName.Should().Be("Ford");
 
@@ -110,7 +111,7 @@
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     2,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook); 
             }
             catch (PipelineException e)
             {

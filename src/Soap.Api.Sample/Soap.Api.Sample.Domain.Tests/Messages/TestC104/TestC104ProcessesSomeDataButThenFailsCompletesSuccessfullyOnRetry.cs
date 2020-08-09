@@ -33,7 +33,7 @@
                 Identities.UserOne,
                 1,
                 beforeRunHook,
-                c104TestUnitOfWork.Headers.GetMessageId()); //should succeed on first retry
+                c104TestUnitOfWork.Headers.GetMessageId()); 
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());

@@ -52,10 +52,9 @@
                         await store.CommitChanges();
                     }
                 }
-                
+
                 async Task SimulateAnotherUnitOfWorkDeletingSolosRecord()
                 {
-                    
                     if (run == 2)
                     {
                         await store.DeleteById<User>(Ids.HanSolo, options => options.Permanently());
@@ -68,7 +67,8 @@
                     if (run == 3)
                     {
                         //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem);
+                        var c104TestUnitOfWork =
+                            Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem);
                         var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                         CountDataStoreOperationsSaved(log);
                         await RecordsShouldBeReturnToOriginalStateExceptSolo(store);
@@ -84,7 +84,7 @@
                         boba.Should().BeNull();
 
                         //* updates
-                        var han = await store.ReadById<User>(Ids.HanSolo);  //* the delete to han is not rolled back
+                        var han = await store.ReadById<User>(Ids.HanSolo); //* the delete to han is not rolled back
                         han.Should().BeNull();
 
                         var leia = await store.ReadById<User>(Ids.PrincessLeia);
@@ -109,7 +109,7 @@
                     c104TestUnitOfWork,
                     Identities.UserOne,
                     2,
-                    beforeRunHook); //should succeed on first retry
+                    beforeRunHook); 
             }
             catch (PipelineException e)
             {

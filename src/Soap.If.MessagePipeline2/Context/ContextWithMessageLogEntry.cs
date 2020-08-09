@@ -202,11 +202,15 @@
                     return result;
                 }
 
-                //* a rollback was completed or we failed committing the first item (e.g. first item failed concurrency check)
+                /* a rollback was completed or we failed after committing the unit of work but before committing the first item
+                (e.g. first item failed concurrency check) in is possible that like the server crashes or something in the aforementioned
+                window and then we assume incorrectly the uow cannot be completed but for now its good enough since there is literally
+                no lines of code between those two steps, maybe in future TODO split these cases */
                 static bool HasNotStartedOrWasRolledBackButCannotFinish(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
+                    
                     var result = records.All(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
                     return result;
