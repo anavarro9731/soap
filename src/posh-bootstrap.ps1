@@ -3,7 +3,6 @@ Import-Module ".\load-modules.psm1" -Verbose -Global -Force
 Remove-Item ".\load-modules.psm1" -Verbose -Recurse
 Load-Modules
 
-
 #expose this function like a CmdLet
 function global:Run {
 
@@ -11,63 +10,39 @@ function global:Run {
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
-        [Alias('k')]
-        [string] $nugetApiKey
+		[Alias('nuget-key')]
+		[string] $nugetApiKey,
+		[Alias('ado-pat')]
+		[string] $azureDevopsPat,
+		[string] $forceVersion
 	)
-	
+
 	if ($PrepareNewVersion) {
 		Prepare-NewVersion -projects @(
-			"Soap.Integrations.Mailgun",
-			"Soap.If.Interfaces",
-			"Soap.If.MessagePipeline",
-			"Soap.If.Utility",
-			"Soap.Pf.ClientServerMessaging",
-			"Soap.Pf.DomainTestsBase",
-			"Soap.Pf.EndpointClients",
-			"Soap.Pf.EndpointInfrastructure",
-			"Soap.Pf.EndpointTestsBase",
-			"Soap.Pf.HttpEndpointBase",
-			"Soap.Pf.MessageContractsBase",
-			"Soap.Pf.DomainLogicBase",
-			"Soap.Pf.DomainModelsBase",
-			"Soap.Pf.MsmqEndpointBase",
-			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Msmq"
-			)
+		"Soap.Interfaces.Config",
+		"Soap.Interfaces.Config",
+		"Soap.Interfaces.Config",
+		"Soap.Interfaces.Config",
+		"Soap.Interfaces.Config",
+		"Soap.Interfaces.Config"
+		) `
+        -azureDevopsProject "soap" `
+        -azureDevopsOrganisation "anavarro9731" `
+        -azureDevopsPat $azureDevopsPat `
+        -repository "soap" `
+        -forceVersion $forceVersion
 	}
 
 	if ($BuildAndTest) {
 		Build-And-Test -testProjects @(
-			"Soap.Tests"
-			)
+		)
 	}
 
-    if ($PackAndPublish) {
-        Pack-And-Publish -standardProjects @(
-			"Soap.Integrations.Mailgun",
-			"Soap.If.Interfaces",
-			"Soap.If.MessagePipeline",
-			"Soap.If.Utility",
-			"Soap.Pf.ClientServerMessaging",
-			"Soap.Pf.DomainTestsBase",
-			"Soap.Pf.EndpointClients",
-			"Soap.Pf.EndpointInfrastructure",
-			"Soap.Pf.EndpointTestsBase",
-			"Soap.Pf.HttpEndpointBase",
-			"Soap.Pf.MessageContractsBase",
-			"Soap.Pf.DomainLogicBase",
-			"Soap.Pf.DomainModelsBase",
-			"Soap.Pf.MsmqEndpointBase"
-			) `
-        -unlistedProjects @(
-            "Soap.If.Interfaces",
-			"Soap.If.MessagePipeline",
-			"Soap.If.Utility") `
-        -octopusProjects @(
-            "Soap.Api.Sso\Soap.Api.Sso.Endpoint.Http",
-			"Soap.Api.Sso\Soap.Api.Sso.Endpoint.Msmq") `
-        -nugetFeedUri "https://www.myget.org/F/anavarro9731/api/v2/package" `
-        -nugetSymbolFeedUri "https://www.myget.org/F/anavarro9731/symbols/api/v2/package" `
-        -nugetApiKey $nugetApiKey 
-    }
+	if ($PackAndPublish) {
+		Pack-And-Publish -allProjects @(
+		"Soap.Interfaces.Config"
+		) -unlistedProjects @(
+		) `
+        -nugetApiKey $nugetApiKey
+	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace Soap.NotificationServer
 {
-    public class Notification
+  public class Notification 
     {
         public string Body;
 

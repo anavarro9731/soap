@@ -1,4 +1,4 @@
-﻿//namespace Soap.NotificationServer.Channels
+﻿ //namespace Soap.NotificationServer.Channels
 //{
 //    using System;
 //    using System.Collections.Generic;

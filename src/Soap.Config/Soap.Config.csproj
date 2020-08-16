@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+        <Version>0.47.0</Version>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DataStore.Interfaces" Version="13.7.0-alpha" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
+      <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
+    </ItemGroup>
+
+</Project>

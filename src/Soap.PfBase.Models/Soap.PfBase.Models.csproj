@@ -2,14 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
-    <PackageReference Include="FluentValidation" Version="8.6.2" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
   </ItemGroup>
+
 </Project>

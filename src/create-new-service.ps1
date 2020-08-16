@@ -1,4 +1,4 @@
-unction Test-IsGitInstalled
+Function Test-IsGitInstalled
 {
     $32BitPrograms = Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*
     $64BitPrograms = Get-ItemProperty     HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*
@@ -64,7 +64,7 @@ Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 
 dotnet new sln -n $NewName
 
-Get-ChildItem -Recurse -File -Filter “*.csproj” | ForEach-Object { dotnet sln add $_.FullName }
+Get-ChildItem -Recurse -File -Filter ï¿½*.csprojï¿½ | ForEach-Object { dotnet sln add $_.FullName }
 
 cd ..
 

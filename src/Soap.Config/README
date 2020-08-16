@@ -1,0 +1,7 @@
+﻿This should only be referenced by the Api project itself.
+
+It references other assemblies with the concrete versions of interface implementations that are only referenced by interface throughout the pipeline.
+
+The consequences of referencing this in the pipeline would not be noticeable at first, but it would destroy the benefits of using interfaces in the pipeline 
+
+for things like the Bus.

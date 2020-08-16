@@ -11,10 +11,10 @@
 
         private readonly Settings settings;
 
-        public NotificationServer(Settings settings, List<INotificationChannelSettings> channelSettings)
+        public NotificationServer(Settings settings)
         {
             this.settings = settings;
-            channelSettings.ForEach(s => this.channels.Add(s.CreateChannel()));
+            settings.ChannelSettings.ForEach(s => this.channels.Add(s.CreateChannel()));
         }
 
         /// <summary>
@@ -27,14 +27,14 @@
         /// <returns></returns>
         public async Task Notify(Notification notification, params IUserChannelInfo[] selectedUserChannels)
         {
-            foreach (var channelType in selectedUserChannels)
-                switch (channelType)
+            foreach (var userChannelInfo in selectedUserChannels)
+                switch (userChannelInfo)
                 {
-                    case { } email when email.Type == NotificationChannelTypes.Email:
+                    case { } channelInfo when channelInfo.Type == NotificationChannelTypes.Email:
                         await this.channels.SingleOrDefault(x => x.Type == NotificationChannelTypes.Email)?.Send(notification);
                         break;
 
-                    case { } inmemory when inmemory.Type == NotificationChannelTypes.InMemory:
+                    case { } channelInfo when channelInfo.Type == NotificationChannelTypes.InMemory:
                         await this.channels.SingleOrDefault(x => x.Type == NotificationChannelTypes.InMemory)?.Send(notification);
                         break;
                     default:
@@ -46,7 +46,7 @@
         {
             public List<INotificationChannelSettings> ChannelSettings { get; set; } = new List<INotificationChannelSettings>();
 
-            public NotificationServer CreateServer() => new NotificationServer(this, ChannelSettings);
+            public NotificationServer CreateServer() => new NotificationServer(this);
 
             public class Validator : AbstractValidator<Settings>
             {
