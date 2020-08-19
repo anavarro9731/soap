@@ -36,7 +36,7 @@ function global:Run {
 		) `
         -azureDevopsProject "soap" `
         -azureDevopsOrganisation "anavarro9731" `
-        -azureDevopsPat  "y6gg7funryd4ffv32s4fugxzqgjpeqz5gl4xi2dftdf7mcb5pkia"`
+        -azureDevopsPat  "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq"`
         -repository "soap" `
         -forceVersion $forceVersion
 	}
