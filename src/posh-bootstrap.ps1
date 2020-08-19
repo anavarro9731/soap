@@ -44,6 +44,7 @@ function global:Run {
 		"Soap.Config"
 		) -unlistedProjects @(
 		) `
-        -nugetApiKey $nugetApiKey
+        -nugetApiKey $nugetApiKey `
+		-nugetFeedUri "https://pkgsn.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
 	}
 }

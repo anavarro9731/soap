@@ -1,0 +1,23 @@
+﻿trigger:
+  branches:
+    include:
+      - master
+      - releases/*
+  paths:
+    include:
+      - src/.version
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+
+  - powershell: |
+      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
+      Run -BuildAndTest   
+    displayName: 'Build and Test'
+
+  - powershell: |
+      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
+      Run -PackAndPublish -nuget-key $(nuget-api-key)   
+    displayName: 'Pack and Publish'

@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		posh-bootstrap.ps1 = posh-bootstrap.ps1
 		HomeController.cs = HomeController.cs
 		HttpApiClient.cs = HttpApiClient.cs
+		azure-pipelines.yml = azure-pipelines.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Soap.Infrastructure", "Soap.Infrastructure", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
