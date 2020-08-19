@@ -2,6 +2,7 @@
 {
     using System.Reflection;
     using DataStore.Interfaces;
+    using FluentValidation;
     using Soap.Bus;
     using Soap.NotificationServer;
 
@@ -34,5 +35,19 @@
         public NotificationServer.Settings NotificationSettings { get; set; } = new NotificationServer.Settings();
 
         public bool ReturnExplicitErrorMessages { get; set; }
+
+        public void Validate() => new Validator().ValidateAndThrow(this);
+
+        public class Validator : AbstractValidator<ApplicationConfig>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.AppEnvId).NotNull();
+                RuleFor(x => x.ApplicationName).NotEmpty();
+                RuleFor(x => x.BusSettings).NotNull();
+                RuleFor(x => x.DatabaseSettings).NotNull();
+                RuleFor(x => x.LogSettings).NotNull();
+            }
+        }
     }
 }
