@@ -26,10 +26,10 @@ function global:Run {
 		"Soap.PfBase.Models",
 		"Soap.PfBase.Messages"
 		) `
-        -azureDevopsProject "soap.config" `
+        -azureDevopsProject "soap" `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsPat  "y6gg7funryd4ffv32s4fugxzqgjpeqz5gl4xi2dftdf7mcb5pkia"`
-        -repository "soap.config" `
+        -repository "soap" `
         -forceVersion $forceVersion
 	}
 
