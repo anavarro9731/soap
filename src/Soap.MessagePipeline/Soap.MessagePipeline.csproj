@@ -1,14 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>1.2.0-alpha</Version>
-
+    <Version>1.3.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DataStore" Version="13.7.0-alpha" />
     <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
-
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Config\Soap.Config.csproj" />
