@@ -9,6 +9,7 @@
 
     public static class ReceiveMessage
     {
+        
         [FunctionName("Receive")]
         public static async Task RunAsync(
             [ServiceBusTrigger("testqueue1", Connection = "sb-soap-dev")]
