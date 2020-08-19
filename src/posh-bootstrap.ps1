@@ -19,12 +19,20 @@ function global:Run {
 
 	if ($PrepareNewVersion) {
 		Prepare-NewVersion -projects @(
+		"Soap.Auth0",
+		"Soap.Bus",
 		"Soap.Config",
+		"Soap.Context",
+		"Soap.Interfaces",
+		"Soap.Interfaces.Messages",
+		"Soap.MessagePipeline",
+		"Soap.NotificationServer",
 		"Soap.PfBase.Api",
 		"Soap.PfBase.Logic",
 		"Soap.PfBase.Tests",
 		"Soap.PfBase.Models",
-		"Soap.PfBase.Messages"
+		"Soap.PfBase.Messages",
+		"Soap.Utility"
 		) `
         -azureDevopsProject "soap" `
         -azureDevopsOrganisation "anavarro9731" `
