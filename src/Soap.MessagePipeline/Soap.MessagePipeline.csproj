@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>0.47.0</Version>
+
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DataStore" Version="13.7.0-alpha" />

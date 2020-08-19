@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Soap.Pf.MessageContractsBase</RootNamespace>
+    <Version>0.47.0</Version>
+
   </PropertyGroup>
 
   <ItemGroup>
