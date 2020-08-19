@@ -16,7 +16,7 @@
         public IApiIdentity Authenticate(ApiMessage message)
         {
             var x = this.createIdentity();
-            x.UserName = "o2simple";
+            x.UserName = "john.doe";
             return x;
         }
     }
