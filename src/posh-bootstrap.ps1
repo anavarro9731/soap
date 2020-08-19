@@ -53,6 +53,6 @@ function global:Run {
 		) -unlistedProjects @(
 		) `
         -nugetApiKey $nugetApiKey `
-		-nugetFeedUri "https://pkgsn.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
+		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
 	}
 }
