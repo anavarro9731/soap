@@ -56,6 +56,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Context", "Soap.Contex
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.PfBase.Api", "Soap.PfBase.Api\Soap.PfBase.Api.csproj", "{E6984C51-4153-42D9-8748-95A2ED4E49EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.UnitTests", "Soap.UnitTests\Soap.UnitTests.csproj", "{21C2A709-C370-4DE4-8879-8F20B8FA6572}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -306,6 +308,18 @@ Global
 		{E6984C51-4153-42D9-8748-95A2ED4E49EB}.Release|x64.Build.0 = Release|Any CPU
 		{E6984C51-4153-42D9-8748-95A2ED4E49EB}.Release|x86.ActiveCfg = Release|Any CPU
 		{E6984C51-4153-42D9-8748-95A2ED4E49EB}.Release|x86.Build.0 = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|x64.Build.0 = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Debug|x86.Build.0 = Debug|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|x64.ActiveCfg = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|x64.Build.0 = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|x86.ActiveCfg = Release|Any CPU
+		{21C2A709-C370-4DE4-8879-8F20B8FA6572}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

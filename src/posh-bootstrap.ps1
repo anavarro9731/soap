@@ -43,7 +43,7 @@ function global:Run {
 
 	if ($BuildAndTest) {
 		Build-And-Test -testProjects @(
-		"Soap.PfBase.Tests"
+		"Soap.UnitTests"
 		)
 	}
 

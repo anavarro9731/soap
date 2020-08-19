@@ -1,4 +1,4 @@
-﻿namespace Soap.Tests
+﻿namespace Soap.UnitTests
 {
     using System;
     using Newtonsoft.Json;
