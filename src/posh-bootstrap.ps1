@@ -49,8 +49,21 @@ function global:Run {
 
 	if ($PackAndPublish) {
 		Pack-And-Publish -allProjects @(
-		"Soap.Config"
+		"Soap.PfBase.Api",
+		"Soap.PfBase.Logic",
+		"Soap.PfBase.Tests",
+		"Soap.PfBase.Models",
+		"Soap.PfBase.Messages"
 		) -unlistedProjects @(
+		"Soap.Auth0",
+		"Soap.Bus",
+		"Soap.Config",
+		"Soap.Context",
+		"Soap.Interfaces",
+		"Soap.Interfaces.Messages",
+		"Soap.MessagePipeline",
+		"Soap.NotificationServer",
+		"Soap.Utility"
 		) `
         -nugetApiKey $nugetApiKey `
 		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
