@@ -10,6 +10,10 @@
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
 
+    /// <summary>
+    /// $$REMOVE-IN-COPY$$
+    /// Not really representative of user operations, too specific, uses undocumented features for testing UOW
+    /// </summary>
     public class UserOperations : Operations<User>
     {
         

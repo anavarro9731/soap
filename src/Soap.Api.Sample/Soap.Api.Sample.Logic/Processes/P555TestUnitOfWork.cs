@@ -11,6 +11,10 @@
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
 
+    /// <summary>
+    /// $$REMOVE-IN-COPY$$
+    /// This is not a normal process and uses a number of undocumented features
+    /// </summary>
     public class P555TestUnitOfWork : Process, IBeginProcess<C104TestUnitOfWork>
     {
         public Func<C104TestUnitOfWork, Task> BeginProcess =>
