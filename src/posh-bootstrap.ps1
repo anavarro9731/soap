@@ -53,17 +53,17 @@ function global:Run {
 		"Soap.PfBase.Logic",
 		"Soap.PfBase.Tests",
 		"Soap.PfBase.Models",
-		"Soap.PfBase.Messages"
-		) -unlistedProjects @(
+		"Soap.PfBase.Messages",
+		"Soap.Config",
 		"Soap.Auth0",
 		"Soap.Bus",
-		"Soap.Config",
 		"Soap.Context",
 		"Soap.Interfaces",
 		"Soap.Interfaces.Messages",
 		"Soap.MessagePipeline",
 		"Soap.NotificationServer",
 		"Soap.Utility"
+		) -unlistedProjects @(
 		) `
         -nugetApiKey $nugetApiKey `
 		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
