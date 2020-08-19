@@ -2,13 +2,13 @@
 {
     public interface IBootstrapVariables
     {
+        AppEnvIdentifier AppEnvId { get; }
+
         string ApplicationName { get; set; }
 
-        string ApplicationVersion { get; set; }
+        string ApplicationVersion { get; }
 
         string DefaultExceptionMessage { get; set; }
-
-        string EnvironmentName { get; set; }
 
         bool ReturnExplicitErrorMessages { get; set; }
     }

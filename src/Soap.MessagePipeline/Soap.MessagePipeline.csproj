@@ -5,15 +5,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DataStore" Version="13.7.0-alpha" />
-    <PackageReference Include="Serilog" Version="2.9.0" />
     <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
 
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Config\Soap.Config.csproj" />
-    <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
-    <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
-    <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
+    <ProjectReference Include="..\Soap.Context\Soap.Context.csproj" />
     <ProjectReference Include="..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj" />
   </ItemGroup>
 </Project>

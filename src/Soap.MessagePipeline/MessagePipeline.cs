@@ -13,6 +13,10 @@
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
 
+    //TODO move classes like ops and processes into logicbase so you can remove messagepipeline from
+    //logicbase and create a new servicebase which takes messagepipeline and adds the function below
+    //and references config the project into the forthcoming config repo will do the same
+    
     public static class MessagePipeline
     {
         public static async Task Execute(string messageJson, string assemblyQualifiedName, Func<BoostrappedContext> getContext)
@@ -46,10 +50,10 @@
 
                 try
                 {
-                    /* THIS MUST BE SET AT THIS LEVEL. SETTING IT LOWER WILL LOSE THE VALUE WHEN THE
-                     CALLSTACK POPS TO THIS LEVEL AND MEAN IT IS NOT AVAILABLE TO THE PROCESSMESSAGE CALL
-                    Floating the context via method-injection is too cumbersome and DI requires parameterised
-                    constructor which cannot be create via generics. */
+                    /* THIS MUST BE SET AT THIS LEVEL. SETTING IT LOWER (via say a method on the context called from
+                     this level) WILL LOSE THE VALUE WHEN THE CALLSTACK POPS TO THIS LEVEL AND MEAN IT IS NOT AVAILABLE TO THE PROCESSMESSAGE CALL
+                     It has to be set DIRECTLY from this level. Floating the context via method-injection is too cumbersome and 
+                     DI requires a parameterised constructor which cannot be create via generics. */
                     ContextWithMessageLogEntry.Instance.Value = matureContext;
 
                     await ProcessMessage(matureContext);

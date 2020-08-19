@@ -26,7 +26,7 @@
 
         public string Schema { get; set; }
 
-        public bool Succeeded { get; internal set; }
+        public bool Succeeded { get; set; }
 
         public string UserName { get; set; }
     }

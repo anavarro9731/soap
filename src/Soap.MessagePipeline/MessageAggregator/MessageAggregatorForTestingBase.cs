@@ -6,7 +6,6 @@ namespace Soap.MessagePipeline.MessageAggregator
     using DataStore.Interfaces.Operations;
     using Soap.Bus;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.UnitOfWork;
 
     public abstract class MessageAggregatorForTestingBase
     {

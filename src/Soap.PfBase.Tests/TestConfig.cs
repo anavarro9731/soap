@@ -23,7 +23,7 @@ public class TestConfig : IBootstrapVariables
 
     public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
 
-    public string EnvironmentName { get; set; } = "Test";
+    public AppEnvIdentifier AppEnvId { get; set; } = new AppEnvIdentifier("Domain Tests", SoapEnvironments.InMemory);
 
     public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
     {

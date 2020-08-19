@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
+      <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
+      <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DataStore" Version="13.7.0-alpha" />
+      <PackageReference Include="Serilog" Version="2.9.0" />
+    </ItemGroup>
+
+</Project>

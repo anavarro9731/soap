@@ -19,7 +19,7 @@
 
         private readonly TopicClient topicClient = null;
 
-        public AzureBus(IMessageAggregator messageAggregator, BusSettings settings)
+        public AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
             this.messageAggregator = messageAggregator;
             //- TODO initialise  clients from settings
@@ -78,9 +78,9 @@
             return Task.CompletedTask;
         }
 
-        public class BusSettings : IBusSettings
+        public class Settings : IBusSettings
         {
-            public BusSettings(byte numberOfApiMessageRetries, string queueConnectionString)
+            public Settings(byte numberOfApiMessageRetries, string queueConnectionString)
             {
                 this.NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 this.QueueConnectionString = queueConnectionString;
@@ -90,7 +90,7 @@
 
             public string QueueConnectionString { get; set; }
 
-            public class Validator : AbstractValidator<BusSettings>
+            public class Validator : AbstractValidator<Settings>
             {
                 public Validator()
                 {

@@ -1,10 +1,9 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.MessagePipeline
 {
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
@@ -15,6 +14,7 @@
     using Soap.Bus;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.MessagePipeline;
     using Soap.MessagePipeline.UnitOfWork;
@@ -22,22 +22,7 @@
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
 
-    public class ContextWithMessageLogEntry : ContextWithMessage
-    {
-        internal static readonly AsyncLocal<ContextWithMessageLogEntry> Instance = new AsyncLocal<ContextWithMessageLogEntry>();
-
-        public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ContextWithMessage current)
-            : base(current)
-        {
-            MessageLogEntry = messageLogEntry;
-        }
-
-        public static ContextWithMessageLogEntry Current => Instance.Value;
-
-        public MessageLogEntry MessageLogEntry { get; }
-    }
-
-    public static class ContextAfterMessageLogEntryObtainedExtensions
+    public static class ContextWithMessageLogEntryExtensions
     {
         public static async Task CommitChanges(this ContextWithMessageLogEntry context)
         {
@@ -49,7 +34,7 @@
                 + " to the perimeter");
 
             /* from this point on we can crash, throw, lose power, it won't matter all
-            will be continued when the message is next dequeued, updates using a new datastore instance not in session */
+        will be continued when the message is next dequeued, updates using a new datastore instance not in session */
             await context.SaveUnitOfWork();
 
             Guard.Against(
@@ -76,7 +61,7 @@
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
-             hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. */
+         hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. */
             foreach (var queuedStateChange in context.GetQueuedChanges())
             {
                 await queuedStateChange.CommitClosure();
@@ -90,26 +75,26 @@
             context.MessageAggregator.Collect(queuedStateChange);
         }
 
-        internal static async Task<UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
+        internal static async Task<UnitOfWork.UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
             this ContextWithMessageLogEntry context)
         {
             {
                 /* check the ds UoW's look ahead first to see if there are potential conflicts
-                 if there are then we can assume that is why we failed last time and we should rollback any remaining items
-                 starting with the creates and updates since they are the ones that other people could have seen
-                 and finally returning AllRolledBack */
+             if there are then we can assume that is why we failed last time and we should rollback any remaining items
+             starting with the creates and updates since they are the ones that other people could have seen
+             and finally returning AllRolledBack */
 
                 //- don't recalculate these expensive ops
                 var records = await WaitForAllRecords(context.MessageLogEntry.UnitOfWork, context.DataStore);
 
                 return context.MessageLogEntry.UnitOfWork switch
                 {
-                    var u when IsEmpty(u) => UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
+                    var u when IsEmpty(u) => UnitOfWork.UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
                     _ => await AttemptCompletion(records, context)
                 };
             }
 
-            static async Task<UnitOfWork.State> AttemptCompletion(
+            static async Task<UnitOfWork.UnitOfWork.State> AttemptCompletion(
                 List<UnitOfWorkExtensions.Record> records,
                 ContextWithMessageLogEntry context)
             {
@@ -124,13 +109,14 @@
                                                                                context.DataStore.DocumentRepository,
                                                                                context),
                     var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
-                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork
+                                                                                                  .UnitOfWork.State.AllRolledBack,
                     var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
                 };
 
-                static async Task<UnitOfWork.State> RollbackRemaining(
+                static async Task<UnitOfWork.UnitOfWork.State> RollbackRemaining(
                     List<UnitOfWorkExtensions.Record> records,
                     IDocumentRepository documentRepository,
                     ContextWithMessageLogEntry context)
@@ -140,13 +126,13 @@
                                                    .OrderBy(x => x.Superseded == false) //* if its already superseded no rush
                                                    .ThenBy(
                                                        x => x.UowItem.OperationType
-                                                            == DataStoreUnitOfWorkItem
-                                                               .OperationTypes
-                                                               .Create) //* probably biggest risk as we have to remove them
+                                                            == DataStoreUnitOfWorkItem.OperationTypes
+                                                                                      .Create) //* probably biggest risk as we have to remove them
                                                    .ThenBy(
                                                        x => x.UowItem.OperationType
-                                                            == DataStoreUnitOfWorkItem.OperationTypes.Update); //* no one can really delete a deleted record (save edge cases eg. where another uow rolling back resurrects it)
-                    
+                                                            == DataStoreUnitOfWorkItem.OperationTypes
+                                                                                      .Update); //* no one can really delete a deleted record (save edge cases eg. where another uow rolling back resurrects it)
+
                     foreach (var record in recordsToRollback)
                     {
                         Guard.Against(
@@ -154,14 +140,14 @@
                             && context.MessageLogEntry.Attempts.Count == 1
                             && record.UowItem.ObjectId == Guid.Parse("715fb00d-f856-42b9-822e-fc0510c6fab5"),
                             SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
-                        
+
                         if (!record.Superseded)
                         {
                             await record.UowItem.Rollback(Delete, Create, ResetTo);
                         }
-                    } 
+                    }
 
-                    return UnitOfWork.State.AllRolledBack;
+                    return UnitOfWork.UnitOfWork.State.AllRolledBack;
 
                     Task Delete<T>(T arg) where T : IAggregate => documentRepository.DeleteAsync(arg);
 
@@ -178,7 +164,7 @@
                     }
                 }
 
-                static async Task<UnitOfWork.State> CompleteDataAndMessages(
+                static async Task<UnitOfWork.UnitOfWork.State> CompleteDataAndMessages(
                     List<UnitOfWorkExtensions.Record> records,
                     ContextWithMessageLogEntry context)
                 {
@@ -186,11 +172,11 @@
                     return await CompleteMessages(context);
                 }
 
-                static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
+                static async Task<UnitOfWork.UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
                     await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus, context.DataStore);
                     await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
-                    return UnitOfWork.State.AllComplete;
+                    return UnitOfWork.UnitOfWork.State.AllComplete;
                 }
 
                 //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
@@ -203,21 +189,20 @@
                 }
 
                 /* a rollback was completed or we failed after committing the unit of work but before committing the first item
-                (e.g. first item failed concurrency check) in is possible that like the server crashes or something in the aforementioned
-                window and then we assume incorrectly the uow cannot be completed but for now its good enough since there is literally
-                no lines of code between those two steps, maybe in future TODO split these cases */
+            (e.g. first item failed concurrency check) in is possible that like the server crashes or something in the aforementioned
+            window and then we assume incorrectly the uow cannot be completed but for now its good enough since there is literally
+            no lines of code between those two steps, maybe in future TODO split these cases */
                 static bool HasNotStartedOrWasRolledBackButCannotFinish(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
                 {
-                    
                     var result = records.All(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
                     return result;
                 }
 
                 /* could be from messages or just the complete flag itself, in any case the complete
-                method can be called and it will skip over the completed methods */
+            method can be called and it will skip over the completed methods */
                 static bool CompletedDataButNotMarkedAsCompleted(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
@@ -243,7 +228,7 @@
                 }
             }
 
-            static bool IsEmpty(UnitOfWork u)
+            static bool IsEmpty(UnitOfWork.UnitOfWork u)
             {
                 var result = !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
                              && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
@@ -254,12 +239,12 @@
             {
                 {
                     /* use order most likely to cause an eTag violation so that we minimize the number of items
-                     needing to be rolled back. 
-                     Take updates first whose records probably existed for a while and prioritize those that are modified recently.
-                     Deletes dont cause eTag violations and neither do creates so doesn't really matter there
-                     but we'll take items being deleted whose model was modified recently as a sign of activity on that 
-                     aggregate and take those first
-                    */
+                 needing to be rolled back. 
+                 Take updates first whose records probably existed for a while and prioritize those that are modified recently.
+                 Deletes dont cause eTag violations and neither do creates so doesn't really matter there
+                 but we'll take items being deleted whose model was modified recently as a sign of activity on that 
+                 aggregate and take those first
+                */
 
                     var incompleteRecords = records
                                             .Where(
@@ -268,7 +253,7 @@
                                             .OrderBy(
                                                 x => x.UowItem.OperationType == DataStoreUnitOfWorkItem.OperationTypes.Update)
                                             .ThenByDescending(
-                                                x => x.UowItem.BeforeModel?.Deserialise<IAggregate>() 
+                                                x => x.UowItem.BeforeModel?.Deserialise<IAggregate>()
                                                       .ModifiedAsMillisecondsEpochTime)
                                             .ToList();
 
@@ -295,11 +280,11 @@
                 }
             }
 
-            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
+            static async Task SendAnyUnsentMessages(UnitOfWork.UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
             {
                 /* cannot rollback messages, forward only,
-            it's not the same risk as data though since there are no concurrency issues
-            it's really only infrastructure problems that would stop you here */
+        it's not the same risk as data though since there are no concurrency issues
+        it's really only infrastructure problems that would stop you here */
                 var incompleteCommands =
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var commands = incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList();
@@ -312,7 +297,9 @@
                 await busContext.CommitChanges();
             }
 
-            static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(UnitOfWork unitOfWork, IDataStore dataStore)
+            static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(
+                UnitOfWork.UnitOfWork unitOfWork,
+                IDataStore dataStore)
             {
                 var records = new List<UnitOfWorkExtensions.Record>();
                 await foreach (var item in unitOfWork.DataStoreOperationState(dataStore)) records.Add(item);
@@ -326,45 +313,45 @@
             FormattedExceptionInfo exceptionInfo)
         {
             /* It is possible we could fail while handling a failed message but before we hit this block
-                * in that instance we will fail to record the error and the message's error count will remain the same.
-                * The message will be retried again as if it was the first failure. You will need queue-level retry limits
-                * to prevent messages being retried indefinitely until the underlying problem is fixed.
-                * 
-                * It is also possible we could fail after writing this block however that would only result in a different
-                * final exception being thrown to the endpoint. This new exception will be logged by Serilog and will not
-                * change the behaviour of the system as the endpoint runtime doesn't care what the error thrown to it is
-                * only that an error is thrown.
-                *
-                * In both cases a machine losing power should also not change the ultimate behaviour of the system.
-                *
-                * If the error happens before the unit-of-work is persisted then the message will be retried and the unit-of-work
-                * will be recalculated. If the error occurs after the unit-of-work has been persisted, then the message will be
-                * retried and on the retry we try to republish the uow from an aggregate. In the event that all retries fail
-                * we could be left with a partially unpublished unit-of-work and a poison message. Logic needs to be in place
-                * at the beginning of the execution stack to attempt to unwind the unit of work if possible in this case.
-               */
+            * in that instance we will fail to record the error and the message's error count will remain the same.
+            * The message will be retried again as if it was the first failure. You will need queue-level retry limits
+            * to prevent messages being retried indefinitely until the underlying problem is fixed.
+            * 
+            * It is also possible we could fail after writing this block however that would only result in a different
+            * final exception being thrown to the endpoint. This new exception will be logged by Serilog and will not
+            * change the behaviour of the system as the endpoint runtime doesn't care what the error thrown to it is
+            * only that an error is thrown.
+            *
+            * In both cases a machine losing power should also not change the ultimate behaviour of the system.
+            *
+            * If the error happens before the unit-of-work is persisted then the message will be retried and the unit-of-work
+            * will be recalculated. If the error occurs after the unit-of-work has been persisted, then the message will be
+            * retried and on the retry we try to republish the uow from an aggregate. In the event that all retries fail
+            * we could be left with a partially unpublished unit-of-work and a poison message. Logic needs to be in place
+            * at the beginning of the execution stack to attempt to unwind the unit of work if possible in this case.
+           */
 
             try
             {
                 /* abandon current unit of work, maybe it's persisted maybe not, maybe partially complete, or even fully complete
-                in all cases all we care about now is recording the failure, no other I/O bounds ops will occur */
+            in all cases all we care about now is recording the failure, no other I/O bounds ops will occur */
                 context.MessageAggregator.Clear();
 
                 if (ThisFailureIsTheFinalFailure() && !TheMessageWeAreProcessingIsAMaxFailNotificationMessage())
                 {
                     /* send a message to the bus which tells us this has occured
-                     allowing us to handle these cases with compensating logic */
+                 allowing us to handle these cases with compensating logic */
                     SendFinalFailureMessage();
                 }
 
                 await AddThisFailureToTheMessageLog();
 
                 /* commit just the failure entry and possibly finalfailuremessage,
-                 don't use context.CommitChanges as you don't want to save the unit of work here 
-                 the uow is already cleared when the message retries you don't want it thinking the uow
-                 is the failed message log entry saving that and then exiting. it also makes testing failures
-                 in context.commitchanges easier since that method is not used here as well creating a loop
-                 */
+             don't use context.CommitChanges as you don't want to save the unit of work here 
+             the uow is already cleared when the message retries you don't want it thinking the uow
+             is the failed message log entry saving that and then exiting. it also makes testing failures
+             in context.commitchanges easier since that method is not used here as well creating a loop
+             */
                 await context.DataStore.CommitChanges();
                 await context.Bus.CommitChanges();
             }
@@ -420,7 +407,7 @@
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = meta != null ? CreateProfilingData(meta, context) : null,
-                EnvironmentName = context.AppConfig.EnvironmentName,
+                EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey,
                 ApplicationName = context.AppConfig.ApplicationName
             };
 
@@ -444,12 +431,15 @@
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = CreateProfilingData(meta, context),
-                EnvironmentName = context.AppConfig.EnvironmentName,
+                EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey,
                 ApplicationName = context.AppConfig.ApplicationName
             };
 
             context.Logger.Information("Message: {@message}", serilogEntry);
         }
+
+        internal static ContextWithMessageLogEntry Upgrade(this ContextWithMessage current, MessageLogEntry messageLogEntry) =>
+            new ContextWithMessageLogEntry(messageLogEntry, current);
 
         private static object CreateProfilingData(MessageMeta meta, ContextWithMessageLogEntry ctx)
         {
@@ -636,7 +626,7 @@
             /* updates using another datastore instance not in session */
             return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
             /* from this point on we can crash, throw, lose power, it won't matter all
-            will be continued when the message is next dequeued*/
+        will be continued when the message is next dequeued*/
         }
 
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)

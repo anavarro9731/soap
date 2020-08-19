@@ -19,28 +19,29 @@ function global:Run {
 
 	if ($PrepareNewVersion) {
 		Prepare-NewVersion -projects @(
-		"Soap.Interfaces.Config",
-		"Soap.Interfaces.Config",
-		"Soap.Interfaces.Config",
-		"Soap.Interfaces.Config",
-		"Soap.Interfaces.Config",
-		"Soap.Interfaces.Config"
+		"Soap.Config",
+		"Soap.PfBase.Api",
+		"Soap.PfBase.Logic",
+		"Soap.PfBase.Tests",
+		"Soap.PfBase.Models",
+		"Soap.PfBase.Messages"
 		) `
-        -azureDevopsProject "soap" `
+        -azureDevopsProject "soap.config" `
         -azureDevopsOrganisation "anavarro9731" `
-        -azureDevopsPat $azureDevopsPat `
-        -repository "soap" `
+        -azureDevopsPat  "y6gg7funryd4ffv32s4fugxzqgjpeqz5gl4xi2dftdf7mcb5pkia"`
+        -repository "soap.config" `
         -forceVersion $forceVersion
 	}
 
 	if ($BuildAndTest) {
 		Build-And-Test -testProjects @(
+		"Soap.PfBase.Tests"
 		)
 	}
 
 	if ($PackAndPublish) {
 		Pack-And-Publish -allProjects @(
-		"Soap.Interfaces.Config"
+		"Soap.Config"
 		) -unlistedProjects @(
 		) `
         -nugetApiKey $nugetApiKey

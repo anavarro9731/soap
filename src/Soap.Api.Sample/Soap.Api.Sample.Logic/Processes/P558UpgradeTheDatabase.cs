@@ -2,12 +2,14 @@
 {
     using System;
     using System.Threading.Tasks;
+    using DataStore;
+    using DataStore.Interfaces;
     using Sample.Constants;
     using Sample.Logic.Operations;
     using Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.PfBase.Logic;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
 
@@ -18,7 +20,7 @@
                 {
                 if (message.ReSeed)
                 {
-                    await ClearDatabase.ExecuteOutsideTransactionUsingCurrentContext();
+                    await ExecuteOutsideTransactionUsingCurrentContext();
                 }
 
                 switch (message.ReleaseVersion)
@@ -34,6 +36,27 @@
                         break;
                 }
                 };
+
+        /// <summary>
+        ///     *** WARNING DANGER USE ONLY UNDER SUPERVISION THIS IS REALLY A HIDDEN CAPABILITY OF DATASTORE
+        ///     BEING USED ONLY FOR THE VERY UNIQUE CASE OF RESEEDING THE DATABASE AND WOULD NOT BE PART OF ANY
+        ///     NORMAL BUSINESS LOGIC ***
+        /// </summary>
+        /// <returns></returns>
+        public static async Task ExecuteOutsideTransactionUsingCurrentContext()
+        {
+            var context = ContextWithMessageLogEntry.Current;
+            var repo = context.DataStore.DocumentRepository;
+
+            //* delete everything
+            await ((IResetData)repo).NonTransactionalReset();
+
+            //* re-add the entry for the current message 
+            var newSession = new DataStore(repo);
+
+            await newSession.Create(context.MessageLogEntry);
+            await newSession.CommitChanges();
+        }
 
         private async Task V1()
         {

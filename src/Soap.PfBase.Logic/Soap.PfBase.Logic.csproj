@@ -6,6 +6,6 @@
     <Description>Used to create a Domain Logic assembly</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
+    <ProjectReference Include="..\Soap.Context\Soap.Context.csproj" />
   </ItemGroup>
 </Project>

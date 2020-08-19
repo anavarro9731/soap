@@ -96,7 +96,7 @@
                                          .Aggregate((a, b) => a + Environment.NewLine + b);
 
             ApplicationName = context.AppConfig.ApplicationName;
-            EnvironmentName = context.AppConfig.EnvironmentName;
+            EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey;
         }
 
         public FormattedExceptionInfo()

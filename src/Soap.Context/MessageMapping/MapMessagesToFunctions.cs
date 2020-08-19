@@ -5,6 +5,8 @@
     using DataStore.Models.PureFunctions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Operations;
+    using Guard = Soap.Utility.Functions.Operations.Guard;
 
     public class MapMessagesToFunctions
     {
