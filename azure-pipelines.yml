@@ -19,5 +19,5 @@ steps:
 
   - powershell: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
-      Run -PackAndPublish -nuget-key $(nuget-api-key)   
+      Run -PackAndPublish -nuget-key $(nuget-key)   
     displayName: 'Pack and Publish'
