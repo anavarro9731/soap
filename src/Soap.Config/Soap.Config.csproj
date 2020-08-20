@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DataStore.Interfaces" Version="13.7.0-alpha" />
+    <PackageReference Include="DataStore.Providers.CosmosDb" Version="13.7.0-alpha" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
