@@ -1,52 +1,28 @@
 ﻿namespace Soap.MessagePipeline.MessagePipeline
 {
     using System;
-    using System.Data;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.Logging;
     using Soap.MessagePipeline.UnitOfWork;
-    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
+    using Guard = DataStore.Models.PureFunctions.Guard;
 
-    //TODO move classes like ops and processes into logicbase so you can remove messagepipeline from
-    //logicbase and create a new servicebase which takes messagepipeline and adds the function below
-    //and references config the project into the forthcoming config repo will do the same
-    
     public static class MessagePipeline
     {
-        public static async Task Execute(string messageJson, string assemblyQualifiedName, Func<BoostrappedContext> getContext)
+        public static async Task Execute(ApiMessage message, BoostrappedContext boostrappedContext)
         {
             {
+                ContextWithMessageLogEntry matureContext = null;
+
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
-                DeserialiseMessage(
-                    messageJson,
-                    assemblyQualifiedName,
-                    timeStamp,
-                    getContext(),
-                    out var contextAfterMessageObtained,
-                    out var success);
+                var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
 
-                if (!success) return;
-
-                ContextWithMessageLogEntry matureContext = null;
-                try
-                {
-                    await PrepareContext(contextAfterMessageObtained, v => matureContext = v);
-                }
-                catch (Exception exception)
-                {
-                    contextAfterMessageObtained.Logger.Fatal(
-                        "Cannot complete context preparation: partial context {@context}, error {@error}",
-                        contextAfterMessageObtained,
-                        exception);
-                    return;
-                }
+                await PrepareContext(contextAfterMessageObtained, v => matureContext = v);
 
                 try
                 {
@@ -57,8 +33,6 @@
                     ContextWithMessageLogEntry.Instance.Value = matureContext;
 
                     await ProcessMessage(matureContext);
-                    
-
                 }
                 catch (Exception exception)
                 {
@@ -73,42 +47,21 @@
                 IApiIdentity identity = null;
                 MessageLogEntry messageLogEntry = null;
 
-                var msg = contextAfterMessageObtained.Message;
-
-                msg.Authenticate(contextAfterMessageObtained, v => identity = v); //TODO awaitable after finished
-
-                await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
-
-                var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
-
-                setContext(context);
-            }
-
-            void DeserialiseMessage(
-                string messageJson,
-                string assemblyQualifiedName,
-                (DateTime receivedTime, long receivedTicks) timeStamp,
-                BoostrappedContext bootstrappedContext,
-                out ContextWithMessage contextAfterMessageObtained,
-                out bool success)
-            {
-                try //* deserialise the message
+                try
                 {
-                    var msg = JsonConvert.DeserializeObject(messageJson, Type.GetType(assemblyQualifiedName)).As<ApiMessage>();
-                    contextAfterMessageObtained = bootstrappedContext.Upgrade(msg, timeStamp);
-                    success = true;
+                    var msg = contextAfterMessageObtained.Message;
+
+                    msg.Authenticate(contextAfterMessageObtained, v => identity = v); //TODO awaitable after finished
+
+                    await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
+
+                    var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
+
+                    setContext(context);
                 }
                 catch (Exception e)
                 {
-                    bootstrappedContext.Logger.Fatal(
-                        "Cannot deserialise message: type {@type}, error {@error}, json {@json} stack {@stack}",
-                        assemblyQualifiedName,
-                        e.Message,
-                        messageJson,
-                        e.StackTrace);
-
-                    contextAfterMessageObtained = null;
-                    success = false;
+                    Guard.Against(true, $"Cannot complete context preparation: error {e}");
                 }
             }
 
@@ -127,9 +80,8 @@
                     case UnitOfWork.State.AllRolledBack:
                         //* don't try again after a rollback as you may be out of retries to rollback again
                         throw new DomainExceptionWithErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
-                    
+
                     case UnitOfWork.State.New:
-              
 
                         switch (msg)
                         {
@@ -205,7 +157,6 @@
 
                 throw finalException;
             }
-            }
-        
+        }
     }
 }

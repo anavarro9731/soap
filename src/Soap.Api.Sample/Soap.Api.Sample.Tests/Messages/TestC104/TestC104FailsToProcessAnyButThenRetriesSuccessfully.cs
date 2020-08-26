@@ -26,19 +26,19 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully);
 
-            await ExecuteWithRetries(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook); 
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 1, beforeRunHook); 
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
             CountDataStoreOperationsSaved(log);
             CountMessagesSaved(log);
             CountMessagesSent();
+        }
 
-            void CountMessagesSent()
-            {
-                Result.MessageBus.CommandsSent.Count.Should().Be(1);
-                Result.MessageBus.EventsPublished.Count.Should().Be(1);
-            }
+        private void CountMessagesSent()
+        {
+            Result.MessageBus.CommandsSent.Count.Should().Be(1);
+            Result.MessageBus.EventsPublished.Count.Should().Be(1);
         }
 
         private async Task beforeRunHook(DataStore store, int run)

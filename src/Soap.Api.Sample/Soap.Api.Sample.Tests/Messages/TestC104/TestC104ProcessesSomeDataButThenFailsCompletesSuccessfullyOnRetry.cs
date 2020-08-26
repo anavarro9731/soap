@@ -28,41 +28,41 @@
             var c104TestUnitOfWork =
                 Commands.TestUnitOfWork(SpecialIds.ProcessesSomeDataButThenFailsCompletesSuccessfullyOnRetry);
 
-            await ExecuteWithRetries(
+            await TestMessage(
                 c104TestUnitOfWork,
                 Identities.UserOne,
                 1,
-                beforeRunHook,
-                c104TestUnitOfWork.Headers.GetMessageId()); 
+                BeforeRunHook,
+                c104TestUnitOfWork.Headers.GetMessageId());
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
             CountDataStoreOperationsSaved(log);
             CountMessagesSaved(log);
             CountMessagesSent();
+        }
 
-            void CountMessagesSent()
+        private async Task BeforeRunHook(DataStore store, int run)
+        {
+            await FixSolosBrokenEtagSoItSucceeds();
+
+            async Task FixSolosBrokenEtagSoItSucceeds()
             {
-                Result.MessageBus.CommandsSent.Count.Should().Be(1);
-                Result.MessageBus.EventsPublished.Count.Should().Be(1);
-            }
-
-            async Task beforeRunHook(DataStore store, int run)
-            {
-                await FixSolosBrokenEtagSoItSucceeds();
-
-                async Task FixSolosBrokenEtagSoItSucceeds()
+                if (run == 2)
                 {
-                    if (run == 2)
-                    {
-                        await store.UpdateById<User>(
-                            Ids.HanSolo,
-                            luke => { luke.Etag = "123456"; },
-                            side => side.DisableOptimisticConcurrency());
-                        await store.CommitChanges();
-                    }
+                    await store.UpdateById<User>(
+                        Ids.HanSolo,
+                        luke => { luke.Etag = "123456"; },
+                        side => side.DisableOptimisticConcurrency());
+                    await store.CommitChanges();
                 }
             }
+        }
+
+        private void CountMessagesSent()
+        {
+            Result.MessageBus.CommandsSent.Count.Should().Be(1);
+            Result.MessageBus.EventsPublished.Count.Should().Be(1);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿namespace Sample.Tests.Messages
 {
-    using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
@@ -9,7 +8,6 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -31,69 +29,62 @@
          * Run 4 message fails all items rolled back*/
         public async void FailsDuringRollbackFinishesRollbackOnNextRetry()
         {
-            async Task beforeRunHook(DataStore store, int run)
-            {
-                await SimulateAnotherUnitOfWorkChangingLukesRecord();
-                await AssertGuardFail();
-                await AssertRollback();
-
-                async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
-                {
-                    //* luke's record is the only one not yet committed but since we faked a concurrency error in
-                    //the change we now need to reflect that in the underlying data for the next run to calculate correctly
-                    if (run == 2)
-                    {
-                        await store.UpdateById<User>(
-                            Ids.LukeSkywalker,
-                            luke => luke.Roles.Add(new Role { Name = "doesnt matter just make a change to add a history item" }));
-                        await store.CommitChanges();
-                    }
-                }
-
-                async Task AssertGuardFail()
-                {
-                    if (run == 3)
-                    {
-                        //Assert guard fail
-                        var c104TestUnitOfWork =
-                            Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
-                        var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                        log.Attempts[0] //* 0 is latest attempt they are inserted
-                           .Errors.Errors[0]
-                           .message.Should()
-                           .Be(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
-                    }
-                }
-
-                async Task AssertRollback()
-                {
-                    if (run == 4)
-                    {
-                        //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork =
-                            Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
-                        var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                        CountDataStoreOperationsSaved(log);
-                        await RecordsShouldBeReturnToOriginalState(store);
-                    }
-                    
-                }
-            }
-
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
 
-            try
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 3, BeforeRunHook);
+
+            //assert
+            Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+        }
+
+        private async Task BeforeRunHook(DataStore store, int run)
+        {
+            await SimulateAnotherUnitOfWorkChangingLukesRecord();
+            await AssertGuardFail();
+            await AssertRollback();
+
+            async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
             {
-                await ExecuteWithRetries(
-                    c104TestUnitOfWork,
-                    Identities.UserOne,
-                    3,
-                    beforeRunHook); 
+                //* luke's record is the only one not yet committed but since we faked a concurrency error in
+                //the change we now need to reflect that in the underlying data for the next run to calculate correctly
+                if (run == 2)
+                {
+                    await store.UpdateById<User>(
+                        Ids.LukeSkywalker,
+                        luke => luke.Roles.Add(
+                            new Role
+                            {
+                                Name = "doesnt matter just make a change to add a history item"
+                            }));
+                    await store.CommitChanges();
+                }
             }
-            catch (PipelineException e)
+
+            async Task AssertGuardFail()
             {
-                e.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+                if (run == 3)
+                {
+                    //Assert guard fail
+                    var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
+                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    log.Attempts[0] //* 0 is latest attempt they are inserted
+                       .Errors.Errors[0]
+                       .message.Should()
+                       .Be(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry.ToString());
+                }
+            }
+
+            async Task AssertRollback()
+            {
+                if (run == 4)
+                {
+                    //Assert, changes should be rolled back at this point 
+                    var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
+                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    CountDataStoreOperationsSaved(log);
+                    await RecordsShouldBeReturnToOriginalState(store);
+                }
             }
         }
     }

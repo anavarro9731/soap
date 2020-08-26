@@ -21,34 +21,27 @@
 
         public static Lazy<CachedSchema> Create(
             ApplicationConfig applicationConfig,
-            IList<ApiMessage> messages)
+            IEnumerable<ApiMessage> messages)
         {
-            var handlerTypes = messages.Select(h => h.GetType()).OrderBy(t => t.Name);
+            var messageTypes = messages.Select(h => h.GetType()).OrderBy(t => t.Name);
 
-            return new Lazy<CachedSchema>(() => new CachedSchema(GetSchemaOutput(applicationConfig, handlerTypes)));
+            return new Lazy<CachedSchema>(() => new CachedSchema(GetSchemaOutput(applicationConfig, messageTypes)));
         }
 
-        private static string GetMessageSchemaFromHandlerTypes(IEnumerable<Type> handlerTypes)
+        private static string GetMessageSchemaFromMessageTypes(IEnumerable<Type> messageTypes)
         {
             {
                 var schema = new StringBuilder();
 
-                foreach (var type in handlerTypes.ToList()) BuildSchemaForMessageHandlerType(type, schema);
+                foreach (var type in messageTypes.ToList()) BuildSchemaForMessageType(type, schema);
 
                 return schema.ToString();
             }
 
-            void BuildSchemaForMessageHandlerType(Type messageHandlerType, StringBuilder schema)
+            void BuildSchemaForMessageType(Type reqType, StringBuilder schema)
             {
                 {
-                    var reqType = messageHandlerType.BaseType?.GenericTypeArguments[0];
 
-                    if (reqType == null)
-                    {
-                        return;
-                    }
-
-                    var isQuery = messageHandlerType.BaseType?.GenericTypeArguments.Length > 1;
 
                     var depth = 1;
 
@@ -57,24 +50,23 @@
                     schema.AppendLine(border);
                     schema.AppendLine(reqTypeName);
                     schema.AppendLine(border);
-                    if (isQuery)
+                    
+                    if (reqType.InheritsOrImplements(typeof(ApiCommand)))
                     {
                         depth++;
                         schema.AppendLine("  -------");
-                        schema.AppendLine("  Request");
+                        schema.AppendLine("  Command");
                         schema.AppendLine("  -------");
+                        AppendObjectToSchema(reqType, depth);
                     }
 
-                    AppendObjectToSchema(reqType, depth);
-
-                    if (isQuery)
+                    
+                    if (reqType.InheritsOrImplements(typeof(ApiEvent)))
                     {
-                        var respType = messageHandlerType.BaseType?.GenericTypeArguments[1];
-
                         schema.AppendLine("  --------");
-                        schema.AppendLine("  Response");
+                        schema.AppendLine("  Event");
                         schema.AppendLine("  --------");
-                        AppendObjectToSchema(respType, depth);
+                        AppendObjectToSchema(reqType, depth);
                     }
 
                     schema.AppendLine();
@@ -148,12 +140,7 @@
 
                 string GetTypeFullName(Type type)
                 {
-                    var typeName = type.IsSystemType() ? type.Name : type.FullName;
-                    if (type.IsGenericType)
-                    {
-                        typeName =
-                            $"{typeName.Substring(0, typeName.LastIndexOf('`'))}<{string.Join(", ", type.GenericTypeArguments.Select(g => g.IsSystemType() ? g.Name : g.FullName))}>";
-                    }
+                    var typeName = type.AsTypeNameString();
 
                     return typeName;
                 }
@@ -174,14 +161,14 @@
 
         private static string GetSchemaOutput(
             ApplicationConfig applicationConfig,
-            IEnumerable<Type> handlerTypes)
+            IEnumerable<Type> messageTypes)
         {
             {
                 var title = $"API Schema | {applicationConfig.ApplicationName} | {applicationConfig.ApplicationVersion}";
 
                 var border = string.Empty.PadRight(title.Length, '=');
 
-                var schemaText = GetMessageSchemaFromHandlerTypes(handlerTypes);
+                var schemaText = GetMessageSchemaFromMessageTypes(messageTypes);
 
                 if (string.IsNullOrWhiteSpace(schemaText)) schemaText = "No supported API Messages";
 

@@ -1,6 +1,5 @@
 ﻿namespace Sample.Tests.Messages
 {
-    using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
@@ -9,7 +8,6 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -27,53 +25,47 @@
          */
         public async void CheckConsideredAsRolledBackWhenFirstItemFails()
         {
-            async Task beforeRunHook(DataStore store, int run)
-            {
-                await Assert();
-
-                async Task Assert()
-                {
-                    if (run == 2)
-                    {
-                        //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ConsideredAsRolledBackWhenFirstItemFails);
-                        var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                        CountDataStoreOperationsSaved(log);
-                        await RecordsShouldBeReturnToOriginalState(store);
-                        await SimulateAnotherUnitOfWorkChangingLukesRecord();
-                    }
-                }
-                
-                async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
-                {
-                    //* luke's record is the only one not yet committed but since we faked a concurrency error in
-                    //the change we now need to reflect that in the underlying data for the next run to calculate correctly
-                    if (run == 2)
-                    {
-                        await store.UpdateById<User>(
-                            Ids.LukeSkywalker,
-                            luke => luke.Roles.Add(new Role { Name = "doesnt matter just make a change to add a history item" }));
-                        await store.CommitChanges();
-                    }
-                }
-
-
-            }
-
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ConsideredAsRolledBackWhenFirstItemFails);
 
-            try
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 1, BeforeRunHook);
+
+            //assert
+            Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+        }
+
+        private async Task BeforeRunHook(DataStore store, int run)
+        {
+            await Assert();
+
+            async Task Assert()
             {
-                await ExecuteWithRetries(
-                    c104TestUnitOfWork,
-                    Identities.UserOne,
-                    1,
-                    beforeRunHook); 
+                if (run == 2)
+                {
+                    //Assert, changes should be rolled back at this point 
+                    var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ConsideredAsRolledBackWhenFirstItemFails);
+                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    CountDataStoreOperationsSaved(log);
+                    await RecordsShouldBeReturnToOriginalState(store);
+                    await SimulateAnotherUnitOfWorkChangingLukesRecord();
+                }
             }
-            catch (PipelineException e)
+
+            async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
             {
-                e.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+                //* luke's record is the only one not yet committed but since we faked a concurrency error in
+                //the change we now need to reflect that in the underlying data for the next run to calculate correctly
+                if (run == 2)
+                {
+                    await store.UpdateById<User>(
+                        Ids.LukeSkywalker,
+                        luke => luke.Roles.Add(
+                            new Role
+                            {
+                                Name = "doesnt matter just make a change to add a history item"
+                            }));
+                    await store.CommitChanges();
+                }
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿namespace Sample.Tests.Messages
 {
-    using System;
     using FluentAssertions;
     using Soap.MessagePipeline;
     using Xunit;
@@ -20,20 +19,10 @@
         public async void MessageDiesWhileSavingUnitOfWork()
         {
             //act
-            try
-            {
-                await ExecuteWithRetries(
-                    Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork),
-                    Identities.UserOne,
-                    2);
+            await TestMessage(Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork), Identities.UserOne, 2);
 
-                throw new Exception("Should not reach this");
-            }
-            catch (Exception e)
-            {
-                e.Message.Should().Contain(SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
-            }
-            
+            //assert
+            Result.UnhandledError.Message.Should().Contain(SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
         }
     }
 }

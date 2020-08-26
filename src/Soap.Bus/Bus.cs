@@ -10,8 +10,6 @@
 
     public class Bus : IBus
     {
-        
-        
         private readonly IBusInternal bus;
 
         private readonly IMessageAggregator messageAggregator;
@@ -50,6 +48,7 @@
                         }
                         });
             //TODO call bus
+            
             await Task.Delay(0);
         }
 

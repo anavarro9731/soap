@@ -12,24 +12,31 @@ namespace Soap.PfBase.Alj
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Reflection;
     using System.Runtime;
     using System.Runtime.Loader;
     using System.Text;
+    using DataStore;
+    using DataStore.Interfaces;
+    using DataStore.Providers.CosmosDb;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Text;
     using Microsoft.CSharp.RuntimeBinder;
     using Soap.Api.Sample.Afs;
+    using Soap.Bus;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
+    using Soap.NotificationServer;
 
     public class ConfigFunctions
     {
-        public static void LoadFromRemoteRepo(AppEnvIdentifier appEnvId, out ApplicationConfig applicationConfig)
+        public static void LoadAppConfigFromRemoteRepo(AppEnvIdentifier appEnvId, out ApplicationConfig applicationConfig)
         {
             try
             {
                 var webClient = new WebClient();
-                webClient.Headers.Add($"Authorisation:{GetAuthorizationHeader()}");
+                webClient.Headers.Add("Authorization", GetAuthorizationHeaderValue());
                 var url = GetFileUrl();
                 var configToCompile = webClient.DownloadString(url);
                 var config = LoadAndExecute(configToCompile);
@@ -88,9 +95,16 @@ namespace Soap.PfBase.Alj
                         {
                             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(DataStore).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(IDatabaseSettings).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(CosmosDbRepository).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(AzureBus).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(NotificationServer).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(IBus).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
-                            MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location)
+                            MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),
+                            MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location)
                         };
 
                         var compilationOptions = new CSharpCompilationOptions(
@@ -114,9 +128,9 @@ namespace Soap.PfBase.Alj
                 return fileUrl;
             }
 
-            static string GetAuthorizationHeader()
+            static string GetAuthorizationHeaderValue()
             {
-                var basicAuth = Convert.ToBase64String(Encoding.ASCII.GetBytes($":{ConfigId.AzureDevopsPat}"));
+                var basicAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes($":{ConfigId.AzureDevopsPat}"));
                 return $"Basic {basicAuth}";
             }
         }

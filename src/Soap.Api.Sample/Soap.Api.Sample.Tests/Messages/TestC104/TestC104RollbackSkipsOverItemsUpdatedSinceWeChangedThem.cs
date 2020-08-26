@@ -9,7 +9,6 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -35,87 +34,82 @@
         */
         public async void RollbackSkipsOverItemsUpdatedSinceWeChangedThem()
         {
-            async Task beforeRunHook(DataStore store, int run)
-            {
-                await SimulateAnotherUnitOfWorkChangingLukesRecord();
-                await SimulateAnotherUnitOfWorkUpdatingSolosRecord();
-                await AssertRollback();
-
-                async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
-                {
-                    //* luke's record is the only one not yet committed but since we faked a concurrency error in
-                    //the change we now need to reflect that in the underlying data for the next run to calculate correctly
-                    if (run == 2)
-                    {
-                        await store.UpdateById<User>(
-                            Ids.LukeSkywalker,
-                            luke => luke.Roles.Add(new Role { Name = "doesnt matter just make a change to add a history item" }));
-                        await store.CommitChanges();
-                    }
-                }
-
-                async Task SimulateAnotherUnitOfWorkUpdatingSolosRecord()
-                {
-                    if (run == 2)
-                    {
-                        await store.UpdateById<User>(Ids.HanSolo, han => han.FirstName = "Harry");
-                        await store.CommitChanges();
-                    }
-                }
-
-                async Task AssertRollback()
-                {
-                    if (run == 3)
-                    {
-                        //Assert, changes should be rolled back at this point 
-                        var c104TestUnitOfWork =
-                            Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
-                        var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                        CountDataStoreOperationsSaved(log);
-                        await RecordsShouldBeReturnToOriginalStateExceptSolo(store);
-                    }
-
-                    async Task RecordsShouldBeReturnToOriginalStateExceptSolo(DataStore store)
-                    {
-                        //*creations
-                        var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian")).SingleOrDefault();
-                        lando.Should().BeNull();
-
-                        var boba = (await store.Read<User>(x => x.UserName == "boba.fett")).SingleOrDefault();
-                        boba.Should().BeNull();
-
-                        //* updates
-                        var han = await store.ReadById<User>(Ids.HanSolo); //* the change to han is not rolled back
-                        han.FirstName.Should().Be("Harry");
-                        han.LastName.Should().Be("Ford");
-
-                        var leia = await store.ReadById<User>(Ids.PrincessLeia);
-                        leia.Active.Should().BeTrue();
-
-                        //* deletes
-                        var darth = await store.ReadById<User>(Ids.DarthVader);
-                        darth.Should().NotBeNull();
-
-                        var luke = await store.ReadById<User>(Ids.LukeSkywalker);
-                        luke.Should().NotBeNull();
-                    }
-                }
-            }
-
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
 
-            try
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, BeforeRunHook);
+
+            //assert
+            Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+        }
+
+        private async Task BeforeRunHook(DataStore store, int run)
+        {
+            await SimulateAnotherUnitOfWorkChangingLukesRecord();
+            await SimulateAnotherUnitOfWorkUpdatingSolosRecord();
+            await AssertRollback();
+
+            async Task SimulateAnotherUnitOfWorkChangingLukesRecord()
             {
-                await ExecuteWithRetries(
-                    c104TestUnitOfWork,
-                    Identities.UserOne,
-                    2,
-                    beforeRunHook); 
+                //* luke's record is the only one not yet committed but since we faked a concurrency error in
+                //the change we now need to reflect that in the underlying data for the next run to calculate correctly
+                if (run == 2)
+                {
+                    await store.UpdateById<User>(
+                        Ids.LukeSkywalker,
+                        luke => luke.Roles.Add(
+                            new Role
+                            {
+                                Name = "doesnt matter just make a change to add a history item"
+                            }));
+                    await store.CommitChanges();
+                }
             }
-            catch (PipelineException e)
+
+            async Task SimulateAnotherUnitOfWorkUpdatingSolosRecord()
             {
-                e.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+                if (run == 2)
+                {
+                    await store.UpdateById<User>(Ids.HanSolo, han => han.FirstName = "Harry");
+                    await store.CommitChanges();
+                }
+            }
+
+            async Task AssertRollback()
+            {
+                if (run == 3)
+                {
+                    //Assert, changes should be rolled back at this point 
+                    var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
+                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    CountDataStoreOperationsSaved(log);
+                    await RecordsShouldBeReturnToOriginalStateExceptSolo(store);
+                }
+
+                async Task RecordsShouldBeReturnToOriginalStateExceptSolo(DataStore store)
+                {
+                    //*creations
+                    var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian")).SingleOrDefault();
+                    lando.Should().BeNull();
+
+                    var boba = (await store.Read<User>(x => x.UserName == "boba.fett")).SingleOrDefault();
+                    boba.Should().BeNull();
+
+                    //* updates
+                    var han = await store.ReadById<User>(Ids.HanSolo); //* the change to han is not rolled back
+                    han.FirstName.Should().Be("Harry");
+                    han.LastName.Should().Be("Ford");
+
+                    var leia = await store.ReadById<User>(Ids.PrincessLeia);
+                    leia.Active.Should().BeTrue();
+
+                    //* deletes
+                    var darth = await store.ReadById<User>(Ids.DarthVader);
+                    darth.Should().NotBeNull();
+
+                    var luke = await store.ReadById<User>(Ids.LukeSkywalker);
+                    luke.Should().NotBeNull();
+                }
             }
         }
     }

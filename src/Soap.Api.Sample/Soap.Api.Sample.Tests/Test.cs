@@ -13,7 +13,7 @@ namespace Sample.Tests
     using Sample.Logic;
     using Xunit.Abstractions;
 
-    public class Test : BaseTest
+    public class Test : SoapMessageTest
     {
         protected Test(ITestOutputHelper output)
             : base(output, new MappingRegistration())
