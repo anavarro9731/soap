@@ -13,7 +13,7 @@
     {
         [FunctionName("ReceiveMessage")]
         public static async Task RunAsync(
-            [ServiceBusTrigger("testqueue1", Connection = "sb-soap-dev")]
+            [ServiceBusTrigger("testqueue1", Connection = "AzureWebJobsServiceBus")]
             string myQueueItem,
             string messageId,
             IDictionary<string, object> UserProperties,
