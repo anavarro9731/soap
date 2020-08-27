@@ -17,12 +17,8 @@
         {
             {
                 ContextWithMessageLogEntry matureContext = null;
-
-                (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
-
-                var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
-
-                await PrepareContext(contextAfterMessageObtained, v => matureContext = v);
+                
+                await PrepareContext(boostrappedContext, v => matureContext = v);
 
                 try
                 {
@@ -41,7 +37,7 @@
             }
 
             async Task PrepareContext(
-                ContextWithMessage contextAfterMessageObtained,
+                BoostrappedContext boostrappedContext,
                 Action<ContextWithMessageLogEntry> setContext)
             {
                 IApiIdentity identity = null;
@@ -49,9 +45,13 @@
 
                 try
                 {
+                    (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
+
+                    var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
+                    
                     var msg = contextAfterMessageObtained.Message;
 
-                    msg.Authenticate(contextAfterMessageObtained, v => identity = v); //TODO awaitable after finished
+                    msg.Authenticate(contextAfterMessageObtained, v => identity = v); // TODO awaitable after finished
 
                     await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
 

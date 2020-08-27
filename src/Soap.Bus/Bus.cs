@@ -39,7 +39,7 @@
                         switch (m)
                         {
                             case QueuedCommandToSend c:
-                                CommandsSent.Add(c.CommandToSend); //TODO: clone to prevent changes, need specific type?
+                                CommandsSent.Add(c.CommandToSend); //TODO clone to prevent changes, need specific type?
                                 break;
                             case QueuedEventToPublish e:
                                 EventsPublished.Add(e.EventToPublish);

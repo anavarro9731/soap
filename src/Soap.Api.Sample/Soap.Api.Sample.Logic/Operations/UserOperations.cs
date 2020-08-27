@@ -11,12 +11,11 @@
     using Soap.MessagePipeline.ProcessesAndOperations;
 
     /// <summary>
-    /// $$REMOVE-IN-COPY$$
-    /// Not really representative of user operations, too specific, uses undocumented features for testing UOW
+    ///     $$REMOVE-IN-COPY$$
+    ///     Not really representative of user operations, too specific, uses undocumented features for testing UOW
     /// </summary>
     public class UserOperations : Operations<User>
     {
-        
         public Func<Task> AddBobaAndLando =>
             async () =>
                 {
@@ -46,7 +45,7 @@
                     foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
                 };
-        
+
         public Func<Task> AddR2D2AndC3PO =>
             async () =>
                 {
@@ -76,7 +75,7 @@
                     foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
                 };
-        
+
         public Func<Task> ArchivePrincessLeia =>
             async () =>
                 {
@@ -128,7 +127,6 @@
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
                     var currentMessageLogEntry = ContextWithMessageLogEntry.Current.MessageLogEntry;
 
-
                     nameChange = user =>
                         {
                         if (currentMessageId == SpecialIds.ProcessesSomeDataButThenFailsCompletesSuccessfullyOnRetry
@@ -172,23 +170,31 @@
                 {
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
 
-                    if (currentMessageId == SpecialIds.ProcessesSomeThenRollsBackSuccessfully || currentMessageId == SpecialIds.ConsideredAsRolledBackWhenFirstItemFails ||
-                        currentMessageId == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry || currentMessageId == SpecialIds.FailsEarlyInReplayThenCompletesRemainderOfUow ||
-                        currentMessageId == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem || currentMessageId == SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem ||
-                        currentMessageId == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeCreatedThem || currentMessageId == SpecialIds.RollbackSkipsOverItemsUpdatedSinceWeCreatedThem
-                        && ContextWithMessageLogEntry.Current.MessageLogEntry.Attempts.Count == 0)
+                    changeLuke = luke => luke.LastName = "Spywalker";
+
+                    switch (currentMessageId)
                     {
-                        /* causes dbconcurrency exception on first attempt luke's record never commits
-                        in reality there is a tiny window between loading a saving an update so the eTag
-                        violation we are simulating here is pretty much impossible to trigger in a test
-                        the important par    t is we have to be sure in the body of the test to change the underlying record
-                        to reflect an outside change before the uow is retried so it will give up and not
-                        try to reprocess the message which would just keep erroring */
-                        changeLuke = luke => luke.Etag = "something that breaks";
-                    }
-                    else
-                    {
-                        changeLuke = luke => luke.LastName = "Spywalker";
+                        case var a when a == SpecialIds.ProcessesSomeThenRollsBackSuccessfully:
+                        case var b when b == SpecialIds.ConsideredAsRolledBackWhenFirstItemFails:
+                        case var c when c == SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry:
+                        case var d when d == SpecialIds.FailsEarlyInReplayThenCompletesRemainderOfUow:
+                        case var e when e == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem:
+                        case var f when f == SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem:
+                        case var g when g == SpecialIds.RollbackSkipsOverItemsDeletedSinceWeCreatedThem:
+                        case var h when h == SpecialIds.RollbackSkipsOverItemsUpdatedSinceWeCreatedThem:
+                        case var i when i == SpecialIds.ShouldFailOnEtagButWithOptimisticConcurrencyOffItSucceeds:
+                            
+                            if (ContextWithMessageLogEntry.Current.MessageLogEntry.Attempts.Count == 0)
+                            {
+                                /* causes dbconcurrency exception on first attempt luke's record never commits
+                                in reality there is a tiny window between loading a saving an update so the eTag
+                                violation we are simulating here is pretty much impossible to trigger in a test
+                                the important par    t is we have to be sure in the body of the test to change the underlying record
+                                to reflect an outside change before the uow is retried so it will give up and not
+                                try to reprocess the message which would just keep erroring */
+                                changeLuke = luke => luke.Etag = "something that breaks";
+                            }
+                            break;
                     }
                 }
 

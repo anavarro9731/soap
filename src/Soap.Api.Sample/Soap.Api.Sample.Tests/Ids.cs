@@ -3,7 +3,8 @@
     using System;
 
     /* all variables in here must remain constant for tests to be correct,
-        HOWEVER they must ALWAYS use arrows and not equal on the property assignment because
+        HOWEVER they must ALWAYS use equals on the property assignment and 
+        be readonly as opposed to arrows because
         they are static and you will share message instances and have concurrency problems otherwise */
 
     public static class Ids

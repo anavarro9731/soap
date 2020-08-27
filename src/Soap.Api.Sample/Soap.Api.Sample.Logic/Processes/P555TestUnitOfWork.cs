@@ -10,10 +10,11 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.NotificationServer;
 
     /// <summary>
-    /// $$REMOVE-IN-COPY$$
-    /// This is not a normal process and uses a number of undocumented features
+    ///     $$REMOVE-IN-COPY$$
+    ///     This is not a normal process and uses a number of undocumented features
     /// </summary>
     public class P555TestUnitOfWork : Process, IBeginProcess<C104TestUnitOfWork>
     {
@@ -44,7 +45,7 @@
                 await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.HansSoloNewName);
 
                 await this.Get<UserOperations>().Call(x => x.ChangeLukeSkywalkersName)();
-
+                
                 //* publish 1 event
                 await PublishE150();
                 //* send 1 command

@@ -22,7 +22,7 @@
         public AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
             this.messageAggregator = messageAggregator;
-            //- TODO initialise  clients from settings
+            //TODO 
         }
 
         private List<IQueuedBusOperation> QueuedChanges

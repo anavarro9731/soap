@@ -1,6 +1,7 @@
 ﻿namespace Soap.MessagePipeline.Logging
 {
     using System;
+    using Destructurama.Attributed;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessagePipeline;
 
@@ -27,7 +28,7 @@
         public string Schema { get; set; }
 
         public bool Succeeded { get; set; }
-
+        
         public string UserName { get; set; }
     }
 

@@ -32,8 +32,8 @@
             IApiIdentity identity,
             byte retries,
             IDocumentRepository rollingRepo,
-            Func<DataStore, int, Task> beforeRunHook = null,
-            Guid? runHookUnitOfWorkId = null)
+            (Func<DataStore, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
+            DataStoreOptions dataStoreOptions)
 
         {
             {
@@ -47,7 +47,7 @@
 
                 CreateLogger(messageAggregator, output, out var logger);
 
-                CreateDataStore(messageAggregator, rollingRepo, message.Headers.GetMessageId(), out var dataStore);
+                CreateDataStore(messageAggregator, rollingRepo, dataStoreOptions, message.Headers.GetMessageId(), out var dataStore);
 
                 CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
 
@@ -74,19 +74,19 @@
                         $@"\/\/\/\/\/\/\/\/\/\/\/\/ RUN {currentRun} STARTED {remainingRuns} run(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/"
                         + Environment.NewLine);
 
-                    if (beforeRunHook != null)
+                    if (beforeRunHook != default)
                     {
                         try
                         {
                             logger.Information(
                                 @"---------------------- EXECUTING BEFORE RUN HOOK ----------------------" + Environment.NewLine);
 
-                            await beforeRunHook.Invoke(
+                            await beforeRunHook.Function.Invoke(
                                 new DataStore(
                                     context.DataStore.DocumentRepository,
-                                    dataStoreOptions: runHookUnitOfWorkId.HasValue
+                                    dataStoreOptions: beforeRunHook.RunHookUnitOfWorkId.HasValue
                                                           ? DataStoreOptions.Create()
-                                                                            .SpecifyUnitOfWorkId(runHookUnitOfWorkId.Value)
+                                                                            .SpecifyUnitOfWorkId(beforeRunHook.RunHookUnitOfWorkId.Value)
                                                           : null),
                                 currentRun);
                         }
@@ -208,13 +208,17 @@
             static void CreateDataStore(
                 IMessageAggregator messageAggregator,
                 IDocumentRepository rollingRepo,
+                DataStoreOptions dataStoreOptions,
                 Guid unitOfWorkId,
                 out DataStore dataStore)
             {
+                dataStoreOptions = dataStoreOptions?.SpecifyUnitOfWorkId(unitOfWorkId)
+                                   ?? DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId);
+                
                 dataStore = new DataStore(
                     rollingRepo,
                     messageAggregator,
-                    DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId));
+                    dataStoreOptions);
             }
         }
     }

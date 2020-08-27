@@ -54,7 +54,7 @@ namespace Soap.MessagePipeline
                     var messageLogEntry = new MessageLogEntry(
                         message,
                         meta,
-                        ctx.DataStore.DataStoreOptions.OptimisticConcurrency, //TODO
+                        ctx.DataStore.DataStoreOptions.OptimisticConcurrency, //* determines how uow will behave
                         ctx.Bus.MaximumNumberOfRetries);
 
                     var newItem = await ctx.DataStore.Create(messageLogEntry);

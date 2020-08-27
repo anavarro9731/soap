@@ -24,7 +24,7 @@
             MaxRetriesAllowed = numberOfRetries + 1;
             SerialisedMessage = message.ToSerialisableObject();
             MessageHash = JsonConvert.SerializeObject(message).ToMd5Hash();
-            UnitOfWork = new UnitOfWork(optimisticConcurrency);
+            UnitOfWork = new UnitOfWork(optimisticConcurrency); //* determines how uow will behave
         }
 
         public MessageLogEntry()

@@ -6,6 +6,7 @@ namespace Sample.Tests
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Options;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
@@ -20,10 +21,10 @@ namespace Sample.Tests
 
         private readonly ITestOutputHelper output;
 
+        private readonly SoapMessageTestContext soapTestContext = new SoapMessageTestContext();
+
         //* copies over each call of Add and Execute retaining state across the whole test
         private IDocumentRepository rollingRepo;
-
-        private readonly SoapMessageTestContext soapTestContext = new SoapMessageTestContext();
 
         protected SoapMessageTest(ITestOutputHelper output, MapMessagesToFunctions mappingRegistration)
         {
@@ -31,7 +32,7 @@ namespace Sample.Tests
             this.mappingRegistration = mappingRegistration;
         }
 
-        protected Result Result { get; private set; } 
+        protected Result Result { get; private set; }
 
         protected void Add<T>(T aggregate) where T : Aggregate, new()
         {
@@ -55,13 +56,14 @@ namespace Sample.Tests
             T msg,
             IApiIdentity identity,
             byte retries,
-            Func<DataStore, int, Task> beforeRunHook = null,
-            Guid? runHookUnitOfWorkId = null) where T : ApiMessage
+            (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
+            DataStoreOptions dataStoreOptions = null
+            ) where T : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 
             this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository();
-            
+
             Result = await this.soapTestContext.Execute(
                          msg,
                          this.mappingRegistration,
@@ -70,7 +72,7 @@ namespace Sample.Tests
                          retries,
                          this.rollingRepo,
                          beforeRunHook,
-                         runHookUnitOfWorkId);
+                         dataStoreOptions);
         }
     }
 }

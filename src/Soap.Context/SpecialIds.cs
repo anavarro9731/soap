@@ -17,6 +17,8 @@
         
         public static readonly Guid FailsEarlyInReplayThenCompletesRemainderOfUow = Guid.NewGuid();
 
+        public static readonly Guid ShouldFailOnEtagButWithOptimisticConcurrencyOffItSucceeds = Guid.NewGuid();
+
         //* exceptions
         public static readonly Guid MessageThatDiesInExceptionHandlerFirstStage = Guid.NewGuid();
 

@@ -6,6 +6,6 @@
 
     public class Query : IQuery
     {
-        public static DataStoreReadOnly DataReader => ContextWithMessageLogEntry.Current.DataStore.AsReadOnly();
+        protected static DataStoreReadOnly DataReader => ContextWithMessageLogEntry.Current.DataStore.AsReadOnly();
     }
 }

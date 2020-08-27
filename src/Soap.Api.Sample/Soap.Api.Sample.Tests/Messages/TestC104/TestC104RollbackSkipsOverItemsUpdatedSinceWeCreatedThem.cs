@@ -36,7 +36,7 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem);
 
-            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, BeforeRunHook);
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, (BeforeRunHook,default));
 
             //assert
             Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());

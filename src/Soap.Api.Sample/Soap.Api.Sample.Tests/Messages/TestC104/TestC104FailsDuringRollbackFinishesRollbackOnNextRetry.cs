@@ -32,7 +32,7 @@
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsDuringRollbackFinishesRollbackOnNextRetry);
 
-            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 3, BeforeRunHook);
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 3, (BeforeRunHook,default));
 
             //assert
             Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());

@@ -22,6 +22,9 @@
             HttpRequest req,
             ILogger log)
         {
+
+            var asText = req.Query["format"] == "html";
+            
             HelperFunctions.SetConfigIdForLocalDevelopment();
 
             try
@@ -38,15 +41,33 @@
                                       logger)
                 };
 
-                string jsonToReturn = JsonConvert.SerializeObject(result, Formatting.Indented);
-                jsonToReturn = jsonToReturn.Replace(Environment.NewLine, "<br/>");
-                jsonToReturn = jsonToReturn.Replace(" ", "&nbsp");
-
-                return new ContentResult
+                if (asText)
                 {
-                    Content = jsonToReturn,
-                    ContentType = "text/html"
-                };
+                    string jsonAsHtml = JsonConvert.SerializeObject(result, Formatting.Indented);
+                    jsonAsHtml = jsonAsHtml.Replace(Environment.NewLine, "<br/>");
+                    jsonAsHtml = jsonAsHtml.Replace(" ", "&nbsp");
+
+                    string html = @$"<!DOCTYPE html>
+                        <html lang=""en"">
+                        <head>
+                        <meta charset=""utf-8"">
+                        <title>Check Health</title>
+                        </head>
+                        <body style=""font-family:Lucida Console"">
+                        {jsonAsHtml}
+                        </body>
+                        </html>";
+                    
+                    return new ContentResult
+                    {
+                        Content = html,
+                        ContentType = "text/html"
+                    };
+                }
+                else
+                {
+                    return new JsonResult(result);
+                }
             }
             catch (Exception e)
             {

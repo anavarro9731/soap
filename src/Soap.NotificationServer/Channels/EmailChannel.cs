@@ -1,128 +1,117 @@
-﻿ //namespace Soap.NotificationServer.Channels
-//{
-//    using System;
-//    using System.Collections.Generic;
-//    using System.Linq;
-//    using System.Threading.Tasks;
-//    using CircuitBoard.MessageAggregator;
-//    using CircuitBoard.Messages;
-//    using Mailer.NET.Mailer;
-//    using Mailer.NET.Mailer.Transport;
-//    using Soap.Utility.Functions.Operations;
+﻿namespace Soap.NotificationServer.Channels
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Mail;
+    using System.Threading.Tasks;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
+    using Soap.Utility.Functions.Operations;
+    using Typesafe.Mailgun;
 
-//    public class EmailChannel : IServerChannelInfo
-//    {
-//        private readonly MailGunEmailSenderSettings emailSettings;
+    public class EmailChannel : IServerChannelInfo
+    {
+        private readonly MailGunEmailSenderSettings emailSettings;
 
-//        private readonly MailgunTransport mailGunClient;
+        private readonly MailgunClient mailGunClient;
 
-//        public EmailChannel(MailGunEmailSenderSettings settings)
-//        {
-//            this.mailGunClient = new MailgunTransport(settings.MailGunDomain, settings.ApiKey);
-//            this.emailSettings = settings;
-//        }
+        public EmailChannel(MailGunEmailSenderSettings settings)
+        {
+            this.mailGunClient = new MailgunClient(settings.MailGunDomain, settings.ApiKey, 3);
+            this.emailSettings = settings;
+        }
 
-//        public NotificationChannelTypes Type { get; } = NotificationChannelTypes.Email;
+        public NotificationChannelTypes Type { get; } = NotificationChannelTypes.Email;
 
-//        public Task Send(Notification notification)
-//        {
-//            var recipients = notification.Recipient.Split(';');
-//            foreach (var s in recipients)
-//                Guard.Against(
-//                    () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
-//                    $"Sending emails to {s} is not allowed.");
+        public Task Send(Notification notification)
+        {
+            var recipients = notification.Recipient.Split(';');
+            foreach (var s in recipients)
+                Guard.Against(
+                    () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
+                    $"Sending emails to {s} is not allowed.");
 
-//            return this.emailSettings.MessageAggregator
-//                       .CollectAndForward(new SendingEmail(notification.Body, notification.Subject, recipients))
-//                       .To(SendViaMailGun);
-//        }
+            return this.emailSettings.MessageAggregator
+                       .CollectAndForward(new SendingEmail(notification.Body, notification.Subject, recipients))
+                       .To(SendViaMailGun);
+        }
 
-//        private Task SendViaMailGun(SendingEmail sendingEmail)
-//        {
-//            var emailMessage = new Email(this.mailGunClient)
-//            {
-//                Subject = sendingEmail.Subject,
-//                Message = sendingEmail.Text,
-//                From = new Contact
-//                {
-//                    Email = this.emailSettings.From
-//                },
-//                To = sendingEmail.SendTo.Select(
-//                                     x => new Contact
-//                                     {
-//                                         Email = x
-//                                     })
-//                                 .ToList()
-//            };
-//            var result = this.mailGunClient.SendEmail(emailMessage);
-//            Guard.Against(result.Success == false, "Could not send email: " + result.Message);
-//            return Task.CompletedTask;
-//        }
+        private Task SendViaMailGun(SendingEmail sendingEmail)
+        {
+            var result = this.mailGunClient.SendMail(
+                new MailMessage(this.emailSettings.From, string.Join(';', sendingEmail.SendTo))
+                {
+                    Subject = sendingEmail.Subject,
+                    Body = sendingEmail.Text
+                });
 
-//        public class MailGunEmailSenderSettings : INotificationChannelSettings
-//        {
-//            internal readonly IMessageAggregator MessageAggregator;
+            return Task.CompletedTask;
+        }
 
-//            public MailGunEmailSenderSettings(
-//                string from,
-//                string apiKey,
-//                string mailGunDomain,
-//                IReadOnlyList<string> allowedTo,
-//                IMessageAggregator messageAggregator)
-//            {
-//                this.MessageAggregator = messageAggregator;
-//                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
-//                Guard.Against(
-//                    string.IsNullOrEmpty(apiKey),
-//                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
-//                Guard.Against(
-//                    string.IsNullOrEmpty(mailGunDomain),
-//                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailGunDomain)} cannot be null");
+        public class MailGunEmailSenderSettings : INotificationChannelSettings
+        {
+            internal readonly IMessageAggregator MessageAggregator;
 
-//                From = from;
-//                ApiKey = apiKey;
-//                MailGunDomain = mailGunDomain;
-//                AllowedTo = allowedTo ?? new[]
-//                {
-//                    "*"
-//                };
-//            }
+            public MailGunEmailSenderSettings(
+                string from,
+                string apiKey,
+                string mailGunDomain,
+                IReadOnlyList<string> allowedTo,
+                IMessageAggregator messageAggregator)
+            {
+                this.MessageAggregator = messageAggregator;
+                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
+                Guard.Against(
+                    string.IsNullOrEmpty(apiKey),
+                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
+                Guard.Against(
+                    string.IsNullOrEmpty(mailGunDomain),
+                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailGunDomain)} cannot be null");
 
-//            //the purpose of this is to prevent sending to bogus addresses when testing which causes problems for our mailgun account
-//            public IReadOnlyList<string> AllowedTo { get; }
+                From = from;
+                ApiKey = apiKey;
+                MailGunDomain = mailGunDomain;
+                AllowedTo = allowedTo ?? new[]
+                {
+                    "*"
+                };
+            }
 
-//            public string ApiKey { get; }
+            //the purpose of this is to prevent sending to bogus addresses when testing which causes problems for our mailgun account
+            public IReadOnlyList<string> AllowedTo { get; }
 
-//            public string From { get; }
+            public string ApiKey { get; }
 
-//            public string MailGunDomain { get; }
+            public string From { get; }
 
-//            public IServerChannelInfo CreateChannel() => new EmailChannel(this);
-//        }
+            public string MailGunDomain { get; }
 
-//        public class SendingEmail : IChangeState
-//        {
-//            public SendingEmail(string text, string subject, string[] sendTo)
-//            {
-//                Text = text;
-//                Subject = subject;
-//                SendTo = sendTo;
-//            }
+            public IServerChannelInfo CreateChannel() => new EmailChannel(this);
+        }
 
-//            public string[] SendTo { get; }
+        public class SendingEmail : IChangeState
+        {
+            public SendingEmail(string text, string subject, string[] sendTo)
+            {
+                Text = text;
+                Subject = subject;
+                SendTo = sendTo;
+            }
 
-//            public double StateOperationCost { get; set; }
+            public string[] SendTo { get; }
 
-//            public TimeSpan? StateOperationDuration { get; set; }
+            public double StateOperationCost { get; set; }
 
-//            public long StateOperationStartTimestamp { get; set; }
+            public TimeSpan? StateOperationDuration { get; set; }
 
-//            public long? StateOperationStopTimestamp { get; set; }
+            public long StateOperationStartTimestamp { get; set; }
 
-//            public string Subject { get; }
+            public long? StateOperationStopTimestamp { get; set; }
 
-//            public string Text { get; }
-//        }
-//    }
-//} TODO
+            public string Subject { get; }
 
+            public string Text { get; }
+        }
+    }
+} 

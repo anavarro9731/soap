@@ -80,9 +80,9 @@
         {
             {
                 /* check the ds UoW's look ahead first to see if there are potential conflicts
-             if there are then we can assume that is why we failed last time and we should rollback any remaining items
-             starting with the creates and updates since they are the ones that other people could have seen
-             and finally returning AllRolledBack */
+                 if there are then we can assume that is why we failed last time and we should rollback any remaining items
+                 starting with the creates and updates since they are the ones that other people could have seen
+                 and finally returning AllRolledBack */
 
                 //- don't recalculate these expensive ops
                 var records = await WaitForAllRecords(context.MessageLogEntry.UnitOfWork, context.DataStore);
@@ -102,7 +102,7 @@
 
                 if (!messageLogEntry.UnitOfWork.OptimisticConcurrency) return await CompleteDataAndMessages(records, context);
 
-                return records switch
+                return records switch //* warning: the order of the switches does matter
                 {
                     var r when PartiallyCompletedDataButCannotFinish(r) => await RollbackRemaining(
                                                                                r,
@@ -189,9 +189,10 @@
                 }
 
                 /* a rollback was completed or we failed after committing the unit of work but before committing the first item
-            (e.g. first item failed concurrency check) in is possible that like the server crashes or something in the aforementioned
-            window and then we assume incorrectly the uow cannot be completed but for now its good enough since there is literally
-            no lines of code between those two steps, maybe in future TODO split these cases */
+                (e.g. first item failed concurrency check) 
+                It is possible that the server crashes or something in the aforementioned
+                window and then nothing has been committed but could be however that should be caught
+                by the previous case NotStartedOrPartiallyCompletedDataAndCanFinish */
                 static bool HasNotStartedOrWasRolledBackButCannotFinish(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)

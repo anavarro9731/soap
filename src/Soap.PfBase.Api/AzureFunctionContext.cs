@@ -8,6 +8,7 @@
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Newtonsoft.Json;
     using Serilog;
     using Serilog.Exceptions;
@@ -26,6 +27,15 @@
 
     public static class AzureFunctionContext
     {
+
+        /* THIS IS THE ONLY STATIC VARIABLE IN THE WHOLE PRODUCTION PIPELINE
+         the client should be thread-safe and has a spin up time of about
+         1 sec so its a trade-off well work making. Something to remember
+         and keep an eye on though. I am not sure if there is a performance
+         hit if you have too many clients at once, ie. is there any state
+         or locking on the client? */
+        private static IDocumentRepository lifetimeRepositoryClient;
+        
         public static async Task<Result> Execute<TApiIdentity>(
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
@@ -47,8 +57,7 @@
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
                     CreateMessageAggregator(out var messageAggregator);
-
-                    //TODO: resuse datastore repository on each call if its slow 
+                    
                     CreateDataStore(
                         messageAggregator,
                         appConfig.DatabaseSettings,
@@ -132,7 +141,9 @@
                 dataStoreOptions ??= DataStoreOptions.Create();
                 dataStoreOptions.SpecifyUnitOfWorkId(messageId);
 
-                dataStore = new DataStore(databaseSettings.CreateRepository(), messageAggregator, dataStoreOptions);
+                lifetimeRepositoryClient ??= databaseSettings.CreateRepository();
+
+                dataStore = new DataStore(lifetimeRepositoryClient, messageAggregator, dataStoreOptions);
             }
 
             static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
