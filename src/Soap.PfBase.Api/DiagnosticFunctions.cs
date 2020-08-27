@@ -54,14 +54,14 @@
 
             var healthCheck = new
             {
-                healthCheckedAt = DateTime.UtcNow,
+                HealthCheckedAt = DateTime.UtcNow,
                 appConfig.ApplicationName,
                 appConfig.ApplicationVersion,
                 AppEnvironmentIdentifier = appConfig.AppEnvId,
                 appConfig.DefaultExceptionMessage,
                 EntryAssemblyVersion = version,
-                machineName = Environment.MachineName,
-                ipAddress
+                Environment.MachineName,
+                IpAddress = ipAddress
             };
 
             return healthCheck;

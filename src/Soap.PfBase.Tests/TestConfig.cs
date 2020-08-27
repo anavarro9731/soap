@@ -10,9 +10,10 @@ using Soap.NotificationServer.Channels;
 /* using a config to provide values for bootstrapping tests 
 keeps it more line with the production version although there are too many differences
 to share any more than the general flow */
+
 public class TestConfig : IBootstrapVariables
 {
-    public string ApplicationName { get; set; } = $"Test Application {Assembly.GetEntryAssembly().GetName().Name}";
+    public string ApplicationName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";
 
     public string ApplicationVersion { get; set; } = "0.0.0";
 
@@ -23,7 +24,7 @@ public class TestConfig : IBootstrapVariables
 
     public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
 
-    public AppEnvIdentifier AppEnvId { get; set; } = new AppEnvIdentifier("Domain Tests", SoapEnvironments.InMemory);
+    public AppEnvIdentifier AppEnvId { get; set; } = new AppEnvIdentifier("DOMAIN-TESTS", SoapEnvironments.InMemory);
 
     public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
     {
