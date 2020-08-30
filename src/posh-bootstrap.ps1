@@ -16,7 +16,6 @@ function global:Run {
 		[string] $azureFunctionProject,
 		[string] $azureAppName,
 		[string] $azureResourceGroup,
-		[string] $soapEnvironmentKey,
 		[string] $azureDevopsOrganisation,
 		[string] $azureWebJobsServiceBus,
 		[string] $azureInfrastructureLogin,
@@ -60,7 +59,6 @@ function global:Run {
 		 $azureFunctionProject `
 		 $azureAppName `
 		 $azureResourceGroup `
-		 $soapEnvironmentKey `
 		 $azureDevopsOrganisation `
 		 $azureDevopsPat `
 		 $azureWebJobsServiceBus `

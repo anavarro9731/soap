@@ -6,7 +6,7 @@
     {
         internal static void SetConfigIdEnvVars()
         {
-            Environment.SetEnvironmentVariable(nameof(ConfigId.SoapEnvironmentKey), "SAP");
+            Environment.SetEnvironmentVariable(nameof(ConfigId.SoapApplicationKey), "SAP");
             
             var runningInDev = Environment.UserInteractive;
             if (runningInDev)
