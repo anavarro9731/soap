@@ -18,7 +18,7 @@
             HttpRequest req,
             ILogger log)
         {
-            HelperFunctions.SetConfigIdForLocalDevelopment();
+            HelperFunctions.SetConfigIdEnvVars();
 
             try
             {

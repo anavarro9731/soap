@@ -10,11 +10,17 @@ function global:Run {
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
-		[Alias('nuget-key')]
 		[string] $nugetApiKey,
-		[Alias('ado-pat')]
 		[string] $azureDevopsPat,
-		[string] $forceVersion
+		[string] $forceVersion,
+		[string] $azureFunctionProject,
+		[string] $azureAppName,
+		[string] $azureResourceGroup,
+		[string] $soapEnvironmentKey,
+		[string] $azureDevopsOrganisation,
+		[string] $azureWebJobsServiceBus,
+		[string] $azureInfrastructureLogin,
+		[string] $azureInfrastructurePwd
 	)
 
 	if ($PrepareNewVersion) {
@@ -48,6 +54,20 @@ function global:Run {
 	}
 
 	if ($PackAndPublish) {
+		
+		if ([string]::IsNullOrWhiteSpace($azureFunctionProject) -eq $false) {
+		$f = Create-FunctionProjectParams `
+		 $azureFunctionProject `
+		 $azureAppName `
+		 $azureResourceGroup `
+		 $soapEnvironmentKey `
+		 $azureDevopsOrganisation `
+		 $azureDevopsPat `
+		 $azureWebJobsServiceBus `
+		 $azureInfrastructureLogin `
+		 $azureInfrastructurePwd
+		}
+
 		Pack-And-Publish -allProjects @(
 		"Soap.PfBase.Api",
 		"Soap.PfBase.Logic",
@@ -65,6 +85,7 @@ function global:Run {
 		"Soap.Utility"
 		) -unlistedProjects @(
 		) `
+		-azureFunctionProject $f `
         -nugetApiKey $nugetApiKey `
 		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json"
 	}

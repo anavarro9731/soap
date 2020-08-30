@@ -24,6 +24,7 @@
     using Soap.PfBase.Alj;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Objects.Blended;
 
     public static class AzureFunctionContext
     {
@@ -185,7 +186,7 @@
                 EnsureEnvironmentVars();
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(
-                    new AppEnvIdentifier("SAP", SoapEnvironments.Development),
+                    new AppEnvIdentifier(ConfigId.SoapApplicationKey, Enumeration.FromKey<SoapEnvironments>(ConfigId.SoapEnvironmentKey)),
                     out var applicationConfig1);
 
                 CreateLogger(applicationConfig1.LogSettings, out var logger1);
