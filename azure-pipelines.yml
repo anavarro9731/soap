@@ -12,24 +12,22 @@ pool:
 
 steps:
 
-  - powershell: |
-      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
-      Run -BuildAndTest   
-    displayName: 'Build and Test'
+
 
   - powershell: >
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
-      Run -PackAndPublish 
-      -nugetApiKey "$(nuget-key)"
-      -azureDevopsPat "$(ado-pat)"
-      -azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" 
-      -azureAppName "soap-api-sample" 
-      -azureResourceGroup "rg-soap" 
-      -soapEnvironmentKey "DEV" 
-      -azureDevopsOrganisation "anavarro9731" 
-      -azureWebJobsServiceBus "$(azure-webjobs-servicebus)"
-      -azureInfrastructureLogin "anavarro9731@gmail.com" 
-      -azureInfrastructurePwd "GEL`"06`"vilitas"
+      $cmd = "Run -PackAndPublish 
+      -nugetApiKey $(nuget-key)
+      -azureDevopsPat `"$(ado-pat)`"
+      -azureFunctionProject Soap.Api.Sample\Soap.Api.Sample.Afs
+      -azureAppName soap-api-sample
+      -azureResourceGroup rg-soap
+      -soapEnvironmentKey DEV
+      -azureDevopsOrganisation anavarro9731
+      -azureWebJobsServiceBus `"$(azure-webjobs-servicebus)`"
+      -azureInfrastructureLogin anavarro9731@gmail.com\
+      -azureInfrastructurePwd GEL`"06`"vilitas
+      Write-Host $cmd
       
     displayName: 'Pack and Publish'
     
