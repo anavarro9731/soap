@@ -23,7 +23,7 @@ steps:
       -soapEnvironmentKey DEV `
       -azureDevopsOrganisation anavarro9731 `
       -azureWebJobsServiceBus "$(azure-webjobs-servicebus)" `
-      -azureInfrastructureLogin anavarro9731@gmail.com `
+      -azureInfrastructureLogin "anavarro9731@gmail.com" `
       -azureInfrastructurePwd "GEL`"06`"vilitas"'
       
       Write-Host $cmd
