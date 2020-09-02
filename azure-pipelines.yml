@@ -20,8 +20,8 @@ steps:
   - powershell: >
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
       Run -PackAndPublish 
-      -nugetApiKey $(nuget-key)   
-      -azureDevopsPat $(ado-pat)                                                   
+      -nugetApiKey $(nuget-key) 
+      -azureDevopsPat $(ado-pat) 
       -azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" 
       -azureAppName "soap-api-sample" 
       -azureResourceGroup "rg-soap" 
