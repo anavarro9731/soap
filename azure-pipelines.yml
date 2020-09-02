@@ -16,7 +16,7 @@ steps:
 
   - powershell: >
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
-      $cmd = "Run -PackAndPublish 
+      Run -PackAndPublish 
       -nugetApiKey "$(nuget-key)"
       -azureDevopsPat "$(ado-pat)"
       -azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs"
@@ -26,8 +26,8 @@ steps:
       -azureDevopsOrganisation anavarro9731
       -azureWebJobsServiceBus "$(azure-webjobs-servicebus)"
       -azureInfrastructureLogin anavarro9731@gmail.com
-      -azureInfrastructurePwd "GEL`"06`"vilitas" \n
-      Write-Host $cmd
+      -azureInfrastructurePwd "GEL`"06`"vilitas" 
+      
       
     displayName: 'Pack and Publish'
     
