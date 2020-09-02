@@ -25,7 +25,7 @@
 
             var asText = req.Query["format"] == "html";
             
-            HelperFunctions.SetConfigIdEnvVars();
+            HelperFunctions.SetAppKey();
 
             try
             {

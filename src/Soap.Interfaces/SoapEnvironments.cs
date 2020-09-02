@@ -4,14 +4,14 @@
 
     public class SoapEnvironments : Enumeration<SoapEnvironments>
     {
-        public static SoapEnvironments InMemory = Create(nameof(InMemory), "IN-MEM");
-        
-        public static SoapEnvironments Development = Create(nameof(Development), "DEV");
+        public static SoapEnvironments Development = Create("DEV", nameof(Development));
 
-        public static SoapEnvironments VNext = Create(nameof(VNext), "VNEXT");
+        public static SoapEnvironments InMemory = Create("IN-MEM", nameof(InMemory));
 
-        public static SoapEnvironments Release = Create(nameof(Release), "REL");
-        
-        public static SoapEnvironments Live = Create(nameof(Live), "LIVE");
+        public static SoapEnvironments Live = Create("LIVE", nameof(Live));
+
+        public static SoapEnvironments Release = Create("REL", nameof(Release));
+
+        public static SoapEnvironments VNext = Create("VNEXT", nameof(VNext));
     }
 }

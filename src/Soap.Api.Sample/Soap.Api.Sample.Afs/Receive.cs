@@ -21,7 +21,7 @@
         {
             try
             {
-                HelperFunctions.SetConfigIdEnvVars();
+                HelperFunctions.SetAppKey();
 
                 AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
 

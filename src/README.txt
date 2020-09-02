@@ -16,11 +16,9 @@ Install Azure CLI and extensions
 Use the create-new-service powershell from the soap project
 > .\create-new-service.psm1
 
-Adjust variables in the posh-boostrap and azure-pipelines files
-
 create a pipeline linked to the azure-pipelines.yml file you just uploaded (will this happen automatically?)
 
-edit the pipeline variables in portal adding nuget-key and ado-pat
+Edit the pipeline variables in portal adding nuget-key and ado-pat (can you specify these in the YAML with *******)
 
 Create a new 
 - documentdb instance, 
@@ -32,22 +30,17 @@ Create a new
     add slots for dev, vnext, release, and preprod
 (to script defaults possibly in future)
 
-Edit the MyProject.Api.MyApi.Afs Receive.cs file and update the ConfigId vars for local execution
+Edit the MyProject.Api.MyApi.Afs Helpers.cs file and update the ConfigId vars for local execution
 
 Edit the local.settings.json file and update the dev environment service bus connection string
 
-az login -u anavarro9731@gmail.com -p GEL"06"vilitas
-
-
-
-
-
-Make the following changes to default setup:
-> build plan
-select soap feed
-select latest win agent
-
-> release plan
-set ConfigId vars plus AzureWebJobsServiceBus in AppSettings
-change method to ZipDeploy
-change to latest win agent
+Run -PackAndPublish `
+-nugetApiKey "incorrect" `
+-azureDevopsPat "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq" `
+-azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" `
+-azureAppName "soap-api-sample" `
+-azureResourceGroup "rg-soap" `
+-azureDevopsOrganisation "anavarro9731" `
+-azureWebJobsServiceBus "Endpoint=sb://sb-soap-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=uXpkZEaaCaskdFNvGdrgR38eGgJ1QE5JskVJbSK5Tl0=" `
+-azureInfrastructureLogin "anavarro9731@gmail.com" `
+-azureInfrastructurePwd "GEL`"06`"vilitas"

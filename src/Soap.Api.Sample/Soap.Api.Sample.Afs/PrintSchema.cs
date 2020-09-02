@@ -18,7 +18,7 @@
             HttpRequest req,
             ILogger log)
         {
-            HelperFunctions.SetConfigIdEnvVars();
+            HelperFunctions.SetAppKey();
 
             try
             {

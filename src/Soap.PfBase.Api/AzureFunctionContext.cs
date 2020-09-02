@@ -187,7 +187,7 @@
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(
                     new AppEnvIdentifier(ConfigId.SoapApplicationKey, Enumeration.FromKey<SoapEnvironments>(ConfigId.SoapEnvironmentKey)),
-                    out var applicationConfig1);
+                        out var applicationConfig1);
 
                 CreateLogger(applicationConfig1.LogSettings, out var logger1);
 
