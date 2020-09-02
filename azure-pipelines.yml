@@ -14,7 +14,7 @@ steps:
 
   - powershell: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
-      $cmd = 'Run -PackAndPublish ` 
+      $cmd = 'Run -PackAndPublish `
       -nugetApiKey "$(nuget-key)" `
       -azureDevopsPat "$(ado-pat)" `
       -azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" `
