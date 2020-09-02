@@ -17,8 +17,19 @@ steps:
       Run -BuildAndTest   
     displayName: 'Build and Test'
 
-  - powershell: |
-      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1
-      Run -PackAndPublish -nugetApiKey $(nuget-key)   
+  - powershell: >
+      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
+      Run -PackAndPublish 
+      -nugetApiKey $(nuget-key)   
+      -azureDevopsPat "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq"                                                   
+      -azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" `
+      -azureAppName "soap-api-sample" `
+      -azureResourceGroup "rg-soap" `
+      -soapEnvironmentKey "DEV" `
+      -azureDevopsOrganisation "anavarro9731" `
+      -azureWebJobsServiceBus "Endpoint=sb://sb-soap-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=uXpkZEaaCaskdFNvGdrgR38eGgJ1QE5JskVJbSK5Tl0=" `
+      -azureInfrastructureLogin "anavarro9731@gmail.com" `
+      -azureInfrastructurePwd "GEL`"06`"vilitas"
+      
     displayName: 'Pack and Publish'
     
