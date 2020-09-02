@@ -34,6 +34,22 @@ Edit the MyProject.Api.MyApi.Afs Helpers.cs file and update the ConfigId vars fo
 
 Edit the local.settings.json file and update the dev environment service bus connection string
 
+
+VERBOSE: Authenticating to Azure ...
+VERBOSE: Building your Azure drive ...
+PS /home/aaron> az ad sp create-for-rbac --name DevopsServicePrincipal
+Changing "DevopsServicePrincipal" to a valid URI of "http://DevopsServicePrincipal", which is the required format used for service principal names
+Creating a role assignment under the scope of "/subscriptions/56f4beb0-5d15-4f0b-941a-350bd8721d1c"
+  Retrying role assignment creation: 1/36
+{
+  "appId": "fbff5a19-e7a7-49a2-829c-ad415b507577",
+  "displayName": "DevopsServicePrincipal",
+  "name": "http://DevopsServicePrincipal",
+  "password": "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-",
+  "tenant": "f8d686ac-a87f-4d1c-bbcf-d08873871dcd"
+}
+PS /home/aaron>
+
 Run -PackAndPublish `
 -nugetApiKey "incorrect" `
 -azureDevopsPat "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq" `

@@ -18,8 +18,7 @@ function global:Run {
 		[string] $azureResourceGroup,
 		[string] $azureDevopsOrganisation,
 		[string] $azureWebJobsServiceBus,
-		[string] $azureInfrastructureLogin,
-		[string] $azureInfrastructurePwd
+		[string] $azLoginCmd
 	)
 
 	if ($PrepareNewVersion) {
@@ -62,8 +61,7 @@ function global:Run {
 		 $azureDevopsOrganisation `
 		 $azureDevopsPat `
 		 $azureWebJobsServiceBus `
-		 $azureInfrastructureLogin `
-		 $azureInfrastructurePwd
+		 $azLoginCmd
 		}
 
 		Pack-And-Publish -allProjects @(
