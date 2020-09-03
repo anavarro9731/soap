@@ -25,7 +25,7 @@ steps:
       -azureDevopsOrganisation anavarro9731 `
       -azureWebJobsServiceBus "$(azure-webjobs-servicebus)" `
       -azLoginCmd ''$(az-login)'''
-      Write-Host "Warning Preference: $WarningPreference"
+      Write-Host "Error Action Preference: $ErrorActionPreference"
       Write-Host $cmd
       iex $cmd
       
