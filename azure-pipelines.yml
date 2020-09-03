@@ -9,8 +9,10 @@
 
 pool:
   vmImage: 'windows-latest'
-
+        
 steps:
+  - powershell: |
+      Log "Warning Preference: $WarningPeference"
 
   - powershell: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
