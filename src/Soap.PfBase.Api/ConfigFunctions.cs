@@ -23,8 +23,8 @@ namespace Soap.PfBase.Alj
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Text;
     using Microsoft.CSharp.RuntimeBinder;
-    using Soap.Api.Sample.Afs;
     using Soap.Bus;
+    using Soap.Config;
     using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.NotificationServer;
@@ -124,13 +124,13 @@ namespace Soap.PfBase.Alj
             static string GetFileUrl()
             {
                 var fileUrl = string.Format(
-                    $"https://dev.azure.com/{ConfigId.AzureDevopsOrganisation}/soap.config/_apis/git/repositories/soap.config/items?path=Config/{ConfigId.SoapApplicationKey}/{ConfigId.SoapEnvironmentKey}/appConfig.cs&api-version=5.1");
+                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/soap.config/_apis/git/repositories/soap.config/items?path=Config/{EnvVars.SoapApplicationKey}/{EnvVars.SoapEnvironmentKey}/appConfig.cs&api-version=5.1");
                 return fileUrl;
             }
 
             static string GetAuthorizationHeaderValue()
             {
-                var basicAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes($":{ConfigId.AzureDevopsPat}"));
+                var basicAuth = Convert.ToBase64String(Encoding.UTF8.GetBytes($":{EnvVars.AzureDevopsPat}"));
                 return $"Basic {basicAuth}";
             }
         }

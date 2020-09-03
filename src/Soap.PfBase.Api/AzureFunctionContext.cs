@@ -12,9 +12,9 @@
     using Newtonsoft.Json;
     using Serilog;
     using Serilog.Exceptions;
-    using Soap.Api.Sample.Afs;
     using Soap.Auth0;
     using Soap.Bus;
+    using Soap.Config;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Context;
@@ -186,7 +186,7 @@
                 EnsureEnvironmentVars();
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(
-                    new AppEnvIdentifier(ConfigId.SoapApplicationKey, Enumeration.FromKey<SoapEnvironments>(ConfigId.SoapEnvironmentKey)),
+                    new AppEnvIdentifier(EnvVars.SoapApplicationKey, Enumeration.FromKey<SoapEnvironments>(EnvVars.SoapEnvironmentKey)),
                         out var applicationConfig1);
 
                 CreateLogger(applicationConfig1.LogSettings, out var logger1);
@@ -202,17 +202,20 @@
             static void EnsureEnvironmentVars()
             {
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(ConfigId.AzureDevopsOrganisation),
-                    $"{nameof(ConfigId.AzureDevopsOrganisation)} environment variable not set");
+                    string.IsNullOrWhiteSpace(EnvVars.AzureDevopsOrganisation),
+                    $"{nameof(EnvVars.AzureDevopsOrganisation)} environment variable not set");
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(ConfigId.AzureDevopsPat),
-                    $"{nameof(ConfigId.AzureDevopsPat)} environment variable not set");
+                    string.IsNullOrWhiteSpace(EnvVars.AzureDevopsPat),
+                    $"{nameof(EnvVars.AzureDevopsPat)} environment variable not set");
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(ConfigId.SoapApplicationKey),
-                    $"{nameof(ConfigId.SoapApplicationKey)} environment variable not set");
+                    string.IsNullOrWhiteSpace(EnvVars.SoapApplicationKey),
+                    $"{nameof(EnvVars.SoapApplicationKey)} environment variable not set");
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(ConfigId.SoapEnvironmentKey),
-                    $"{nameof(ConfigId.SoapEnvironmentKey)} environment variable not set");
+                    string.IsNullOrWhiteSpace(EnvVars.SoapEnvironmentKey),
+                    $"{nameof(EnvVars.SoapEnvironmentKey)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.AzureWebJobsServiceBus),
+                    $"{nameof(EnvVars.AzureWebJobsServiceBus)} environment variable not set");
             }
 
             static void CreateLogger(SeqServerConfig seqServerConfig, out ILogger logger)

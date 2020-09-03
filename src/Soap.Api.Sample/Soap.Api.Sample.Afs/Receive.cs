@@ -21,8 +21,6 @@
         {
             try
             {
-                HelperFunctions.SetAppKey();
-
                 AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
 
                 await AzureFunctionContext.Execute<User>(

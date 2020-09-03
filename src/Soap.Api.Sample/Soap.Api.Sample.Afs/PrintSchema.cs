@@ -18,8 +18,6 @@
             HttpRequest req,
             ILogger log)
         {
-            HelperFunctions.SetAppKey();
-
             try
             {
                 AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);

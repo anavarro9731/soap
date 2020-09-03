@@ -12,6 +12,7 @@
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Soap.Pf.HttpEndpointBase.Controllers;
+    using Soap.PfBase.Alj;
     using Soap.PfBase.Api;
 
     public static class CheckHealth
@@ -24,14 +25,12 @@
         {
 
             var asText = req.Query["format"] == "html";
-            
-            HelperFunctions.SetAppKey();
 
             try
             {
                 AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
 
-                dynamic result = new
+                dynamic messageResult = new
                 {
                     Config = DiagnosticFunctions.GetConfig(appConfig),
                     MessageTest = await DiagnosticFunctions.ExecuteMessageTest<C100Ping, User>(
@@ -41,13 +40,24 @@
                                       logger)
                 };
 
-                if (asText)
-                {
-                    string jsonAsHtml = JsonConvert.SerializeObject(result, Formatting.Indented);
-                    jsonAsHtml = jsonAsHtml.Replace(Environment.NewLine, "<br/>");
-                    jsonAsHtml = jsonAsHtml.Replace(" ", "&nbsp");
+                return BuildResponse(asText, messageResult);
+            }
+            catch (Exception e)
+            {
+                log.LogCritical(e.ToString());
+                return new OkObjectResult(e.ToString());
+            }
+        }
 
-                    string html = @$"<!DOCTYPE html>
+        private static IActionResult BuildResponse(bool asText, dynamic result)
+        {
+            if (asText)
+            {
+                string jsonAsHtml = JsonConvert.SerializeObject(result, Formatting.Indented);
+                jsonAsHtml = jsonAsHtml.Replace(Environment.NewLine, "<br/>");
+                jsonAsHtml = jsonAsHtml.Replace(" ", "&nbsp");
+
+                string html = @$"<!DOCTYPE html>
                         <html lang=""en"">
                         <head>
                         <meta charset=""utf-8"">
@@ -57,22 +67,16 @@
                         {jsonAsHtml}
                         </body>
                         </html>";
-                    
-                    return new ContentResult
-                    {
-                        Content = html,
-                        ContentType = "text/html"
-                    };
-                }
-                else
+
+                return new ContentResult
                 {
-                    return new JsonResult(result);
-                }
+                    Content = html,
+                    ContentType = "text/html"
+                };
             }
-            catch (Exception e)
+            else
             {
-                log.LogCritical(e.ToString());
-                return new OkObjectResult(e.ToString());
+                return new JsonResult(result);
             }
         }
     }

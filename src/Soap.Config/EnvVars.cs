@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Afs
+﻿namespace Soap.Config
 {
     using System;
 

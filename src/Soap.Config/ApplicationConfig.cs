@@ -4,6 +4,7 @@
     using DataStore.Interfaces;
     using FluentValidation;
     using Soap.Bus;
+    using Soap.Config;
     using Soap.NotificationServer;
 
     public class ApplicationConfig : IBootstrapVariables
