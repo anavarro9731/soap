@@ -12,7 +12,7 @@ pool:
         
 steps:
   - powershell: |
-      Write-Host "Warning Preference: $WarningPeference"
+      Write-Host "Warning Preference: $WarningPreference"
 
   - powershell: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
