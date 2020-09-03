@@ -1,61 +1,49 @@
-* DEV ENVIRONMENT
+* DEV ENVIRONMENT (Setup time 30 mins)
 
 Install Chocolatey
+@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command " [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 Install Jetbrains Rider 
 > choco list rider
 > choco install ????
+> choco list --local-only (to verify installation)
 
 Install Azure CLI and extensions
 > choco install azure-cli
 > az extension add --name azure-devops
-> az extension list (to verify)
+> az extension list (to verify installation)
 
-* CREATING NEW SERVICE
+* CREATING NEW SERVICE AND PIPELINE (Setup time 30 mins)
 
 Use the create-new-service powershell from the soap project
 > .\create-new-service.psm1
 
-create a pipeline linked to the azure-pipelines.yml file you just uploaded (will this happen automatically?)
-
-Edit the pipeline variables in portal adding nuget-key and ado-pat (can you specify these in the YAML with *******)
-
-Create a new 
+Create infrastructure in cloud (to script default creation in future)
 - documentdb instance, 
 - azure blob storage, 
 - seq key, 
 - service bus queue, 
 - mailgun apikey, 
 - azure functions app (name: org-api-apiname, all defaults or obvious + new storage: stg-orgapiapiname)
-    add slots for dev, vnext, release, and preprod
-(to script defaults possibly in future)
+    add rel slot
+- azure functions app (name: org-api-apiname-vnext, all defaults or obvious + stg-orgapiapiname)
 
-Edit the MyProject.Api.MyApi.Afs Helpers.cs file and update the ConfigId vars for local execution
+Edit the local.settings.json file and update the properties listed in the EnvVars class to the right settings for the DEV environment
 
-Edit the local.settings.json file and update the dev environment service bus connection string
+Create a new repo and for the files
+
+Update the pwsh-bootstrap.ps1 file 
+
+Upload the files your their new repo
+
+Create a pipeline linked to the azure-pipelines.yml file you just uploaded (will this happen automatically?)
+
+Edit the pipeline variables in portal listed in azure-pipelines.yml
+-To get az login you will need to create a service principal login, az ad sp create-for-rbac --name ServicePrincipalName
+you will need to do this from the cloudshell as global admin for the right permissions
+see here for details (https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) 
+-To get ado-pat you will need to create one with permissions to read from the source repo for the version file and the config repo for the config
+-To get nuget-key you will get from nuget feed provider (not needed when using azure devops, use ado-pat instead) 
 
 
-VERBOSE: Authenticating to Azure ...
-VERBOSE: Building your Azure drive ...
-PS /home/aaron> az ad sp create-for-rbac --name DevopsServicePrincipal
-Changing "DevopsServicePrincipal" to a valid URI of "http://DevopsServicePrincipal", which is the required format used for service principal names
-Creating a role assignment under the scope of "/subscriptions/56f4beb0-5d15-4f0b-941a-350bd8721d1c"
-  Retrying role assignment creation: 1/36
-{
-  "appId": "fbff5a19-e7a7-49a2-829c-ad415b507577",
-  "displayName": "DevopsServicePrincipal",
-  "name": "http://DevopsServicePrincipal",
-  "password": "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-",
-  "tenant": "f8d686ac-a87f-4d1c-bbcf-d08873871dcd"
-}
-PS /home/aaron>
 
-Run -PackAndPublish `
--nugetApiKey "incorrect" `
--azureDevopsPat "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq" `
--azureFunctionProject "Soap.Api.Sample\Soap.Api.Sample.Afs" `
--azureAppName "soap-api-sample" `
--azureResourceGroup "rg-soap" `
--azureDevopsOrganisation "anavarro9731" `
--azureWebJobsServiceBus "Endpoint=sb://sb-soap-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=uXpkZEaaCaskdFNvGdrgR38eGgJ1QE5JskVJbSK5Tl0=" `
--azLoginCmd 'az login --service-principal --username "fbff5a19-e7a7-49a2-829c-ad415b507577" --password "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-" --tenant "f8d686ac-a87f-4d1c-bbcf-d08873871dcd"'

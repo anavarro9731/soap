@@ -8,7 +8,6 @@
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Newtonsoft.Json;
     using Serilog;
     using Serilog.Exceptions;
