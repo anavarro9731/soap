@@ -9,11 +9,10 @@
 
 pool:
   vmImage: 'windows-latest'
-        
+
 steps:
 
-
-  - powershell: |
+  - pwsh: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
       $cmd = 'Run -PackAndPublish `
       -nugetApiKey "$(nuget-key)" `
@@ -25,9 +24,8 @@ steps:
       -azureDevopsOrganisation anavarro9731 `
       -azureWebJobsServiceBus "$(azure-webjobs-servicebus)" `
       -azLoginCmd ''$(az-login)'''
-      Write-Host "Error Action Preference: $ErrorActionPreference"
       Write-Host $cmd
       iex $cmd
-      
+    errorActionPreference: 'Continue'
     displayName: 'Pack and Publish'
     
