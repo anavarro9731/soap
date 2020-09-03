@@ -26,6 +26,5 @@ steps:
       -azLoginCmd ''$(az-login)'''
       Write-Host $cmd
       iex $cmd
-    errorActionPreference: 'Continue'
     displayName: 'Pack and Publish'
     
