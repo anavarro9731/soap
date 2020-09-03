@@ -58,5 +58,4 @@ Run -PackAndPublish `
 -azureResourceGroup "rg-soap" `
 -azureDevopsOrganisation "anavarro9731" `
 -azureWebJobsServiceBus "Endpoint=sb://sb-soap-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=uXpkZEaaCaskdFNvGdrgR38eGgJ1QE5JskVJbSK5Tl0=" `
--azureInfrastructureLogin "anavarro9731@gmail.com" `
--azureInfrastructurePwd "GEL`"06`"vilitas"
+-azLoginCmd 'az login --service-principal --username "fbff5a19-e7a7-49a2-829c-ad415b507577" --password "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-" --tenant "f8d686ac-a87f-4d1c-bbcf-d08873871dcd"'
