@@ -11,8 +11,7 @@ pool:
   vmImage: 'windows-latest'
         
 steps:
-  - powershell: |
-      Write-Host "Warning Preference: $WarningPreference"
+
 
   - powershell: |
       & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
@@ -26,7 +25,7 @@ steps:
       -azureDevopsOrganisation anavarro9731 `
       -azureWebJobsServiceBus "$(azure-webjobs-servicebus)" `
       -azLoginCmd ''$(az-login)'''
-      
+      Write-Host "Warning Preference: $WarningPreference"
       Write-Host $cmd
       iex $cmd
       
