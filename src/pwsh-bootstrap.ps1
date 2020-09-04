@@ -12,8 +12,6 @@ function global:Run {
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
-		
-		[Parameter(Mandatory = $true)]
 		[string] $nugetApiKey,
 		[string] $azureDevopsPat,
 		[string] $azLoginCmd,
