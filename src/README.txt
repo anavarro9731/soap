@@ -22,7 +22,7 @@ Create infrastructure in cloud (to script default creation in future)
 - documentdb instance, 
 - azure blob storage, 
 - seq key, 
-- service bus queue, 
+- service bus queue (name: sb-org, all defaults or obv., create a new queue after the project name e.g. Soap.Api.Sample, max delivery to 1, enable duplicate detection)
 - mailgun apikey, 
 - azure functions app (name: org-api-apiname, all defaults or obvious + new storage: stg-orgapiapiname)
     add rel slot

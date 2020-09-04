@@ -95,7 +95,7 @@ function global:Run {
 			# -azLoginCmd (provided by $azLoginCmd, do not modify) az login CLI command string used to deploy functionapp
 			 Write-Host $azLoginCmd
 			$f = Create-FunctionProjectParams -project  $azureFunctionProject `
-			-azureAppName "soap-sample-api" `
+			-azureAppName "soap-api-sample" `
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
