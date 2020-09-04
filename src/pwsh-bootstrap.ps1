@@ -45,7 +45,7 @@ function global:Run {
 	
 	# the relative path on disk without the trailing slash to ths file of the single azure function app project to be published / optional can be $null or empty string
 	# Note .csproj and foldername must match for the folder containing the project
-	$azureFunctionProject = "Soap.Sample.Api/Soap.Sample.Api.Afs"
+	$azureFunctionProject = "Soap.Sample.Api\Soap.Sample.Api.Afs"
 	
 	
 
@@ -59,6 +59,7 @@ function global:Run {
 	#- forceVersion the package version number to force (e.g. 1.0.0, 1.1.4 or 1.12.0-alpha)
 	
 	if ($PrepareNewVersion) {
+		
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject)`
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
