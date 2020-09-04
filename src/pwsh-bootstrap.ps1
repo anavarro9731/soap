@@ -53,7 +53,7 @@ function global:Run {
 	# -allProjects (provided by $libraryProjects and $azureFunctionProject, do not modify, can be empty)
 	# -azureDevopsOrganisation this is the name of the Organisation in azure devops which contains the repo for this solution / optional depending if using azure devops 
 	# -azureDevopsProject this is the name of the Project in azure devops which contains the repo for this solution / optional depending if using azure devops
-	# -azureDevopsPat (provided by $azureDevopsPat, do not modify, optional applicable only when repo is in azure devops)
+	# -azureDevopsPat could be provided the paramater but usually hardcoded here since this is run locally 
 	# -repository this is the name of the repository in either Github or AzureDevops
 	# -gitHubUserName if using a GitHub repo this is the name of the user who owns the repo / optional depending if using github, only public Github projects supported
 	#- forceVersion the package version number to force (e.g. 1.0.0, 1.1.4 or 1.12.0-alpha)
@@ -63,7 +63,7 @@ function global:Run {
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject)`
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "$azureDevopsPat"`
+        -azureDevopsPat  "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq"`
         -repository "soap" `
         -forceVersion $forceVersion
 	}
