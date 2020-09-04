@@ -22,7 +22,7 @@ steps:
       & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1 \n
       $cmd = 'Run -PackAndPublish `
       -nugetApiKey "$(nuget-key)" `
-      -azureDevopsPat "$(ado-pat)" ` 
+      -azureDevopsPat "$(ado-pat)" `
       -azLoginCmd ''$(az-login)'''
       Write-Host $cmd
       iex $cmd

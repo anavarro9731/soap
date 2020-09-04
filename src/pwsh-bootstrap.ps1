@@ -93,13 +93,13 @@ function global:Run {
 			# -azureDevopsOrganisation azure devops organisation used to set functionapp env vars 
 			# -azureDevopsPat (provided by $azureDevopsPat, do not modify) azure devops SCM PAT, passed to functionapp env vars
 			# -azLoginCmd (provided by $azLoginCmd, do not modify) az login CLI command string used to deploy functionapp
-			 
+			 Write-Host $azLoginCmd
 			$f = Create-FunctionProjectParams -project  $azureFunctionProject `
 			-azureAppName "soap-sample-api" `
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
-		 	-azLoginCmd '$azLoginCmd' `
+		 	-azLoginCmd $azLoginCmd `
 		 	-soapApplicationKey "SAP"
 		}
 
