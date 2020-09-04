@@ -19,7 +19,7 @@ steps:
     # az-login / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
 
   - pwsh: |
-      & $Env:BUILD_SOURCESDIRECTORY\src\posh-bootstrap.ps1 \n
+      & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1 \n
       $cmd = 'Run -PackAndPublish `
       -nugetApiKey "$(nuget-key)" `
       -azureDevopsPat "$(ado-pat)" ` 
