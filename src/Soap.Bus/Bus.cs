@@ -7,6 +7,7 @@
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
     public class Bus : IBus
     {
@@ -55,6 +56,7 @@
         public Task Publish(ApiEvent publishEvent)
         {
             publishEvent.Headers.EnsureRequiredHeaders();
+            publishEvent.Headers.SetQueueName("****");
             this.messageAggregator.Collect(
                 new QueuedEventToPublish
                 {
@@ -66,6 +68,7 @@
         public Task Send(ApiCommand sendCommand)
         {
             sendCommand.Headers.EnsureRequiredHeaders();
+            sendCommand.Headers.SetQueueName(sendCommand.GetType().Assembly.FullName.SubstringBeforeLast('.'));
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {

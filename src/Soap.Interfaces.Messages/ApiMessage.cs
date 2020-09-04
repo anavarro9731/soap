@@ -44,7 +44,20 @@
             m.TryGetValue(Keys.IdentityToken, out var x);
             return x;
         }
+        
+        public static string GetQueueName(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.QueueName, out var x);
+            return x;
+        }
 
+        public static string GetTopic(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.Topic, out var x);
+            return x;
+        }
+
+        
         public static Guid GetMessageId(this MessageHeaders m)
         {
             m.TryGetValue(Keys.MessageId, out var x);
@@ -84,6 +97,18 @@
             m[Keys.MessageId] = messageId.ToString();
             return m;
         }
+        
+        public static MessageHeaders SetTopic(this MessageHeaders m, string topic)
+        {
+            m[Keys.Topic] = topic;
+            return m;
+        }
+        
+        public static MessageHeaders SetQueueName(this MessageHeaders m, string queueName)
+        {
+            m[Keys.QueueName] = queueName;
+            return m;
+        }
 
         public static void SetStatefulProcessId(this MessageHeaders m, StatefulProcessId id) =>
             m[Keys.StatefulProcessId] = id.ToString();
@@ -103,6 +128,11 @@
             internal const string IdentityToken = nameof(IdentityToken);
 
             internal const string StatefulProcessId = nameof(StatefulProcessId);
+
+            internal const string QueueName = nameof(QueueName);
+
+            internal const string Topic = nameof(Topic);
+            
         }
     }
 }

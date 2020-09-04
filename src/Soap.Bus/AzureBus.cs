@@ -15,14 +15,12 @@
     {
         private readonly IMessageAggregator messageAggregator;
 
-        private readonly QueueClient queueClient = null;
-
-        private readonly TopicClient topicClient = null;
+        private readonly Settings settings;
 
         public AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
             this.messageAggregator = messageAggregator;
-            //TODO 
+            this.settings = settings;
         }
 
         private List<IQueuedBusOperation> QueuedChanges
@@ -51,12 +49,13 @@
             {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(), Label = publishEvent.GetType().AssemblyQualifiedName
             };
-
+            
+            var topicClient = new TopicClient("");
             this.messageAggregator.Collect(
                 new QueuedEventToPublish
                 {
                     EventToPublish = publishEvent,
-                    CommitClosure = async () => await this.topicClient?.SendAsync(queueMessage)
+                    CommitClosure = async () => await topicClient?.SendAsync(queueMessage)
                 });
             return Task.CompletedTask;
         }
@@ -67,13 +66,15 @@
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString()
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
+                
             };
 
+            var queueClient = new QueueClient(this.settings.QueueConnectionString, sendCommand.Headers.GetQueueName(), ReceiveMode.ReceiveAndDelete);
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {
-                    CommandToSend = sendCommand, CommitClosure = async () => await this.queueClient?.SendAsync(queueMessage)
+                    CommandToSend = sendCommand, CommitClosure = async () => await queueClient?.SendAsync(queueMessage)
                 });
             return Task.CompletedTask;
         }
