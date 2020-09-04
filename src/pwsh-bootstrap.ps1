@@ -99,7 +99,7 @@ function global:Run {
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
-		 	-azLoginCmd $azLoginCmd `
+		 	-azLoginCmd '$azLoginCmd' `
 		 	-soapApplicationKey "SAP"
 		}
 
