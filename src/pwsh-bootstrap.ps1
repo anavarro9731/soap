@@ -45,7 +45,7 @@ function global:Run {
 	
 	# the relative path on disk without the trailing slash to ths file of the single azure function app project to be published / optional can be $null or empty string
 	# Note .csproj and foldername must match for the folder containing the project
-	$azureFunctionProject = "Soap.Sample.Api\Soap.Sample.Api.Afs"
+	$azureFunctionProject = "Soap.Api.Sample\Soap.Api.Sample.Afs"
 	
 	
 
