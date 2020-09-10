@@ -100,7 +100,7 @@ function global:Run {
 			# -azClientSecret (provided by $azClientSecret, do not modify)
 			# -azTenantId (provided by $azTenantId, do not modify)
 			# -soapApplicationKey an arbitrary string which becomes part of the ConfigId used to identify the right app config to use
-			$f = Create-FunctionProjectParams -project  $azureFunctionProject `
+			$f = New-FunctionProjectParams -project  $azureFunctionProject `
 			-azureAppName "soap-api-sample" `
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
