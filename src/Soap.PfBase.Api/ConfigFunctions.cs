@@ -124,7 +124,7 @@ namespace Soap.PfBase.Alj
             static string GetFileUrl()
             {
                 var fileUrl = string.Format(
-                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/soap.config/_apis/git/repositories/soap.config/items?path=Config/{EnvVars.SoapApplicationKey}/{EnvVars.SoapEnvironmentKey}/appConfig.cs&api-version=5.1");
+                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AzureDevopsOrganisation}.config/_apis/git/repositories/{EnvVars.AzureDevopsOrganisation}.config/items?path=Config/{EnvVars.SoapApplicationKey}/{EnvVars.SoapEnvironmentKey}/appConfig.cs&api-version=5.1");
                 return fileUrl;
             }
 

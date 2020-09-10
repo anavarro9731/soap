@@ -17,7 +17,7 @@
 
         private readonly Settings settings;
 
-        public AzureBus(IMessageAggregator messageAggregator, Settings settings)
+        private AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
             this.messageAggregator = messageAggregator;
             this.settings = settings;
@@ -34,33 +34,19 @@
             }
         }
 
-        public async Task CommitChanges()
-        {
-            foreach (var queuedBusOperation in QueuedChanges)
-            {
-                await queuedBusOperation.CommitClosure();
-                queuedBusOperation.Committed = true;
-            }
-        }
-
-        public Task Publish(ApiEvent publishEvent)
+        public async Task Publish(ApiEvent publishEvent)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(publishEvent)))
             {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(), Label = publishEvent.GetType().AssemblyQualifiedName
             };
             
-            var topicClient = new TopicClient("");
-            this.messageAggregator.Collect(
-                new QueuedEventToPublish
-                {
-                    EventToPublish = publishEvent,
-                    CommitClosure = async () => await topicClient?.SendAsync(queueMessage)
-                });
-            return Task.CompletedTask;
+            var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic());
+            
+            await topicClient?.SendAsync(queueMessage);
         }
 
-        public Task Send(ApiCommand sendCommand)
+        public async Task Send(ApiCommand sendCommand)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(sendCommand)))
             {
@@ -70,32 +56,35 @@
                 
             };
 
-            var queueClient = new QueueClient(this.settings.QueueConnectionString, sendCommand.Headers.GetQueueName(), ReceiveMode.ReceiveAndDelete);
-            this.messageAggregator.Collect(
-                new QueuedCommandToSend
-                {
-                    CommandToSend = sendCommand, CommitClosure = async () => await queueClient?.SendAsync(queueMessage)
-                });
-            return Task.CompletedTask;
+            var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueueName());
+
+            await queueClient.SendAsync(queueMessage);
+
         }
 
         public class Settings : IBusSettings
         {
-            public Settings(byte numberOfApiMessageRetries, string queueConnectionString)
+            public Settings(byte numberOfApiMessageRetries, string busConnectionString)
             {
                 this.NumberOfApiMessageRetries = numberOfApiMessageRetries;
-                this.QueueConnectionString = queueConnectionString;
+                this.BusConnectionString = busConnectionString;
             }
+            
+            public string QueueName { get; set; }
+            
+            public string ResourceGroup { get; set; }
+            
+            public string BusNamespace { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
 
-            public string QueueConnectionString { get; set; }
+            public string BusConnectionString { get; set; }
 
             public class Validator : AbstractValidator<Settings>
             {
                 public Validator()
                 {
-                    RuleFor(x => x.QueueConnectionString).NotEmpty();
+                    RuleFor(x => x.BusConnectionString).NotEmpty();
                     RuleFor(x => x.NumberOfApiMessageRetries).GreaterThanOrEqualTo(x => 0);
                 }
             }

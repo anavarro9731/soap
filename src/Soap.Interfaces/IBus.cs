@@ -14,8 +14,8 @@
 
         Task CommitChanges();
 
-        Task Publish(ApiEvent publishEvent);
+        Task Publish<T>(T publishEvent) where T: ApiEvent;
 
-        Task Send(ApiCommand sendCommand);
+        Task Send<T>(T sendCommand) where T: ApiCommand;
     }
 }

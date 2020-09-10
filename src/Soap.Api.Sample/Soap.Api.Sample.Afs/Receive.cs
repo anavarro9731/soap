@@ -13,7 +13,8 @@
     {
         [FunctionName("ReceiveMessage")]
         public static async Task RunAsync(
-            [ServiceBusTrigger("testqueue1", Connection = "AzureWebJobsServiceBus")]
+            
+            [ServiceBusTrigger("soap.api.sample.messages", Connection = "AzureWebJobsServiceBus")] //* this uses peeklockmode
             string myQueueItem,
             string messageId,
             IDictionary<string, object> UserProperties,

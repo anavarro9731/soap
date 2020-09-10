@@ -23,7 +23,9 @@ steps:
       $cmd = 'Run -PackAndPublish `
       -nugetApiKey "$(nuget-key)" `
       -azureDevopsPat "$(ado-pat)" `
-      -azLoginCmd ''$(az-login)'''
+      -azClientId "$(az-clientid)" `
+      -azClientSecret "$(az-clientsecret)" `
+      -azTenantId "$(az-tenantid)"
       Write-Host $cmd
       iex $cmd
     displayName: 'Pack and Publish'

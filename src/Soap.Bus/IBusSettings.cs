@@ -8,5 +8,6 @@
         IBus CreateBus(IMessageAggregator messageAggregator);
 
         byte NumberOfApiMessageRetries { get; set; }
+
     }
 }

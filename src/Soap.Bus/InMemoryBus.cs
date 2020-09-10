@@ -9,7 +9,7 @@
     {
         private readonly Settings settings;
 
-        public InMemoryBus(Settings settings)
+        private InMemoryBus(Settings settings)
         {
             this.settings = settings;
         }

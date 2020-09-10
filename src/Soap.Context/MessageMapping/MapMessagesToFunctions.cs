@@ -2,24 +2,34 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Linq;
     using DataStore.Models.PureFunctions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Guard = Soap.Utility.Functions.Operations.Guard;
 
-    public class MapMessagesToFunctions
+    public abstract class MapMessagesToFunctions
     {
         private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings =
             new Dictionary<Type, IMessageFunctionsServerSide>();
 
-        public void Register<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage : ApiMessage
+        public List<Type> Events =>
+            this.messageMappings.Where(x => x.Key.InheritsOrImplements(typeof(ApiEvent))).Select(x => x.Key).ToList();
+        
+        public List<Type> Commands =>
+            this.messageMappings.Where(x => x.Key.InheritsOrImplements(typeof(ApiCommand))).Select(x => x.Key).ToList();
+
+        protected void Register<TMessage>(IMessageFunctionsClientSide<TMessage> messageFunctions) where TMessage : ApiMessage
         {
             var messageType = typeof(TMessage);
 
             Guard.Against(this.messageMappings.ContainsKey(messageType), "Cannot map the same message type twice");
 
             this.messageMappings.Add(messageType, new MessageFunctionsBridge<TMessage>(messageFunctions));
+            
         }
 
         internal IMessageFunctionsServerSide MapMessage(ApiMessage message)

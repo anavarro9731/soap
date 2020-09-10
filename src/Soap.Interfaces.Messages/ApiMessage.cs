@@ -56,6 +56,12 @@
             m.TryGetValue(Keys.Topic, out var x);
             return x;
         }
+        
+        public static string GetAzureSequenceNumber(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.AzureSequenceNumber, out var x);
+            return x;
+        }
 
         
         public static Guid GetMessageId(this MessageHeaders m)
@@ -109,6 +115,12 @@
             m[Keys.QueueName] = queueName;
             return m;
         }
+        
+        public static MessageHeaders SetAzureSequenceNumber(this MessageHeaders m, string queueName)
+        {
+            m[Keys.QueueName] = queueName;
+            return m;
+        }
 
         public static void SetStatefulProcessId(this MessageHeaders m, StatefulProcessId id) =>
             m[Keys.StatefulProcessId] = id.ToString();
@@ -132,7 +144,8 @@
             internal const string QueueName = nameof(QueueName);
 
             internal const string Topic = nameof(Topic);
-            
+
+            internal const string AzureSequenceNumber = nameof(AzureSequenceNumber);
         }
     }
 }

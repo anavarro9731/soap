@@ -14,10 +14,14 @@ function global:Run {
 		[switch]$PackAndPublish,
 		[string] $nugetApiKey,
 		[string] $azureDevopsPat,
-		[string] $azLoginCmd,
+		[string] $azClientId,
+		[string] $azClientSecret,
+		[string] $azTenantId,
 		[string] $forceVersion
 	)
 
+
+	
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$libraryProjects = @(
@@ -92,14 +96,18 @@ function global:Run {
 			# -azureResourceGroup resource group containing function project
 			# -azureDevopsOrganisation azure devops organisation used to set functionapp env vars 
 			# -azureDevopsPat (provided by $azureDevopsPat, do not modify) azure devops SCM PAT, passed to functionapp env vars
-			# -azLoginCmd (provided by $azLoginCmd, do not modify) az login CLI command string used to deploy functionapp
-			 Write-Host $azLoginCmd
+			# -azClientId (provided by $azClientId, do not modify)
+			# -azClientSecret (provided by $azClientSecret, do not modify)
+			# -azTenantId (provided by $azTenantId, do not modify)
+			# -soapApplicationKey an arbitrary string which becomes part of the ConfigId used to identify the right app config to use
 			$f = Create-FunctionProjectParams -project  $azureFunctionProject `
 			-azureAppName "soap-api-sample" `
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
-		 	-azLoginCmd $azLoginCmd `
+		 	-azClientId $azClientId `
+		 	-azClientSecret $azClientSecret `
+			-azTenantId $azTenantId `
 		 	-soapApplicationKey "SAP"
 		}
 

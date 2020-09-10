@@ -2,7 +2,8 @@
 {
     using CircuitBoard.Messages;
 
-    public interface IQueuedBusOperation : IQueuedStateChange
+    public interface IQueuedBusOperation : IMessage
     {
+        bool Committed { get; set; }
     }
 }

@@ -19,60 +19,59 @@
         {
             this.bus = bus;
             this.messageAggregator = messageAggregator;
-            this.MaximumNumberOfRetries = settings.NumberOfApiMessageRetries;
+            MaximumNumberOfRetries = settings.NumberOfApiMessageRetries;
         }
-
-        public byte MaximumNumberOfRetries { get; }
 
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
         public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
 
+        public byte MaximumNumberOfRetries { get; }
+
         public async Task CommitChanges()
         {
-            this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>()
-                .Where(m => m.Committed == false)
-                .ToList()
-                .ForEach(
-                    m =>
-                        {
-                        m.Committed = true;
-                        switch (m)
-                        {
-                            case QueuedCommandToSend c:
-                                CommandsSent.Add(c.CommandToSend); //TODO clone to prevent changes, need specific type?
-                                break;
-                            case QueuedEventToPublish e:
-                                EventsPublished.Add(e.EventToPublish);
-                                break;
-                            default: throw new ArgumentOutOfRangeException();
-                        }
-                        });
-            //TODO call bus
-            
-            await Task.Delay(0);
+            var queuedMessages = this.messageAggregator.AllMessages.OfType<IQueuedBusOperation>()
+                                     .Where(m => m.Committed == false)
+                                     .ToList();
+            foreach (var queuedMessage in queuedMessages)
+            {
+                switch (queuedMessage)
+                {
+                    case QueuedCommandToSend c:
+                        await this.bus.Send(c.CommandToSend);
+                        CommandsSent.Add(c.CommandToSend);
+                        break;
+                    case QueuedEventToPublish e:
+                        await this.bus.Publish(e.EventToPublish);
+                        EventsPublished.Add(e.EventToPublish);
+                        break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+
+                queuedMessage.Committed = true;
+            }
         }
 
-        public Task Publish(ApiEvent publishEvent)
+        public Task Publish<T>(T publishEvent) where T : ApiEvent
         {
             publishEvent.Headers.EnsureRequiredHeaders();
-            publishEvent.Headers.SetQueueName("****");
+            publishEvent.Headers.SetTopic(publishEvent.GetType().FullName);
             this.messageAggregator.Collect(
                 new QueuedEventToPublish
                 {
-                    EventToPublish = publishEvent, CommitClosure = () => Task.CompletedTask
+                    EventToPublish = publishEvent.Clone()
                 });
             return Task.CompletedTask;
         }
 
-        public Task Send(ApiCommand sendCommand)
+        public Task Send<T>(T sendCommand) where T : ApiCommand
         {
             sendCommand.Headers.EnsureRequiredHeaders();
-            sendCommand.Headers.SetQueueName(sendCommand.GetType().Assembly.FullName.SubstringBeforeLast('.'));
+            sendCommand.Headers.SetQueueName(sendCommand.GetType().Assembly.FullName);
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {
-                    CommandToSend = sendCommand, CommitClosure = () => Task.CompletedTask
+                    CommandToSend = sendCommand.Clone()
                 });
             return Task.CompletedTask;
         }

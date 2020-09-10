@@ -6,7 +6,6 @@
 
     public class QueuedEventToPublish : IQueuedBusOperation
     {
-        public Func<Task> CommitClosure { get; set; }
 
         public bool Committed { get; set; }
 
