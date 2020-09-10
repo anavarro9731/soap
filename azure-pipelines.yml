@@ -16,7 +16,10 @@ steps:
     # the following variables should be setup in the pipeline UI by an administrator
     # nuget-key / used to push class library pkgs / optional may not have any class libraries in solution
     # ado-pat / passed to functionapp to read config from git / optional may not have any functionapps in solution 
-    # az-login / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+    # az-clientid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+    # az-clientsecret / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+    # az-tenantid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+  - 
 
   - pwsh: |
       & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1 \n
@@ -25,7 +28,7 @@ steps:
       -azureDevopsPat "$(ado-pat)" `
       -azClientId "$(az-clientid)" `
       -azClientSecret "$(az-clientsecret)" `
-      -azTenantId "$(az-tenantid)"
+      -azTenantId "$(az-tenantid)"'
       Write-Host $cmd
       iex $cmd
     displayName: 'Pack and Publish'

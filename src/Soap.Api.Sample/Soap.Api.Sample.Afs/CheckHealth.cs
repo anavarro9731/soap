@@ -130,15 +130,15 @@
 
                 var azure = await Authenticate();
 
-                Action<string> writeLine = s => outputStream.Write(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
+                void WriteLine(string s) => outputStream.Write(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
 
-                CreateBusNamespaceIfNotExists(busSettings, azure, out var serviceBusNamespace);
+                CreateBusNamespaceIfNotExists(busSettings, azure, WriteLine, out var serviceBusNamespace);
 
-                CreateQueueIfNotExists(busSettings, serviceBusNamespace, writeLine);
+                CreateQueueIfNotExists(busSettings, serviceBusNamespace, WriteLine);
 
-                CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, writeLine);
+                CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, WriteLine);
 
-                await CreateSubscriptionsIfNotExist(serviceBusNamespace, mapMessagesToFunctions, logger, busSettings, writeLine);
+                await CreateSubscriptionsIfNotExist(serviceBusNamespace, mapMessagesToFunctions, logger, busSettings, WriteLine);
             }
 
             static AzureCredentials GetCredentials()
@@ -157,12 +157,13 @@
 
             static void CreateTopicsIfNotExist(IServiceBusNamespace serviceBusNamespace, Assembly messagesAssembly, Action<string> stream)
             {
-                stream("Creating Topics ...");
+          
                 IEnumerable<ApiMessage> events = messagesAssembly.GetTypes()
                                                                  .Where(t => t.InheritsOrImplements(typeof(ApiEvent)))
                                                                  .Select(x => Activator.CreateInstance(x) as ApiEvent)
                                                                  .ToList();
-
+                stream($"Creating {events.Count()} Topics ...");
+                
                 var topics = serviceBusNamespace.Topics.List().ToList();
 
                 foreach (var @event in events)
@@ -191,10 +192,14 @@
             static void CreateBusNamespaceIfNotExists(
                 AzureBus.Settings busSettings,
                 IAzure azure,
+                Action<string> stream,
                 out IServiceBusNamespace serviceBusNamespace)
             {
+                
                 if (azure.ServiceBusNamespaces.CheckNameAvailability(busSettings.BusNamespace).IsAvailable)
                 {
+                    stream($"Creating bus namespace {busSettings.BusNamespace}...");
+
                     serviceBusNamespace = azure.ServiceBusNamespaces.Define(busSettings.BusNamespace)
                                                .WithRegion(Region.USWest)
                                                .WithNewResourceGroup(busSettings.ResourceGroup)
@@ -203,6 +208,8 @@
                 }
                 else
                 {
+                    stream($"Bus namespace {busSettings.BusNamespace} already exists.");
+                    
                     serviceBusNamespace = azure.ServiceBusNamespaces.GetByResourceGroup(
                         busSettings.ResourceGroup,
                         busSettings.BusNamespace);
@@ -217,10 +224,12 @@
                 AzureBus.Settings busSettings,
                 Action<string> stream)
             {
-                stream("Creating Subscriptions ...");
+
 
                 var eventNames = mapMessagesToFunctions.Events.Select(e => e.FullName);
-
+                
+                stream($"Creating Subscriptions for {eventNames.Count()} topics...");
+                
                 foreach (var eventName in eventNames)
                     if ((await serviceBusNamespace.Topics.ListAsync()).Any(x => x.Name == eventName))
                     {
@@ -235,7 +244,9 @@
                     }
                     else
                     {
-                        logger1.Debug($"Cannot subscribe to topic {eventName} which does not appear to exist");
+                        var messageTemplate = $"Cannot subscribe to topic {eventName} which does not appear to exist";
+                        logger1.Error(messageTemplate);
+                        stream(messageTemplate);
                     }
             }
 
