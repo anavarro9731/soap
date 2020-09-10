@@ -4,17 +4,19 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using global::Sample.Logic;
+    using global::Sample.Messages.Commands;
     using global::Sample.Models.Aggregates;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Soap.PfBase.Api;
+    using Soap.Utility.Functions.Extensions;
 
     public static class ReceiveMessage
     {
         [FunctionName("ReceiveMessage")]
         public static async Task RunAsync(
             
-            [ServiceBusTrigger("soap.api.sample.messages", Connection = "AzureWebJobsServiceBus")] //* this uses peeklockmode
+            [ServiceBusTrigger("Soap.Api.Sample.Messages", Connection = "AzureWebJobsServiceBus")] //* this uses peeklockmode
             string myQueueItem,
             string messageId,
             IDictionary<string, object> UserProperties,

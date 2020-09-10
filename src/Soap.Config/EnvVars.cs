@@ -8,9 +8,9 @@
         public static class ServicePrincipal
         {
             //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
-            public static string ClientId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}__{nameof(ClientId)}");
-            public static string ClientSecret => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}__{nameof(ClientSecret)}");
-            public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}__{nameof(TenantId)}");
+            public static string ClientId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientId)}");
+            public static string ClientSecret => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientSecret)}");
+            public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(TenantId)}");
         }
 
         public static string AzureResourceGroup => Environment.GetEnvironmentVariable(nameof(AzureResourceGroup));

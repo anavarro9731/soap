@@ -23,8 +23,8 @@
     using Microsoft.Azure.Management.ServiceBus.Fluent;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using Serilog;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Interfaces.Messages;
@@ -33,6 +33,7 @@
     using Soap.Pf.HttpEndpointBase.Controllers;
     using Soap.PfBase.Api;
     using Soap.Utility.Functions.Extensions;
+    using ILogger = Serilog.ILogger;
 
     public static class CheckHealth
     {
@@ -40,7 +41,7 @@
         public static HttpResponseMessage RunAsync(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
-            ILogger log)
+            Microsoft.Extensions.Logging.ILogger log)
         {
             try
             {
@@ -54,7 +55,7 @@
             }
             catch (Exception e)
             {
-                log.Fatal(e.ToString());
+                log.Log(LogLevel.Critical, e.ToString());
 
                 var result = new HttpResponseMessage
                 {
