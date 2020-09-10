@@ -105,9 +105,6 @@ function global:Run {
 			-azureResourceGroup "rg-soap" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
-		 	-azClientId $azClientId `
-		 	-azClientSecret $azClientSecret `
-			-azTenantId $azTenantId `
 		 	-soapApplicationKey "SAP"
 		}
 
@@ -115,6 +112,9 @@ function global:Run {
 		-unlistedProjects @( `
 		) `
 		-azureFunctionProject $f `
+		-azClientId $azClientId `
+		-azClientSecret $azClientSecret `
+		-azTenantId $azTenantId `
 		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json" `
         -nugetApiKey $nugetApiKey
 	}
