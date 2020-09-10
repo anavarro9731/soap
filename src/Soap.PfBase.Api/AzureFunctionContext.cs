@@ -27,7 +27,6 @@
 
     public static class AzureFunctionContext
     {
-
         /* THIS IS THE ONLY STATIC VARIABLE IN THE WHOLE PRODUCTION PIPELINE
          the client should be thread-safe and has a spin up time of about
          1 sec so its a trade-off well work making. Something to remember
@@ -35,7 +34,7 @@
          hit if you have too many clients at once, ie. is there any state
          or locking on the client? */
         private static IDocumentRepository lifetimeRepositoryClient;
-        
+
         public static async Task<Result> Execute<TApiIdentity>(
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
@@ -57,7 +56,7 @@
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
                     CreateMessageAggregator(out var messageAggregator);
-                    
+
                     CreateDataStore(
                         messageAggregator,
                         appConfig.DatabaseSettings,
@@ -185,8 +184,10 @@
                 EnsureEnvironmentVars();
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(
-                    new AppEnvIdentifier(EnvVars.SoapApplicationKey, Enumeration.FromKey<SoapEnvironments>(EnvVars.SoapEnvironmentKey)),
-                        out var applicationConfig1);
+                    new AppEnvIdentifier(
+                        EnvVars.SoapApplicationKey,
+                        Enumeration.FromKey<SoapEnvironments>(EnvVars.SoapEnvironmentKey)),
+                    out var applicationConfig1);
 
                 CreateLogger(applicationConfig1.LogSettings, out var logger1);
 
@@ -195,7 +196,7 @@
             }
             catch (Exception e)
             {
-                throw new Exception($"Error retrieving config and creating logger", e);
+                throw new Exception("Error retrieving config and creating logger", e);
             }
 
             static void EnsureEnvironmentVars()
@@ -215,6 +216,22 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureWebJobsServiceBus),
                     $"{nameof(EnvVars.AzureWebJobsServiceBus)} environment variable not set");
+
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.AzureBusNamespace),
+                    $"{nameof(EnvVars.AzureBusNamespace)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.AzureResourceGroup),
+                    $"{nameof(EnvVars.AzureResourceGroup)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientId),
+                    $"{nameof(EnvVars.ServicePrincipal.ClientId)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientSecret),
+                    $"{nameof(EnvVars.ServicePrincipal.ClientSecret)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.TenantId),
+                    $"{nameof(EnvVars.ServicePrincipal.TenantId)} environment variable not set");
             }
 
             static void CreateLogger(SeqServerConfig seqServerConfig, out ILogger logger)
