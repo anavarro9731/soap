@@ -134,11 +134,11 @@
 
                 CreateBusNamespaceIfNotExists(busSettings, azure, WriteLine, out var serviceBusNamespace);
 
-                CreateQueueIfNotExists(busSettings, serviceBusNamespace, WriteLine);
+                CreateQueueIfNotExists(messagesAssembly, serviceBusNamespace, WriteLine);
 
                 CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, WriteLine);
 
-                await CreateSubscriptionsIfNotExist(serviceBusNamespace, mapMessagesToFunctions, logger, busSettings, WriteLine);
+                await CreateSubscriptionsIfNotExist(serviceBusNamespace, mapMessagesToFunctions, logger, messagesAssembly, WriteLine);
             }
 
             static AzureCredentials GetCredentials()
@@ -221,7 +221,7 @@
                 IServiceBusNamespace serviceBusNamespace,
                 MapMessagesToFunctions mapMessagesToFunctions,
                 ILogger logger1,
-                AzureBus.Settings busSettings,
+                Assembly messagesAssembly,
                 Action<string> stream)
             {
 
@@ -233,11 +233,13 @@
                 foreach (var eventName in eventNames)
                     if ((await serviceBusNamespace.Topics.ListAsync()).Any(x => x.Name == eventName))
                     {
+                        var queueName = messagesAssembly.FullName;
+                        
                         var topic = await serviceBusNamespace.Topics.GetByNameAsync(eventName);
-                        if ((await topic.Subscriptions.ListAsync()).All(x => x.Name != busSettings.QueueName))
+                        if ((await topic.Subscriptions.ListAsync()).All(x => x.Name != queueName))
                         {
-                            stream($"Creating Subscription {busSettings.QueueName} for topic {topic.Name}");
-                            await topic.Subscriptions.Define(busSettings.QueueName).CreateAsync();
+                            stream($"Creating Subscription {queueName} for topic {topic.Name}");
+                            await topic.Subscriptions.Define(queueName).CreateAsync();
                         }
                         
                         //*TODO set autoforward on subscription to bus queue somehow
@@ -251,22 +253,22 @@
             }
 
             static void CreateQueueIfNotExists(
-                AzureBus.Settings busSettings,
+                Assembly messagesAssembly,
                 IServiceBusNamespace serviceBusNamespace,
                 Action<string> stream)
             {
-                
-                if (serviceBusNamespace.Queues.List().All(x => x.Name != busSettings.QueueName))
+                var queueName = messagesAssembly.FullName; 
+                if (serviceBusNamespace.Queues.List().All(x => x.Name != queueName))
                 {
-                    stream($"Creating Queue {busSettings.QueueName}");
-                    serviceBusNamespace.Queues.Define(busSettings.QueueName)
+                    stream($"Creating Queue {queueName}");
+                    serviceBusNamespace.Queues.Define(queueName)
                                        .WithDuplicateMessageDetection(TimeSpan.FromMinutes(30))
                                        .WithMessageMovedToDeadLetterQueueOnMaxDeliveryCount(1)
                                        .Create();
                 }
                 else
                 {
-                    stream($"Queue {busSettings.QueueName} already exists");
+                    stream($"Queue {queueName} already exists");
 
                 }
             }

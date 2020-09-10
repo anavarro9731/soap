@@ -45,7 +45,7 @@
             return x;
         }
         
-        public static string GetQueueName(this MessageHeaders m)
+        public static string GetQueue(this MessageHeaders m)
         {
             m.TryGetValue(Keys.QueueName, out var x);
             return x;
@@ -110,7 +110,7 @@
             return m;
         }
         
-        public static MessageHeaders SetQueueName(this MessageHeaders m, string queueName)
+        public static MessageHeaders SetQueue(this MessageHeaders m, string queueName)
         {
             m[Keys.QueueName] = queueName;
             return m;

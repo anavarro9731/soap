@@ -38,7 +38,8 @@
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(publishEvent)))
             {
-                MessageId = publishEvent.Headers.GetMessageId().ToString(), Label = publishEvent.GetType().AssemblyQualifiedName
+                MessageId = publishEvent.Headers.GetMessageId().ToString(), 
+                Label = publishEvent.GetType().AssemblyQualifiedName
             };
 
             var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic());
@@ -55,7 +56,7 @@
                 CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString()
             };
 
-            var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueueName());
+            var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());
 
             await queueClient.SendAsync(queueMessage);
         }
@@ -65,13 +66,11 @@
             public Settings(
                 byte numberOfApiMessageRetries,
                 string busConnectionString,
-                string queueName,
                 string resourceGroup,
                 string busNamespace)
             {
                 NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 BusConnectionString = busConnectionString;
-                QueueName = queueName;
                 ResourceGroup = resourceGroup;
                 BusNamespace = busNamespace;
             }
@@ -81,8 +80,6 @@
             public string BusNamespace { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
-
-            public string QueueName { get; set; }
 
             public string ResourceGroup { get; set; }
 
