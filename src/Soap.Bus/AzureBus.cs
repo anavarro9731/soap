@@ -40,9 +40,9 @@
             {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(), Label = publishEvent.GetType().AssemblyQualifiedName
             };
-            
+
             var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic());
-            
+
             await topicClient?.SendAsync(queueMessage);
         }
 
@@ -52,33 +52,42 @@
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
-                
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString()
             };
 
             var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueueName());
 
             await queueClient.SendAsync(queueMessage);
-
         }
 
         public class Settings : IBusSettings
         {
-            public Settings(byte numberOfApiMessageRetries, string busConnectionString)
+            public Settings(
+                byte numberOfApiMessageRetries,
+                string busConnectionString,
+                string queueName,
+                string resourceGroup,
+                string busNamespace)
             {
-                this.NumberOfApiMessageRetries = numberOfApiMessageRetries;
-                this.BusConnectionString = busConnectionString;
+                NumberOfApiMessageRetries = numberOfApiMessageRetries;
+                BusConnectionString = busConnectionString;
+                QueueName = queueName;
+                ResourceGroup = resourceGroup;
+                BusNamespace = busNamespace;
             }
-            
-            public string QueueName { get; set; }
-            
-            public string ResourceGroup { get; set; }
-            
+
+            public string BusConnectionString { get; set; }
+
             public string BusNamespace { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
 
-            public string BusConnectionString { get; set; }
+            public string QueueName { get; set; }
+
+            public string ResourceGroup { get; set; }
+
+            public IBus CreateBus(IMessageAggregator messageAggregator) =>
+                new Bus(new AzureBus(messageAggregator, this), this, messageAggregator);
 
             public class Validator : AbstractValidator<Settings>
             {
@@ -88,10 +97,6 @@
                     RuleFor(x => x.NumberOfApiMessageRetries).GreaterThanOrEqualTo(x => 0);
                 }
             }
-
-            public IBus CreateBus(IMessageAggregator messageAggregator) => new Bus(new AzureBus(messageAggregator, this), this, messageAggregator);
         }
     }
-
-
 }
