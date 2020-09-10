@@ -12,6 +12,10 @@
             public static string ClientSecret => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}__{nameof(ClientSecret)}");
             public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}__{nameof(TenantId)}");
         }
+
+        public static string AzureResourceGroup => Environment.GetEnvironmentVariable(nameof(AzureResourceGroup));
+
+        public static string AzureBusNamespace => Environment.GetEnvironmentVariable(nameof(AzureBusNamespace));
         
         public static string AzureDevopsPat => Environment.GetEnvironmentVariable(nameof(AzureDevopsPat));
 

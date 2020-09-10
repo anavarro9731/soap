@@ -67,7 +67,7 @@
         public Task Send<T>(T sendCommand) where T : ApiCommand
         {
             sendCommand.Headers.EnsureRequiredHeaders();
-            sendCommand.Headers.SetQueue(sendCommand.GetType().Assembly.FullName);
+            sendCommand.Headers.SetQueueName(sendCommand.GetType().Assembly.FullName);
             this.messageAggregator.Collect(
                 new QueuedCommandToSend
                 {

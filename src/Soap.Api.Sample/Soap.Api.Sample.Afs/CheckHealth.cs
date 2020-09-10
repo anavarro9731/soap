@@ -37,7 +37,7 @@
     public static class CheckHealth
     {
         [FunctionName("CheckHealth")]
-        public static async Task<HttpResponseMessage> RunAsync(
+        public static HttpResponseMessage RunAsync(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
             ILogger log)
@@ -132,10 +132,8 @@
 
                 void WriteLine(string s) => outputStream.Write(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
 
-                CreateBusNamespaceIfNotExists(busSettings, azure, WriteLine, out var serviceBusNamespace);
-
-                CreateQueueIfNotExists(messagesAssembly, serviceBusNamespace, WriteLine);
-
+                GetNamespace(busSettings, azure, WriteLine, out var serviceBusNamespace);
+                
                 CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, WriteLine);
 
                 await CreateSubscriptionsIfNotExist(serviceBusNamespace, mapMessagesToFunctions, logger, messagesAssembly, WriteLine);
@@ -189,32 +187,18 @@
                 return azure;
             }
 
-            static void CreateBusNamespaceIfNotExists(
+            static void GetNamespace(
                 AzureBus.Settings busSettings,
                 IAzure azure,
                 Action<string> stream,
                 out IServiceBusNamespace serviceBusNamespace)
             {
-                
-                if (azure.ServiceBusNamespaces.CheckNameAvailability(busSettings.BusNamespace).IsAvailable)
-                {
-                    stream($"Creating bus namespace {busSettings.BusNamespace}...");
 
-                    serviceBusNamespace = azure.ServiceBusNamespaces.Define(busSettings.BusNamespace)
-                                               .WithRegion(Region.USWest)
-                                               .WithNewResourceGroup(busSettings.ResourceGroup)
-                                               .WithSku(NamespaceSku.Basic)
-                                               .Create();
-                }
-                else
-                {
-                    stream($"Bus namespace {busSettings.BusNamespace} already exists.");
-                    
-                    serviceBusNamespace = azure.ServiceBusNamespaces.GetByResourceGroup(
-                        busSettings.ResourceGroup,
-                        busSettings.BusNamespace);
-                    
-                }
+                stream($"Attaching to namespace {busSettings.BusNamespace}");
+                
+                serviceBusNamespace = azure.ServiceBusNamespaces.GetByResourceGroup(
+                    busSettings.ResourceGroup,
+                    busSettings.BusNamespace);
             }
 
             static async Task CreateSubscriptionsIfNotExist(

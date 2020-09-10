@@ -110,7 +110,7 @@
             return m;
         }
         
-        public static MessageHeaders SetQueue(this MessageHeaders m, string queueName)
+        public static MessageHeaders SetQueueName(this MessageHeaders m, string queueName)
         {
             m[Keys.QueueName] = queueName;
             return m;

@@ -50,7 +50,9 @@ function global:Run {
 	# the relative path on disk without the trailing slash to ths file of the single azure function app project to be published / optional can be $null or empty string
 	# Note .csproj and foldername must match for the folder containing the project
 	$azureFunctionProject = "Soap.Api.Sample\Soap.Api.Sample.Afs"
-	
+
+	# the name of the messages Assembly/Project referenced by the function project
+	$messagesAssemblyName = "Soap.Api.Sample.Messages"
 	
 
 	# options
@@ -83,6 +85,9 @@ function global:Run {
 	# -allProjects (provided by $libraryProjects, do not modify, can be empty)
 	# -unlistedProjects an array of project names whose nuget package should be unlisted / optional applicable only when the feed is hosted on nuget.org
 	# -azureFunctionProject (provided by $f, do not modify, can be null)
+	# -azClientId (provided by $azClientId, do not modify)
+	# -azClientSecret (provided by $azClientSecret, do not modify)
+	# -azTenantId (provided by $azTenantId, do not modify)
 	# -nugetFeedUri this is the URI of the nuget feed / optional applicable only when deploying class libraries
 	# -nugetApiKey (provided by $nugetApiKey, do not modify, optional applicable only when deploying class libraries
 	
@@ -92,17 +97,18 @@ function global:Run {
 			
 			# options (all mandatory if deploying functionapp)
 			# -project (provided by $azureFunctionProject variable, do not modify)
-			# -azureAppName functionapp project name in azure
+			# -messagesAssemblyName (provided by $azureMessagesProject variable, do not modify)
+			# -azureFunctionAppName functionapp project name in azure
 			# -azureResourceGroup resource group containing function project
+			# -azureLocation location of resouces (e.g. uksouth eastus)
 			# -azureDevopsOrganisation azure devops organisation used to set functionapp env vars 
 			# -azureDevopsPat (provided by $azureDevopsPat, do not modify) azure devops SCM PAT, passed to functionapp env vars
-			# -azClientId (provided by $azClientId, do not modify)
-			# -azClientSecret (provided by $azClientSecret, do not modify)
-			# -azTenantId (provided by $azTenantId, do not modify)
 			# -soapApplicationKey an arbitrary string which becomes part of the ConfigId used to identify the right app config to use
 			$f = New-FunctionProjectParams -project  $azureFunctionProject `
-			-azureAppName "soap-api-sample" `
+			-messagesAssemblyName $messagesAssemblyName `
+			-azureFunctionAppName "soap-api-sample" `
 			-azureResourceGroup "rg-soap" `
+			-azureLocation "uksouth" `
 			-azureDevopsOrganisation "anavarro9731" `
 		 	-azureDevopsPat $azureDevopsPat `
 		 	-soapApplicationKey "SAP"
