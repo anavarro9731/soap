@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>2.23.0-alpha</Version>
+    <Version>2.24.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
