@@ -65,6 +65,15 @@
             }
         }
 
+        private static async Task<string> Config(ApplicationConfig appConfig)
+        {
+            var config = DiagnosticFunctions.GetConfig(appConfig);
+
+            var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+
+            return json;
+        }
+
         private static PushStreamContent GetContent(Assembly messagesAssembly, MapMessagesToFunctions messageMapper)
         {
             return new PushStreamContent(
@@ -79,17 +88,13 @@
 
         private static async Task<string> MessageTestResults(Serilog.ILogger logger, ApplicationConfig appConfig)
         {
-            dynamic messageResult = new
-            {
-                Config = DiagnosticFunctions.GetConfig(appConfig),
-                MessageTest = await DiagnosticFunctions.ExecuteMessageTest<C100Ping, User>(
+            var messageTest = await DiagnosticFunctions.ExecuteMessageTest<C100Ping, User>(
                                   new C100Ping(),
                                   appConfig,
                                   new MappingRegistration(),
-                                  logger)
-            };
+                                  logger);
 
-            var json = JsonConvert.SerializeObject(messageResult, Formatting.Indented);
+            var json = JsonConvert.SerializeObject(messageTest, Formatting.Indented);
 
             return json;
         }
@@ -101,17 +106,23 @@
             Assembly messagesAssembly,
             MapMessagesToFunctions mapMessagesToFunctions)
         {
+            async ValueTask WriteLine(string s)
+            {
+                await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
+                await outputStream.FlushAsync();
+            }
+
             try
             {
-                var output = new StringBuilder();
-
+                await WriteLine("Loading Config...");
                 AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
+                await WriteLine(await Config(appConfig));
 
-                await ServiceBusInitialisation(appConfig, messagesAssembly, mapMessagesToFunctions, logger, outputStream);
+                await WriteLine("Checking Service Bus Configuration...");
+                await ServiceBusInitialisation(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
-                output.Append(await MessageTestResults(logger, appConfig));
-
-                await outputStream.WriteAsync(Encoding.UTF8.GetBytes(output.ToString()));
+                await WriteLine("Running Message Test...");
+                await WriteLine(await MessageTestResults(logger, appConfig));
             }
             catch (Exception e)
             {
@@ -130,29 +141,23 @@
             Assembly messagesAssembly,
             MapMessagesToFunctions mapMessagesToFunctions,
             Serilog.ILogger logger,
-            Stream outputStream)
+            Func<string, ValueTask> writeLine)
         {
             {
                 var busSettings = applicationConfig.BusSettings as AzureBus.Settings;
                 Guard.Against(busSettings == null, "Expected type of AzureBus");
 
-                var azure = await Authenticate(); 
-                
-                async ValueTask WriteLine(string s)
-                {
-                    await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
-                    await outputStream.FlushAsync();
-                }
+                var azure = await Authenticate();
 
-                var serviceBusNamespace = await GetNamespace(busSettings, azure, WriteLine);
-                await CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, WriteLine);
+                var serviceBusNamespace = await GetNamespace(busSettings, azure, writeLine);
+                await CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, writeLine);
 
                 await CreateSubscriptionsIfNotExist(
                     serviceBusNamespace,
                     mapMessagesToFunctions,
                     logger,
                     messagesAssembly,
-                    WriteLine);
+                    writeLine);
             }
 
             static AzureCredentials GetCredentials()
@@ -177,7 +182,8 @@
                                                                  .Where(t => t.InheritsOrImplements(typeof(ApiEvent)))
                                                                  .Select(x => Activator.CreateInstance(x) as ApiEvent)
                                                                  .ToList();
-                stream($"Found {events.Count()} Topics ...");
+
+                await stream($"Found {events.Count()} Topics published by this service ...");
 
                 var topics = (await serviceBusNamespace.Topics.ListAsync()).ToList();
 
@@ -185,12 +191,16 @@
                 {
                     var topicName = @event.GetType().FullName;
 
-                    if (topics.All(t => !String.Equals(t.Name, topicName, StringComparison.CurrentCultureIgnoreCase)))
+                    if (topics.All(t => !string.Equals(t.Name, topicName, StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        stream($"Creating Topic {topicName}");
+                        await stream($"-> Creating Topic {topicName}");
                         await serviceBusNamespace.Topics.Define(topicName)
-                                           .WithDuplicateMessageDetection(TimeSpan.FromMinutes(30))
-                                           .CreateAsync();
+                                                 .WithDuplicateMessageDetection(TimeSpan.FromMinutes(30))
+                                                 .CreateAsync();
+                    }
+                    else
+                    {
+                        await stream($"-> Topic {topicName} already created");
                     }
                 }
             }
@@ -209,11 +219,11 @@
                 IAzure azure,
                 Func<string, ValueTask> stream)
             {
-                stream($"Attaching to namespace {busSettings.BusNamespace}");
+                await stream($"Attaching to namespace {busSettings.BusNamespace}");
 
                 var serviceBusNamespace = await azure.ServiceBusNamespaces.GetByResourceGroupAsync(
-                    busSettings.ResourceGroup,
-                    busSettings.BusNamespace);
+                                              busSettings.ResourceGroup,
+                                              busSettings.BusNamespace);
 
                 return serviceBusNamespace;
             }
@@ -227,49 +237,36 @@
             {
                 var eventNames = mapMessagesToFunctions.Events.Select(e => e.FullName);
 
-                stream($"Creating Subscriptions for {eventNames.Count()} topics...");
+                await stream($"Found {eventNames.Count()} Topic handled by this service, checking subscriptions...");
 
                 foreach (var eventName in eventNames)
-                    
-                    if ((await serviceBusNamespace.Topics.ListAsync()).Any(x => String.Equals(x.Name, eventName, StringComparison.CurrentCultureIgnoreCase)))
+
+                    if ((await serviceBusNamespace.Topics.ListAsync()).Any(
+                        x => string.Equals(x.Name, eventName, StringComparison.CurrentCultureIgnoreCase)))
                     {
                         var queueName = messagesAssembly.GetName().Name;
 
                         var topic = await serviceBusNamespace.Topics.GetByNameAsync(eventName);
-                        if ((await topic.Subscriptions.ListAsync()).All(x => x.Name != queueName))
+                        if ((await topic.Subscriptions.ListAsync()).All(
+                            x => !string.Equals(x.Name, queueName, StringComparison.CurrentCultureIgnoreCase)))
                         {
-                            stream($"Creating Subscription {queueName} for topic {topic.Name}");
+                            await stream($"-> Creating Subscription {queueName} for topic {topic.Name}");
                             await topic.Subscriptions.Define(queueName).CreateAsync();
                         }
+                        else
+                        {
+                            await stream($"-> Subscription for topic {topic.Name} already exists");
+                        }
 
-                        //*TODO set autoforward on subscription to bus queue somehow
+                        //* TODO set auto-forward on subscription to bus queue somehow
                     }
+
                     else
                     {
-                        var messageTemplate = $"Cannot subscribe to topic {eventName} which does not appear to exist";
+                        var messageTemplate = $"-> Cannot subscribe to topic {eventName} which does not appear to exist";
                         logger1.Error(messageTemplate);
-                        stream(messageTemplate);
+                        await stream(messageTemplate);
                     }
-            }
-
-            static void CreateQueueIfNotExists(
-                Assembly messagesAssembly,
-                IServiceBusNamespace serviceBusNamespace,
-                Action<string> stream)
-            {
-                var queueName = messagesAssembly.FullName;
-                if (serviceBusNamespace.Queues.List().All(x => x.Name != queueName))
-                {
-                    stream($"Creating Queue {queueName}");
-                    serviceBusNamespace.Queues.Define(queueName)
-                                       .WithDuplicateMessageDetection(TimeSpan.FromMinutes(30))
-                                       .WithMessageMovedToDeadLetterQueueOnMaxDeliveryCount(1)
-                                       .Create();
-                }
-                else
-                {
-                    stream($"Queue {queueName} already exists");
-                }
             }
         }
     }
