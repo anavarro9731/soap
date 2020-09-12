@@ -16,6 +16,7 @@
     using global::Sample.Models.Aggregates;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.Management.Fluent;
+    using Microsoft.Azure.Management.Network.Fluent.Models;
     using Microsoft.Azure.Management.ResourceManager.Fluent;
     using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
     using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -58,7 +59,7 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.InternalServerError,
-                    Content = new StringContent(e.ToString())
+                    Content = new StringContent(e.ToString(), Encoding.UTF8, "text/plain")
                 };
 
                 return result;
