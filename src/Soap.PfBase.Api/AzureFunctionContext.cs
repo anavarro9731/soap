@@ -23,7 +23,6 @@
     using Soap.NotificationServer;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Objects.Blended;
 
     public static class AzureFunctionContext
     {
@@ -183,11 +182,7 @@
             {
                 EnsureEnvironmentVars();
 
-                ConfigFunctions.LoadAppConfigFromRemoteRepo(
-                    new AppEnvIdentifier(
-                        EnvVars.SoapApplicationKey,
-                        Enumeration.FromKey<SoapEnvironments>(EnvVars.SoapEnvironmentKey)),
-                    out var applicationConfig1);
+                ConfigFunctions.LoadAppConfigFromRemoteRepo(out var applicationConfig1);
 
                 CreateLogger(applicationConfig1.LogSettings, out var logger1);
 

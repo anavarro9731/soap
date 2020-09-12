@@ -28,23 +28,25 @@ namespace Soap.PfBase.Api
     using Soap.Interfaces;
     using Soap.NotificationServer;
 
-    public class ConfigFunctions
+    public static class ConfigFunctions
     {
-        public static void LoadAppConfigFromRemoteRepo(AppEnvIdentifier appEnvId, out ApplicationConfig applicationConfig)
+        public static void LoadAppConfigFromRemoteRepo(out ApplicationConfig applicationConfig)
         {
+            string configToCompile = null;
             try
             {
                 var webClient = new WebClient();
                 webClient.Headers.Add("Authorization", GetAuthorizationHeaderValue());
                 var url = GetFileUrl();
-                var configToCompile = webClient.DownloadString(url);
+                configToCompile = webClient.DownloadString(url);
+
                 var config = LoadAndExecute(configToCompile);
                 config.Validate();
                 applicationConfig = config;
             }
             catch (Exception e)
             {
-                throw new Exception("Could not read config from remote repo", e);
+                throw new Exception($"Could not compile config from remote repo {configToCompile}", e);
             }
 
             static ApplicationConfig LoadAndExecute(string source)
