@@ -1,12 +1,13 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.MessagePipeline
 {
     using System;
     using System.Threading.Tasks;
+    using Soap.Context.Context;
+    using Soap.Context.Exceptions;
+    using Soap.Context.Logging;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
     using Guard = DataStore.Models.PureFunctions.Guard;

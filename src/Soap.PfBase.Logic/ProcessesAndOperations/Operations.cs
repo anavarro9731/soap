@@ -1,11 +1,11 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Serilog;
+    using Soap.Context.Context;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.Context;
 
     public class Operations<T> : IOperation where T : class, IAggregate, new()
     {

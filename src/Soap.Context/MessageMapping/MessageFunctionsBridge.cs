@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.Context.MessageMapping
 {
     using System;
     using System.Collections.Generic;

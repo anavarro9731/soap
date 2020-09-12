@@ -6,7 +6,7 @@
     using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Binary;
     using Soap.Utility.Objects.Blended;

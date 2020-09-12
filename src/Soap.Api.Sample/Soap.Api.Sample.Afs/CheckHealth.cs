@@ -12,10 +12,10 @@
     using Soap.Api.Sample.Logic;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.Pf.HttpEndpointBase.Controllers;
+    using Soap.PfBase.Api;
 
     public static class CheckHealth
     {

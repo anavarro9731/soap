@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System.Dynamic;
     using DataStore.Interfaces.LowLevel;

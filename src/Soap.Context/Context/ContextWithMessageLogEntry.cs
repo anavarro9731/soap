@@ -1,7 +1,7 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Context.Context
 {
     using System.Threading;
-    using Soap.MessagePipeline.Logging;
+    using Soap.Context.Logging;
 
     public class ContextWithMessageLogEntry : ContextWithMessage
     {

@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Interfaces
 {
     public interface IBootstrapVariables
     {

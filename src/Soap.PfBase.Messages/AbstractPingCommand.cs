@@ -1,4 +1,4 @@
-﻿namespace Soap.PfBase.Messages
+﻿namespace Soap.Pf.MessageContractsBase
 {
     using System;
     using FluentValidation;

@@ -1,14 +1,14 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
     using Serilog;
+    using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.NotificationServer;
+    using Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages;
     using Soap.Utility.Functions.Operations;
 
     /// <summary>

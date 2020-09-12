@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.Context.Exceptions
 {
     using System;
     using Soap.Utility.Functions.Extensions;

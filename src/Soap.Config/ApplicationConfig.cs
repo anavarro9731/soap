@@ -1,10 +1,10 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Config
 {
     using System.Reflection;
     using DataStore.Interfaces;
     using FluentValidation;
     using Soap.Bus;
-    using Soap.Config;
+    using Soap.Interfaces;
     using Soap.NotificationServer;
 
     public class ApplicationConfig : IBootstrapVariables

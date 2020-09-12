@@ -4,8 +4,8 @@
     using System.Threading.Tasks;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.NotificationServer;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
 
     public class P557NotifyOfFinalFailure : Process, IBeginProcess<MessageFailedAllRetries>

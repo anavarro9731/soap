@@ -9,8 +9,8 @@
 
 namespace Soap.Api.Sample.Tests
 {
-    using global::Sample.Tests;
     using Soap.Api.Sample.Logic;
+    using Soap.PfBase.Tests;
     using Xunit.Abstractions;
 
     public class Test : SoapMessageTest

@@ -1,7 +1,7 @@
 ﻿namespace Soap.Api.Sample.Messages.Commands
 {
     using Soap.Interfaces.Messages;
-    using Soap.PfBase.Messages;
+    using Soap.Pf.MessageContractsBase;
 
     public class C100Ping : AbstractPingCommand
     {

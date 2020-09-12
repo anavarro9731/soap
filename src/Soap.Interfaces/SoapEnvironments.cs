@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Interfaces
 {
     using Soap.Utility.Objects.Blended;
 

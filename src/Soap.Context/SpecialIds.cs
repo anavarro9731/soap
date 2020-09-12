@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.Context
 {
     using System;
 

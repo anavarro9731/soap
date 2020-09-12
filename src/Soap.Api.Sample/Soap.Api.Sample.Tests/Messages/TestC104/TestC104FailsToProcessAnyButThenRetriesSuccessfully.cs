@@ -3,9 +3,10 @@
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
+    using Soap.Context;
+    using Soap.Context.Logging;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Logging;
     using Xunit;
     using Xunit.Abstractions;
 

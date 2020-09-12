@@ -11,11 +11,10 @@ namespace Soap.MessagePipeline
 {
     using System;
     using System.Threading.Tasks;
+    using Soap.Context.Context;
+    using Soap.Context.Logging;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
     using Soap.Utility.Functions.Extensions;
 
     internal static class ContextWithMessageExtensions

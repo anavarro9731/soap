@@ -1,8 +1,8 @@
-﻿namespace Soap.MessagePipeline
+﻿namespace Soap.Context
 {
     using DataStore;
+    using Soap.Context.Context;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.Context;
 
     public class Query : IQuery
     {

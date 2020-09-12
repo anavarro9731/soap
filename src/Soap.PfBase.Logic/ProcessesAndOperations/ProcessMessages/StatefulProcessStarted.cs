@@ -1,4 +1,4 @@
-namespace Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages
+namespace Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages
 {
     using System;
 

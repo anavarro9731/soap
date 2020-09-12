@@ -4,7 +4,8 @@
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.Interfaces;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class P559PingPong : Process, IBeginProcess<C100Ping>
     {

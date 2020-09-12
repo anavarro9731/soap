@@ -8,7 +8,7 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
-    using Soap.MessagePipeline.Logging;
+    using Soap.Context.Logging;
     using Xunit.Abstractions;
 
     public class TestC104 : Test

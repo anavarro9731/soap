@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Logging
+﻿namespace Soap.Context.Logging
 {
     using System;
     using System.Collections.Generic;
@@ -8,10 +8,10 @@
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
     using Newtonsoft.Json;
+    using Soap.Context.Exceptions;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
 

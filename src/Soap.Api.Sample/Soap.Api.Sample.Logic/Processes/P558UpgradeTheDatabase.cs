@@ -7,9 +7,9 @@
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Context.Context;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Blended;
 

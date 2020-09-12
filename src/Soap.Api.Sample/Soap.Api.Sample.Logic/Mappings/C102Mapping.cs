@@ -6,7 +6,6 @@
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;
 
     public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>

@@ -1,7 +1,7 @@
 ﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
+    using Soap.Context.Logging;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Logging;
     using Xunit;
     using Xunit.Abstractions;
 

@@ -5,10 +5,10 @@
     using System.Threading.Tasks;
     using DataStore.Models.PureFunctions;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Context;
+    using Soap.Context.Context;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
 
     /// <summary>
     ///     $$REMOVE-IN-COPY$$

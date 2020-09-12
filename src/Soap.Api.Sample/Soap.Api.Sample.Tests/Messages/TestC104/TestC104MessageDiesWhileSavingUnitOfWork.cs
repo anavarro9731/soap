@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using FluentAssertions;
+    using Soap.Context;
     using Soap.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;

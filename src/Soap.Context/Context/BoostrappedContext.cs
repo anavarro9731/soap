@@ -1,12 +1,12 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Context.Context
 {
     using System;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using Serilog;
+    using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.MessagePipeline;
     using Soap.NotificationServer;
 
     public class BoostrappedContext

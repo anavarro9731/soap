@@ -11,15 +11,15 @@
     using Serilog;
     using Serilog.Exceptions;
     using Soap.Bus;
+    using Soap.Context.Context;
+    using Soap.Context.Logging;
+    using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.Logging;
+    using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.MessagePipeline.ProcessesAndOperations.ProcessMessages;
     using Soap.NotificationServer;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
 

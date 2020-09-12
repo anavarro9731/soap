@@ -5,11 +5,11 @@
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Context;
+    using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
 
     /// <summary>
     ///     $$REMOVE-IN-COPY$$

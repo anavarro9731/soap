@@ -1,13 +1,10 @@
-﻿namespace Soap.MessagePipeline.Context
+﻿namespace Soap.Context.Context
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Objects.Blended;
 
     public class ContextWithMessage : BoostrappedContext, IMessageFunctionsServerSide

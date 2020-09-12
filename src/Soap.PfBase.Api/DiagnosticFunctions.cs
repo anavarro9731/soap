@@ -1,4 +1,4 @@
-﻿namespace Soap.Pf.HttpEndpointBase.Controllers
+﻿namespace Soap.PfBase.Api
 {
     using System;
     using System.Collections.Generic;
@@ -10,6 +10,7 @@
     using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
+    using DataStore;
     using Microsoft.Azure.Management.Fluent;
     using Microsoft.Azure.Management.ResourceManager.Fluent;
     using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
@@ -19,12 +20,11 @@
     using Serilog;
     using Soap.Bus;
     using Soap.Config;
+    using Soap.Context.Logging;
+    using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.PfBase.Api;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
@@ -48,10 +48,24 @@
                         },
                         logger,
                         appConfig);
-
             return r;
-        }
+            //Stream(r);
 
+            // //* it should now publish e150pong which we subscribe to as well so it should come back to us and we wait for result
+            // int tries = 5;
+            // while ( tries > 0)
+            // {
+            //     await Task.Delay(1500);
+            //     var logged = await new DataStore(appConfig.DatabaseSettings.CreateRepository()).ReadById<MessageLogEntry>(Guid.Empty);
+            //     if (logged != null)
+            //     {
+            //         Stream(found result)
+            //         return;
+            //     }
+            // }
+            // stream(could not find result, failed)
+        }
+            
         private static object GetConfig(ApplicationConfig appConfig)
         {
             var ipAddress = Dns.GetHostEntryAsync(Dns.GetHostName())

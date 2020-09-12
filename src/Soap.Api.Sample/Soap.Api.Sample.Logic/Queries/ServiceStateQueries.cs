@@ -4,7 +4,7 @@
     using System.Threading.Tasks;
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Models.Aggregates;
-    using Soap.MessagePipeline;
+    using Soap.Context;
 
     public class ServiceStateQueries : Query
     {

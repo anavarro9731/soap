@@ -6,7 +6,7 @@
 // $SUMMARY$
 // </summary>
 
-namespace Soap.PfBase.Alj
+namespace Soap.PfBase.Api
 {
     using System;
     using System.IO;
@@ -26,7 +26,6 @@ namespace Soap.PfBase.Alj
     using Soap.Bus;
     using Soap.Config;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.Context;
     using Soap.NotificationServer;
 
     public class ConfigFunctions

@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.UnitOfWork
+﻿namespace Soap.Context.UnitOfWork
 {
     using System.Collections.Generic;
     using System.Linq;

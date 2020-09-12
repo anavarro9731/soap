@@ -1,12 +1,12 @@
-﻿namespace Soap.MessagePipeline.UnitOfWork
+﻿namespace Soap.Context.UnitOfWork
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Interfaces;
     using Newtonsoft.Json;
+    using Soap.Context.Logging;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Logging;
     using Soap.Utility.Models;
 
     public class BusMessageUnitOfWorkItem : SerialisableObject

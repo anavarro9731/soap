@@ -4,8 +4,9 @@
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.ProcessesAndOperations;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103StartPingPong>, IContinueProcess<E150Pong>
     {

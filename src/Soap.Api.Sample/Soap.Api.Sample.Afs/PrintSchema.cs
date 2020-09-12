@@ -7,7 +7,6 @@
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
     using Soap.Api.Sample.Messages.Commands;
-    using Soap.Pf.HttpEndpointBase.Controllers;
     using Soap.PfBase.Api;
 
     public static class PrintSchema

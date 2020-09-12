@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.ProcessesAndOperations
+﻿namespace Soap.Interfaces
 {
     using System;
     using System.Threading.Tasks;

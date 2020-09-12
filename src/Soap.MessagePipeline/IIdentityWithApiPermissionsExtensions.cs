@@ -1,4 +1,4 @@
-﻿namespace Soap.MessagePipeline.Permissions
+﻿namespace Soap.MessagePipeline
 {
     using System.Linq;
     using Soap.Interfaces;

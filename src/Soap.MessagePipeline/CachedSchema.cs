@@ -6,8 +6,8 @@
     using System.ComponentModel;
     using System.Linq;
     using System.Text;
+    using Soap.Config;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
     using Soap.Utility.Functions.Extensions;
 
     public class CachedSchema

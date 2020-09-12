@@ -12,12 +12,13 @@
     using DataStore.Models;
     using DataStore.Models.Messages;
     using Soap.Bus;
+    using Soap.Context;
+    using Soap.Context.Context;
+    using Soap.Context.Exceptions;
+    using Soap.Context.Logging;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.Logging;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.MessagePipeline.UnitOfWork;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
@@ -75,7 +76,7 @@
             context.MessageAggregator.Collect(queuedStateChange);
         }
 
-        internal static async Task<UnitOfWork.UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
+        internal static async Task<UnitOfWork.State> AttemptToFinishAnUnfinishedUnitOfWork(
             this ContextWithMessageLogEntry context)
         {
             {
@@ -89,12 +90,12 @@
 
                 return context.MessageLogEntry.UnitOfWork switch
                 {
-                    var u when IsEmpty(u) => UnitOfWork.UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
+                    var u when IsEmpty(u) => UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
                     _ => await AttemptCompletion(records, context)
                 };
             }
 
-            static async Task<UnitOfWork.UnitOfWork.State> AttemptCompletion(
+            static async Task<UnitOfWork.State> AttemptCompletion(
                 List<UnitOfWorkExtensions.Record> records,
                 ContextWithMessageLogEntry context)
             {
@@ -109,14 +110,13 @@
                                                                                context.DataStore.DocumentRepository,
                                                                                context),
                     var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
-                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork
-                                                                                                  .UnitOfWork.State.AllRolledBack,
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
                     var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
                              "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
                 };
 
-                static async Task<UnitOfWork.UnitOfWork.State> RollbackRemaining(
+                static async Task<UnitOfWork.State> RollbackRemaining(
                     List<UnitOfWorkExtensions.Record> records,
                     IDocumentRepository documentRepository,
                     ContextWithMessageLogEntry context)
@@ -147,7 +147,7 @@
                         }
                     }
 
-                    return UnitOfWork.UnitOfWork.State.AllRolledBack;
+                    return UnitOfWork.State.AllRolledBack;
 
                     Task Delete<T>(T arg) where T : IAggregate => documentRepository.DeleteAsync(arg);
 
@@ -164,7 +164,7 @@
                     }
                 }
 
-                static async Task<UnitOfWork.UnitOfWork.State> CompleteDataAndMessages(
+                static async Task<UnitOfWork.State> CompleteDataAndMessages(
                     List<UnitOfWorkExtensions.Record> records,
                     ContextWithMessageLogEntry context)
                 {
@@ -172,11 +172,11 @@
                     return await CompleteMessages(context);
                 }
 
-                static async Task<UnitOfWork.UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
+                static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
                     await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus, context.DataStore);
                     await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
-                    return UnitOfWork.UnitOfWork.State.AllComplete;
+                    return UnitOfWork.State.AllComplete;
                 }
 
                 //* failed after rollback was done or before anything was committed (e.g. first item failed concurrency check)
@@ -229,7 +229,7 @@
                 }
             }
 
-            static bool IsEmpty(UnitOfWork.UnitOfWork u)
+            static bool IsEmpty(UnitOfWork u)
             {
                 var result = !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
                              && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
@@ -281,7 +281,7 @@
                 }
             }
 
-            static async Task SendAnyUnsentMessages(UnitOfWork.UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
+            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
             {
                 /* cannot rollback messages, forward only,
         it's not the same risk as data though since there are no concurrency issues
@@ -299,7 +299,7 @@
             }
 
             static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(
-                UnitOfWork.UnitOfWork unitOfWork,
+                UnitOfWork unitOfWork,
                 IDataStore dataStore)
             {
                 var records = new List<UnitOfWorkExtensions.Record>();

@@ -1,10 +1,10 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.Context.Exceptions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using FluentValidation;
-    using Soap.MessagePipeline.Context;
+    using Soap.Context.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
 

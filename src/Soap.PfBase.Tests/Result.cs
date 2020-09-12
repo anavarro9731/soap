@@ -3,8 +3,8 @@
     using System;
     using DataStore;
     using Soap.Interfaces;
-    using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.NotificationServer;
+    using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class Result
     {

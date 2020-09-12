@@ -1,14 +1,11 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.Context.MessageMapping
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
-    using DataStore.Models.PureFunctions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
     using Guard = Soap.Utility.Functions.Operations.Guard;
 
     public abstract class MapMessagesToFunctions

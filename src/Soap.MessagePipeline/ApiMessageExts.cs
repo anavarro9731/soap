@@ -1,11 +1,12 @@
-﻿namespace Soap.MessagePipeline.MessagePipeline
+﻿namespace Soap.MessagePipeline
 {
     using System;
     using Newtonsoft.Json;
+    using Soap.Context.Context;
+    using Soap.Context.Exceptions;
+    using Soap.Context.Logging;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline.Context;
-    using Soap.MessagePipeline.Logging;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 

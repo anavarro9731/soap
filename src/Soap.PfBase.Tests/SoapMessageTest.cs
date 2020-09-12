@@ -1,5 +1,5 @@
 ﻿#nullable enable
-namespace Sample.Tests
+namespace Soap.PfBase.Tests
 {
     using System;
     using System.Threading.Tasks;
@@ -7,11 +7,10 @@ namespace Sample.Tests
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
+    using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
-    using Soap.MessagePipeline.MessagePipeline;
-    using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
 
