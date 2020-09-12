@@ -111,7 +111,7 @@
                 await ServiceBusInitialisation(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
                 await WriteLine("Running Message Test...");
-                await WriteLine(await MessageTestResults<TMsg, TIdentity>(logger, appConfig, mapMessagesToFunctions));
+                await WriteLine(await GetMessageTestResults<TMsg, TIdentity>(logger, appConfig, mapMessagesToFunctions));
             }
             catch (Exception e)
             {
@@ -134,7 +134,7 @@
             return json;
         }
 
-        private static async Task<string> MessageTestResults<TMsg, TIdentity>(
+        private static async Task<string> GetMessageTestResults<TMsg, TIdentity>(
             ILogger logger,
             ApplicationConfig appConfig,
             MapMessagesToFunctions mappings) where TMsg : ApiMessage, new() where TIdentity : class, IApiIdentity, new()

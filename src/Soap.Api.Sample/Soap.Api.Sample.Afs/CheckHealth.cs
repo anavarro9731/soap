@@ -20,7 +20,7 @@
     public static class CheckHealth
     {
         [FunctionName("CheckHealth")]
-        public static HttpResponseMessage RunAsync(
+        public static HttpResponseMessage Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
             ILogger log)
@@ -37,7 +37,7 @@
             }
             catch (Exception e)
             {
-                log.Log(LogLevel.Critical, e.ToString());
+                log.LogCritical(e.ToString());
 
                 var result = new HttpResponseMessage
                 {
