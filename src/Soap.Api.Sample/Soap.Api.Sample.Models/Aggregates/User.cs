@@ -1,8 +1,7 @@
-﻿namespace Sample.Models.Aggregates
+﻿namespace Soap.Api.Sample.Models.Aggregates
 {
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
-    using Newtonsoft.Json;
     using Soap.Interfaces;
 
     public class User : Aggregate, IApiIdentity

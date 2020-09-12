@@ -1,4 +1,4 @@
-﻿namespace Sample.Messages.Commands
+﻿namespace Soap.Api.Sample.Messages.Commands
 {
     using FluentValidation;
     using Soap.Interfaces.Messages;

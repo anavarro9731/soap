@@ -1,6 +1,6 @@
-﻿namespace Sample.Logic
+﻿namespace Soap.Api.Sample.Logic
 {
-    using Sample.Logic.Mappings;
+    using Soap.Api.Sample.Logic.Mappings;
     using Soap.MessagePipeline.MessagePipeline;
 
     public class MappingRegistration : MapMessagesToFunctions

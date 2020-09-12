@@ -1,10 +1,10 @@
-﻿namespace Sample.Logic.Operations
+﻿namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore.Models.PureFunctions;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Context;

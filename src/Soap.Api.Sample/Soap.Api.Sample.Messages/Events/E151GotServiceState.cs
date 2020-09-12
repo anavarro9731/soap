@@ -1,4 +1,4 @@
-﻿namespace Sample.Messages.Events
+﻿namespace Soap.Api.Sample.Messages.Events
 {
     using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Binary;

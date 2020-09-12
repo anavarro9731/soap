@@ -1,9 +1,9 @@
-﻿namespace Sample.Tests
+﻿namespace Soap.Api.Sample.Tests
 {
     using System;
     using DataStore.Models.PureFunctions.Extensions;
-    using Sample.Constants;
-    using Sample.Messages.Commands;
+    using Soap.Api.Sample.Constants;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces.Messages;
 
     /* all variables in here must remain constant for tests to be correct,

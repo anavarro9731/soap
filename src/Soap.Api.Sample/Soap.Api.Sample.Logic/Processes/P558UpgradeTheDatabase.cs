@@ -1,12 +1,12 @@
-﻿namespace Sample.Logic.Processes
+﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
-    using Sample.Constants;
-    using Sample.Logic.Operations;
-    using Sample.Messages.Commands;
+    using Soap.Api.Sample.Constants;
+    using Soap.Api.Sample.Logic.Operations;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;

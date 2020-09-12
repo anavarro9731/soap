@@ -1,4 +1,4 @@
-﻿namespace Sample.Tests
+﻿namespace Soap.Api.Sample.Tests
 {
     using System;
 

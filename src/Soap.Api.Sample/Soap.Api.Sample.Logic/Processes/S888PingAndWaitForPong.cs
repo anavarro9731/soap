@@ -1,9 +1,9 @@
-﻿namespace Sample.Logic.Processes
+﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
-    using Sample.Messages.Commands;
-    using Sample.Messages.Events;
+    using Soap.Api.Sample.Messages.Commands;
+    using Soap.Api.Sample.Messages.Events;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.ProcessesAndOperations;
 

@@ -1,7 +1,7 @@
-﻿namespace Sample.Tests
+﻿namespace Soap.Api.Sample.Tests
 {
     using System.Collections.Generic;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
 
     //* all variables in here must remain constant for tests to be correct

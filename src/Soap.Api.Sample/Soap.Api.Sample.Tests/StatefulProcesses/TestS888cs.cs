@@ -1,11 +1,11 @@
-﻿namespace Sample.Tests.StatefulProcesses
+﻿namespace Soap.Api.Sample.Tests.StatefulProcesses
 {
     using System;
     using System.Linq;
     using FluentAssertions;
-    using Sample.Logic.Processes;
-    using Sample.Messages.Commands;
-    using Sample.Messages.Events;
+    using Soap.Api.Sample.Logic.Processes;
+    using Soap.Api.Sample.Messages.Commands;
+    using Soap.Api.Sample.Messages.Events;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Binary;
     using Xunit;

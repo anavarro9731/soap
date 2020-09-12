@@ -1,12 +1,12 @@
 ﻿namespace Soap.Api.Sample.Afs
 {
     using System;
-    using global::Sample.Messages.Commands;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Pf.HttpEndpointBase.Controllers;
     using Soap.PfBase.Api;
 

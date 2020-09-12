@@ -1,4 +1,4 @@
-﻿namespace Sample.Constants
+﻿namespace Soap.Api.Sample.Constants
 {
     public enum ReleaseVersions
     {

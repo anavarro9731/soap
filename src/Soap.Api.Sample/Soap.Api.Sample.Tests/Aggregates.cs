@@ -1,6 +1,6 @@
-﻿namespace Sample.Tests
+﻿namespace Soap.Api.Sample.Tests
 {
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.Aggregates;
 
     /* all field values in here must remain constant for tests to be correct
      probably ok without arrows since datastore clones everything which allows you to use Guid.NewGuid() in Ids */

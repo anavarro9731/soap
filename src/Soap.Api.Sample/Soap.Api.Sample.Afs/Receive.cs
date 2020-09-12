@@ -3,11 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using global::Sample.Logic;
-    using global::Sample.Messages.Commands;
-    using global::Sample.Models.Aggregates;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
+    using Soap.Api.Sample.Logic;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.PfBase.Api;
     using Soap.Utility.Functions.Extensions;
 

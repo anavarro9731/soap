@@ -1,4 +1,4 @@
-﻿namespace Sample.Models.Aggregates
+﻿namespace Soap.Api.Sample.Models.Aggregates
 {
     using DataStore.Interfaces.LowLevel;
     using Soap.Utility.Objects.Binary;

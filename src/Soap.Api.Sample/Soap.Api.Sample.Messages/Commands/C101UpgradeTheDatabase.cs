@@ -1,8 +1,8 @@
-﻿namespace Sample.Messages.Commands
+﻿namespace Soap.Api.Sample.Messages.Commands
 {
     using System;
     using FluentValidation;
-    using Sample.Constants;
+    using Soap.Api.Sample.Constants;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Blended;
 

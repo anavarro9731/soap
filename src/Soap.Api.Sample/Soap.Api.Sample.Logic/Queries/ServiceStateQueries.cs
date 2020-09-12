@@ -1,9 +1,9 @@
-﻿namespace Sample.Logic.Queries
+﻿namespace Soap.Api.Sample.Logic.Queries
 {
     using System;
     using System.Threading.Tasks;
-    using Sample.Logic.Operations;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Logic.Operations;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.MessagePipeline;
 
     public class ServiceStateQueries : Query

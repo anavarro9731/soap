@@ -1,10 +1,10 @@
-﻿namespace Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;

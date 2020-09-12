@@ -1,4 +1,4 @@
-﻿namespace Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using DataStore.Options;
     using FluentAssertions;

@@ -1,4 +1,4 @@
-﻿namespace Sample.Logic.Processes
+﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;

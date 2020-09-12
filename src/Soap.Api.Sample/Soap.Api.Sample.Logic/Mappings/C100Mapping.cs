@@ -1,9 +1,9 @@
-﻿namespace Sample.Logic.Mappings
+﻿namespace Soap.Api.Sample.Logic.Mappings
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Sample.Logic.Processes;
-    using Sample.Messages.Commands;
+    using Soap.Api.Sample.Logic.Processes;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
     using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Objects.Blended;

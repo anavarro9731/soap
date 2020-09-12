@@ -7,10 +7,10 @@
 // </summary>
 
 
-namespace Sample.Tests
+namespace Soap.Api.Sample.Tests
 {
-    using System;
-    using Sample.Logic;
+    using global::Sample.Tests;
+    using Soap.Api.Sample.Logic;
     using Xunit.Abstractions;
 
     public class Test : SoapMessageTest

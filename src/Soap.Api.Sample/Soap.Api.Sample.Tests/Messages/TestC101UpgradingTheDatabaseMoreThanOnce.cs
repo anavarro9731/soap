@@ -1,9 +1,9 @@
-namespace Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
-    using Sample.Constants;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Constants;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Utility.Objects.Binary;
     using Xunit;
     using Xunit.Abstractions;

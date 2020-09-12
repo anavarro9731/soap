@@ -1,16 +1,15 @@
-﻿namespace Sample.Logic.Processes
+﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
-    using Sample.Logic.Operations;
-    using Sample.Messages.Commands;
-    using Sample.Messages.Events;
+    using Soap.Api.Sample.Logic.Operations;
+    using Soap.Api.Sample.Messages.Commands;
+    using Soap.Api.Sample.Messages.Events;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.Context;
     using Soap.MessagePipeline.ProcessesAndOperations;
-    using Soap.NotificationServer;
 
     /// <summary>
     ///     $$REMOVE-IN-COPY$$

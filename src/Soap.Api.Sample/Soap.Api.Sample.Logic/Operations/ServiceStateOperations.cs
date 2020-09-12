@@ -1,10 +1,10 @@
-﻿namespace Sample.Logic.Operations
+﻿namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
     using System.Threading.Tasks;
-    using Sample.Constants;
-    using Sample.Logic.Queries;
-    using Sample.Models.Aggregates;
+    using Soap.Api.Sample.Constants;
+    using Soap.Api.Sample.Logic.Queries;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.MessagePipeline.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;

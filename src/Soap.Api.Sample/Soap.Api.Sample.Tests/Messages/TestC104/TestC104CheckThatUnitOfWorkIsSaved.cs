@@ -1,6 +1,5 @@
-﻿namespace Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
-    using Soap.PfBase.Tests;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.Logging;
     using Xunit;

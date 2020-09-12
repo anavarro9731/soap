@@ -1,8 +1,8 @@
-﻿namespace Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
-    using Sample.Messages.Events;
+    using Soap.Api.Sample.Messages.Events;
     using Xunit;
     using Xunit.Abstractions;
 
