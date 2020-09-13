@@ -39,12 +39,13 @@
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(publishEvent)))
             {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(), 
-                Label = publishEvent.GetType().AssemblyQualifiedName
+                Label = publishEvent.GetType().AssemblyQualifiedName,
+                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().AssemblyQualifiedName) }
             };
 
-            var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic());
+            var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic().ToLower());
 
-            await topicClient?.SendAsync(queueMessage);
+            await topicClient.SendAsync(queueMessage);
         }
 
         public async Task Send(ApiCommand sendCommand)
@@ -53,7 +54,8 @@
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString()
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
+                UserProperties = { new KeyValuePair<string, object>("Type", sendCommand.GetType().AssemblyQualifiedName) }
             };
 
             var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());

@@ -11,6 +11,7 @@
     using Microsoft.Extensions.Logging;
     using Soap.Api.Sample.Logic;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
@@ -30,7 +31,7 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100Ping, User>(new MappingRegistration())
+                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration())
                 };
 
                 return result;
@@ -48,12 +49,15 @@
                 return result;
             }
 
-            static PushStreamContent GetContent<TInboundMessage, TIdentity>(MapMessagesToFunctions messageMapper)
-                where TInboundMessage : ApiMessage, new() where TIdentity : class, IApiIdentity, new()
+            static PushStreamContent
+                GetContent<TInboundMessage, TOutboundMessage, TIdentity>(MapMessagesToFunctions messageMapper)
+                where TInboundMessage : ApiCommand, new()
+                where TIdentity : class, IApiIdentity, new()
+                where TOutboundMessage : ApiEvent
             {
                 return new PushStreamContent(
                     async (outputSteam, httpContent, transportContext) =>
-                        await DiagnosticFunctions.OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TIdentity>(
+                        await DiagnosticFunctions.OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TIdentity>(
                             outputSteam,
                             httpContent,
                             transportContext,

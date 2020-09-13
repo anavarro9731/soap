@@ -87,6 +87,8 @@
                         {
                             await MessagePipeline.Execute(message, context);
                             x.Success = true;
+                            x.PublishMessages = bus.EventsPublished;
+                            x.CommandsSent = bus.CommandsSent;
                             return x;
                         }
                         catch (Exception e)
