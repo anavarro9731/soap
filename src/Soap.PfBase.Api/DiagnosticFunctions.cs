@@ -46,7 +46,8 @@
             HttpContent httpContent,
             TransportContext transportContext,
             Assembly messagesAssembly,
-            MapMessagesToFunctions mapMessagesToFunctions)
+            MapMessagesToFunctions mapMessagesToFunctions,
+            ILogger logger)
             where TPing : ApiCommand, new() where TIdentity : class, IApiIdentity, new() where TPong : ApiEvent
         {
             async ValueTask WriteLine(string s)
@@ -58,7 +59,8 @@
             try
             {
                 await WriteLine("Loading Config...");
-                AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
+                
+                AzureFunctionContext.LoadAppConfig(out var appConfig);
 
                 await WriteLine(GetConfigDetails(appConfig));
 

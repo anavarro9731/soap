@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Afs
 {
     using System;
+    using System.Reflection.Metadata;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -17,9 +18,12 @@
             HttpRequest req,
             ILogger log)
         {
+            Serilog.ILogger logger = null;
             try
             {
-                AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
+                AzureFunctionContext.CreateLogger(out logger);
+                
+                AzureFunctionContext.LoadAppConfig(out var appConfig);
 
                 dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100Ping).Assembly);
 
@@ -27,6 +31,7 @@
             }
             catch (Exception e)
             {
+                logger?.Fatal(e, "Could not execute function");
                 log.LogCritical(e.ToString());
                 return new OkObjectResult(e.ToString());
             }

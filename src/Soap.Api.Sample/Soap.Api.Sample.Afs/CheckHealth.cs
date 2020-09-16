@@ -26,18 +26,22 @@
             HttpRequest req,
             ILogger log)
         {
+            Serilog.ILogger logger = null;
             try
             {
+                AzureFunctionContext.CreateLogger(out logger);
+                
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration())
+                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration(), logger)
                 };
 
                 return result;
             }
             catch (Exception e)
             {
+                logger?.Fatal(e, "Could not execute function");
                 log.LogCritical(e.ToString());
 
                 var result = new HttpResponseMessage
@@ -49,8 +53,9 @@
                 return result;
             }
 
-            static PushStreamContent
-                GetContent<TInboundMessage, TOutboundMessage, TIdentity>(MapMessagesToFunctions messageMapper)
+            static PushStreamContent GetContent<TInboundMessage, TOutboundMessage, TIdentity>(
+                MapMessagesToFunctions messageMapper,
+                Serilog.ILogger logger)
                 where TInboundMessage : ApiCommand, new()
                 where TIdentity : class, IApiIdentity, new()
                 where TOutboundMessage : ApiEvent
@@ -62,7 +67,7 @@
                             httpContent,
                             transportContext,
                             typeof(TInboundMessage).Assembly,
-                            messageMapper),
+                            messageMapper, logger),
                     new MediaTypeHeaderValue("text/plain"));
             }
         }

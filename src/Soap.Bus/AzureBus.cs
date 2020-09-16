@@ -1,5 +1,6 @@
 ﻿namespace Soap.Bus
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
@@ -48,7 +49,7 @@
             await topicClient.SendAsync(queueMessage);
         }
 
-        public async Task Send(ApiCommand sendCommand)
+        public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(sendCommand)))
             {
@@ -60,7 +61,16 @@
 
             var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());
 
-            await queueClient.SendAsync(queueMessage);
+            if (scheduleAt.HasValue)
+            {
+                var sequenceNumber = await queueClient.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
+                
+            }
+            else
+            {
+                await queueClient.SendAsync(queueMessage);    
+            }
+            
         }
 
         public class Settings : IBusSettings

@@ -31,8 +31,6 @@
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
 
-        public SeqServerConfig LogSettings { get; set; }
-
         public NotificationServer.Settings NotificationSettings { get; set; } = new NotificationServer.Settings();
 
         public bool ReturnExplicitErrorMessages { get; set; }
@@ -47,7 +45,6 @@
                 RuleFor(x => x.ApplicationName).NotEmpty();
                 RuleFor(x => x.BusSettings).NotNull();
                 RuleFor(x => x.DatabaseSettings).NotNull();
-                RuleFor(x => x.LogSettings).NotNull();
             }
         }
     }

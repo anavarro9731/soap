@@ -177,13 +177,14 @@
             {
                 var sink = new SerilogMessageAggregatorSink(messageAggregator);
 
-                var loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", "DomainTests")
-                                                                   .Enrich.WithExceptionDetails()
-                                                                   .Destructure.UsingAttributes()
-                                                                   .WriteTo.Sink(sink)
-                                                                   .WriteTo.TestOutput(testOutputHelper);
+                logger = new LoggerConfiguration().Enrich.WithProperty("Environment", "DomainTests")
+                                                      .Enrich.WithExceptionDetails()
+                                                      .Destructure.UsingAttributes()
+                                                      .WriteTo.Sink(sink)
+                                                      .WriteTo.TestOutput(testOutputHelper)
+                                                      .CreateLogger();
 
-                logger = loggerConfiguration.CreateLogger(); // create serilog ILogger
+                
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 

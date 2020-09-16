@@ -1,5 +1,6 @@
 ﻿namespace Soap.Bus
 {
+    using System;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
@@ -16,7 +17,7 @@
 
         public Task Publish(ApiEvent publishEvent) => Task.CompletedTask;
 
-        public Task Send(ApiCommand sendCommand) => Task.CompletedTask;
+        public Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null) => Task.CompletedTask;
 
         public class Settings : IBusSettings
         {

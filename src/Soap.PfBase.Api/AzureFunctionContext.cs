@@ -8,6 +8,7 @@
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
+    using Microsoft.ApplicationInsights.Extensibility;
     using Newtonsoft.Json;
     using Serilog;
     using Serilog.Exceptions;
@@ -178,22 +179,32 @@
             }
         }
 
-        public static void LoadAppConfig(out ILogger logger, out ApplicationConfig applicationConfig)
+        public static void CreateLogger(out ILogger logger)
+        {
+            logger = new LoggerConfiguration()
+                     .Enrich.WithProperty("Environment", "DomainTests")
+                     .Enrich.WithExceptionDetails()
+                     .Destructure.UsingAttributes()
+                     .WriteTo
+                     .ApplicationInsights(TelemetryConfiguration.Active, TelemetryConverter.Traces)
+                     .CreateLogger();
+
+            Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
+        }
+        
+        public static void LoadAppConfig(out ApplicationConfig applicationConfig)
         {
             try
             {
                 EnsureEnvironmentVars();
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(out var applicationConfig1);
-
-                CreateLogger(applicationConfig1.LogSettings, out var logger1);
-
-                logger = logger1;
+                
                 applicationConfig = applicationConfig1;
             }
             catch (Exception e)
             {
-                throw new Exception("Error retrieving config and creating logger", e);
+                throw new Exception("Error retrieving config", e);
             }
 
             static void EnsureEnvironmentVars()
@@ -231,18 +242,7 @@
                     $"{nameof(EnvVars.ServicePrincipal.TenantId)} environment variable not set");
             }
 
-            static void CreateLogger(SeqServerConfig seqServerConfig, out ILogger logger)
-            {
-                var loggerConfiguration = new LoggerConfiguration().Enrich.WithProperty("Environment", "DomainTests")
-                                                                   .Enrich.WithExceptionDetails()
-                                                                   .Destructure.UsingAttributes()
-                                                                   .WriteTo.Seq(
-                                                                       seqServerConfig.ServerUrl,
-                                                                       apiKey: seqServerConfig.ApiKey);
 
-                logger = loggerConfiguration.CreateLogger(); // create serilog ILogger
-                Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
-            }
         }
     }
 }

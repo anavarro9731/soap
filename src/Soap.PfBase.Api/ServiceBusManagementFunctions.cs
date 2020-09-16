@@ -96,7 +96,7 @@
                     // error records were written to the error stream.
                     foreach (var errorRecord in powerShell.Streams.Error)
                     {
-                        await stream($"Error setting forward queue {errorRecord.ErrorDetails.Message}");
+                        await stream($"Error setting forward queue: <{errorRecord.ErrorDetails?.Message}>");
                         logger.Error(errorRecord.Exception, "Error setting forward queue");
                     }
 

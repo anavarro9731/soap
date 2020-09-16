@@ -21,9 +21,14 @@
             IDictionary<string, object> UserProperties,
             ILogger log)
         {
+            
+            Serilog.ILogger logger = null;
             try
             {
-                AzureFunctionContext.LoadAppConfig(out var logger, out var appConfig);
+                AzureFunctionContext.CreateLogger(out logger);
+                
+                AzureFunctionContext.LoadAppConfig(out var appConfig);
+
 
                 await AzureFunctionContext.Execute<User>(
                     myQueueItem,
@@ -35,8 +40,10 @@
             }
             catch (Exception e)
             {
-                log.LogCritical(e, "Could not execute pipeline");
+                logger?.Fatal(e, "Could not execute function");
+                log.LogCritical(e.ToString());
             }
+            
         }
     }
 }
