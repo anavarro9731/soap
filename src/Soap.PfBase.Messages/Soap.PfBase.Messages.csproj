@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Soap.Pf.MessageContractsBase</RootNamespace>
-    <Version>2.44.0-alpha</Version>
+    <Version>2.45.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="8.6.0" />
