@@ -69,7 +69,7 @@ function global:Run {
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject)`
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "7ii2qmaehovdujwjgblveash2zc5lc2sqnirjc5f62hkdrdqhwzq"`
+        -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia"`
         -repository "soap" `
         -forceVersion $forceVersion
 	}
