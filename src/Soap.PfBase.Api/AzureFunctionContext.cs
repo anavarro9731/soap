@@ -11,7 +11,9 @@
     using Microsoft.ApplicationInsights.Extensibility;
     using Newtonsoft.Json;
     using Serilog;
+    using Serilog.Events;
     using Serilog.Exceptions;
+    using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
     using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
@@ -181,13 +183,20 @@
 
         public static void CreateLogger(out ILogger logger)
         {
-            logger = new LoggerConfiguration()
-                     .Enrich.WithProperty("Environment", "DomainTests")
+            var loggerConfiguration = new LoggerConfiguration()
                      .Enrich.WithExceptionDetails()
-                     .Destructure.UsingAttributes()
-                     .WriteTo
-                     .ApplicationInsights(TelemetryConfiguration.Active, TelemetryConverter.Traces)
-                     .CreateLogger();
+                     .Destructure.UsingAttributes();
+            if (EnvVars.AppInsightsIntrumentationKey == null)
+            {
+                loggerConfiguration.WriteTo.ColoredConsole();
+            }
+            else
+            {
+                loggerConfiguration.WriteTo.ApplicationInsights(
+                    EnvVars.AppInsightsIntrumentationKey,
+                    new TraceTelemetryConverter());
+            }
+            logger = loggerConfiguration.CreateLogger();
 
             Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
         }

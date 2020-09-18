@@ -12,6 +12,8 @@
 
         public static string AzureResourceGroup => Environment.GetEnvironmentVariable(nameof(AzureResourceGroup));
 
+        public static string AppInsightsIntrumentationKey => Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+
         public static string AzureWebJobsServiceBus => Environment.GetEnvironmentVariable(nameof(AzureWebJobsServiceBus));
 
         public static string SoapApplicationKey => Environment.GetEnvironmentVariable(nameof(SoapApplicationKey));
