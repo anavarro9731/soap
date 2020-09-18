@@ -47,3 +47,8 @@ see here for details (https://docs.microsoft.com/en-us/cli/azure/create-an-azure
 
 
 
+The boundaries of a service will always be its data structures (ie. aggregates) but how many is too many? when is your domain too big?
+With the collection per aggregate model azure answers this for us: Mar 7 2020
+"Azure Cosmos DB accounts using shared database throughput are now limited to 25 collections per database. 
+This will allow for better throughput sharing across collections. 
+Create additional databases with shared throughput and add more collections, or add collections to the same database with dedicated throughput."
