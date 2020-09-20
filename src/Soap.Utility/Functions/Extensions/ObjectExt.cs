@@ -131,10 +131,7 @@
             }
         }
 
-        public static T Clone<T>(this T source) => source.ToNewtonsoftJson().FromJson<T>();
         
-        
-
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
         /// </summary>
@@ -168,15 +165,24 @@
                 props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
+        public static T Clone<T>(this T source) where T : class
+        {
+            var json = source.ToNewtonsoftJson();
+            var assemblyQualifiedName = source.GetType().AssemblyQualifiedName;
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedName), new JsonSerializerSettings());
+            return obj.As<T>();
+        }
+
         public static T FromJson<T>(this string json)
         {
             var obj = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings());
             return obj;
         }
-            
-           public static T FromJsonToInterface<T>(this string json, string typeName) where T : class //* t = interface
+        
+        
+           public static T FromJsonToInterface<T>(this string json, string assemblyQualifiedTypeName) where T : class //* t = interface
         {
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(typeName), new JsonSerializerSettings());//.As<T>();
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedTypeName), new JsonSerializerSettings());
             return obj.As<T>();
         }
         

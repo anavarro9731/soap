@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
-    <PackageReference Include="FluentValidation" Version="8.6.2" />
+    <PackageReference Include="FluentValidation" Version="9.2.1" />
     <PackageReference Include="mnailgun" Version="3.0.2" />
   </ItemGroup>
   <ItemGroup>

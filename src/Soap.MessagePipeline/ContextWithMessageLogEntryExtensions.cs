@@ -35,7 +35,7 @@
                 + " to the perimeter");
 
             /* from this point on we can crash, throw, lose power, it won't matter all
-        will be continued when the message is next dequeued, updates using a new datastore instance not in session */
+            will be continued when the message is next dequeued, updates using a new datastore instance not in session */
             await context.SaveUnitOfWork();
 
             Guard.Against(
@@ -62,7 +62,10 @@
             await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
-         hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. */
+            hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. 
+            TODO the call to getqueuedchanges would pickup datastore and bus ops if they hadn't been committed above
+            maybe it should filter them out? can't see how without bugs in datastore or bus's commitchanges that would matter
+            but if there were such bugs this might mask them?*/
             foreach (var queuedStateChange in context.GetQueuedChanges())
             {
                 await queuedStateChange.CommitClosure();
@@ -174,7 +177,7 @@
 
                 static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
-                    await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus, context.DataStore);
+                    await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus.BusClient, context.DataStore);
                     await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
                     return UnitOfWork.State.AllComplete;
                 }
@@ -203,7 +206,7 @@
                 }
 
                 /* could be from messages or just the complete flag itself, in any case the complete
-            method can be called and it will skip over the completed methods */
+                 method can be called and it will skip over the completed methods */
                 static bool CompletedDataButNotMarkedAsCompleted(
                     List<UnitOfWorkExtensions.Record> records,
                     MessageLogEntry messageLogEntry)
@@ -240,12 +243,12 @@
             {
                 {
                     /* use order most likely to cause an eTag violation so that we minimize the number of items
-                 needing to be rolled back. 
-                 Take updates first whose records probably existed for a while and prioritize those that are modified recently.
-                 Deletes dont cause eTag violations and neither do creates so doesn't really matter there
-                 but we'll take items being deleted whose model was modified recently as a sign of activity on that 
-                 aggregate and take those first
-                */
+                     needing to be rolled back. 
+                     Take updates first whose records probably existed for a while and prioritize those that are modified recently.
+                     Deletes dont cause eTag violations and neither do creates so doesn't really matter there
+                     but we'll take items being deleted whose model was modified recently as a sign of activity on that 
+                     aggregate and take those first
+                    */
 
                     var incompleteRecords = records
                                             .Where(
@@ -263,6 +266,10 @@
 
                 static async Task SaveRecord(UnitOfWorkExtensions.Record r, IDataStore dataStore)
                 {
+                    
+                    /* important to understand that you want to avoid any change whatsoever to the aggregate
+                     on retries once it has become part of the unit of work which is why we call the underlying 
+                     documentrepository then the datastore */
                     var before = r.UowItem.BeforeModel?.Deserialise<IAggregate>();
                     var after = r.UowItem.AfterModel?.Deserialise<IAggregate>();
 
@@ -281,21 +288,24 @@
                 }
             }
 
-            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBus busContext, IDataStore dataStore)
+            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBusClient busClient, IDataStore dataStore)
             {
                 /* cannot rollback messages, forward only,
-        it's not the same risk as data though since there are no concurrency issues
-        it's really only infrastructure problems that would stop you here */
+                it's not the same risk as data though since there are no concurrency issues
+                it's really only infrastructure problems that would stop you here 
+                
+                also you want to avoid any change whatsoever to the message on retries once it has become part of the unit of work 
+                which is why we call the underlying busclient rather than the bus */
                 var incompleteCommands =
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var commands = incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList();
-                commands.ForEach(async i => await busContext.Send(i));
+                
+                commands.ForEach(async i => await busClient.Send(i));
 
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var events = incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList();
-                events.ForEach(async x => await busContext.Publish(x));
-
-                await busContext.CommitChanges();
+                events.ForEach(async x => await busClient.Publish(x));
+                
             }
 
             static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(
@@ -353,6 +363,7 @@
              is the failed message log entry saving that and then exiting. it also makes testing failures
              in context.commitchanges easier since that method is not used here as well creating a loop
              */
+                
                 await context.DataStore.CommitChanges();
                 await context.Bus.CommitChanges();
             }
@@ -570,13 +581,7 @@
             Guard.Against(
                 context.Message.Headers.GetMessageId() == SpecialIds.MessageDiesWhileSavingUnitOfWork,
                 SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
-
-            // /* if its the first attempt the uow will be empty but you want to
-            //  clear out anything existing as there could be a different 
-            // uow generated if the message is retried */
-            //
-            // var optimisticConcurrency = context.MessageLogEntry.UnitOfWork.OptimisticConcurrency;
-            // context.MessageLogEntry.UnitOfWork = new UnitOfWork(optimisticConcurrency);
+            
             var u = context.MessageLogEntry.UnitOfWork;
 
             foreach (var queuedStateChange in context.GetQueuedChanges())

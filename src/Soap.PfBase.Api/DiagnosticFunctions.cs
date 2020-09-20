@@ -11,10 +11,6 @@
     using System.Text;
     using System.Threading.Tasks;
     using DataStore;
-    using Microsoft.Azure.Management.Fluent;
-    using Microsoft.Azure.Management.ResourceManager.Fluent;
-    using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-    using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
     using Newtonsoft.Json;
     using Serilog;
     using Soap.Bus;
@@ -47,8 +43,7 @@
             TransportContext transportContext,
             Assembly messagesAssembly,
             MapMessagesToFunctions mapMessagesToFunctions,
-            ILogger logger)
-            where TPing : ApiCommand, new() where TIdentity : class, IApiIdentity, new() where TPong : ApiEvent
+            ILogger logger) where TPing : ApiCommand, new() where TIdentity : class, IApiIdentity, new() where TPong : ApiEvent
         {
             async ValueTask WriteLine(string s)
             {
@@ -59,7 +54,7 @@
             try
             {
                 await WriteLine("Loading Config...");
-                
+
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
                 await WriteLine(GetConfigDetails(appConfig));
@@ -93,39 +88,14 @@
                 var busSettings = applicationConfig.BusSettings as AzureBus.Settings;
                 Guard.Against(busSettings == null, "Expected type of AzureBus");
 
-                var azure = await Authenticate();
-
-                var serviceBusNamespace = await ServiceBusManagementFunctions.GetNamespace(busSettings, azure, writeLine);
-                await ServiceBusManagementFunctions.CreateTopicsIfNotExist(serviceBusNamespace, messagesAssembly, writeLine);
+                await ServiceBusManagementFunctions.CreateTopicsIfNotExist(busSettings, messagesAssembly, writeLine);
 
                 await ServiceBusManagementFunctions.CreateSubscriptionsIfNotExist(
-                    serviceBusNamespace,
+                    busSettings,
                     mapMessagesToFunctions,
                     logger,
                     messagesAssembly,
                     writeLine);
-            }
-
-            static AzureCredentials GetCredentials()
-            {
-                var clientId = EnvVars.ServicePrincipal.ClientId;
-                var clientSecret = EnvVars.ServicePrincipal.ClientSecret;
-                var tenantId = EnvVars.ServicePrincipal.TenantId;
-
-                return SdkContext.AzureCredentialsFactory.FromServicePrincipal(
-                    clientId,
-                    clientSecret,
-                    tenantId,
-                    AzureEnvironment.AzureGlobalCloud);
-            }
-
-            static async Task<IAzure> Authenticate()
-            {
-                var azure = await Azure.Configure()
-                                       .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
-                                       .Authenticate(GetCredentials())
-                                       .WithDefaultSubscriptionAsync();
-                return azure;
             }
         }
 

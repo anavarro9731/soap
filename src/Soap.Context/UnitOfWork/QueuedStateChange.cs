@@ -3,6 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using CircuitBoard.Messages;
+    using Soap.Bus;
 
     public class QueuedStateChange : IQueuedStateChange
     {

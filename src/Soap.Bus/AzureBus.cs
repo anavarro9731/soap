@@ -11,8 +11,9 @@
     using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
-    public class AzureBus : IBusInternal
+    public class AzureBus : IBusClient
     {
         private readonly IMessageAggregator messageAggregator;
 
@@ -35,6 +36,10 @@
             }
         }
 
+        public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
+
+        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
+
         public async Task Publish(ApiEvent publishEvent)
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(publishEvent)))
@@ -47,6 +52,8 @@
             var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic().ToLower());
 
             await topicClient.SendAsync(queueMessage);
+            
+            EventsPublished.Add(publishEvent.Clone());
         }
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
@@ -70,7 +77,7 @@
             {
                 await queueClient.SendAsync(queueMessage);    
             }
-            
+            CommandsSent.Add(sendCommand.Clone());
         }
 
         public class Settings : IBusSettings

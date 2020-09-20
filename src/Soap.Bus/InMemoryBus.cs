@@ -1,12 +1,13 @@
 ﻿namespace Soap.Bus
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class InMemoryBus : IBusInternal
+    public class InMemoryBus : IBusClient
     {
         private readonly Settings settings;
 
@@ -15,19 +16,28 @@
             this.settings = settings;
         }
 
-        public Task Publish(ApiEvent publishEvent) => Task.CompletedTask;
+        public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
-        public Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null) => Task.CompletedTask;
+        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
+
+        public Task Publish(ApiEvent publishEvent)
+        {
+            EventsPublished.Add(publishEvent);
+            return Task.CompletedTask;
+        }
+
+        public Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null)
+        {
+            CommandsSent.Add(sendCommand);
+            return Task.CompletedTask;
+        }
 
         public class Settings : IBusSettings
         {
-
-            public IBus CreateBus(IMessageAggregator messageAggregator)
-            {
-                return new Bus(new InMemoryBus(this), this, messageAggregator);
-            }
-
             public byte NumberOfApiMessageRetries { get; set; }
+
+            public IBus CreateBus(IMessageAggregator messageAggregator) =>
+                new Bus(new InMemoryBus(this), this, messageAggregator);
         }
     }
 }

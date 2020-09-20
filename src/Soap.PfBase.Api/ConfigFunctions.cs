@@ -1,12 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="$FILENAME$" company="$COMPANYNAME$">
-// $COPYRIGHT$
-// </copyright>
-// <summary>
-// $SUMMARY$
-// </summary>
-
-namespace Soap.PfBase.Api
+﻿namespace Soap.PfBase.Api
 {
     using System;
     using System.IO;

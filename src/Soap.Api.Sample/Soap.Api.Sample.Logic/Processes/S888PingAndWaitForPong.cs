@@ -7,6 +7,7 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility.Functions.Extensions;
 
     public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103StartPingPong>, IContinueProcess<E150Pong>
     {
@@ -28,6 +29,7 @@
                 {
                     PingedAt = DateTime.UtcNow, PingedBy = nameof(S888PingAndWaitForPong)
                 };
+                pingCommand.Headers.SetMessageId(Guid.NewGuid());
 
                 await Bus.Send(pingCommand);
 

@@ -1,32 +1,30 @@
 ﻿namespace Soap.Interfaces
 {
-    using FluentValidation;
+    using CircuitBoard.Messages;
+    using Newtonsoft.Json;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Models;
 
     public class MessageFailedAllRetries<TFailedMessage> : MessageFailedAllRetries where TFailedMessage : ApiMessage
     {
         public MessageFailedAllRetries(TFailedMessage message)
         {
-            FailedMessage = message;
+            SerialisableMessage = new SerialisableObject(message);
         }
 
         public MessageFailedAllRetries()
         {
         }
-
+        
         public override ApiPermission Permission { get; }
-
-        private class Validator : AbstractValidator<MessageFailedAllRetries>
-        {
-            public Validator()
-            {
-                RuleFor(x => x.FailedMessage).NotEmpty();
-            }
-        }
     }
 
     public abstract class MessageFailedAllRetries : ApiCommand
     {
-        public ApiMessage FailedMessage { get; set; }
+        [JsonProperty]
+        protected SerialisableObject SerialisableMessage { get; set; }
+
+        public ApiMessage FailedMessage => SerialisableMessage.Deserialise<ApiMessage>();
+        
     }
 }
