@@ -98,7 +98,7 @@ function global:Run {
 			# options (all mandatory if deploying functionapp)
 			# -project (provided by $azureFunctionProject variable, do not modify)
 			# -messagesAssemblyName (provided by $azureMessagesProject variable, do not modify)
-			# -azureFunctionAppName functionapp project name in azure
+			# -azureAppName base name for functionapp and associated resources in azure (should use only a-z 0-9 and -)
 			# -azureResourceGroup resource group containing function project
 			# -azureLocation location of resouces (e.g. uksouth eastus)
 			# -azureDevopsOrganisation azure devops organisation used to set functionapp env vars 
@@ -106,7 +106,7 @@ function global:Run {
 			# -soapApplicationKey an arbitrary string which becomes part of the ConfigId used to identify the right app config to use
 			$f = New-FunctionProjectParams -project  $azureFunctionProject `
 			-messagesAssemblyName $messagesAssemblyName `
-			-azureFunctionAppName "soap-api-sample" `
+			-azureAppName "soap-api-sample" `
 			-azureResourceGroup "rg-soap" `
 			-azureLocation "uksouth" `
 			-azureDevopsOrganisation "anavarro9731" `
