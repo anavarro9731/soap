@@ -20,6 +20,10 @@
 
         public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
 
+        public static string CosmosDbAccountName => Environment.GetEnvironmentVariable(nameof(CosmosDbAccountName));
+        
+        public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
+
         public static class ServicePrincipal
         {
             //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
