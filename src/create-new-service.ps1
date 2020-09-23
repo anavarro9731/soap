@@ -39,37 +39,42 @@ if (-Not (Test-Path -PathType Container $DiskLocation)) {
 	#create it
 	New-Item -ItemType Directory -Force -Path $DiskLocation
 }
-	
 Write-Host "Please wait..."
 
+# Create and copy files
 $newLocation = "$DiskLocation".trim('\') + "\$NewName\src"
-
 if (Test-Path $newLocation) {
 	Remove-Item -Recurse -Force $newLocation
 }
 mkdir $newLocation
-
-cp .\Soap.Api.Sample\**.* $newLocation -Recurse -Force 
-
+cp .\Soap.Api.Sample\**.* $newLocation -Recurse -Force
 cd $newLocation
-
-Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$NewName" }  
-
+Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$NewName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$NewName") | Set-Content $_
 }
 
+
+foreach ($_) {remove-item $_.fullname}
+
+# Set variables in pwsh-bootstrap
 (Get-Content .\posh-bootstrap.ps1).replace('##packagefeedurl##', $PackageFeedUrl) | Set-Content .\posh-bootstrap.ps1
 (Get-Content .\posh-bootstrap.ps1).replace('##symbolsfeedurl##', $SymbolsFeedUrl) | Set-Content .\posh-bootstrap.ps1
 
+# Create new solution
 dotnet new sln -n $NewName
-
-Get-ChildItem -Recurse -File -Filter �*.csproj� | ForEach-Object { dotnet sln add $_.FullName }
-
+Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
 cd ..
 
+# Create azure project
+az devops project create --organization https://dev.azure.com/anavarro9731 --name test1
+
+# Create new repo
 git init
 git add -A
 git commit -m "initial"
+git remote add origin https://anavarro9731@dev.azure.com/anavarro9731/test1/_git/test1
+git push -u origin --all
 
-
+# Config pipeline
+az pipelines create --name 'test1' --description 'Pipeline for test1' --yaml-path "./azure-pipelines.yml"

@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.TestC104
+﻿//*     $$REMOVE-IN-COPY$$
+namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using DataStore.Options;
     using FluentAssertions;
