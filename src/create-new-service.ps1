@@ -54,8 +54,8 @@ Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$NewName") | Set-Content $_
 }
 
-
-foreach ($_) {remove-item $_.fullname}
+$removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
+$removals | % { Remove-Item $_.Path }
 
 # Set variables in pwsh-bootstrap
 (Get-Content .\posh-bootstrap.ps1).replace('##packagefeedurl##', $PackageFeedUrl) | Set-Content .\posh-bootstrap.ps1

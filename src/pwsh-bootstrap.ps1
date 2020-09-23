@@ -25,7 +25,7 @@ function global:Run {
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$libraryProjects = @(
-	
+	##REMOVE-BLOCK-IN-COPY-START##
 	"Soap.Auth0",
 	"Soap.Bus",
 	"Soap.Config",
@@ -40,12 +40,15 @@ function global:Run {
 	"Soap.PfBase.Models",
 	"Soap.PfBase.Messages",
 	"Soap.Utility"
+	##REMOVE-BLOCK-IN-COPY-END##
 	)
 
 	# the relative path on disk without the trailing slash to this file of all xUnit test projects / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$testProjects = @(
+	##REMOVE-BLOCK-IN-COPY-START##
 	"Soap.UnitTests" `
+	##REMOVE-BLOCK-IN-COPY-END##
 	)
 	
 	# the relative path on disk without the trailing slash to ths file of the single azure function app project to be published / optional can be $null or empty string

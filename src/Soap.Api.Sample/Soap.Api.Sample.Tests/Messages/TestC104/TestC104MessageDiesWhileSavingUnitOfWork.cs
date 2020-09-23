@@ -1,4 +1,4 @@
-﻿//*     $$REMOVE-IN-COPY$$
+﻿//*     ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using FluentAssertions;

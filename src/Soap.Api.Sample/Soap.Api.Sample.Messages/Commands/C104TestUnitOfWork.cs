@@ -4,7 +4,7 @@
     using Soap.Interfaces.Messages;
 
     /// <summary>
-    ///     $$REMOVE-IN-COPY$$
+    ///     ##REMOVE-IN-COPY##
     ///     Used for UOW tests only
     /// </summary>
     public class C104TestUnitOfWork : ApiCommand

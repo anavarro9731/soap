@@ -12,7 +12,7 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     /// <summary>
-    ///     $$REMOVE-IN-COPY$$
+    ///     ##REMOVE-IN-COPY##
     ///     This is not a normal process and uses a number of undocumented features
     /// </summary>
     public class P555TestUnitOfWork : Process, IBeginProcess<C104TestUnitOfWork>
