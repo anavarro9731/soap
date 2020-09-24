@@ -19,36 +19,30 @@ function global:Run {
 		[string] $azTenantId,
 		[string] $forceVersion
 	)
-
-
-	
+		
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$libraryProjects = @(
-	##REMOVE-BLOCK-IN-COPY-START##
-	"Soap.Auth0",
-	"Soap.Bus",
-	"Soap.Config",
-	"Soap.Context",
-	"Soap.Interfaces",
-	"Soap.Interfaces.Messages",
-	"Soap.MessagePipeline",
-	"Soap.NotificationServer",
-	"Soap.PfBase.Api",
-	"Soap.PfBase.Logic",
-	"Soap.PfBase.Tests",
-	"Soap.PfBase.Models",
-	"Soap.PfBase.Messages",
-	"Soap.Utility"
-	##REMOVE-BLOCK-IN-COPY-END##
+		"Soap.Auth0",
+		"Soap.Bus",
+		"Soap.Config",
+		"Soap.Context",
+		"Soap.Interfaces",
+		"Soap.Interfaces.Messages",
+		"Soap.MessagePipeline",
+		"Soap.NotificationServer",
+		"Soap.PfBase.Api",
+		"Soap.PfBase.Logic",
+		"Soap.PfBase.Tests",
+		"Soap.PfBase.Models",
+		"Soap.PfBase.Messages",
+		"Soap.Utility"
 	)
 
 	# the relative path on disk without the trailing slash to this file of all xUnit test projects / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$testProjects = @(
-	##REMOVE-BLOCK-IN-COPY-START##
-	"Soap.UnitTests" `
-	##REMOVE-BLOCK-IN-COPY-END##
+		"Soap.UnitTests"
 	)
 	
 	# the relative path on disk without the trailing slash to ths file of the single azure function app project to be published / optional can be $null or empty string
@@ -58,7 +52,6 @@ function global:Run {
 	# the name of the messages Assembly/Project referenced by the function project
 	$messagesAssemblyName = "Soap.Api.Sample.Messages"
 	
-
 	# options
 	# -allProjects (provided by $libraryProjects and $azureFunctionProject, do not modify, can be empty)
 	# -azureDevopsOrganisation this is the name of the Organisation in azure devops which contains the repo for this solution / optional depending if using azure devops 
@@ -69,11 +62,10 @@ function global:Run {
 	#- forceVersion the package version number to force (e.g. 1.0.0, 1.1.4 or 1.12.0-alpha)
 	
 	if ($PrepareNewVersion) {
-		
-		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject)`
+		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia"`
+        -azureDevopsPat  $azureDevopsPat `
         -repository "soap" `
         -forceVersion $forceVersion
 	}

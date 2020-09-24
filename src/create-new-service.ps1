@@ -7,38 +7,45 @@ Function Test-IsGitInstalled
     return $isGitInstalled
 }
 
-$NewName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
-$DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
-$PackageFeedUrl = Read-Host -Prompt 'Enter The Nuget Package Feed Url (e.g. https://f.feedz.io/companyA/feed1/nuget)'
-$SymbolsFeedUrl = Read-Host -Prompt 'Enter The Symbols Feed Url (e.g. https://f.feedz.io/companyA/feed1/symbols)'
-
 if (-Not (Test-IsGitInstalled)) {
 	Write-Host "Git is not installed"
 }
 
-if (-Not ($NewName -match '^[A-Za-z\.]+$')) {
-	Write-Host "$NewName does not match regex"
-	Return
-}
+$AzureDevopsOrganisationName = Read-Host -Prompt 'Enter The Azure Devops Organisation Name'
+$AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganizationName"
 
-if (-Not ($DiskLocation -match '^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+$')) {
-	Write-Host "$DiskLocation is not a valid directory path format"
-	Return
-}
+$NewName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
+	if (-Not ($NewName -match '^[A-Za-z\.]+$'))
+	{
+		Write-Host "$NewName does not match regex"
+		Return
+	}
+$AzureName = $NewName.Replace(".", "-")
+	
+$SoapApplicationKey = Read-Host -Prompt 'Enter The New Service Application Key, 3 letters (Allowed Characters A-Z)'
+	if (-Not ($SoapApplicationKey -match '^[A-Z]+$')) {
+		Write-Host "$SoapApplicationKey does not match regex"
+		Return
+	}
+	
+$DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
+	if (-Not ($DiskLocation -match '^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+$')) {
+		Write-Host "$DiskLocation is not a valid directory path format"
+		Return
+	}
+	if (-Not (Test-Path -PathType Container $DiskLocation)) {
+		#create it
+		New-Item -ItemType Directory -Force -Path $DiskLocation
+	}
+	$DiskLocation = $DiskLocation.trim('\')
 
+
+$PackageFeedUrl = Read-Host -Prompt 'Enter The Nuget Package Feed Url (e.g. https://f.feedz.io/companyA/feed1/nuget)'
 if (-Not ($PackageFeedUrl -match 'http|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)')) {
 	Write-Host "$PackageFeedUrl  is not a valid url path format"
 	Return
 }
 
-if (-Not ($SymbolsFeedUrl -match 'http|https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)')) {
-	Write-Host "$SymbolsFeedUrl is not a valid url path format"
-	Return
-}
-if (-Not (Test-Path -PathType Container $DiskLocation)) {
-	#create it
-	New-Item -ItemType Directory -Force -Path $DiskLocation
-}
 Write-Host "Please wait..."
 
 # Create and copy files
@@ -49,6 +56,7 @@ if (Test-Path $newLocation) {
 mkdir $newLocation
 cp .\Soap.Api.Sample\**.* $newLocation -Recurse -Force
 cd $newLocation
+
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$NewName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$NewName") | Set-Content $_
@@ -57,24 +65,42 @@ Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 $removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
 $removals | % { Remove-Item $_.Path }
 
-# Set variables in pwsh-bootstrap
-(Get-Content .\posh-bootstrap.ps1).replace('##packagefeedurl##', $PackageFeedUrl) | Set-Content .\posh-bootstrap.ps1
-(Get-Content .\posh-bootstrap.ps1).replace('##symbolsfeedurl##', $SymbolsFeedUrl) | Set-Content .\posh-bootstrap.ps1
-
 # Create new solution
 dotnet new sln -n $NewName
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
 cd ..
 
-# Create azure project
-az devops project create --organization https://dev.azure.com/anavarro9731 --name test1
+# Set variables in pwsh-bootstrap
+(Get-Content .\posh-bootstrap.ps1).replace('##packagefeedurl##', $PackageFeedUrl) | Set-Content .\posh-bootstrap.ps1
 
-# Create new repo
+#Create config repo
+az repos create  --organization AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
+$configRepoRoot = "$DiskLocation\$NewName.config"
+cd $newLocation
+dotnet new classlib -f netcoreapp3.1 -n Config
+cd Config
+del Class1.cs
+mkdir DEV
+cd DEV
+cp "$DiskLocation\Soap\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" -Recurse -Force
+cd $configRepoRoot
 git init
 git add -A
 git commit -m "initial"
-git remote add origin https://anavarro9731@dev.azure.com/anavarro9731/test1/_git/test1
+git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
 git push -u origin --all
 
-# Config pipeline
-az pipelines create --name 'test1' --description 'Pipeline for test1' --yaml-path "./azure-pipelines.yml"
+# Create azure project, pipeline and repo
+az devops project create  --organization AzureDevopsOrganisationUrl  --name $AzureName
+$mainRepoRoot = "$DiskLocation\$NewName"
+cd $mainRepoRoot
+git init
+git add -A
+git commit -m "initial"
+git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName"
+git push -u origin --all
+az pipelines create --name '$AzureName' --description 'Pipeline for $AzureName' --yaml-path "./azure-pipelines.yml"
+./pwsh-bootstrap.ps1
+Run -PrepareNewVersion -forceVersion 0.1.0
+
+

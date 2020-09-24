@@ -164,7 +164,7 @@
             IEnumerable<Type> messageTypes)
         {
             {
-                var title = $"API Schema | {applicationConfig.ApplicationName} | {applicationConfig.ApplicationVersion}";
+                var title = $"API Schema | {applicationConfig.AppFriendlyName} | {applicationConfig.ApplicationVersion}";
 
                 var border = string.Empty.PadRight(title.Length, '=');
 

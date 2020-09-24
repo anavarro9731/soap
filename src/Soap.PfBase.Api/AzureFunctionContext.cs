@@ -225,8 +225,8 @@
                     string.IsNullOrWhiteSpace(EnvVars.AzureDevopsPat),
                     $"{nameof(EnvVars.AzureDevopsPat)} environment variable not set");
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.SoapApplicationKey),
-                    $"{nameof(EnvVars.SoapApplicationKey)} environment variable not set");
+                    string.IsNullOrWhiteSpace(EnvVars.AppId),
+                    $"{nameof(EnvVars.AppId)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.SoapEnvironmentKey),
                     $"{nameof(EnvVars.SoapEnvironmentKey)} environment variable not set");

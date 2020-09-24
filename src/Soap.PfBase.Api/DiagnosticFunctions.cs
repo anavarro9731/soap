@@ -110,9 +110,10 @@
             var configAsObject = new
             {
                 HealthCheckedAt = DateTime.UtcNow,
-                appConfig.ApplicationName,
+                ApplicationName = appConfig.AppFriendlyName,
                 appConfig.ApplicationVersion,
-                AppEnvironmentIdentifier = appConfig.AppEnvId,
+                appConfig.AppId,
+                Environment = appConfig.Environment.DisplayName,
                 appConfig.DefaultExceptionMessage,
                 EntryAssemblyVersion = version,
                 Environment.MachineName,

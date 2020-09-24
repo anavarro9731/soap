@@ -2,9 +2,11 @@
 {
     public interface IBootstrapVariables
     {
-        AppEnvIdentifier AppEnvId { get; }
+        SoapEnvironments Environment { get; set; }
 
-        string ApplicationName { get; set; }
+        string AppFriendlyName { get; set; }
+        
+        string AppId { get; set; }
 
         string ApplicationVersion { get; }
 

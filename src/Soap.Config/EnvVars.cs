@@ -16,7 +16,7 @@
 
         public static string AzureWebJobsServiceBus => Environment.GetEnvironmentVariable(nameof(AzureWebJobsServiceBus));
 
-        public static string SoapApplicationKey => Environment.GetEnvironmentVariable(nameof(SoapApplicationKey));
+        public static string AppId => Environment.GetEnvironmentVariable(nameof(AppId));
 
         public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
 

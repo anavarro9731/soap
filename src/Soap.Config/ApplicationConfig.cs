@@ -9,19 +9,17 @@
 
     public class ApplicationConfig : IBootstrapVariables
     {
-        public ApplicationConfig(string appKey, SoapEnvironments environment)
+        protected ApplicationConfig(SoapEnvironments environment, string azureAppName)
         {
-            AppEnvId = new AppEnvIdentifier(appKey, environment);
+            Environment = environment;
+            AppId = azureAppName;
         }
 
-        public ApplicationConfig(AppEnvIdentifier appEnvId)
-        {
-            AppEnvId = appEnvId;
-        }
+        public SoapEnvironments Environment { get; set; }
 
-        public AppEnvIdentifier AppEnvId { get; }
+        public string AppFriendlyName { get; set; }
 
-        public string ApplicationName { get; set; }
+        public string AppId { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
@@ -41,8 +39,9 @@
         {
             public Validator()
             {
-                RuleFor(x => x.AppEnvId).NotNull();
-                RuleFor(x => x.ApplicationName).NotEmpty();
+                RuleFor(x => x.Environment).NotNull();
+                RuleFor(x => x.AppId).NotNull();
+                RuleFor(x => x.AppFriendlyName).NotEmpty();
                 RuleFor(x => x.BusSettings).NotNull();
                 RuleFor(x => x.DatabaseSettings).NotNull();
             }

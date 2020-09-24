@@ -95,8 +95,8 @@
             ExternalErrorMessage = Errors.Select(x => $"{x.prefix}:{x.code}:{x.message}")
                                          .Aggregate((a, b) => a + Environment.NewLine + b);
 
-            ApplicationName = context.AppConfig.ApplicationName;
-            EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey;
+            ApplicationName = context.AppConfig.AppId;
+            EnvironmentName = context.AppConfig.Environment.DisplayName;
         }
 
         public FormattedExceptionInfo()

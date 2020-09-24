@@ -17,7 +17,11 @@ namespace Soap.PfBase.Tests
 
     public class TestConfig : IBootstrapVariables
     {
-        public string ApplicationName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";
+        public SoapEnvironments Environment { get; set; } = SoapEnvironments.InMemory;
+
+        public string AppFriendlyName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";
+
+        public string AppId { get; set; } = "domain-tests";
 
         public string ApplicationVersion { get; set; } = "0.0.0";
 
@@ -28,7 +32,6 @@ namespace Soap.PfBase.Tests
 
         public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
 
-        public AppEnvIdentifier AppEnvId { get; set; } = new AppEnvIdentifier("DOMAIN-TESTS", SoapEnvironments.InMemory);
 
         public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
         {

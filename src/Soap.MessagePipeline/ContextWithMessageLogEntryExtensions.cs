@@ -419,8 +419,8 @@
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = meta != null ? CreateProfilingData(meta, context) : null,
-                EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey,
-                ApplicationName = context.AppConfig.ApplicationName
+                EnvironmentName = context.AppConfig.Environment.DisplayName,
+                ApplicationName = context.AppConfig.AppFriendlyName
             };
 
             context.Logger.Error("Message: {@message}", serilogEntry);
@@ -443,8 +443,8 @@
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = CreateProfilingData(meta, context),
-                EnvironmentName = context.AppConfig.AppEnvId.EnvironmentKey,
-                ApplicationName = context.AppConfig.ApplicationName
+                EnvironmentName = context.AppConfig.Environment.DisplayName,
+                ApplicationName = context.AppConfig.AppFriendlyName
             };
 
             context.Logger.Information("Message: {@message}", serilogEntry);
