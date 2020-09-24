@@ -106,8 +106,7 @@ function global:Run {
 			-azureResourceGroup "rg-soap" `
 			-azureLocation "uksouth" `
 			-azureDevopsOrganisation "anavarro9731" `
-		 	-azureDevopsPat $azureDevopsPat `
-		 	-soapApplicationKey "SAP"
+		 	-azureDevopsPat $azureDevopsPat
 		}
 
 		Pack-And-Publish -allProjects $libraryProjects `
