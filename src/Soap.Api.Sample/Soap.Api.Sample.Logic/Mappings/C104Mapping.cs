@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Logic.Mappings
+﻿//*     ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Logic.Mappings
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;

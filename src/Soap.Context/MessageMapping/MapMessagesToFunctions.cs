@@ -13,6 +13,8 @@
         private readonly Dictionary<Type, IMessageFunctionsServerSide> messageMappings =
             new Dictionary<Type, IMessageFunctionsServerSide>();
 
+        public virtual void AddSpecial() {}
+        
         public List<Type> Events =>
             this.messageMappings.Where(x => x.Key.InheritsOrImplements(typeof(ApiEvent))).Select(x => x.Key).ToList();
         

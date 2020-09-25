@@ -107,28 +107,30 @@ $removals | % { Remove-Item $_.Path }
 git init
 dotnet new sln -n $ServiceName
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
-#Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
-#	if ($_ -like '*.Models.csproj') {
-#		(Get-Content $_) | Where-Object {$_ -NotLike '*.Models.csproj' } | Set-Content $_
-#		dotnet add $_ package Soap.PfBase.Models -s $soapFeedUri
-#	}
-#	if ($_ -like '*.Afs.csproj') {
-#		(Get-Content $_) | Where-Object {$_ -NotLike '*.Api.csproj' } | Set-Content $_
-#		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
-#	}
-#	if ($_ -like '*.Logic.csproj') {
-#		(Get-Content $_) | Where-Object {$_ -NotLike '*.Logic.csproj' } | Set-Content $_
-#		dotnet add $_ package Soap.PfBase.Logic -s $soapFeedUri
-#	}
-#	if ($_ -like '*.Tests.csproj') {
-#		(Get-Content $_) | Where-Object {$_ -NotLike '*.Tests.csproj' } | Set-Content $_
-#		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
-#	}
-#	if ($_ -like '*.Messages.csproj') {
-#		(Get-Content $_) | Where-Object {$_ -NotLike '*.Messages.csproj' } | Set-Content $_
-#		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
-#	}
-#}
+Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
+	
+	dotnet remove $_ reference '..\..\Soap.PfBase.Api\Soap.PfBase.Api.csproj'
+	dotnet remove $_ reference '..\..\Soap.PfBase.Models\Soap.PfBase.Models.csproj'
+	dotnet remove $_ reference '..\..\Soap.PfBase.Logic\Soap.PfBase.Logic.csproj'
+	dotnet remove $_ reference '..\..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj'
+	dotnet remove $_ reference '..\..\Soap.PfBase.Tests\Soap.PfBase.Tests.csproj'
+	
+	if ($_ -like '*.Models.csproj') {
+		dotnet add $_ package Soap.PfBase.Models -s $soapFeedUri
+	}
+	if ($_ -like '*.Afs.csproj') {
+		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
+	}
+	if ($_ -like '*.Logic.csproj') {
+		dotnet add $_ package Soap.PfBase.Logic -s $soapFeedUri
+	}
+	if ($_ -like '*.Tests.csproj') {
+		dotnet add $_ package Soap.PfBase.Tests -s $soapFeedUri
+	}
+	if ($_ -like '*.Messages.csproj') {
+		dotnet add $_ package Soap.PfBase.Messages -s $soapFeedUri
+	}
+}
 
 ##* Set variables in pwsh-bootstrap
 
