@@ -116,7 +116,7 @@ function global:Run {
 		-azClientId $azClientId `
 		-azClientSecret $azClientSecret `
 		-azTenantId $azTenantId `
-		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json" `
+		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json" `
         -nugetApiKey $nugetApiKey
 	}
 }
