@@ -5,8 +5,15 @@ Function Test-IsGitInstalled
 
 Function Replace-ConfigLine([string] $old, [string] $new) 
 {
-	(Get-Content .\pwsh-bootstrap.ps1).replace($old, $new) | Set-Content .\pwsh-bootstrap.ps1
+	(Get-Content .\pwsh-bootstrap.ps1) | % { $_.replace($old, $new) } | Set-Content .\pwsh-bootstrap.ps1
 }
+
+
+Function Remove-ConfigLine([string] $old)
+{
+	(Get-Content .\pwsh-bootstrap.ps1) | Where-Object {$_ -notmatch $old } | Set-Content .\pwsh-bootstrap.ps1
+}
+
 
 if (-Not (Test-IsGitInstalled)) {
 	Write-Host "Git is not installed"
@@ -15,7 +22,7 @@ if (-Not (Test-IsGitInstalled)) {
 
 #* VARIABLES
 $AzureDevopsOrganisationName = Read-Host -Prompt 'Enter The Azure Devops Organisation Name'
-$AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganizationName"
+$AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
 $ServiceName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
 	if (-Not ($ServiceName -match '^[A-Za-z\.]+$'))
 	{
@@ -23,6 +30,7 @@ $ServiceName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters
 		Return
 	}
 $AzureName = $ServiceName.Replace(".", "-")
+$NugetFeedUri = "https://pkgs.dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_packaging/$AzureName/nuget/v3/index.json"
 $AzureDevopsPersonalAccessToken = Read-Host -Prompt 'Enter An Azure Devops Personal Access Token with at least Permissions to read from the new source repo'
 $env:AZURE_DEVOPS_EXT_PAT = $AzureDevopsPersonalAccessToken
 $AzureResourceGroup = Read-Host -Prompt 'Enter The Azure Resource Group the new resources should be created under'
@@ -40,14 +48,51 @@ $DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
 
 Write-Host "Please wait..."
 
-# Create and copy files
-$newLocation = "$DiskLocation".trim('\') + "\$ServiceName\src"
-if (Test-Path $newLocation) {
-	Remove-Item -Recurse -Force $newLocation
+#* Create source folders and copy files
+$serviceRoot = "$DiskLocation\$ServiceName"
+if (Test-Path $serviceRoot) {
+	Remove-Item -Recurse -Force $serviceRoot
 }
-mkdir $newLocation
-cp .\Soap.Api.Sample\**.* $newLocation -Recurse -Force
-cd $newLocation
+mkdir $serviceRoot
+cp .\Soap.Api.Sample\**.* "$serviceRoot" -Recurse -Force
+cp .\pwsh-bootstrap.ps1 "$serviceRoot" -Force
+cp ..\azure-pipelines.yml "$serviceRoot" -Force
+(Get-Content $serviceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $serviceRoot\azure-pipelines.yml
+(Get-Content $serviceRoot\azure-pipelines.yml) | % { $_.replace('src/', '') } | Set-Content $serviceRoot\azure-pipelines.yml
+
+$configRepoRoot = "$DiskLocation\$ServiceName.config"
+if (Test-Path $configRepoRoot) {
+	Remove-Item -Recurse -Force $configRepoRoot
+}
+mkdir $configRepoRoot
+
+cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\DEV_Config.cs" -Recurse -Force
+
+#* Setup config repo
+
+cd $configRepoRoot
+git init
+
+dotnet new classlib -f "netcoreapp3.1" -n Config
+mv DEV_Config.cs Config
+cd Config
+del Class1.cs
+cd $configRepoRoot
+
+az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureName
+az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
+git add -A
+git commit -m "initial"
+git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
+git push -u origin --all
+
+dotnet nuget add source $NugetFeedUri -n $NugetFeedUri -u unused -p $nugetApiKey
+
+#* Setup service repo
+
+cd $serviceRoot
+
+Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
@@ -57,63 +102,44 @@ Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 $removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
 $removals | % { Remove-Item $_.Path }
 
-# Create new solution
+git init
 dotnet new sln -n $ServiceName
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
-cd ..
 
-# Set variables in pwsh-bootstrap
-Replace-ConfigLine '"Soap.Auth0,"' ""
-Replace-ConfigLine '"Soap.Bus,"' ""
-Replace-ConfigLine '"Soap.Config,"' ""
-Replace-ConfigLine '"Soap.Context,"' ""
-Replace-ConfigLine '"Soap.Interfaces,"' ""
-Replace-ConfigLine '"Soap.Interfaces.Messages,"' ""
-Replace-ConfigLine '"Soap.MessagePipeline,"' ""
-Replace-ConfigLine '"Soap.NotificationServer,"' ""
-Replace-ConfigLine '"Soap.PfBase.Api,"' ""
-Replace-ConfigLine '"Soap.PfBase.Logic,"' ""
-Replace-ConfigLine '"Soap.PfBase.Tests,"' ""
-Replace-ConfigLine '"Soap.PfBase.Models,"' ""
-Replace-ConfigLine '"Soap.PfBase.Messages,"' ""
-Replace-ConfigLine '"Soap.Utility,"' ""
-Replace-ConfigLine '"Soap.UnitTests"' "$ServiceName.Tests"
-Replace-ConfigLine '-azureDevopsOrganisation "anavarro9731" ``' "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
-Replace-ConfigLine '-azureDevopsProject `"soap`" ``' "-azureDevopsProject `"$AzureName`" ``"
-Replace-ConfigLine '-azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" ``' "-azureDevopsPat `"$AzureDevopsPersonalAccessToken`" ``"
-Replace-ConfigLine '-repository "soap" ``' "-repository `"$AzureName`" ``"
-Replace-ConfigLine '-azureAppName "soap-api-sample" ``' "-azureAppName `"$AzureName`" ``"
-Replace-ConfigLine '-azureResourceGroup "rg-soap" ``' "-azureResourceGroup `"$AzureResourceGroup`" ``"
-Replace-ConfigLine '-azureLocation "uksouth" ``' "-azureLocation `"$AzureLocation`" ``"
-Replace-ConfigLine '-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json" ``' "https://pkgs.dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsProjectName/_packaging/$AzureName/nuget/v3/index.json`" ``"
+##* Set variables in pwsh-bootstrap
 
-#Create config repo
-az repos create  --organization AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
-$configRepoRoot = "$DiskLocation\$ServiceName.config"
-cd $newLocation
-dotnet new classlib -f netcoreapp3.1 -n Config
-cd Config
-del Class1.cs
-mkdir DEV
-cd DEV
-cp "$DiskLocation\Soap\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" -Recurse -Force
-cd $configRepoRoot
-git init
-git add -A
-git commit -m "initial"
-git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
-git push -u origin --all
+Remove-ConfigLine '"Soap.Auth0"' ""
+Remove-ConfigLine '"Soap.Bus"' ""
+Remove-ConfigLine '"Soap.Config"' ""
+Remove-ConfigLine '"Soap.Context"' ""
+Remove-ConfigLine '"Soap.Interfaces"' ""
+Remove-ConfigLine '"Soap.Interfaces.Messages"' ""
+Remove-ConfigLine '"Soap.MessagePipeline"' ""
+Remove-ConfigLine '"Soap.NotificationServer"' ""
+Remove-ConfigLine '"Soap.PfBase.Api"' ""
+Remove-ConfigLine '"Soap.PfBase.Logic"' ""
+Remove-ConfigLine '"Soap.PfBase.Tests"' ""
+Remove-ConfigLine '"Soap.PfBase.Models"' ""
+Remove-ConfigLine '"Soap.PfBase.Messages"' ""
+Remove-ConfigLine '"Soap.Utility"' ""
+Replace-ConfigLine '"Soap.UnitTests"' "`"$ServiceName.Tests`""
+Replace-ConfigLine "-azureDevopsOrganisation `"anavarro9731`" ``" "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
+Replace-ConfigLine "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureName`" ``"
+Replace-ConfigLine "-azureDevopsPat  `"j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia`" ``" "-azureDevopsPat `"$AzureDevopsPersonalAccessToken`" ``"
+Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureName`" ``"
+Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureName`" ``"
+Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzureResourceGroup`" ``"
+Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzureLocation`" ``"
+Replace-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json`" ``" "-nugetFeedUri `"$NugetFeedUri`" ``"
 
-# Create azure project, pipeline and repo
-az devops project create  --organization AzureDevopsOrganisationUrl  --name $AzureName
-$mainRepoRoot = "$DiskLocation\$ServiceName"
-cd $mainRepoRoot
-git init
+
+./pwsh-bootstrap.ps1 
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName"
 git push -u origin --all
-az pipelines create --name '$AzureName' --description 'Pipeline for $AzureName' --yaml-path "./azure-pipelines.yml"
-./pwsh-bootstrap.ps1
+
+az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" #* must come after files committed to repo
+
 Run -PrepareNewVersion -forceVersion 0.1.0
 
