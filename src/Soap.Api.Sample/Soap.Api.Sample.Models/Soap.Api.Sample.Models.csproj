@@ -8,10 +8,6 @@
     <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="ValueObjects\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Soap.PfBase.Models\Soap.PfBase.Models.csproj" />
   </ItemGroup>
 
