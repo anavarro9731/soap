@@ -19,18 +19,19 @@
     using Soap.Config;
     using Soap.Interfaces;
     using Soap.NotificationServer;
+    using Soap.Utility.Objects.Blended;
 
     public static class ConfigFunctions
     {
         public static void LoadAppConfigFromRemoteRepo(out ApplicationConfig applicationConfig)
         {
-            string configToCompile = null;
+            string url = null;
             try
             {
                 var webClient = new WebClient();
                 webClient.Headers.Add("Authorization", GetAuthorizationHeaderValue());
-                var url = GetFileUrl();
-                configToCompile = webClient.DownloadString(url);
+                url = GetFileUrl();
+                var configToCompile = webClient.DownloadString(url);
 
                 var config = LoadAndExecute(configToCompile);
                 config.Validate();
@@ -38,7 +39,7 @@
             }
             catch (Exception e)
             {
-                throw new Exception($"Could not compile config from remote repo {configToCompile}", e);
+                throw new Exception($"Could not compile config from remote repo {url}", e);
             }
 
             static ApplicationConfig LoadAndExecute(string source)
@@ -94,6 +95,7 @@
                             MetadataReference.CreateFromFile(typeof(AzureBus).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(NotificationServer).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(IBus).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(Soap.Utility.Objects.Blended.Enumeration<>).Assembly.Location), 
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),
@@ -117,7 +119,7 @@
             static string GetFileUrl()
             {
                 var fileUrl = string.Format(
-                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AppId}/_apis/git/repositories/{EnvVars.AppId}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}_Config.cs&api-version=5.1");
+                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AppId.Replace("-api-sample","")}/_apis/git/repositories/{EnvVars.AppId.Replace("-api-sample", "")}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}_Config.cs&api-version=5.1");
                 return fileUrl;
             }
 
