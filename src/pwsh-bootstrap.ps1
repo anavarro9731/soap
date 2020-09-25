@@ -23,19 +23,19 @@ function global:Run {
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
 	# Note .csproj and foldername must match for the folder containing the project
 	$libraryProjects = @(
-		"Soap.Auth0",
-		"Soap.Bus",
-		"Soap.Config",
-		"Soap.Context",
-		"Soap.Interfaces",
-		"Soap.Interfaces.Messages",
-		"Soap.MessagePipeline",
-		"Soap.NotificationServer",
-		"Soap.PfBase.Api",
-		"Soap.PfBase.Logic",
-		"Soap.PfBase.Tests",
-		"Soap.PfBase.Models",
-		"Soap.PfBase.Messages",
+		"Soap.Auth0"
+		"Soap.Bus"
+		"Soap.Config"
+		"Soap.Context"
+		"Soap.Interfaces"
+		"Soap.Interfaces.Messages"
+		"Soap.MessagePipeline"
+		"Soap.NotificationServer"
+		"Soap.PfBase.Api"
+		"Soap.PfBase.Logic"
+		"Soap.PfBase.Tests"
+		"Soap.PfBase.Models"
+		"Soap.PfBase.Messages"
 		"Soap.Utility"
 	)
 
