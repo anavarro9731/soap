@@ -14,7 +14,6 @@ Function Remove-ConfigLine([string] $old)
 	(Get-Content .\pwsh-bootstrap.ps1) | Where-Object {$_ -notmatch $old } | Set-Content .\pwsh-bootstrap.ps1
 }
 
-
 if (-Not (Test-IsGitInstalled)) {
 	Write-Host "Git is not installed"
 	return
@@ -76,8 +75,12 @@ dotnet new classlib -f "netcoreapp3.1" -n Config
 mv DEV_Config.cs Config
 cd Config
 del Class1.cs
-cd $configRepoRoot
 
+$soapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
+dotnet nuget add source $soapFeedUri
+dotnet add package Soap.Config -s $soapFeedUri -v "2.57.0-alpha"
+
+cd $configRepoRoot
 az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureName
 az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
 git add -A
@@ -85,8 +88,7 @@ git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
 git push -u origin --all
 
-$soapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
-dotnet nuget add source $soapFeedUri -n $soapFeedUri
+
 
 #* Setup service repo
 
@@ -105,6 +107,28 @@ $removals | % { Remove-Item $_.Path }
 git init
 dotnet new sln -n $ServiceName
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
+Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
+	if ($_ -like '*.Models.csproj') {
+		(Get-Content $_) | Where-Object {$_ -NotLike '*.Models.csproj' } | Set-Content $_
+		dotnet add $_ package Soap.PfBase.Models -s $soapFeedUri
+	}
+	if ($_ -like '*.Afs.csproj') {
+		(Get-Content $_) | Where-Object {$_ -NotLike '*.Api.csproj' } | Set-Content $_
+		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
+	}
+	if ($_ -like '*.Logic.csproj') {
+		(Get-Content $_) | Where-Object {$_ -NotLike '*.Logic.csproj' } | Set-Content $_
+		dotnet add $_ package Soap.PfBase.Logic -s $soapFeedUri
+	}
+	if ($_ -like '*.Tests.csproj') {
+		(Get-Content $_) | Where-Object {$_ -NotLike '*.Tests.csproj' } | Set-Content $_
+		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
+	}
+	if ($_ -like '*.Messages.csproj') {
+		(Get-Content $_) | Where-Object {$_ -NotLike '*.Messages.csproj' } | Set-Content $_
+		dotnet add $_ package Soap.PfBase.Api -s $soapFeedUri
+	}
+}
 
 ##* Set variables in pwsh-bootstrap
 
@@ -130,8 +154,8 @@ Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureName`" ``"
 Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureName`" ``"
 Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzureResourceGroup`" ``"
 Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzureLocation`" ``"
-Remove-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json`" ``" 
-
+Remove-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json`" ``"
+Remove-ConfigLine '-nugetApiKey $nugetApiKey'
 ./pwsh-bootstrap.ps1 
 git add -A
 git commit -m "initial"
