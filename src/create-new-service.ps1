@@ -30,7 +30,6 @@ $ServiceName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters
 		Return
 	}
 $AzureName = $ServiceName.Replace(".", "-")
-$NugetFeedUri = "https://pkgs.dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_packaging/$AzureName/nuget/v3/index.json"
 $AzureDevopsPersonalAccessToken = Read-Host -Prompt 'Enter An Azure Devops Personal Access Token with at least Permissions to read from the new source repo'
 $env:AZURE_DEVOPS_EXT_PAT = $AzureDevopsPersonalAccessToken
 $AzureResourceGroup = Read-Host -Prompt 'Enter The Azure Resource Group the new resources should be created under'
@@ -86,7 +85,8 @@ git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
 git push -u origin --all
 
-dotnet nuget add source $NugetFeedUri -n $NugetFeedUri -u unused -p $nugetApiKey
+$soapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
+dotnet nuget add source $soapFeedUri -n $soapFeedUri
 
 #* Setup service repo
 
@@ -130,8 +130,7 @@ Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureName`" ``"
 Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureName`" ``"
 Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzureResourceGroup`" ``"
 Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzureLocation`" ``"
-Replace-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap/_packaging/soap/nuget/v3/index.json`" ``" "-nugetFeedUri `"$NugetFeedUri`" ``"
-
+Remove-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json`" ``" 
 
 ./pwsh-bootstrap.ps1 
 git add -A
