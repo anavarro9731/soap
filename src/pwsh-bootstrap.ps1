@@ -12,12 +12,14 @@ function global:Run {
 		[switch]$PrepareNewVersion,
 		[switch]$BuildAndTest,
 		[switch]$PackAndPublish,
+		[switch]$CreateRelease,
 		[string] $nugetApiKey,
 		[string] $azureDevopsPat,
 		[string] $azClientId,
 		[string] $azClientSecret,
 		[string] $azTenantId,
-		[string] $forceVersion
+		[string] $forceVersion,
+		[bool] $noPush 
 	)
 		
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
@@ -67,7 +69,22 @@ function global:Run {
         -azureDevopsProject "soap" `
         -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" `
         -repository "soap" `
-        -forceVersion $forceVersion
+		-forceVersion $forceVersion `
+		-noPush $noPush
+	}
+
+	# -allProjects (provided by $libraryProjects and $azureFunctionProject, do not modify, can be empty)
+	# -azureDevopsOrganisation this is the name of the Organisation in azure devops which contains the repo for this solution / optional depending if using azure devops 
+	# -azureDevopsProject this is the name of the Project in azure devops which contains the repo for this solution / optional depending if using azure devops
+	# -azureDevopsPat could be provided the paramater but usually hardcoded here since this is run locally 
+	# -repository this is the name of the repository in either Github or AzureDevops
+	# -gitHubUserName if using a GitHub repo this is the name of the user who owns the repo / optional depending if using github, only public Github projects supported
+	if ($CreateRelease) {
+		Create-Release -projects $($libraryProjects + $azureFunctionProject) `
+        -azureDevopsOrganisation "anavarro9731" `
+        -azureDevopsProject "soap" `
+        -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" `
+        -repository "soap" 
 	}
 
 	# options
@@ -117,6 +134,6 @@ function global:Run {
 		-azClientSecret $azClientSecret `
 		-azTenantId $azTenantId `
 		-nugetFeedUri "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json" `
-        -nugetApiKey $nugetApiKey
+		-nugetApiKey $nugetApiKey
 	}
 }

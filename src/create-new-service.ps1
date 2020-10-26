@@ -166,5 +166,5 @@ git push -u origin --all
 
 az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" #* must come after files committed to repo
 
-Run -PrepareNewVersion -forceVersion 0.1.0
+Run -PrepareNewVersion -forceVersion 0.1.0-alpha -noPush $true
 
