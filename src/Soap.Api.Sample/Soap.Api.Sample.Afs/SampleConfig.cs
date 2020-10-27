@@ -1,10 +1,10 @@
-﻿using DataStore.Providers.CosmosDb;
-using Soap.Bus;
-using Soap.Config;
-using Soap.Interfaces;
-
-namespace Config.DEV
+﻿namespace Soap.Api.Sample.Afs
 {
+    using DataStore.Providers.CosmosDb;
+    using Soap.Bus;
+    using Soap.Config;
+    using Soap.Interfaces;
+
     public class AppConfig : ApplicationConfig
     {
         public AppConfig() : base(SoapEnvironments.Development, EnvVars.AppId)

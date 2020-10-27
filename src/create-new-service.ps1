@@ -75,7 +75,18 @@ git init
 
 dotnet new classlib -f "netcoreapp3.1" -n Config
 mv DEV_Config.cs Config
+mv VNEXT_Config.cs Config
+mv REL_Config.cs Config
 cd Config
+(Get-Content .\DEV_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.DEV") } | Set-Content .\DEV_Config.cs
+(Get-Content .\VNEXT_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.VNEXT") } | Set-Content .\VNEXT_Config.cs
+(Get-Content .\REL_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.REL") } | Set-Content .\REL_Config.cs
+mkdir DEV
+mkdir VNEXT
+mkdir REL
+mv DEV_Config.cs DEV/Config.cs
+mv VNEXT_Config.cs VNEXT/Config.cs
+mv REL_Config.cs REL/Config.cs
 del Class1.cs
 
 $soapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"

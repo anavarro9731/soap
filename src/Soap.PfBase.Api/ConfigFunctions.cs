@@ -119,7 +119,7 @@
             static string GetFileUrl()
             {
                 var fileUrl = string.Format(
-                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AppId.Replace("-api-sample","")}/_apis/git/repositories/{EnvVars.AppId.Replace("-api-sample", "")}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}_Config.cs&api-version=5.1");
+                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AppId.Replace("-api-sample","")}/_apis/git/repositories/{EnvVars.AppId.Replace("-api-sample", "")}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}/Config.cs&api-version=5.1");
                 return fileUrl;
             }
 
