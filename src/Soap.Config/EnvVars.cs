@@ -22,6 +22,8 @@
 
         public static string CosmosDbAccountName => Environment.GetEnvironmentVariable(nameof(CosmosDbAccountName));
         
+        public static string CosmosDbDatabaseName => Environment.GetEnvironmentVariable(nameof(CosmosDbDatabaseName));
+        
         public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
 
         public static class ServicePrincipal

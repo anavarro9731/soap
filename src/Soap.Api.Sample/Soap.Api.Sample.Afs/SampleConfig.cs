@@ -11,7 +11,7 @@ namespace Config.DEV
         {
             AppFriendlyName = "Soap Api";
             BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace);
-            DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.CosmosDbAccountName,
+            DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.CosmosDbDatabaseName,
                 $"https://{EnvVars.CosmosDbAccountName}.documents.azure.com:443/");
         }
     }

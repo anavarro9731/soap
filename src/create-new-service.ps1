@@ -65,6 +65,8 @@ if (Test-Path $configRepoRoot) {
 mkdir $configRepoRoot
 
 cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\DEV_Config.cs" -Recurse -Force
+cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\VNEXT_Config.cs" -Recurse -Force
+cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\REL_Config.cs" -Recurse -Force
 
 #* Setup config repo
 
@@ -162,9 +164,11 @@ Remove-ConfigLine '-nugetApiKey $nugetApiKey'
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName"
-git push -u origin --all
-
-az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" #* must come after files committed to repo
 
 Run -PrepareNewVersion -forceVersion 0.1.0-alpha -noPush $true
+
+git push -u origin --all
+
+az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" --skip-run #* must come after files committed to repo, variables need to be added for this to work
+
 
