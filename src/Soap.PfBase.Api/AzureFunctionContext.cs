@@ -233,7 +233,15 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureWebJobsServiceBus),
                     $"{nameof(EnvVars.AzureWebJobsServiceBus)} environment variable not set");
-
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbDatabaseName),
+                    $"{nameof(EnvVars.CosmosDbDatabaseName)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbKey),
+                    $"{nameof(EnvVars.CosmosDbKey)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbAccountName),
+                    $"{nameof(EnvVars.CosmosDbAccountName)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureBusNamespace),
                     $"{nameof(EnvVars.AzureBusNamespace)} environment variable not set");

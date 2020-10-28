@@ -10,9 +10,9 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.PfBase.Api;
 
-    public static class PrintSchema
+    public static class GetImage
     {
-        [FunctionName("PrintSchema")]
+        [FunctionName("GetImage")]
         public static IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
             HttpRequest req,
@@ -25,7 +25,13 @@
                 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100Ping).Assembly);
+                string id = req.Query["id"];
+                
+                var blobClient = this.containerClient.GetBlobClient($"{id}");
+
+                var blob = (await blobClient.DownloadAsync());
+
+                return File(blob.Value.Content, blob.Value.ContentType);
 
                 return new OkObjectResult(result);
             }

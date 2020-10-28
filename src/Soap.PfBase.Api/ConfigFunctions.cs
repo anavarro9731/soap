@@ -118,8 +118,12 @@
 
             static string GetFileUrl()
             {
+                var appId = EnvVars.AppId;
+                appId = appId.Replace("-api-sample", "", StringComparison.InvariantCultureIgnoreCase); //* HACK: Soap solution uses the functionprojectname e.g. soap-api-sample which it should but the repo and devops org are called soap
+                //* technically library projects and function project can be stored and built from the same repo, if they use the function project name for the repo, but sometimes that wouldn't make good sense like in the case of Soap
+                //* it is better to keep library and function projects in different repo with different pwsh-bootstrap files
                 var fileUrl = string.Format(
-                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{EnvVars.AppId.Replace("-api-sample","")}/_apis/git/repositories/{EnvVars.AppId.Replace("-api-sample", "")}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}/Config.cs&api-version=5.1");
+                    $"https://dev.azure.com/{EnvVars.AzureDevopsOrganisation}/{appId}/_apis/git/repositories/{appId}.config/items?path=Config/{EnvVars.SoapEnvironmentKey}/Config.cs&api-version=5.1");
                 return fileUrl;
             }
 

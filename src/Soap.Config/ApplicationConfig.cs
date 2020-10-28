@@ -7,6 +7,9 @@
     using Soap.Interfaces;
     using Soap.NotificationServer;
 
+    /* if you add anything to this config you need to add guards for it and possibly
+     also add it to the localsettings.json file and envvars class depending on how it is used */
+    
     public class ApplicationConfig : IBootstrapVariables
     {
         protected ApplicationConfig(SoapEnvironments environment, string azureAppName)
@@ -20,6 +23,8 @@
         public string AppFriendlyName { get; set; }
 
         public string AppId { get; set; }
+        
+        public string  { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 

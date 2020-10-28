@@ -28,8 +28,7 @@
                 AzureFunctionContext.CreateLogger(out logger);
                 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
-
-
+                
                 await AzureFunctionContext.Execute<User>(
                     myQueueItem,
                     new MappingRegistration(),
