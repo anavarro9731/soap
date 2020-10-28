@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>4.6.0-alpha</Version>
+    <Version>4.7.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CircuitBoard" Version="3.1.0-alpha" />
