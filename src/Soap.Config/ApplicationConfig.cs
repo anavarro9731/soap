@@ -1,6 +1,7 @@
 ﻿namespace Soap.Config
 {
     using System.Reflection;
+    using System.Reflection.Metadata;
     using DataStore.Interfaces;
     using FluentValidation;
     using Soap.Bus;
@@ -24,7 +25,7 @@
 
         public string AppId { get; set; }
         
-        public string  { get; set; }
+        public string StorageConnectionString { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
@@ -49,6 +50,7 @@
                 RuleFor(x => x.AppFriendlyName).NotEmpty();
                 RuleFor(x => x.BusSettings).NotNull();
                 RuleFor(x => x.DatabaseSettings).NotNull();
+                RuleFor(x => x.StorageConnectionString).NotEmpty();
             }
         }
     }

@@ -26,6 +26,9 @@
         
         public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
 
+        public static string AzureStorageConnectionString =
+            Environment.GetEnvironmentVariable(nameof(AzureStorageConnectionString));
+
         public static class ServicePrincipal
         {
             //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
