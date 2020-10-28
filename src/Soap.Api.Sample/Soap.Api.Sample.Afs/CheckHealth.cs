@@ -34,7 +34,7 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration(), logger)
+                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
                 };
 
                 return result;
@@ -55,7 +55,8 @@
 
             static PushStreamContent GetContent<TInboundMessage, TOutboundMessage, TIdentity>(
                 MapMessagesToFunctions messageMapper,
-                Serilog.ILogger logger)
+                Serilog.ILogger logger,
+                string functionHost)
                 where TInboundMessage : ApiCommand, new()
                 where TIdentity : class, IApiIdentity, new()
                 where TOutboundMessage : ApiEvent
@@ -67,6 +68,7 @@
                             httpContent,
                             transportContext,
                             typeof(TInboundMessage).Assembly,
+                            functionHost,
                             messageMapper, logger),
                     new MediaTypeHeaderValue("text/plain"));
             }

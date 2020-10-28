@@ -44,7 +44,7 @@
         public async Task SaveBlobFromBase64String(Guid id, string base64blob, string mimeType)
         {
             Guard.Against(
-                !Regex.IsMatch(base64blob, @"[^-A-Za-z0-9+/=]|=[^=]|={3,}$"),
+                !Regex.IsMatch(base64blob, "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"),
                 "Data is invalid format",
                 "Blob is not base64 formatted");
 

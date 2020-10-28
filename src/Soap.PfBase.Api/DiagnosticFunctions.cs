@@ -11,10 +11,12 @@
     using System.Text;
     using System.Threading.Tasks;
     using DataStore;
+    using Mainwave.MimeTypes;
     using Newtonsoft.Json;
     using Serilog;
     using Soap.Bus;
     using Soap.Config;
+    using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
@@ -42,6 +44,7 @@
             HttpContent httpContent,
             TransportContext transportContext,
             Assembly messagesAssembly,
+            string functionHost,
             MapMessagesToFunctions mapMessagesToFunctions,
             ILogger logger) where TPing : ApiCommand, new() where TIdentity : class, IApiIdentity, new() where TPong : ApiEvent
         {
@@ -61,6 +64,8 @@
 
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
+                await CheckBlobStorage(appConfig, logger, WriteLine, functionHost);
+
                 await GetMessageTestResults<TPing, TPong, TIdentity>(logger, appConfig, mapMessagesToFunctions, WriteLine);
             }
             catch (Exception e)
@@ -73,6 +78,29 @@
 
                 await outputStream.DisposeAsync();
             }
+        }
+
+        private static async Task CheckBlobStorage(ApplicationConfig applicationConfig, ILogger logger,
+            Func<string, ValueTask> writeLine, string functionHost)
+        {
+            
+                var blobClient = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString));
+
+                var base64String =
+                    @"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";
+
+                var blobId = Guid.NewGuid();
+                
+                await blobClient.SaveBlobFromBase64String(blobId, base64String, MimeType.Image.Png);
+                await writeLine("Test Blob Saved Successfully");
+                
+                var blob = await blobClient.GetBlob(blobId);
+                Guard.Against(blob.MimeType != MimeType.Image.Png, "Mime type not retrieved successfully");
+                var base64String2 = Convert.ToBase64String(blob.Bytes);
+                Guard.Against(base64String != base64String2, "Blob did not return correct bytes");
+                
+                await writeLine($"Test Blob Retrieved Successfully. Url: {functionHost}/api/GetBlob?id={blobId.ToString()}");
+
         }
 
         private static async Task CheckServiceBusConfiguration(

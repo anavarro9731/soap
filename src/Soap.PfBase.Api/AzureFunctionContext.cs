@@ -1,7 +1,9 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
@@ -186,14 +188,14 @@
             var loggerConfiguration = new LoggerConfiguration()
                      .Enrich.WithExceptionDetails()
                      .Destructure.UsingAttributes();
-            if (EnvVars.AppInsightsIntrumentationKey == null)
+            if (EnvVars.AppInsightsInstrumentationKey == null)
             {
                 loggerConfiguration.WriteTo.ColoredConsole();
             }
             else
             {
                 loggerConfiguration.WriteTo.ApplicationInsights(
-                    EnvVars.AppInsightsIntrumentationKey,
+                    EnvVars.AppInsightsInstrumentationKey,
                     new TraceTelemetryConverter());
             }
             logger = loggerConfiguration.CreateLogger();

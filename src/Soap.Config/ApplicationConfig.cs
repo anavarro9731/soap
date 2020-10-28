@@ -1,7 +1,6 @@
 ﻿namespace Soap.Config
 {
     using System.Reflection;
-    using System.Reflection.Metadata;
     using DataStore.Interfaces;
     using FluentValidation;
     using Soap.Bus;
@@ -9,8 +8,9 @@
     using Soap.NotificationServer;
 
     /* if you add anything to this config you need to add guards for it and possibly
-     also add it to the localsettings.json file and envvars class depending on how it is used */
-    
+     also add it to the localsettings.json file and envvars class depending on how it is used. if added to envars probably also needs to be added to soap.config files and sampleconfig.cs 
+     for create-new-service to work right */
+
     public class ApplicationConfig : IBootstrapVariables
     {
         protected ApplicationConfig(SoapEnvironments environment, string azureAppName)
@@ -19,13 +19,9 @@
             AppId = azureAppName;
         }
 
-        public SoapEnvironments Environment { get; set; }
-
         public string AppFriendlyName { get; set; }
 
         public string AppId { get; set; }
-        
-        public string StorageConnectionString { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
@@ -35,9 +31,13 @@
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
 
+        public SoapEnvironments Environment { get; set; }
+
         public NotificationServer.Settings NotificationSettings { get; set; } = new NotificationServer.Settings();
 
         public bool ReturnExplicitErrorMessages { get; set; }
+
+        public string StorageConnectionString { get; set; }
 
         public void Validate() => new Validator().ValidateAndThrow(this);
 

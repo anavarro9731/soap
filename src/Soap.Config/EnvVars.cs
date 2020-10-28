@@ -12,7 +12,7 @@
 
         public static string AzureResourceGroup => Environment.GetEnvironmentVariable(nameof(AzureResourceGroup));
 
-        public static string AppInsightsIntrumentationKey => Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
+        public static string AppInsightsInstrumentationKey => Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
         public static string AzureWebJobsServiceBus => Environment.GetEnvironmentVariable(nameof(AzureWebJobsServiceBus));
 
@@ -26,7 +26,7 @@
         
         public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
 
-        public static string AzureStorageConnectionString =
+        public static string AzureStorageConnectionString =>
             Environment.GetEnvironmentVariable(nameof(AzureStorageConnectionString));
 
         public static class ServicePrincipal
