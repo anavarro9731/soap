@@ -34,7 +34,7 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100Ping, E150Pong, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
+                    Content = GetContent<C100Ping, E150Pong, C105SendLargeMessage, C106LargeCommand, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
                 };
 
                 return result;
@@ -53,17 +53,19 @@
                 return result;
             }
 
-            static PushStreamContent GetContent<TInboundMessage, TOutboundMessage, TIdentity>(
+            static PushStreamContent GetContent<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
                 MapMessagesToFunctions messageMapper,
                 Serilog.ILogger logger,
                 string functionHost)
                 where TInboundMessage : ApiCommand, new()
                 where TIdentity : class, IApiIdentity, new()
                 where TOutboundMessage : ApiEvent
+                where TSendLargeMsg : ApiCommand, new() 
+                where TReceiveLargeMsg : ApiMessage
             {
                 return new PushStreamContent(
                     async (outputSteam, httpContent, transportContext) =>
-                        await DiagnosticFunctions.OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TIdentity>(
+                        await DiagnosticFunctions.OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
                             outputSteam,
                             httpContent,
                             transportContext,

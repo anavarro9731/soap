@@ -19,6 +19,7 @@
     using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
+    using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
@@ -70,7 +71,9 @@
 
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
-                    CreateBusContext(messageAggregator, appConfig.BusSettings, out var bus);
+                    CreateBlobStorage(appConfig, messageAggregator, out BlobStorage blobStorage);
+                    
+                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, out var bus);
 
                     var context = new BoostrappedContext(
                         new Auth0Authenticator(() => new TApiIdentity()),
@@ -80,7 +83,8 @@
                         bus: bus,
                         notificationServer: notificationServer,
                         dataStore: dataStore,
-                        messageAggregator: messageAggregator);
+                        messageAggregator: messageAggregator,
+                        blobStorage: blobStorage);
 
                     int retries = appConfig.BusSettings.NumberOfApiMessageRetries;
 
@@ -92,7 +96,7 @@
                         {
                             await MessagePipeline.Execute(message, context);
                             x.Success = true;
-                            x.PublishMessages = bus.EventsPublished;
+                            x.PublishedMessages = bus.EventsPublished;
                             x.CommandsSent = bus.CommandsSent;
                             return x;
                         }
@@ -161,9 +165,14 @@
                 messageAggregator = new MessageAggregator();
             }
 
-            void CreateBusContext(IMessageAggregator messageAggregator, IBusSettings busSettings, out IBus busContext)
+            void CreateBusContext(IMessageAggregator messageAggregator, IBusSettings busSettings, IBlobStorage blobStorage, out IBus busContext)
             {
-                busContext = busSettings.CreateBus(messageAggregator);
+                busContext = busSettings.CreateBus(messageAggregator, blobStorage);
+            }
+            
+            void CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator, out BlobStorage blobStorage)
+            {
+                blobStorage = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
             }
 
             static void EnsureMessageType(IDictionary<string, object> userProperties, out Type messageType)

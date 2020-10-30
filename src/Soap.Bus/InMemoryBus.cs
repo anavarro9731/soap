@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
+    using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
@@ -36,8 +37,8 @@
         {
             public byte NumberOfApiMessageRetries { get; set; }
 
-            public IBus CreateBus(IMessageAggregator messageAggregator) =>
-                new Bus(new InMemoryBus(this), this, messageAggregator);
+            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage) =>
+                new Bus(new InMemoryBus(this), this, messageAggregator, blobStorage);
         }
     }
 }

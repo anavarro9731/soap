@@ -8,19 +8,23 @@
     using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Models;
     using Guard = DataStore.Models.PureFunctions.Guard;
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, BoostrappedContext boostrappedContext)
+        public static async Task Execute(ApiMessage message, BoostrappedContext bootstrappedContext)
         {
             {
+
+                await FillMessageFromStorageIfApplicable();
+                
                 ContextWithMessageLogEntry matureContext = null;
                 
-                await PrepareContext(boostrappedContext, v => matureContext = v);
-
+                await PrepareContext(bootstrappedContext, v => matureContext = v);
+                
                 try
                 {
                     /* THIS MUST BE SET AT THIS LEVEL. SETTING IT LOWER (via say a method on the context called from
@@ -49,20 +53,29 @@
                     (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
                     var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
-                    
-                    var msg = contextAfterMessageObtained.Message;
+
+                    var msg = contextAfterMessageObtained.Message;  //* i think the only reason we are getting it from the context is in case it changes during upgrade() but at present it doesn't
 
                     msg.Authenticate(contextAfterMessageObtained, v => identity = v); // TODO awaitable after finished
 
                     await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
-
+                    
                     var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
-
+                    
                     setContext(context);
                 }
                 catch (Exception e)
                 {
                     Guard.Against(true, $"Cannot complete context preparation: error {e}");
+                }
+            }
+
+            async Task FillMessageFromStorageIfApplicable()
+            {
+                var blobId = message.Headers.GetBlobId();
+                if (blobId != Guid.Empty)
+                {
+                    message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId);
                 }
             }
 

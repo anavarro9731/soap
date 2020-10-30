@@ -634,7 +634,7 @@
             /* from this point on we can crash, throw, lose power, it won't matter all
         will be continued when the message is next dequeued*/
         }
-
+        
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)
         {
             var results = new ConcurrentQueue<T>();

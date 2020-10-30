@@ -4,6 +4,7 @@
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using Serilog;
+    using Soap.Context.BlobStorage;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -21,6 +22,8 @@
 
         public readonly ILogger Logger;
 
+        public readonly BlobStorage BlobStorage;
+        
         public readonly IMessageAggregator MessageAggregator;
 
         public readonly MapMessagesToFunctions MessageMapper;
@@ -35,6 +38,7 @@
             ILogger logger,
             IBus bus,
             NotificationServer notificationServer,
+            BlobStorage blobStorage,
             MapMessagesToFunctions messageMapper)
         {
             this.MessageMapper = messageMapper;
@@ -45,6 +49,7 @@
             this.Logger = logger;
             this.Bus = bus;
             this.NotificationServer = notificationServer;
+            this.BlobStorage = blobStorage;
         }
 
         protected BoostrappedContext(BoostrappedContext c)
@@ -56,6 +61,7 @@
             this.Logger = c.Logger;
             this.Bus = c.Bus;
             this.MessageMapper = c.MessageMapper;
+            this.BlobStorage = c.BlobStorage;
         }
     }
 

@@ -12,6 +12,6 @@
 
         public List<ApiCommand> CommandsSent { get; set; }
 
-        public List<ApiEvent> PublishMessages { get; set; }
+        public List<ApiEvent> PublishedMessages { get; set; }
     }
 }

@@ -28,6 +28,15 @@
 
     public static class MessageHeaderExtensions
     {
+        public static void ReplaceWith(this MessageHeaders headers, MessageHeaders from)
+        {
+            headers.Clear();
+            foreach (var header in from)
+            {
+                headers.Add(header.Key, header.Value);
+            }
+        }
+
         public static void EnsureRequiredHeaders(this MessageHeaders headers)
         {
             /* needs to be called everywhere you can send a message (e.g. tests, bus)
@@ -39,6 +48,14 @@
             if (headers.GetMessageId() == Guid.Empty) headers.SetMessageId(Guid.NewGuid());
         }
 
+        public static Guid GetBlobId(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.BlobId, out var x);
+            Guid.TryParse(x, out var result);
+            return result;
+        }
+
+        
         public static string GetIdentityToken(this MessageHeaders m)
         {
             m.TryGetValue(Keys.IdentityToken, out var x);
@@ -130,6 +147,13 @@
             var s = DateTime.UtcNow.ToString("s");
             m[Keys.TimeOfCreationAtOrigin] = s;
         }
+        
+        public static MessageHeaders SetBlobId(this MessageHeaders m, Guid blobId)
+        {
+            m[Keys.BlobId] = blobId.ToString();
+            return m;
+        }
+
 
         public class Keys
         {
@@ -146,6 +170,8 @@
             internal const string Topic = nameof(Topic);
 
             internal const string AzureSequenceNumber = nameof(AzureSequenceNumber);
+
+            internal const string BlobId = nameof(BlobId);
         }
     }
 }

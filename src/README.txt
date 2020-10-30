@@ -36,3 +36,7 @@ With the collection per aggregate model azure answers this for us: Mar 7 2020
 "Azure Cosmos DB accounts using shared database throughput are now limited to 25 collections per database. 
 This will allow for better throughput sharing across collections. 
 Create additional databases with shared throughput and add more collections, or add collections to the same database with dedicated throughput."
+
+* NOTES
+
+Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops 

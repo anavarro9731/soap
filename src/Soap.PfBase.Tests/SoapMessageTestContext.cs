@@ -11,6 +11,7 @@
     using Serilog;
     using Serilog.Exceptions;
     using Soap.Bus;
+    using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
@@ -33,7 +34,8 @@
             byte retries,
             IDocumentRepository rollingRepo,
             (Func<DataStore, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
-            DataStoreOptions dataStoreOptions)
+            DataStoreOptions dataStoreOptions,
+            Action<MessageAggregatorForTesting> setup)
 
         {
             {
@@ -43,7 +45,7 @@
 
                 CreateAppConfig(retries, out var appConfig);
 
-                CreateMessageAggregator(out var messageAggregator);
+                CreateMessageAggregator(setup, out var messageAggregator);
 
                 CreateLogger(messageAggregator, output, out var logger);
 
@@ -51,7 +53,9 @@
 
                 CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
 
-                CreateBusContext(messageAggregator, appConfig.BusSettings, out var bus);
+                CreateBlobStorage(messageAggregator, out BlobStorage blobStorage);
+                
+                CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, out var bus);
 
                 var context = new BoostrappedContext(
                     new FakeMessageAuthenticator(identity),
@@ -61,7 +65,8 @@
                     bus: bus,
                     notificationServer: notificationServer,
                     dataStore: dataStore,
-                    messageAggregator: messageAggregator);
+                    messageAggregator: messageAggregator,
+                    blobStorage:blobStorage);
 
                 byte currentRun = 1;
                 var remainingRuns = retries;
@@ -188,9 +193,12 @@
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateMessageAggregator(out IMessageAggregator messageAggregator)
+            static void CreateMessageAggregator(Action<MessageAggregatorForTesting> setup, out IMessageAggregator messageAggregator)
             {
-                messageAggregator = new MessageAggregatorForTesting();
+                var messageAggregatorForTesting = new MessageAggregatorForTesting();
+                setup?.Invoke(messageAggregatorForTesting);
+                messageAggregator = messageAggregatorForTesting;
+
             }
 
             static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
@@ -201,9 +209,10 @@
             static void CreateBusContext(
                 IMessageAggregator messageAggregator,
                 IBusSettings appConfigBusSettings,
+                IBlobStorage blobStorage,
                 out IBus busContext)
             {
-                busContext = appConfigBusSettings.CreateBus(messageAggregator);
+                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage);
             }
 
             static void CreateDataStore(
@@ -221,6 +230,13 @@
                     messageAggregator,
                     dataStoreOptions);
             }
+            
+            
+            static void CreateBlobStorage(IMessageAggregator messageAggregator, out BlobStorage blobStorage)
+            {
+                blobStorage = new BlobStorage(new BlobStorage.Settings(null,messageAggregator));
+            }
         }
+
     }
 }

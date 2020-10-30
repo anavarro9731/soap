@@ -3,14 +3,21 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Azure;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
-    using Soap.Utility.Functions.Operations;
+    using CircuitBoard.MessageAggregator;
+    using CircuitBoard.Messages;
+    using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
+    using Soap.Utility.Objects.Blended;
 
-    public class BlobStorage
+    /* doesn't need it's own project right now because it is not needed by the Soap.Config repo
+     since at present config only stores connection string and not a settings object and that 
+     is because there are no settings right now. that could all change of course */
+
+    public class BlobStorage : IBlobStorage
     {
         private readonly Settings blobStorageSettings;
 
@@ -19,56 +26,116 @@
             this.blobStorageSettings = blobStorageSettings;
         }
 
-        public async Task<Blob> GetBlob(Guid id)
+        public async Task<ApiMessage> GetApiMessageFromBlob(Guid blobId)
         {
-            var client = this.blobStorageSettings.CreateClient(id.ToString());
+            var blob = await GetBlob(blobId);
+            return blob.ToMessage();
+        }
+
+        public async Task<Blob> GetBlob(Guid id, string containerName = "content")
+        {
             try
             {
-                var result = await client.DownloadAsync();
-                await using var memoryStream = new MemoryStream();
-                await result.Value.Content.CopyToAsync(memoryStream);
-                var allBytes = memoryStream.ToArray();
-                var mimeType = result.Value.Details.Metadata["mimeType"];
-                return new Blob
-                {
-                    Bytes = allBytes,
-                    MimeType = mimeType
-                };
+                var blob = await this.blobStorageSettings.MessageAggregator
+                                     .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
+                                     .To(Download);
+                return blob;
             }
             catch (RequestFailedException r)
             {
                 throw new Exception($"Could not read blob with id {id} from storage", r);
             }
+
+            static async Task<Blob> Download(Events.BlobDownloadEvent @event)
+            {
+                var client = @event.StorageSettings.CreateClient(@event.BlobId.ToString(), @event.ContainerName);
+                var result = await client.DownloadAsync();
+                await using var memoryStream = new MemoryStream();
+                await result.Value.Content.CopyToAsync(memoryStream);
+                var allBytes = memoryStream.ToArray();
+                var typeString = result.Value.Details.Metadata["typeString"];
+                var typeClass = result.Value.Details.Metadata["typeClass"];
+                return new Blob(
+                    @event.BlobId,
+                    allBytes,
+                    new Blob.BlobType(typeString, Enumeration.FromKey<Blob.TypeClass>(typeClass)));
+            }
         }
 
-        public async Task SaveBlobFromBase64String(Guid id, string base64blob, string mimeType)
+        public async Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
-            Guard.Against(
-                !Regex.IsMatch(base64blob, "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"),
-                "Data is invalid format",
-                "Blob is not base64 formatted");
-
-            var client = this.blobStorageSettings.CreateClient(id.ToString());
-
-            var bytes = Convert.FromBase64String(base64blob);
-            var stream = new MemoryStream(bytes);
-
-            await client.UploadAsync(stream, metadata: new Dictionary<string, string> { { "mimeType", mimeType } });
+            await this.blobStorageSettings.MessageAggregator
+                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, message.ToBlob()))
+                      .To(Upload);            
         }
 
-        public class Blob
+        public async Task SaveBase64StringAsBlob(string base64, Guid id, string mimeType)
         {
-            public byte[] Bytes { get; set; }
+            await this.blobStorageSettings.MessageAggregator
+                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, base64.ToBlob(id, mimeType)))
+                      .To(Upload);    
+        }
 
-            public string MimeType { get; set; }
+        public async Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getIdFromObject)
+        {
+            var objectId = getIdFromObject(@object);
+
+            await this.blobStorageSettings.MessageAggregator
+                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId)))
+                      .To(Upload);    
+        }
+
+        private static async Task Upload(Events.BlobUploadEvent args)
+        {
+            var client = args.StorageSettings.CreateClient(args.Blob.Id.ToString());
+
+            await client.UploadAsync(
+                new MemoryStream(args.Blob.Bytes),
+                metadata: new Dictionary<string, string>
+                    { { "typeString", args.Blob.Type.TypeString }, { "typeClass", args.Blob.Type.TypeClass.Key } });
+        }
+
+        public static class Events
+        {
+            public class BlobDownloadEvent : IMessage
+            {
+                public readonly Guid BlobId;
+
+                public BlobDownloadEvent(Settings storageSettings, Guid blobId, string containerName)
+                {
+                    StorageSettings = storageSettings;
+                    ContainerName = containerName;
+                    this.BlobId = blobId;
+                }
+
+                public string ContainerName { get; }
+
+                public Settings StorageSettings { get; }
+            }
+
+            public class BlobUploadEvent : IMessage
+            {
+                public BlobUploadEvent(Settings storageSettings, Blob blob)
+                {
+                    StorageSettings = storageSettings;
+                    Blob = blob;
+                }
+
+                public Blob Blob { get; }
+
+                public Settings StorageSettings { get; }
+            }
         }
 
         public class Settings
         {
-            public Settings(string connectionString)
+            public Settings(string connectionString, IMessageAggregator messageAggregator)
             {
                 ConnectionString = connectionString;
+                MessageAggregator = messageAggregator;
             }
+
+            public IMessageAggregator MessageAggregator { get; }
 
             private string ConnectionString { get; }
 

@@ -49,6 +49,9 @@
 
         [JsonProperty]
         public SerialisableObject SerialisedMessage { get; internal set; }
+        
+        [JsonProperty]
+        public SerialisableObject SerialisedMessageFromBlob { get; internal set; }
 
         [JsonProperty]
         public UnitOfWork UnitOfWork { get; set; }

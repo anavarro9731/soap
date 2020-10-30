@@ -3,6 +3,7 @@ namespace Soap.PfBase.Tests
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -45,9 +46,9 @@ namespace Soap.PfBase.Tests
             dataStore.CommitChanges().Wait();
         }
 
-        protected void Execute<T>(T msg, IApiIdentity identity) where T : ApiMessage
+        protected void Execute<T>(T msg, IApiIdentity identity, Action<MessageAggregatorForTesting> setup = null) where T : ApiMessage
         {
-            TestMessage(msg, identity, 0).Wait();
+            TestMessage(msg, identity, 0, setup: setup).Wait();
             if (Result.Success == false) throw Result.UnhandledError;
         }
 
@@ -56,7 +57,8 @@ namespace Soap.PfBase.Tests
             IApiIdentity identity,
             byte retries,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
-            DataStoreOptions dataStoreOptions = null
+            DataStoreOptions dataStoreOptions = null,
+            Action<MessageAggregatorForTesting> setup = null
             ) where T : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
@@ -71,7 +73,8 @@ namespace Soap.PfBase.Tests
                          retries,
                          this.rollingRepo,
                          beforeRunHook,
-                         dataStoreOptions);
+                         dataStoreOptions,
+                         setup);
         }
     }
 }

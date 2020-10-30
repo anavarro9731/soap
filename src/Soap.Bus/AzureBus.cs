@@ -9,6 +9,7 @@
     using FluentValidation;
     using Microsoft.Azure.ServiceBus;
     using Newtonsoft.Json;
+    using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -39,6 +40,8 @@
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
         public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
+
+        
 
         public async Task Publish(ApiEvent publishEvent)
         {
@@ -71,7 +74,6 @@
             if (scheduleAt.HasValue)
             {
                 var sequenceNumber = await queueClient.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
-                
             }
             else
             {
@@ -102,8 +104,8 @@
 
             public string ResourceGroup { get; set; }
 
-            public IBus CreateBus(IMessageAggregator messageAggregator) =>
-                new Bus(new AzureBus(messageAggregator, this), this, messageAggregator);
+            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage) =>
+                new Bus(new AzureBus(messageAggregator, this), this, messageAggregator, blobStorage);
 
             public class Validator : AbstractValidator<Settings>
             {

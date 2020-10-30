@@ -34,7 +34,7 @@ namespace Soap.MessagePipeline.MessageAggregator
                         }.                    
                     This could be because you have registered responses in the wrong order. 
                     Or perhaps you forgot to call .AsEnumerable() where the return type is IEnumerable. 
-                    Or perhaps you forgot to wrap your response in a Task<{typeof(TOut).AsTypeNameString()}> if its async.",
+                    Or perhaps you forgot to wrap your response in a task e.g. Task.FromResult( {this.toReturn.GetType().AsTypeNameString()} ) if its async.",
                     e);
             }
 

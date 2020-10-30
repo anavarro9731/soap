@@ -122,7 +122,7 @@
                     do
                     {
                         name = $"{tempT.DeclaringType.Name}+{name}";
-                        tempT = t.DeclaringType;
+                        tempT = tempT.DeclaringType;
                     }
                     while (tempT != null && tempT.IsNested);
                 }

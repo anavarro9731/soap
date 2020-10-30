@@ -9,7 +9,7 @@
 
     /* if you add anything to this config you need to add guards for it and possibly
      also add it to the localsettings.json file and envvars class depending on how it is used. if added to envars probably also needs to be added to soap.config files and sampleconfig.cs 
-     for create-new-service to work right */
+     for create-new-service to work right and it may also need to be added to testconfig base class if you are testing it*/
 
     public class ApplicationConfig : IBootstrapVariables
     {

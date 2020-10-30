@@ -9,6 +9,7 @@
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
     using Soap.Context.BlobStorage;
+    using Soap.MessagePipeline.MessageAggregator;
     using Soap.PfBase.Api;
     using Soap.Utility.Enums;
     using Soap.Utility.Functions.Operations;
@@ -30,11 +31,11 @@
 
                 var id = GetImageId();
 
-                var blobClient = new BlobStorage(new BlobStorage.Settings(appConfig.StorageConnectionString));
+                var blobClient = new BlobStorage(new BlobStorage.Settings(appConfig.StorageConnectionString, new MessageAggregator()));
 
                 var blob = await blobClient.GetBlob(id);
 
-                return new FileContentResult(blob.Bytes, blob.MimeType);
+                return new FileContentResult(blob.Bytes, blob.Type.TypeString);
 
                 Guid GetImageId()
                 {
@@ -54,30 +55,6 @@
                 return new OkObjectResult(e.ToString());
             }
         }
-        //
-        // [FunctionName("TestBlob")]
-        // public static async Task<IActionResult> TestBlob(
-        //     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-        //     HttpRequest req,
-        //     ILogger log)
-        // {
-        //     Serilog.ILogger logger = null;
-        //     try
-        //     {
-        //         AzureFunctionContext.CreateLogger(out logger);
-        //
-        //         AzureFunctionContext.LoadAppConfig(out var appConfig);
-        //
-        //         
-        //         return new FileContentResult(blob.Bytes, blob.MimeType);
-        //
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         logger?.Fatal(e, "Could not execute function");
-        //         log.LogCritical(e.ToString());
-        //         return new OkObjectResult(e.ToString());
-        //     }
-        // }
+
     }
 }
