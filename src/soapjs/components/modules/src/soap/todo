@@ -1,0 +1,3 @@
+reasons for sepeate headers and payload on msg roots
+payload separate so you can validate args on a fixed structure in js
+headers for same reason, but modeled as a dictionary so serialisation to backend is easier than a combinatorial explosion of models
