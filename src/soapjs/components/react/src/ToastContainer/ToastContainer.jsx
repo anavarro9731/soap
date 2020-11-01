@@ -7,7 +7,7 @@ import {
   defaultHighlightColour,
   defaultLightBackgroundColour,
   defaultBorderColour,
-} from '../../modules/style/defaults';
+} from '../../modules/src/style/defaults';
 import * as S from './style';
 
 const ToastContainer = props => <S.ToastContainer {...props} />;

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import MenuBar from './MenuBar';
-import KurveSmileIcon from '../../modules/style/images/kurve-smile.png';
+import KurveSmileIcon from '../../modules/src/style/images/kurve-smile.png';
 import AppWrapper from '../AppWrapper';
 import styled from 'styled-components';
 

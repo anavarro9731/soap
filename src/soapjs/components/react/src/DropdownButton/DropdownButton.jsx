@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import {
   defaultLightTextColour,
   defaultPrimaryBackgroundColour,
-} from '../../modules/style/defaults';
+} from '../../modules/src/style/defaults';
 import { POSITIONS } from './positions';
 import Button from '../Button';
 import * as S from './style';

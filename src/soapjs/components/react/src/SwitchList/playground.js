@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import ReactDOM from 'react-dom';
 import SwitchList from './SwitchList';
-import { getSelectRefOptions } from '../../modules/utils/refs';
+import { getSelectRefOptions } from '../../modules/src/utils/refs';
 import AppWrapper from '../AppWrapper';
 
 const initialFirstListOptions = [

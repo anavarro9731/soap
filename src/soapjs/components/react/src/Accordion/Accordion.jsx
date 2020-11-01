@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import Section from '../Section';
-import ChevronDown from '../../modules/style/images/chevron-down-solid.svg';
-import ChevronRight from '../../modules/style/images/chevron-right-solid.svg';
+import Section from '../Section/Section';
+import ChevronDown from '../../modules/src/style/images/chevron-down-solid.svg';
+import ChevronRight from '../../modules/src/style/images/chevron-right-solid.svg';
 import * as S from './style';
 
 const Accordion = props => {

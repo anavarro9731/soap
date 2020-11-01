@@ -4,7 +4,7 @@ import {
   defaultLightTextColour,
   defaultPrimaryBackgroundColour,
   defaultDisabledColour,
-} from '../../modules/style/defaults';
+} from '../../modules/src/style/defaults';
 import * as S from './style';
 
 const Button = props => {

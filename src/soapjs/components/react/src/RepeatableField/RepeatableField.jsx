@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Grid from '@material-ui/core/Grid';
 import Button from '../Button';
-import { translate, keys } from '../../modules/i18n';
+import { translate, keys } from '../../modules/src/i18n';
 import { FieldArray, useField } from 'formik';
 import * as S from './style';
 

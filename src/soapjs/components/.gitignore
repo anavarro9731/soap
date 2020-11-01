@@ -1,19 +1,14 @@
 # Don't check auto-generated stuff into git
-coverage
-build
-node_modules
-stats.json
-dist
-.bit
-playground/
+**/coverage/*
+**/build/*
+**/node_modules/
+**/dist/*
+**/playground/*
+react/lib
+.parcel-cache/
+react/index.html
 .cache
-/index.html
-
-# Cruft
 .DS_Store
 npm-debug.log
 .idea
-
-# #Ignore folder named `__snapshots__`
-__snapshots__/
 
