@@ -4,9 +4,11 @@ react/dist
 react/lib
 react/.parcel-cache/
 react/index.html
+react/package-lock.json
 
 modules/node_modules/
 modules/lib
+modules/package-lock.json
 
 .cache
 .DS_Store
