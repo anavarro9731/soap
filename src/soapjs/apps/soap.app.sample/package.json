@@ -1,13 +1,13 @@
 {
-  "name": "chiktopia_order_screen",
+  "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@bit/kurveadmin.components.app-wrapper": "0.0.2",
-    "@bit/kurveadmin.components.i18n": "0.0.1",
+    "@soap/modules": "^1.1.0",
+    "@soap/react": "^1.4.0",
     "prop-types": "15.7.2",
-    "react": "16.8.6",
-    "react-dom": "16.8.6",
-    "sanitize.css": "^8.0.1",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "sanitize.css": "^8.0.1"
   },
   "devDependencies": {
     "@babel/core": "7.4.3",

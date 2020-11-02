@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { sortArrayByObjectPropertyAlphanumerically } from '../../modules/src/utils/sorting';
+import { sortArrayByObjectPropertyAlphanumerically } from '../../../modules/src/utils/sorting';
 import Checkbox from '../../infrastructure/Checkbox';
 import Button from '../../infrastructure/Button';
 import MultiLineSelect from '../MultiLineSelect';

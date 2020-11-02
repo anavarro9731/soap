@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import {
   defaultLightBackgroundColour,
   defaultBorderColour,
-} from '../../modules/src/style/defaults';
+} from '../style/defaults';
 
 export const Grid = styled.div`
   display: grid;

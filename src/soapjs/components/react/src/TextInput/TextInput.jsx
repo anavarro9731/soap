@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { defaultBorderColour } from '../../modules/src/style/defaults';
+import { defaultBorderColour } from '../style/defaults';
 import * as S from './style';
 
 const TextInput = props => (

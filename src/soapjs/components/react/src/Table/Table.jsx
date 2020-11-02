@@ -5,7 +5,7 @@ import {
   defaultTextColour,
   defaultLightBackgroundColour,
   defaultBorderColour,
-} from '../../modules/src/style/defaults';
+} from '../style/defaults';
 
 const mapColumnsToHeaders = props =>
   props.columns.map(column => (

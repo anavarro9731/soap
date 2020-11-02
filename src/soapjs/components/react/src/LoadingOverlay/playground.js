@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import LoadingOverlay from './LoadingOverlay';
-import { useQuery } from '../../modules/src/hooks/api-request';
-import { mockEvent } from '../../modules/src/soap';
+import { useQuery } from '../../../modules/src/hooks/api-request';
+import { mockEvent } from '../../../modules/src/soap';
 import Accordion from '../Accordion';
 import AppWrapper from '../AppWrapper';
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import Section from '../Section/Section';
-import ChevronDown from '../../modules/src/style/images/chevron-down-solid.svg';
-import ChevronRight from '../../modules/src/style/images/chevron-right-solid.svg';
+import Section from '../Section';
+import ChevronDown from 'url:../style/images/chevron-down-solid.svg';
+import ChevronRight from 'url:../style/images/chevron-right-solid.svg';
+import CheckIcon from 'url:../style/images/check-solid.svg';
 import * as S from './style';
 
 const Accordion = props => {
@@ -24,7 +25,7 @@ const Accordion = props => {
       <S.AccordionItem key={section.id} withBorder={!lastItem}>
         <S.Heading>
           <S.ClickToToggleExpand onClick={onClick}>
-            <S.Chevron src={sectionExpanded ? ChevronDown : ChevronRight} />
+            <S.Chevron src={sectionExpanded ? CheckIcon : ChevronRight} />
             <S.Title>{section.title}</S.Title>
           </S.ClickToToggleExpand>
           <S.RightAlignedContent>

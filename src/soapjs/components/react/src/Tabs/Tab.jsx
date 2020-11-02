@@ -3,7 +3,7 @@ import {
   defaultTextColour,
   defaultLightTextColour,
   defaultHighlightColour,
-} from '../../modules/src/style/defaults';
+} from '../style/defaults';
 
 const Tab = props => {
   return props.children;

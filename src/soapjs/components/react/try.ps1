@@ -1,38 +1,17 @@
 Param(
-   [Parameter(Mandatory = $true)]
-   [string] $appPath
+    [Parameter(Mandatory = $true)]
+    [string] $componentName
    )
 
-function Main {
-
    function MoveToReactComponentsRootDirectory {
-
       Set-Location $PSScriptRoot
-
-   }  
-
-   function CleanComponentPath {
-
-      Param([string] $path)
-
-      $path = $path.Trim('/').Trim('\').Replace("\", "/")
-
-      if (-not (Test-Path "$PSScriptRoot/$path")) {
-         throw "Directory $path invalid"
-      }
-
-      return $path
    }
 
-    try {
-
-      $initialDirectory = $PWD
-
-      $appPath = CleanComponentPath $appPath
-      
-      MoveToReactComponentsRootDirectory
-
-@"
+   function Build {
+       
+       function WriteIndexFile
+       {
+           @"
 <!DOCTYPE html>
 <html lang='en'>
    <head>
@@ -47,8 +26,37 @@ function Main {
    </html>
    <script src='$appPath/playground.js'></script>
 "@ | out-file -encoding utf8 ./index.html
+       }
 
-      npx parcel ./index.html
+       WriteIndexFile
+       
+       npx parcel ./index.html
+   }
+   
+   function CleanComponentPath {
+
+      Param([string] $componentName)
+      
+      $path = "./src/$componentName"
+      
+      if (-not (Test-Path "$PSScriptRoot/$path")) {
+         throw "Directory $path invalid"
+      }
+
+      return $path
+   }
+
+function Main {
+
+    try {
+
+      $initialDirectory = $PWD
+
+      $appPath = CleanComponentPath $componentName
+      
+      MoveToReactComponentsRootDirectory
+
+      Build
 
     }
     finally {

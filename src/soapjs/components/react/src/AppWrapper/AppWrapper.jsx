@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ToastContainer from '../ToastContainer';
-import { bus } from '../../modules/src/soap';
-import { EVENTS } from '../../modules/src/classes/eventNames';
-import { useSubscribeToApiEvent } from '../../modules/src/hooks/event';
+import { bus } from '../../../modules/src/soap';
+import { EVENTS } from '../../../modules/src/classes/eventNames';
+import { useSubscribeToApiEvent } from '../../../modules/src/hooks/event';
 import { displayToast, TOAST_TYPES } from '../ToastContainer/toast';
 import * as S from './style';
 import './font.css';

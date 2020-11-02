@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { defaultTextColour } from '../../modules/src/style/defaults';
+import { defaultTextColour } from '../style/defaults';
 import * as S from './style';
 
 const Link = props => (

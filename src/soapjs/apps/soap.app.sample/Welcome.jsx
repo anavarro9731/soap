@@ -1,11 +1,11 @@
 import React from 'react';
 import WelcomeImage from './assets/images/hello_world.png';
-import AppWrapper from '@soapjs/components.app-wrapper';
+import AppWrapper from '@soap/react';
 import {
   translate,
   languages,
   useNewLanguage,
-} from '@soapjs/components.i18n';
+} from '@soap/modules/lib/i18n/index';
 import config from './config';
 import { appKeys, translations } from './modules/translations';
 

@@ -1,12 +1,13 @@
-# Don't check auto-generated stuff into git
-**/coverage/*
-**/build/*
-**/node_modules/
-**/dist/*
-**/playground/*
+
+react/node_modules/
+react/dist
 react/lib
-.parcel-cache/
+react/.parcel-cache/
 react/index.html
+
+modules/node_modules/
+modules/lib
+
 .cache
 .DS_Store
 npm-debug.log
