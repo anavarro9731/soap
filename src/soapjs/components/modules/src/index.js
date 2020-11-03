@@ -1,6 +1,6 @@
 
-export { ValueLabel } from './modules/classes/shared-value-types/ValueLabel';
-export { useQuery, command } from './modules/hooks/api-request';
-export * as i18n from './modules/i18n/index';
-export * as soap from './modules/soap/index' ;
-export * as utils from './modules/utils/index'
+export { ValueLabel } from './classes/shared-value-types/ValueLabel';
+export { useQuery, command } from './hooks/api-request';
+export * as i18n from './i18n/index';
+export * as soap from './soap/index' ;
+export * as utils from './utils/index'

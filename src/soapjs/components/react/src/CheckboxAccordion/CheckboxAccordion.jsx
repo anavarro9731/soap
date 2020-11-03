@@ -4,7 +4,7 @@ import Accordion from '../Accordion';
 import Button from '../Button';
 import ButtonPanel from '../ButtonPanel';
 import Grid from '@material-ui/core/Grid';
-import { translate, keys } from '../../../modules/src/i18n';
+import { translate, keys } from '@soap/modules/lib/i18n';
 import { useFormikContext } from 'formik';
 import Checkbox from '../Checkbox';
 

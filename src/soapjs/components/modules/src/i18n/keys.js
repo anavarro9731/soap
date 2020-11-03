@@ -1,9 +1,16 @@
-export default {
-  add: 'add',
-  back: 'back',
-  no: 'no',
-  optional: 'optional',
-  required: 'required',
-  save: 'save',
-  yes: 'yes',
-};
+const keys = [
+  "add",
+  "back",
+  "no",
+  "optional",
+  "required",
+  "save",
+  "yes"
+];
+
+const keyMap = {};
+keys.forEach(key => {
+  keyMap[key] = key;
+});
+
+export default keyMap;

@@ -1,5 +1,11 @@
-import { types, validateArgs, md5Hash } from './util.js';
+import {types, validateArgs, md5Hash, optional} from './util.js';
 import { bus } from './index';
+
+/*
+reasons for separate headers and payload on msg roots
+payload separate so you can validate args on a fixed structure in js
+headers for same reason, but modeled as a dictionary so serialisation to backend is easier than a combinatorial explosion of models
+ */
 
 export class MessageEnvelope {
   constructor(msg, conversationId) {
@@ -35,18 +41,31 @@ export class ApiQuery extends ApiCommand {
 
 export class ApiEvent extends ApiMessage {}
 
-export class TestEvent_Results {
-  constructor(id) {
-    this.$type = 'TestEvent_Results';
+//* Example of Actual Message with nested classes and .NET name
+
+class TestEvent extends ApiEvent {
+  constructor({ results }) {
+
+    validateArgs(
+        [{ results }, [Results]]
+    );
+    
+    super();
+    this.$type = 'Soap.TestEvent, AssemblyName'; //TODO:
+    this.results = results;
+  }
+}
+class Results {
+  constructor({id}) {
+
+    validateArgs(
+        [{ id }, types.number]
+    );
+    
+    this.$type = 'Soap.TestEvent+Results, AssemblyName';
     this.id = id;
   }
 }
+TestEvent.Results = Results;
 
-export class TestEvent extends ApiEvent {
-  constructor(resultIds) {
-    super();
-    this.$type = 'TestEvent';
-    if (!!resultIds)
-      this.resultIds = resultIds.map(x => new TestEvent_Results(x));
-  }
-}
+export { TestEvent };

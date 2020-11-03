@@ -1,23 +1,13 @@
 import { translate, keys } from '../i18n';
 
-export const daysOfTheWeek = {
-  MONDAY: 'Monday',
-  TUESDAY: 'Tuesday',
-  WEDNESDAY: 'Wednesday',
-  THURSDAY: 'Thursday',
-  FRIDAY: 'Friday',
-  SATURDAY: 'Saturday',
-  SUNDAY: 'Sunday',
-};
-
 export const daysOfTheWeekSelectionOptions = [
-  { value: daysOfTheWeek.MONDAY, label: translate(keys.monday) },
-  { value: daysOfTheWeek.TUESDAY, label: translate(keys.tuesday) },
-  { value: daysOfTheWeek.WEDNESDAY, label: translate(keys.wednesday) },
-  { value: daysOfTheWeek.THURSDAY, label: translate(keys.thursday) },
-  { value: daysOfTheWeek.FRIDAY, label: translate(keys.friday) },
-  { value: daysOfTheWeek.SATURDAY, label: translate(keys.saturday) },
-  { value: daysOfTheWeek.SUNDAY, label: translate(keys.sunday) },
+  { value: keys.monday, label: translate(keys.monday) },
+  { value: keys.tuesday, label: translate(keys.tuesday) },
+  { value: keys.thursday, label: translate(keys.wednesday) },
+  { value: keys.thursday, label: translate(keys.thursday) },
+  { value: keys.friday, label: translate(keys.friday) },
+  { value: keys.saturday, label: translate(keys.saturday) },
+  { value: keys.sunday, label: translate(keys.sunday) },
 ];
 
 export const timeSelectionOptions = (interval = 1) => {
@@ -33,9 +23,9 @@ export const timeSelectionOptions = (interval = 1) => {
 
       const time = `${hours}:${minutes}`;
 
-      const timeWithSeconds = `${hours}:${minutes}:00`;
+    //  const timeWithSeconds = `${hours}:${minutes}:00`;
 
-      return { value: timeWithSeconds, label: time };
+      return { value: time, label: time };
     },
   );
 };

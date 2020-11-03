@@ -1,7 +1,7 @@
 import { wireErrorHandlerOfLastResort } from '../index.js';
 
 test("unhandled errors are caught", () => {
-
+    
     //arrange
     wireErrorHandlerOfLastResort((error) => {
         //assert

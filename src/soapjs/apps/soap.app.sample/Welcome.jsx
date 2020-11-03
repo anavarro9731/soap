@@ -1,20 +1,15 @@
 import React from 'react';
 import WelcomeImage from './assets/images/hello_world.png';
-import AppWrapper from '@soap/react';
-import {
-  translate,
-  languages,
-  useNewLanguage,
-} from '@soap/modules/lib/i18n/index';
-import config from './config';
-import { appKeys, translations } from './modules/translations';
+import { AppWrapper } from '@soap/react';
+import { i18n } from '@soap/modules';
+import regeneratorRuntime from 'regenerator-runtime';
 
-useNewLanguage(languages.EN_CUSTOM, translations);
+const { translate, keys } = i18n;
 
 const Welcome = () => (
   <AppWrapper>
       <img src={WelcomeImage} alt="Logo" />
-      <h1>To Our App</h1>
+      <h1>{translate(keys.back)}</h1>
   </AppWrapper>
 );
 

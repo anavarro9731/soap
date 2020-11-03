@@ -13,7 +13,7 @@ export default {
 
     if (eventEnvelope.headers.channel === bus.channels.queries) {
       if (!!eventEnvelope.headers.queryHash)
-        //- then nothing will be cached so you will reask every time (e.g. testing)
+        //- then nothing will be cached so you will ask again every time (e.g. testing)
         queryCache.addOrReplace(
           eventEnvelope.headers.queryHash,
           eventEnvelope.payload,
@@ -21,7 +21,6 @@ export default {
     }
 
     let converted = undefined;
-
     try {
       converted = wrapInProxy(
         parse(
@@ -32,8 +31,7 @@ export default {
           ),
         ),
       );
-
-      console.log('CONVERTED - ', converted);
+      
     } catch (error) {
       console.error('!!CONVERSION ERROR!! ', error);
     }

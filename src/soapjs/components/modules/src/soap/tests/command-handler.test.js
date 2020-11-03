@@ -2,8 +2,7 @@ import { mockEvent } from '../command-handler.js';
 import {
   ApiQuery,
   ApiCommand,
-  TestEvent,
-  TestEvent_Results,
+  TestEvent
 } from '../messages.js';
 import { commandHandler } from '../index.js';
 import bus from '../bus.js';
@@ -15,18 +14,19 @@ test('queries receive results', () => {
 
   let gotIt = false;
 
-  mockEvent(query, [new TestEvent([1, 2])]);
+    mockEvent(query, [new TestEvent({ results: [new TestEvent.Results({id: 1}), new TestEvent.Results({id: 2})] })]);
 
   //- listen for response to query
   const conversationId = commandHandler.handle(
     query,
     (result, postalEnvelope) => {
       expect(result instanceof TestEvent).toBe(true);
-      expect(result.resultIds[0] instanceof TestEvent_Results).toBe(true);
+      expect(result.resultIds[0] instanceof TestEvent.Results).toBe(true);
 
-      if (result.resultIds[0].id === 1) {
+      if (result.results[0].id === 1) {
         gotIt = true;
       }
+      console.log("*&&&&&&&&&&&&&&&&&&")
       const x = result.notexist;
       //result.notexist = 1;
     },
@@ -47,13 +47,13 @@ test('straight commands can receive results', () => {
 
   let gotIt = false;
 
-  mockEvent(command, [new TestEvent([1, 2])]);
+  mockEvent(command, [new TestEvent({ results: [new TestEvent.Results({id: 1}), new TestEvent.Results({id: 2})] })]);
 
   //- listen for response to query
   const conversationId = commandHandler.handle(
     command,
     (result, postalEnvelope) => {
-      if (result.resultIds[0].id === 1) {
+      if (result.results[0].id === 1) {
         gotIt = true;
       }
     },

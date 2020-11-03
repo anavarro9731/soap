@@ -1,4 +1,4 @@
-import { sortArrayByObjectPropertyAlphanumerically } from '../sorting';
+import { sortArrayByObjectPropertyAlphanumerically } from '../formatting';
 
 describe('when calling sortArrayByObjectPropertyAlphanumerically', () => {
   let array, sortedArray, expectedArray;

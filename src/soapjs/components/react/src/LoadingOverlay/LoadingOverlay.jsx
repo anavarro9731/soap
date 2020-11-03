@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { bus } from '../../../modules/src/soap';
+import { bus } from '@soap/modules/lib/soap';
 import * as S from './style';
 
 const LoadingOverlay = props => {

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { sortArrayByObjectPropertyAlphanumerically } from '../../../modules/src/utils/sorting';
-import Checkbox from '../../infrastructure/Checkbox';
-import Button from '../../infrastructure/Button';
+import { sortArrayByObjectPropertyAlphanumerically } from '@soap/modules/lib/utils/sorting';
+import Checkbox from '../Checkbox';
+import Button from '../Button';
 import MultiLineSelect from '../MultiLineSelect';
 import * as S from './style';
 

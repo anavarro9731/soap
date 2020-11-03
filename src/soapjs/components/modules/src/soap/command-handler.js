@@ -13,7 +13,7 @@ export function mockEvent(commandClass, correspondingEvents) {
     : [correspondingEvents];
 
   validateArgs(
-    [{ commandClass }, types.function],
+    [{ commandClass }, types.object],
     [{ correspondingEvents }, [types.object]],
   );
 
@@ -30,6 +30,7 @@ export function mockEvent(commandClass, correspondingEvents) {
         ? bus.channels.queries
         : bus.channels.commands;
     eventEnvelope.headers.channel = commandBusChannel; //- would normally be set with publisher which is out of our control (e.g. server)
+    eventEnvelope.headers.schema = commandClass.constructor.name; //- would normally be set with publisher which is out of our control (e.g. server)
     /* normally we would want to set eventEnvelope.headers.queryHash = commandHash;
       but querycache is a singleton in essence and we don't want that shared between tests */
     if (!mockEvents[commandName]) {
@@ -141,7 +142,7 @@ export default {
         // fake API responses
         mockedEventsForCommand.forEach(eventEnvelope => {
           eventEnvelope.headers.conversationId = commandConversationId;
-
+          
           eventHandler.handle(eventEnvelope);
         });
       }
