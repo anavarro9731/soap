@@ -9,6 +9,7 @@ export const useSubscribeToApiEvent = (
 ) => {
   useEffect(() => {
     const sub = bus.subscribe(channel, eventName, onEventReceived);
+    //* cleanup hook
     return () => {
       postal.unsubscribe(sub);
     };

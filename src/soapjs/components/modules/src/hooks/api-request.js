@@ -1,46 +1,49 @@
-import { useState, useEffect } from 'react';
-import { commandHandler, bus } from '../soap';
+import {useEffect, useState} from 'react';
+import {bus, commandHandler, types, validateArgs} from '../soap';
 
-export const useQuery = (
-  query,
-  {
-    condition = true,
-    refetchOnChange = [],
-    acceptableStalenessFactorInSeconds = 0,
-  } = {},
-) => {
-  const [queryResult, setQueryResult] = useState();
+export function useQueryOptions(condition, arrayWhichCausesRequeryOnChange, acceptableStalenessFactorInSeconds) {
+    this.condition = condition ?? true;
+    this.arrayWhichCausesRequeryOnChange =  Array.isArray(arrayWhichCausesRequeryOnChange)
+        ? arrayWhichCausesRequeryOnChange
+        : [arrayWhichCausesRequeryOnChange];
+    this.acceptableStalenessFactorInSeconds = acceptableStalenessFactorInSeconds ?? 0;
+}
 
-  const refetchOnChangeArray = Array.isArray(refetchOnChange)
-    ? refetchOnChange
-    : [refetchOnChange];
+export const useQuery = function (
+    query,
+    options = new useQueryOptions()) {
 
-  const onResponse = data => {
-    setQueryResult(data);
-  };
+    validateArgs([options, useQueryOptions]);
+    
+    const [queryResult, setQueryResult] = useState();
 
-  useEffect(() => {
-    let conversationId = undefined;
-
-    if (condition === true) {
-      conversationId = commandHandler.handle(
-        query,
-        onResponse,
-        acceptableStalenessFactorInSeconds,
-      );
-    }
-
-    return () => {
-      if (conversationId) {
-        bus.closeConversation(conversationId);
-      }
+    const onResponse = data => {
+        setQueryResult(data);
     };
-  }, refetchOnChangeArray);
 
-  return queryResult;
+    useEffect(() => {
+        let conversationId = undefined;
+
+        if (options.condition === true) {
+            conversationId = commandHandler.handle(
+                query,
+                onResponse,
+                options.acceptableStalenessFactorInSeconds,
+            );
+        }
+
+        //* cleanup hook 
+        return () => {
+            if (conversationId) {
+                bus.closeConversation(conversationId);
+            }
+        };
+    }, options.arrayWhichCausesRequeryOnChange);
+
+    return queryResult;
 };
 
 export const command = command => {
-  const conversationId = commandHandler.handle(command, () => null, 0);
-  bus.closeConversation(conversationId);
+    const conversationId = commandHandler.handle(command, () => null, 0);
+    bus.closeConversation(conversationId);
 };

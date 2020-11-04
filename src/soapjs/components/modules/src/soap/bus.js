@@ -52,7 +52,7 @@ export default {
   closeConversation: function(conversationId) {
     validateArgs([{ conversationId }, types.string]);
 
-    postal.unsubscribeFor(s => s.topic === `*.${conversationId}`);
+    postal.unsubscribeFor(s => s.topic === `#.${conversationId}`);
 
     config.log(
       `UNSUBSCRIBED to all messages in conversation: ${conversationId}`,
