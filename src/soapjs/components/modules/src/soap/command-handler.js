@@ -1,47 +1,88 @@
-import {types, uuidv4, validateArgs} from './util.js';
+import {convertDotNetAssemblyQualifiedNameToJsClassName, md5Hash, types, uuidv4, validateArgs} from './util';
 import {bus, eventHandler, queryCache} from './index';
 import config from './config';
-import {ApiQuery, MessageEnvelope} from './messages.js';
+import {
+    ApiMessage,
+    createRegisteredTypedMessageInstanceFromAnonymousObject,
+    registerTypeDefinitionFromAnonymousObject
+} from './messages.js';
 
 let mockEvents = {};
 
-export function mockEvent(commandClass, correspondingEvents) {
+export function mockEvent(command, correspondingEvents) {
     correspondingEvents = Array.isArray(correspondingEvents)
         ? correspondingEvents
         : [correspondingEvents];
 
     validateArgs(
-        [{commandClass}, types.object],
-        [{correspondingEvents}, [types.object]],
+        [{command}, ApiMessage],
+        [{correspondingEvents}, [ApiMessage]],
     );
 
-    const commandName = commandClass.name;
-
     correspondingEvents.forEach(event => {
-        const eventEnvelope = new MessageEnvelope(
-            event,
-            "we won't know till later, so we'll replace it later",
-        );
+        
+        const anonymousEvent = addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event);
 
-        const commandBusChannel =
-            commandClass instanceof ApiQuery
-                ? bus.channels.queries
-                : bus.channels.commands;
-        eventEnvelope.headers.channel = commandBusChannel; //- would normally be set with publisher which is out of our control (e.g. server)
-        eventEnvelope.headers.schema = commandClass.constructor.name; //- would normally be set with publisher which is out of our control (e.g. server)
-        /* normally we would want to set eventEnvelope.headers.queryHash = commandHash;
-          but querycache is a singleton in essence and we don't want that shared between tests */
+        //* save to queue
+        const commandName = command.constructor.name;  //* gets constructor name
         if (!mockEvents[commandName]) {
             mockEvents[commandName] = [];
         }
-        mockEvents[commandName].push(eventEnvelope);
+        mockEvents[commandName].push(anonymousEvent);
+
     });
 }
 
-/*
-top-level function: separate process block, use out vars, validate args
-nested functions: separate process block if complex
-*/
+function addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event) {
+    
+    /* convert to an anonymous object, when testing to simulate real life
+    
+    IRL it would already be anonymous as it would be serialised to JSON before it comes across the wire, 
+    but in testing we use a hard-coded class, hence the validate check for ApiMessage and not types.object
+    
+    also IRL the object would have the 4 basic headers set
+     */
+    event = JSON.parse(JSON.stringify(event));
+    registerTypeDefinitionFromAnonymousObject(event);
+
+    event.headers = {
+        conversationId: "we won't know till later, so we'll replace it later",
+        channel: bus.channels.events, //- would normally be set with publisher which is out of our control (e.g. server)
+        schema: convertDotNetAssemblyQualifiedNameToJsClassName(event.$type), //- would normally be set with publisher which is out of our control (e.g. server)
+    };
+    const {headers, ...payload} = command;
+    event.headers.commandHash = md5Hash(payload);
+    
+    return event;
+}
+
+export function cacheEvent(command, correspondingEvents) {
+    correspondingEvents = Array.isArray(correspondingEvents)
+        ? correspondingEvents
+        : [correspondingEvents];
+    
+    validateArgs(
+        [{command}, ApiMessage],
+        [{correspondingEvents}, [ApiMessage]],
+    );
+
+    //* because the queryCache module is a singleton ( making private vars are singletons ) we need to clear cache each test
+    queryCache.clear();
+    
+    const commandHash = md5Hash(command);
+    
+    correspondingEvents.forEach(event => {
+
+        const anonymousEvent = addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event);
+        
+        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousEvent);
+
+        /* TODO at present you can only register and query one event per command, in future this could be changed to allow for multiple responses 
+        since that is how the command might behave if it was not cached. however for most scenarios this is OK and changing it would complicate matters
+         */
+        queryCache.addOrReplace(commandHash, typedEventWrappedInProxy); 
+    });
+}
 
 export default {
     handle: function handle(
@@ -49,14 +90,15 @@ export default {
         onResponse,
         acceptableStalenessFactorInSeconds,
     ) {
+
         validateArgs(
-            [{command}, types.object],
+            [{command}, ApiMessage],
             [{onResponse}, types.function],
             [{acceptableStalenessFactorInSeconds}, types.number],
         );
 
         if (
-            foundCachedResultsWhenDealingWithAQuery(
+            foundCachedResults(
                 command,
                 onResponse,
                 acceptableStalenessFactorInSeconds,
@@ -76,33 +118,39 @@ export default {
         all outbound queries have a conversationid which is terminated when CloseConversation is called
         */
 
-        const commandEnvelope = new MessageEnvelope(command, conversationId);
+        //* set headers
+        command.headers.conversationId = conversationId;
+        command.headers.channel = bus.channels.commands;
+        command.headers.schema = command.constructor.name;
+        const {headers, ...payload} = command;
+        command.headers.commandHash = md5Hash(payload);
 
-        subscribeCallerToEventResponses(commandEnvelope);
+        subscribeCallerToEventResponses(command);
 
-        callApiToTriggerEventResponse(commandEnvelope);
+        sendCommandToApi(command);
 
         return conversationId;
 
         /***********************************************************/
 
-        function subscribeCallerToEventResponses(commandEnvelope) {
+        function subscribeCallerToEventResponses(command) {
             //- everything with this conversation id
             bus.subscribe(
-                commandEnvelope.headers.channel,
+                bus.channels.events,
                 '#',
                 onResponse,
-                commandEnvelope.headers.conversationId,
+                command.headers.conversationId,
             );
         }
 
-        function foundCachedResultsWhenDealingWithAQuery(
+        function foundCachedResults(
             command,
             onResponse,
             acceptableStalenessFactorInSeconds,
         ) {
-            if (command instanceof ApiQuery) {
-                const cacheResult = queryCache.query(
+            if (acceptableStalenessFactorInSeconds > 0) {
+
+                const cacheResult = queryCache.find(
                     command,
                     acceptableStalenessFactorInSeconds,
                 );
@@ -117,11 +165,11 @@ export default {
             }
         }
 
-        function callApiToTriggerEventResponse(commandEnvelope) {
-            const commandName = commandEnvelope.headers.schema;
-            const mockedEventsForCommand = mockEvents[commandName];
+        function sendCommandToApi(command) {
 
-            const commandConversationId = commandEnvelope.headers.conversationId;
+            const commandName = command.headers.schema;
+            const mockedEventsForCommand = mockEvents[commandName];
+            const commandConversationId = command.headers.conversationId;
 
             if (!!mockedEventsForCommand) {
                 attemptToFakeEventResponseFromMockQueue(
@@ -130,8 +178,8 @@ export default {
                 );
             } else {
                 config.getConnected()
-                    ? config.send(commandEnvelope)
-                    : config.addToCommandQueue(commandEnvelope);
+                    ? config.send(command)
+                    : config.addToCommandQueue(command);
             }
 
             function attemptToFakeEventResponseFromMockQueue(
@@ -139,10 +187,9 @@ export default {
                 commandConversationId,
             ) {
                 // fake API responses
-                mockedEventsForCommand.forEach(eventEnvelope => {
-                    eventEnvelope.headers.conversationId = commandConversationId;
-
-                    eventHandler.handle(eventEnvelope);
+                mockedEventsForCommand.forEach(anonymousEvent => {
+                    anonymousEvent.headers.conversationId = commandConversationId;
+                    eventHandler.handle(anonymousEvent);
                 });
             }
         }

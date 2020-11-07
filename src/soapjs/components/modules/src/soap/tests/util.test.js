@@ -1,4 +1,4 @@
-import { types, optional, validateArgs } from '../util.js'
+import { types, optional, validateArgs } from '../util'
 
 test("require args test", () => {
 

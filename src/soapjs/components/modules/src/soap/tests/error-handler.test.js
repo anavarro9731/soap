@@ -1,4 +1,4 @@
-import { wireErrorHandlerOfLastResort } from '../index.js';
+import { wireErrorHandlerOfLastResort } from '../index';
 
 test("unhandled errors are caught", () => {
     

@@ -1,4 +1,4 @@
-import { validateArgs, types } from '../../soap';
+import { validateArgs, types } from './util';
 
 export class ValueLabel {
   constructor({ label, value }) {

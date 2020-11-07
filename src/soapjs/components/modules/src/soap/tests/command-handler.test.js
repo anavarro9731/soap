@@ -1,67 +1,61 @@
-import { mockEvent } from '../command-handler.js';
-import {
-  ApiQuery,
-  ApiCommand,
-  TestEvent
-} from '../messages.js';
-import { commandHandler, queryCache } from '../index.js';
-import { md5Hash } from "../util";
-import bus from '../bus.js';
+import {mockEvent, default as commandHandler, cacheEvent} from '../command-handler';
+import {TestEvent_e200v1, TestCommand_c100v1 } from './test-messages';
+import bus from '../bus';
 import postal from 'postal';
+import {getRegisteredMessageType} from "../messages";
 
-test('queries receive results', () => {
-  //- arrange
-  const query = Object.assign(new ApiQuery(), { pointlessprop: '12345' });
 
-  let gotIt = false;
-
-    mockEvent(query, [new TestEvent({ results: [new TestEvent.Results({id: 1}), new TestEvent.Results({id: 2})] })]);
-
-  //- listen for response to query
-  const conversationId = commandHandler.handle(
-    query,
-    (result, postalEnvelope) => {
-      expect(result instanceof TestEvent).toBe(true);
-      expect(result.results[0] instanceof TestEvent.Results).toBe(true);
-
-      if (result.results[0].id === 1) {
-        gotIt = true;
-      }
-
-    },
-    0,
-  );
-  
-  expect(postal.subscriptions.queries[`#.${conversationId}`].length).toBe(1);
-  bus.closeConversation(conversationId);
-
-  expect(postal.subscriptions).toStrictEqual({});
-  expect(gotIt).toBe(true);
-  expect(typeof conversationId).toBe('string');
-});
-
-test('queries receive results from cache', () => {
+test('commands can receive receive events', () => {
     //- arrange
-    const query = Object.assign(new ApiQuery(), { pointlessprop: '12345' });
+    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'});
 
     let gotIt = false;
 
-    const response = new TestEvent({ results: [new TestEvent.Results({id: 1}), new TestEvent.Results({id: 2})] });
-    const queryHash = md5Hash(query);
-
-    queryCache.addOrReplace(queryHash, response);
-
+    mockEvent(command, [new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]})]);
+    
     //- listen for response to query
     const conversationId = commandHandler.handle(
-        query,
-        (result, postalEnvelope) => {
-            expect(result instanceof TestEvent).toBe(true);
-            expect(result.results[0] instanceof TestEvent.Results).toBe(true);
+        command,
+        (event, postalEnvelope) => {
 
-            if (result.results[0].id === 1) {
+            expect(event instanceof getRegisteredMessageType("TestEvent_e200v1")).toBe(true);
+            expect(event.e200_results[0] instanceof getRegisteredMessageType("TestEvent_e200v1.Results")).toBe(true);
+
+            if (event.e200_results[0].e200_id === 1) {
                 gotIt = true;
             }
 
+        },
+        0,
+    );
+
+    expect(postal.subscriptions[bus.channels.events][`#.${conversationId}`].length).toBe(1);
+    bus.closeConversation(conversationId);
+
+    expect(postal.subscriptions).toStrictEqual({});
+    expect(gotIt).toBe(true);
+    expect(typeof conversationId).toBe('string');
+});
+
+test('commands can receive events from cache', () => {
+    //- arrange
+    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'});
+
+    let gotIt = false;
+    
+    const response = new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]})
+    cacheEvent(command, response);
+    
+    //- listen for response to query
+    const conversationId = commandHandler.handle(
+        command,
+        (event, postalEnvelope) => {
+            expect(event instanceof getRegisteredMessageType("TestEvent_e200v1")).toBe(true);
+            expect(event.e200_results[0] instanceof getRegisteredMessageType("TestEvent_e200v1.Results")).toBe(true);
+
+            if (event.e200_results[0].e200_id === 1) {
+                gotIt = true;
+            }
         },
         5,
     );
@@ -71,26 +65,3 @@ test('queries receive results from cache', () => {
     expect(typeof conversationId).toBe('undefined');
 });
 
-
-test('straight commands can receive results', () => {
-  //- arrange
-  const command = Object.assign(new ApiCommand(), { pointlessprop: '12345' });
-
-  let gotIt = false;
-
-  mockEvent(command, [new TestEvent({ results: [new TestEvent.Results({id: 1}), new TestEvent.Results({id: 2})] })]);
-
-  //- listen for response to query
-  const conversationId = commandHandler.handle(
-    command,
-    (result, postalEnvelope) => {
-      if (result.results[0].id === 1) {
-        gotIt = true;
-      }
-    },
-    0,
-  );
-
-  expect(gotIt).toBe(true);
-  expect(typeof conversationId).toBe('string');
-});

@@ -23,7 +23,7 @@ export const useQuery = function (
 
     useEffect(() => {
         let conversationId = undefined;
-
+        
         if (options.condition === true) {
             conversationId = commandHandler.handle(
                 query,

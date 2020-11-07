@@ -4,6 +4,11 @@
 
     public static class StringExt
     {
+        public static string ToCamelCase(this string source)
+        {
+            return Char.ToLowerInvariant(source[0]) + source.Substring(1);
+        }
+        
         /// <summary>
         ///     Trims a full string (rather than an array of possible characters) from the start of a string
         /// </summary>

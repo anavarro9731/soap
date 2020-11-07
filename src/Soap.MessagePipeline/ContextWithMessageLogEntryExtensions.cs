@@ -63,9 +63,9 @@
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
             hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. 
-            TODO the call to getqueuedchanges would pickup datastore and bus ops if they hadn't been committed above
+            TODO: the call to getqueuedchanges would pickup datastore and bus ops if they hadn't been committed above
             maybe it should filter them out? can't see how without bugs in datastore or bus's commitchanges that would matter
-            but if there were such bugs this might mask them?*/
+            but if there were such bugs this might mask them? */
             foreach (var queuedStateChange in context.GetQueuedChanges())
             {
                 await queuedStateChange.CommitClosure();

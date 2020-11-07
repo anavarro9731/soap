@@ -1,4 +1,4 @@
-import { types, optional, validateArgs } from './util.js';
+import { types, optional, validateArgs } from './util';
 import postal from 'postal';
 import config from './config';
 
@@ -60,7 +60,6 @@ export default {
   },
 
   channels: {
-    queries: 'queries',
     events: 'events',
     commands: 'commands',
     errors: 'errors',

@@ -2,7 +2,6 @@ import React from 'react';
 import WelcomeImage from './assets/images/hello_world.png';
 import { AppWrapper } from '@soap/react';
 import { i18n } from '@soap/modules';
-import regeneratorRuntime from 'regenerator-runtime';
 
 const { translate, keys } = i18n;
 

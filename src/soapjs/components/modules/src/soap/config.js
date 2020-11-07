@@ -1,5 +1,3 @@
-import * as M from './messages';
-
 if (
   globalThis.soap_connected === undefined &&
   globalThis.soap_startupCommandQueue === undefined
@@ -11,9 +9,6 @@ if (
 export default {
   log(msg) {
     console.log(msg);
-  },
-  getMessages() {
-    return M;
   },
   setConnected(value) {
     globalThis.soap_connected = value;

@@ -1,5 +1,5 @@
-import bus from './bus.js'
-import config from './config.js'
+import bus from './bus'
+import config from './config'
 
 export default function wireErrorHandlerOfLastResort(finalGlobalCallback) {
 

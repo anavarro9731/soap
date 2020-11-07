@@ -10,6 +10,13 @@ export const types = Object.freeze({
 
 export const optional = true;
 
+export function convertDotNetAssemblyQualifiedNameToJsClassName(assemblyQualifiedName) {
+  //* expect .NET fully qualified assembly name
+  const matches = assemblyQualifiedName.match(/\.([^.]+),/i);
+  const classType = matches[1].replace(/\+/g, '.');
+  return classType;
+}
+
 export function validateArgs(...requiredArgs) {
   requiredArgs.forEach(arg => {
     const argName = Object.keys(arg[0])[0]; //- get first property key
@@ -54,10 +61,10 @@ export function validateArgs(...requiredArgs) {
   }
 }
 
-export const recursivelyConvertObjectNullPropertiesToUndefined = item => {
+export const convertObjectNullPropertiesToUndefined = item => {
   if (Array.isArray(item)) {
     return item.map(arrayItem =>
-      recursivelyConvertObjectNullPropertiesToUndefined(arrayItem),
+      convertObjectNullPropertiesToUndefined(arrayItem),
     );
   }
   if (typeof item !== 'object' || item === null)
@@ -69,11 +76,11 @@ export const recursivelyConvertObjectNullPropertiesToUndefined = item => {
     let newValue = item[key];
 
     if (typeof value === 'object' && value !== null) {
-      newValue = recursivelyConvertObjectNullPropertiesToUndefined(value);
+      newValue = convertObjectNullPropertiesToUndefined(value);
     }
     if (Array.isArray(value)) {
       newValue = value.map(arrayItem =>
-        recursivelyConvertObjectNullPropertiesToUndefined(arrayItem),
+        convertObjectNullPropertiesToUndefined(arrayItem),
       );
     }
     return {
