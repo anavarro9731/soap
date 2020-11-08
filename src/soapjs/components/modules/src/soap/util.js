@@ -4,8 +4,9 @@ export const types = Object.freeze({
   boolean: typeof true,
   number: typeof 1,
   string: typeof '',
-  function: typeof eval,
+  function: typeof eval, 
   symbol: typeof Symbol(),
+  datetime: 'datetime'
 });
 
 export const optional = true;

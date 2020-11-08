@@ -1,11 +1,7 @@
 import {convertDotNetAssemblyQualifiedNameToJsClassName, md5Hash, types, uuidv4, validateArgs} from './util';
 import {bus, eventHandler, queryCache} from './index';
 import config from './config';
-import {
-    ApiMessage,
-    createRegisteredTypedMessageInstanceFromAnonymousObject,
-    registerTypeDefinitionFromAnonymousObject
-} from './messages.js';
+import {createRegisteredTypedMessageInstanceFromAnonymousObject} from './messages.js';
 
 let mockEvents = {};
 
@@ -15,35 +11,25 @@ export function mockEvent(command, correspondingEvents) {
         : [correspondingEvents];
 
     validateArgs(
-        [{command}, ApiMessage],
-        [{correspondingEvents}, [ApiMessage]],
+        [{command}, types.object],
+        [{correspondingEvents}, [types.object]],
     );
 
     correspondingEvents.forEach(event => {
-        
-        const anonymousEvent = addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event);
+
+        addHeaders(command, event);
 
         //* save to queue
         const commandName = command.constructor.name;  //* gets constructor name
         if (!mockEvents[commandName]) {
             mockEvents[commandName] = [];
         }
-        mockEvents[commandName].push(anonymousEvent);
+        mockEvents[commandName].push(event);
 
     });
 }
 
-function addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event) {
-    
-    /* convert to an anonymous object, when testing to simulate real life
-    
-    IRL it would already be anonymous as it would be serialised to JSON before it comes across the wire, 
-    but in testing we use a hard-coded class, hence the validate check for ApiMessage and not types.object
-    
-    also IRL the object would have the 4 basic headers set
-     */
-    event = JSON.parse(JSON.stringify(event));
-    registerTypeDefinitionFromAnonymousObject(event);
+function addHeaders(command, event) {
 
     event.headers = {
         conversationId: "we won't know till later, so we'll replace it later",
@@ -52,35 +38,34 @@ function addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event) {
     };
     const {headers, ...payload} = command;
     event.headers.commandHash = md5Hash(payload);
-    
-    return event;
+
 }
 
 export function cacheEvent(command, correspondingEvents) {
     correspondingEvents = Array.isArray(correspondingEvents)
         ? correspondingEvents
         : [correspondingEvents];
-    
+
     validateArgs(
-        [{command}, ApiMessage],
-        [{correspondingEvents}, [ApiMessage]],
+        [{command}, types.object],
+        [{correspondingEvents}, [types.object]],
     );
 
     //* because the queryCache module is a singleton ( making private vars are singletons ) we need to clear cache each test
     queryCache.clear();
-    
+
     const commandHash = md5Hash(command);
-    
+
     correspondingEvents.forEach(event => {
 
-        const anonymousEvent = addHeadersConvertToAnonymousTypeAndRegisterTypeDef(command, event);
-        
-        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousEvent);
+        addHeaders(command, event);
+
+        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(event);
 
         /* TODO at present you can only register and query one event per command, in future this could be changed to allow for multiple responses 
         since that is how the command might behave if it was not cached. however for most scenarios this is OK and changing it would complicate matters
          */
-        queryCache.addOrReplace(commandHash, typedEventWrappedInProxy); 
+        queryCache.addOrReplace(commandHash, typedEventWrappedInProxy);
     });
 }
 
@@ -92,7 +77,7 @@ export default {
     ) {
 
         validateArgs(
-            [{command}, ApiMessage],
+            [{command}, types.object],
             [{onResponse}, types.function],
             [{acceptableStalenessFactorInSeconds}, types.number],
         );

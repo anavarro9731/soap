@@ -25,10 +25,10 @@
 
                 switch (message.ReleaseVersion)
                 {
-                    case ReleaseVersions.V1:
+                    case var v when v == C101UpgradeTheDatabase.ReleaseVersions.V1:
                         await V1();
                         break;
-                    case ReleaseVersions.V2:
+                    case var v when v == C101UpgradeTheDatabase.ReleaseVersions.V2:
                         await V2();
                         break;
                     default:
@@ -74,7 +74,7 @@
 
             Task SetDbVersion()
             {
-                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ServiceStateOperations.ReleaseVersions.V2);
             }
         }
 

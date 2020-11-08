@@ -13,6 +13,15 @@
 
     public class ServiceStateOperations : Operations<ServiceState>
     {
+        public enum ReleaseVersions
+        {
+            Null,
+
+            V1,
+
+            V2
+        }
+
         public static readonly Guid ServiceStateId = Guid.Parse("13de6317-9797-4cee-a69e-ecea7c5c8a5a");
 
         public Func<Task<ServiceState>> CreateServiceState =>

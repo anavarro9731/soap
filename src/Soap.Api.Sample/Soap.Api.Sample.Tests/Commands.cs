@@ -18,9 +18,9 @@
                 PingedAt = DateTime.UtcNow
             };
 
-        public static C101UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101UpgradeTheDatabase(ReleaseVersions.V1);
+        public static C101UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101UpgradeTheDatabase(C101UpgradeTheDatabase.ReleaseVersions.V1);
 
-        public static C101UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101UpgradeTheDatabase(ReleaseVersions.V2);
+        public static C101UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101UpgradeTheDatabase(C101UpgradeTheDatabase.ReleaseVersions.V2);
         
     }
 }

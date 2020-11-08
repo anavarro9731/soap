@@ -36,7 +36,7 @@
                                                                .Select(x => Activator.CreateInstance(x) as ApiMessage)
                                                                .ToList();
 
-            var schema = CachedSchema.Create(appConfig, messages).Value.Schema;
+            var schema = new CachedSchema(appConfig, messages).Schema;
 
             return schema;
         }

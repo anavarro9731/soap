@@ -14,18 +14,26 @@ export class TestCommand_c100v1 extends ApiMessage {
         this.$type = 'Soap.Messages.Commands.TestCommand_c100v1, Soap.Messages';
         this.c100_pointlessProp = c100_pointlessProp;
     }
+
+    static CreateTemplate() {
+        return new this({c100_pointlessProp: '12345'});
+    }
 }
 
 class TestEvent_e200v1 extends ApiMessage {
     constructor({e200_results}) {
 
         validateArgs(
-            [{e200_results}, [Results]]
+            [{e200_results}, [Results], true]
         );
 
         super();
         this.$type = 'Soap.Messages.Events.TestEvent_e200v1, Soap.Messages';
         this.e200_results = e200_results;
+    }
+
+    static CreateTemplate() {
+        return new this({e200_results: [new Results({e200_id: 1})]});
     }
 }
 

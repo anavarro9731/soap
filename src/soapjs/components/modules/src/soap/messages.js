@@ -12,6 +12,10 @@ export class ApiMessage {
             schema: undefined
         };
     }
+    
+    convertToAnonymousObject() {
+        return JSON.parse(JSON.stringify(this));
+    }
 }
 
 export function getListOfRegisteredMessages() {

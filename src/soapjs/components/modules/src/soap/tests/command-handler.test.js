@@ -1,17 +1,20 @@
 import {mockEvent, default as commandHandler, cacheEvent} from '../command-handler';
 import {TestEvent_e200v1, TestCommand_c100v1 } from './test-messages';
+import { defineTestMessages } from './test-message-utils';
 import bus from '../bus';
 import postal from 'postal';
-import {getRegisteredMessageType} from "../messages";
-
+import {getRegisteredMessageType, } from "../messages";
 
 test('commands can receive receive events', () => {
     //- arrange
-    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'});
-
+    defineTestMessages();
+    
+    //* convert to anonymous serialised form as you would get from the web
+    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'}).convertToAnonymousObject();
+    const testEvent1 = new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]}).convertToAnonymousObject();
     let gotIt = false;
-
-    mockEvent(command, [new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]})]);
+    
+    mockEvent(command, [testEvent1]);
     
     //- listen for response to query
     const conversationId = commandHandler.handle(
@@ -39,6 +42,9 @@ test('commands can receive receive events', () => {
 
 test('commands can receive events from cache', () => {
     //- arrange
+
+    defineTestMessages();
+    
     const command = new TestCommand_c100v1({c100_pointlessProp: '12345'});
 
     let gotIt = false;
