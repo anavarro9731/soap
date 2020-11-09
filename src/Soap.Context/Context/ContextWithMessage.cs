@@ -33,8 +33,7 @@
         public ApiMessage Message { get; }
 
         public (DateTime receivedTime, long receivedTicks) TimeStamp { get; }
-
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings() => this.functions.GetErrorCodeMappings();
+        
 
         public Task Handle(ApiMessage msg) => this.functions.Handle(msg);
 

@@ -29,14 +29,14 @@
 
     public static class DiagnosticFunctions
     {
-        public static string GetSchema(ApplicationConfig appConfig, Assembly messagesAssembly)
+        public static CachedSchema GetSchema(ApplicationConfig appConfig, Assembly messagesAssembly)
         {
             IEnumerable<ApiMessage> messages = messagesAssembly.GetTypes()
                                                                .Where(t => t.InheritsOrImplements(typeof(ApiMessage)))
                                                                .Select(x => Activator.CreateInstance(x) as ApiMessage)
                                                                .ToList();
 
-            var schema = new CachedSchema(appConfig, messages).Schema;
+            var schema = new CachedSchema(appConfig, messages);
 
             return schema;
         }

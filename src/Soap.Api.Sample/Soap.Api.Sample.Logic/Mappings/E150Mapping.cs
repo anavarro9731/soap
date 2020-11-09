@@ -9,7 +9,6 @@
 
     public class E150Mapping : IMessageFunctionsClientSide<E150Pong>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
         public IContinueProcess<E150Pong>[] HandleWithTheseStatefulProcesses { get; } =
         {

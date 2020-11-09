@@ -11,7 +11,6 @@ namespace Soap.Api.Sample.Logic.Mappings
 
     public class C104Mapping : IMessageFunctionsClientSide<C104TestUnitOfWork>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
         public IContinueProcess<C104TestUnitOfWork>[] HandleWithTheseStatefulProcesses { get; }
 

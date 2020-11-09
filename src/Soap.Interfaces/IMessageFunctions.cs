@@ -7,8 +7,6 @@
 
     public interface IMessageFunctionsServerSide
     {
-        Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings();
-
         Task Handle(ApiMessage msg);
 
         Task HandleFinalFailure(MessageFailedAllRetries msg);
@@ -21,8 +19,7 @@
                                                       ICanCall<IQuery>,
                                                       ICanCall<IStatefulProcess> where T : ApiMessage
     {
-        Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
-
+        
         IContinueProcess<T>[] HandleWithTheseStatefulProcesses { get; }
 
         Task Handle(T msg);

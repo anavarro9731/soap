@@ -10,9 +10,9 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.PfBase.Api;
 
-    public static class PrintSchema
+    public static class GetJsonSchema
     {
-        [FunctionName("PrintSchema")]
+        [FunctionName("GetJsonSchema")]
         public static IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
             HttpRequest req,
@@ -25,7 +25,7 @@
                 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100Ping).Assembly).PlainTextSchema;
+                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100Ping).Assembly).AsJson;
 
                 return new OkObjectResult(result);
             }

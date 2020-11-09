@@ -16,10 +16,6 @@
         {
             this.messageFunctionsTyped = messageFunctionsTyped;
         }
-
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMappings() =>
-            this.messageFunctionsTyped.GetErrorCodeMapper ?? new Dictionary<ErrorCode, ErrorCode>();
-
         public async Task Handle(ApiMessage msg)
         {
             if (msg.Headers.HasStatefulProcessId())

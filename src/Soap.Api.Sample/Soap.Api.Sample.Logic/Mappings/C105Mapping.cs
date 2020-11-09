@@ -11,7 +11,6 @@ namespace Soap.Api.Sample.Logic.Mappings
 
     public class C105Mapping : IMessageFunctionsClientSide<C105SendLargeMessage>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
         public IContinueProcess<C105SendLargeMessage>[] HandleWithTheseStatefulProcesses { get; }
 

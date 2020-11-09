@@ -4,8 +4,6 @@
 
     public class ErrorCode : Enumeration<ErrorCode>
     {
-        public bool IsGlobal { get; set; }
-
         public static ErrorCode Create(Guid code, string messageSafeForInternalAndExternalClients) =>
             Create(code.ToString(), messageSafeForInternalAndExternalClients);
 

@@ -10,7 +10,6 @@
 
     public class C103Mapping : IMessageFunctionsClientSide<C103StartPingPong>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
         public IContinueProcess<C103StartPingPong>[] HandleWithTheseStatefulProcesses { get; }
 

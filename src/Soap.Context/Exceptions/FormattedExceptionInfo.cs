@@ -7,6 +7,7 @@
     using Soap.Context.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
+    using Soap.Utility.Objects.Blended;
 
     public class FormattedExceptionInfo
     {
@@ -39,46 +40,21 @@
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
-                var mapErrorCodesFromDomainToMessageErrorCodes = context.GetErrorCodeMappings();
-                var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error
-                                                                         + Environment.NewLine + domainExceptionWithErrorCode
-                                                                                                 .ToString()
-                                                                                                 .SubstringBefore("--- ");
-
-                if (domainExceptionWithErrorCode.Error.IsGlobal)
+                if (GlobalErrorCodes.GetAll<GlobalErrorCodes>().Contains(domainExceptionWithErrorCode.Error))
                 {
                     Errors.Add(
                         (CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
                             domainExceptionWithErrorCode.Error.DisplayName));
                 }
-                else if (mapErrorCodesFromDomainToMessageErrorCodes == null)
+                else 
                 {
+                    var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error
+                                                                             + Environment.NewLine + domainExceptionWithErrorCode
+                                                                                 .ToString()
+                                                                                 .SubstringBefore("--- ");
+                    
                     Errors.Add((CodePrefixes.DOMAIN, null, context.AppConfig.DefaultExceptionMessage));
-                    SensitiveInformation = $"No mapper defined in handler for: {errorMessageAppendixWhenNoMapperExists}";
-                }
-                else
-                {
-                    mapErrorCodesFromDomainToMessageErrorCodes.TryGetValue(domainExceptionWithErrorCode.Error, out var msgCode);
-
-                    //* allow people to map them either way in the dictionary: domain , msg or msg , domain
-                    if (msgCode == null)
-                    {
-                        var key = mapErrorCodesFromDomainToMessageErrorCodes
-                                  .SingleOrDefault(x => x.Value == domainExceptionWithErrorCode.Error)
-                                  .Key;
-                        msgCode = key;
-                    }
-
-                    if (msgCode != null) //- a mapping was setup
-                    {
-                        Errors.Add((CodePrefixes.DOMAIN, (Guid?)Guid.Parse(msgCode.Key), msgCode.DisplayName));
-                    }
-                    else
-                    {
-                        Errors.Add((CodePrefixes.DOMAIN, null, context.AppConfig.DefaultExceptionMessage));
-                        SensitiveInformation =
-                            $"Mapping {{domain error, msg error}} missing from mapper in handler for: {errorMessageAppendixWhenNoMapperExists}";
-                    }
+                    SensitiveInformation = $"No error code defined for: {errorMessageAppendixWhenNoMapperExists}";
                 }
             }
             else if (exception is ExceptionHandlingException)

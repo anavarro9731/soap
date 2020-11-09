@@ -10,7 +10,6 @@
 
     public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
 
         public IContinueProcess<C102GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 

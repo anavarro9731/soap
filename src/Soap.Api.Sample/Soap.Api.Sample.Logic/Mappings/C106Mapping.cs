@@ -12,8 +12,6 @@ namespace Soap.Api.Sample.Logic.Mappings
 
     public class C106Mapping : IMessageFunctionsClientSide<C106LargeCommand>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
-
         public IContinueProcess<C106LargeCommand>[] HandleWithTheseStatefulProcesses { get; }
 
         public Task Handle(C106LargeCommand msg)

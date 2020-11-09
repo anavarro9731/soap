@@ -9,8 +9,6 @@
 
     public class C100Mapping : IMessageFunctionsClientSide<C100Ping>
     {
-        public Dictionary<ErrorCode, ErrorCode> GetErrorCodeMapper { get; }
-
         public IContinueProcess<C100Ping>[] HandleWithTheseStatefulProcesses { get; }
 
         public Task Handle(C100Ping msg) => this.Get<P559PingPong>().Call(x => x.BeginProcess)(msg);
