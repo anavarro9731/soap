@@ -15,14 +15,14 @@
         
         public static JsonSerializerSettings ApiMessageSerialiserSettings = new JsonSerializerSettings
         {
-            DefaultValueHandling = DefaultValueHandling.Include, NullValueHandling = NullValueHandling.Include,
+            DefaultValueHandling = DefaultValueHandling.Include, NullValueHandling = NullValueHandling.Include, //* include them for debugging purposes but they will be changed to undefined in JS constructors 
             DateFormatHandling = DateFormatHandling.IsoDateFormat, TypeNameHandling = TypeNameHandling.Objects, //TODO remove type name handling?
             DateTimeZoneHandling = DateTimeZoneHandling.Utc, ContractResolver = defaultContractResolver
         };
 
         public static JsonSerializerSettings ApiMessageDeserialisationSettings = new JsonSerializerSettings()
         {
-            NullValueHandling = NullValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore, MissingMemberHandling = MissingMemberHandling.Ignore, //* from JS nulls should be undefined and therefore not even present
             DateFormatHandling = DateFormatHandling.IsoDateFormat, TypeNameHandling = TypeNameHandling.Objects,
             DateTimeZoneHandling = DateTimeZoneHandling.Utc, ContractResolver = defaultContractResolver
         };

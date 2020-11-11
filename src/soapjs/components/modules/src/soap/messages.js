@@ -115,7 +115,7 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousMessageObject
                     classBody += `this.validate([{ typed${propertyName} }, messageTypesSingleton["${classNameOfPropertyValue}"]]);\r\n`;  //* validate the conversion
                 }
 
-                classBody += `this.${propertyName} = typed${propertyName};\r\n`; //* set the property to the real type
+                classBody += `this.${propertyName} = typed${propertyName} === null ? undefined : typed${propertyName};\r\n`; //* set the property to the real type avoid nulls
 
             } else {
                 classBody += `this.validate([{ ${propertyName} }, this.types.${typeof propertyValue}]);\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
