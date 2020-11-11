@@ -11,7 +11,6 @@
     using CircuitBoard.Messages;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Objects.Blended;
 
     /* doesn't need it's own project right now because it is not needed by the Soap.Config repo
      since at present config only stores connection string and not a settings object and that 

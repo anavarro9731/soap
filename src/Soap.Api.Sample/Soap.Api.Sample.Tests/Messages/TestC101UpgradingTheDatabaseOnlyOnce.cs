@@ -3,7 +3,9 @@ namespace Soap.Api.Sample.Tests.Messages
     using System.Linq;
     using FluentAssertions;
     using Soap.Api.Sample.Constants;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.Objects.Binary;
     using Xunit;
     using Xunit.Abstractions;
@@ -13,14 +15,14 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
         }
 
         [Fact]
         public void ItShouldSetTheServiceStateDbVersionTo1()
         {
             var ss = Result.DataStore.Read<ServiceState>().Result.Single();
-            ss.DatabaseState.HasState(ReleaseVersions.V1).Should().BeTrue();
+            ss.DatabaseState.HasFlag(C101UpgradeTheDatabase.ReleaseVersions.V1).Should().BeTrue();
         }
     }
 }

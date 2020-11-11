@@ -8,8 +8,7 @@ let messageSchemaTemplates = [];
 export function defineTestMessages() {
     for (const moduleKey in testMessages) {
         const msgConstructor = testMessages[moduleKey];
-        if (messages.ApiMessage.isPrototypeOf(msgConstructor)) {
-            console.log(msgConstructor.toString());
+        if (msgConstructor.CreateTemplate) {
             const anonymousVersion = msgConstructor.CreateTemplate();
             messageSchemaTemplates.push(anonymousVersion);
         }

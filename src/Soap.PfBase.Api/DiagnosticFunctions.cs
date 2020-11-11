@@ -17,6 +17,7 @@
     using Serilog;
     using Soap.Bus;
     using Soap.Config;
+    using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
@@ -150,7 +151,7 @@
                 ApplicationName = appConfig.AppFriendlyName,
                 appConfig.ApplicationVersion,
                 appConfig.AppId,
-                Environment = appConfig.Environment.DisplayName,
+                Environment = appConfig.Environment.Value,
                 appConfig.DefaultExceptionMessage,
                 EntryAssemblyVersion = version,
                 Environment.MachineName,
@@ -174,7 +175,7 @@
             await writeLine("Running Message Test...");
 
             var message = new TPing();
-            message.Headers.EnsureRequiredHeaders();
+            message.Headers.SetDefaultHeadersForIncomingTestMessages(message);
 
             await writeLine($"Sending {typeof(TPing).Name} ...");
 

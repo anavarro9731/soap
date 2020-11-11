@@ -1,14 +1,14 @@
 ﻿namespace Soap.Interfaces
 {
     using System;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Objects.Blended;
 
     public class Blob
     {
         public Blob(Guid id, byte[] bytes, BlobType type)
         {
-            Guard.Against(id.Equals(Guid.Empty), "Blob ID cannot be empty.");
+            if (id.Equals(Guid.Empty)) throw new ArgumentException("Blob id cannot be empty.");
 
             Bytes = bytes;
             Type = type;

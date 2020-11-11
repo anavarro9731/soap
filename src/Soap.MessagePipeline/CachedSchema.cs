@@ -10,9 +10,10 @@
     using System.Text;
     using Newtonsoft.Json;
     using Soap.Config;
+    using Soap.Context;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
 
     public class CachedSchema
     {
@@ -25,6 +26,11 @@
             if (!string.IsNullOrEmpty(_schema)) return;
 
             var messageTypes = messages.Select(h => h.GetType()).OrderBy(t => t.Name);
+
+            var unacceptable = messageTypes.GroupBy(x => x.Name).Where(grp => grp.Count() > 1).Select(x => x.Key);
+            Guard.Against(
+                unacceptable.Any(),
+                $"Cannot have 2 messages with the same class name {unacceptable.FirstOrDefault()} (but different namespaces) in the same project");
 
             GetSchemaOutput(applicationConfig, messageTypes, out var plainText, out var json);
 
@@ -44,8 +50,10 @@
             out string json)
         {
             {
-                GetPlainTextSchemaFromMessageTypes(out plainText);
                 GetJsonSchemaFromMessageTypes(out json);
+                /* NOTE: GetJsonSchemaFromMessageTypes this has the checks so when we run plaintext builder we assume all types are valid
+                 and we only concern ourselves with types as muchas is needed to print them correctly */
+                GetPlainTextSchemaFromMessageTypes(out plainText);
             }
 
             void GetJsonSchemaFromMessageTypes(out string json)
@@ -56,7 +64,17 @@
                     foreach (var type in messageTypes.ToList())
                     {
                         BuildJsonSchemaForMessageType(type, out var message);
-                        jsonSchemaBuilder.AppendLine(JsonConvert.SerializeObject(message));
+                        message.Headers.SetHeadersOnSchemaModelMessage(message);
+
+                        
+                        /* the only way to get null properties would be if they are ignored
+                        that is the logic i think we should keep, null = ignored and you can 
+                        use the plaintext version to compare for a difference */
+                        jsonSchemaBuilder.AppendLine(
+                            JsonConvert.SerializeObject(
+                                message,
+                                Formatting.Indented,
+                                JsonNetSettings.MessageSchemaSerialiserSettings) + ',');
                     }
 
                     jsonSchemaBuilder.AppendLine("]");
@@ -82,6 +100,10 @@
                     object GetWithDefaults(Type aType)
                     {
                         var instance = Activator.CreateInstance(aType);
+                        
+                        /* not sure why this would happen with the current code but its best not to let it slip by.
+                         even though the logic below would still be ok that could change in future */
+                        Guard.Against(instance == null, $"Could not create instance of {aType}"); 
 
                         foreach (var property in aType.GetProperties())
                             if (property.GetSetMethod() != null && property.CanWrite)
@@ -97,38 +119,41 @@
                                     {
                                         property.SetValue(instance, GetDefault(typeof(string)));
                                     }
-                                    else if (typeof(List<>).IsAssignableFrom(propertyType))
+                                    else if (propertyType.IsGenericType
+                                             && propertyType.GetGenericTypeDefinition() == typeof(List<>))
                                     {
-                                        var makeMe = propertyType.MakeGenericType(propertyType);
-                                        var l = Activator.CreateInstance(makeMe) as IList;
                                         var typeParam = propertyType.GenericTypeArguments.First();
+                                        var makeMe = typeof(List<>).MakeGenericType(typeParam);
+                                        var l = Activator.CreateInstance(makeMe) as IList;
                                         var @default = GetDefault(typeParam);
                                         l.Add(@default);
                                         property.SetValue(instance, l);
                                     }
-                                    else if (typeof(Dictionary<,>).IsAssignableFrom(propertyType))
-                                    {
-                                        var makeMe = propertyType.MakeGenericType(propertyType);
-                                        var d = Activator.CreateInstance(makeMe) as IDictionary;
-                                        var keyType = propertyType.GenericTypeArguments.First();
-                                        var valueType = propertyType.GenericTypeArguments.Last();
-                                        var keyValue = GetDefault(keyType);
-                                        var valueValue = GetDefault(valueType);
-                                        d.Add(keyValue, valueValue);
-                                        property.SetValue(instance, d);
-                                    }
                                     else
                                     {
                                         throw new Exception(
-                                            $"{errorMessagePrefix} The only collections allowed are List<>, Dictionary<,> and their derivatives");
+                                            $"{errorMessagePrefix} Due to serialisation complexities, the only collections allowed are List<> and it's derivatives. For dictionaries use List<Enumeration> instead.");
                                     }
+                                }
+                                else if (propertyType.InheritsOrImplements(typeof(Nullable<>)))
+                                {
+                                    var valueType = propertyType.GenericTypeArguments.Last();
+                                    ProhibitDisallowedTypes(valueType);
+                                    var @default = GetDefault(valueType);
+                                    property.SetValue(instance, @default);
                                 }
                                 else if (propertyType.IsEnum)
                                 {
                                     throw new Exception(
-                                        $"{errorMessagePrefix} Cannot have ENUMS in message types, use Enumeration<> instead");
+                                        $"{errorMessagePrefix} Cannot have {nameof(Enum)} in message types, use {nameof(Enumeration<Enumeration>)} instead");
                                 }
                                 else
+                                {
+                                    ProhibitDisallowedTypes(propertyType);
+                                    property.SetValue(instance, GetDefault(propertyType));
+                                }
+
+                                void ProhibitDisallowedTypes(Type propertyType)
                                 {
                                     var isBad = propertyType switch
                                     {
@@ -148,14 +173,13 @@
                                     Guard.Against(
                                         isBad,
                                         $"{errorMessagePrefix} The following types are not allowed in message contracts: anonymous types, float, double, object, uint, ulong, ushort, char, all Tuples, objects which implement IDynamicMetaObjectProvider");
-
-                                    property.SetValue(instance, GetDefault(propertyType));
                                 }
 
                                 object GetDefault(Type type)
                                 {
                                     object @default = type switch
                                     {
+                                        Type t when t == typeof(bool) => true,
                                         Type t when t == typeof(sbyte) => sbyte.MaxValue,
                                         Type t when t == typeof(byte) => byte.MaxValue,
                                         Type t when t == typeof(short) => short.MaxValue,
@@ -259,54 +283,28 @@
 
                             var totalIndent = fieldIndent.Length + typeIndentLength + 2;
 
-                            if (typeof(IEnumerable<>).IsAssignableFrom(propertyType))
+                            PrintPropertyMetaIfNeeded();
+
+                            void PrintPropertyMetaIfNeeded()
                             {
-                                var genericType = propertyType.GenericTypeArguments.First();
-                                if (genericType.IsSystemType() == false)
+                                if (typeof(IEnumerable<>).IsAssignableFrom(propertyType) || typeof(Nullable<>).IsAssignableFrom(propertyType))
                                 {
-                                    PrintObjectProperties(genericType, totalIndent);
-                                }
-                            }
-                            else if (propertyType.IsEnum)
-                            {
-                                throw new Exception("Cannot have ENUMS in message types, use Enumeration<> instead");
-                            }
-                            else if (propertyType.Name.Contains("AnonymousType"))
-                            {
-                                throw new Exception("Cannot have anonymous types in message types, use Enumeration<> instead");
-                            }
-                            else
-                            {
-                                if (propertyType.IsSystemType())
-                                {
-                                    var isOk = propertyType switch
+                                    var genericType = propertyType.GenericTypeArguments.First();
+                                    if (genericType.IsSystemType() == false)
                                     {
-                                        Type t when t == typeof(float) => false,
-                                        Type t when t == typeof(double) => false,
-                                        Type t when t == typeof(uint) => false,
-                                        Type t when t == typeof(ulong) => false,
-                                        Type t when t == typeof(ushort) => false,
-                                        Type t when t == typeof(char) => false,
-                                        Type t when t == typeof(object) => false,
-                                        Type t when t.InheritsOrImplements(typeof(ITuple)) => false,
-                                        Type t when t.InheritsOrImplements(typeof(IDynamicMetaObjectProvider)) => false,
-                                        _ => true
-                                    };
-                                    if (!isOk)
-                                    {
-                                        throw new Exception(
-                                            $"Error in message {messageType.AsTypeNameString()} property:{propertyName}. The following types are not allowed in message contracts: float, double, object, uint, ulong, ushort, char, all Tuples, objects which implement IDynamicMetaObjectProvider");
+                                        //* print custom type under enumerable
+                                        PrintObjectProperties(genericType, totalIndent);
                                     }
                                 }
-                                else
+                                else if (propertyType.IsSystemType() == false)
                                 {
                                     PrintObjectProperties(propertyType, totalIndent);
                                 }
                             }
                         }
-
-                        schemaBuilder.AppendLine();
                     }
+
+                    schemaBuilder.AppendLine();
                 }
             }
         }

@@ -126,6 +126,9 @@ export function uuidv4() {
  * See http://pajhome.org.uk/crypt/md5 for more info.
  */
 export function md5Hash(input) {
+  if (typeof(input) === "object") {
+    input = JSON.stringify(input);
+  }
   return hexMD5(input);
 
   /**

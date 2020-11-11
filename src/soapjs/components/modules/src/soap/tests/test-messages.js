@@ -1,39 +1,47 @@
 ﻿import {types, validateArgs} from '../util';
-import {ApiMessage} from "../messages";
+
 
 //* Example of Actual Message with nested classes and .NET name
 
-export class TestCommand_c100v1 extends ApiMessage {
+export class TestCommand_c100v1 {
     constructor({c100_pointlessProp}) {
 
         validateArgs(
             [{c100_pointlessProp}, types.string]
         );
-
-        super();
+        
         this.$type = 'Soap.Messages.Commands.TestCommand_c100v1, Soap.Messages';
         this.c100_pointlessProp = c100_pointlessProp;
+        this.headers = {};
     }
 
     static CreateTemplate() {
         return new this({c100_pointlessProp: '12345'});
     }
+    
+    convertToAnonymousObject() {
+        return JSON.parse(JSON.stringify(this));
+    }
 }
 
-class TestEvent_e200v1 extends ApiMessage {
+class TestEvent_e200v1 {
     constructor({e200_results}) {
 
         validateArgs(
             [{e200_results}, [Results], true]
         );
-
-        super();
+        
         this.$type = 'Soap.Messages.Events.TestEvent_e200v1, Soap.Messages';
         this.e200_results = e200_results;
+        this.headers = {};
     }
 
     static CreateTemplate() {
         return new this({e200_results: [new Results({e200_id: 1})]});
+    }
+    
+    convertToAnonymousObject() {
+        return JSON.parse(JSON.stringify(this));
     }
 }
 

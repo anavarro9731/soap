@@ -169,20 +169,20 @@
         {
             var json = source.ToNewtonsoftJson();
             var assemblyQualifiedName = source.GetType().AssemblyQualifiedName;
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedName), new JsonSerializerSettings());
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedName));
             return obj.As<T>();
         }
 
         public static T FromJson<T>(this string json)
         {
-            var obj = JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings());
+            var obj = JsonConvert.DeserializeObject<T>(json);
             return obj;
         }
         
         
            public static T FromJsonToInterface<T>(this string json, string assemblyQualifiedTypeName) where T : class //* t = interface
         {
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedTypeName), new JsonSerializerSettings());
+            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedTypeName));
             return obj.As<T>();
         }
         
@@ -292,7 +292,7 @@
 
         public static string ToNewtonsoftJson(this object instance, bool prettyPrint = false)
         {
-            var json = JsonConvert.SerializeObject(instance, Formatting.Indented, new JsonSerializerSettings());
+            var json = JsonConvert.SerializeObject(instance, Formatting.Indented);
             return json;
         }
 

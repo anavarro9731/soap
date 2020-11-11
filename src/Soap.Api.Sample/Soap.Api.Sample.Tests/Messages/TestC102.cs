@@ -11,8 +11,8 @@
         public TestC102(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            Execute(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
-            Execute(Commands.GetServiceState, Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.GetServiceState, Identities.UserOne);
         }
 
         [Fact]

@@ -5,8 +5,8 @@
 
     public class ContextWithMessageLogEntry : ContextWithMessage
     {
-        public static readonly AsyncLocal<ContextWithMessageLogEntry> Instance  = new AsyncLocal<ContextWithMessageLogEntry>();
-        
+        public static readonly AsyncLocal<ContextWithMessageLogEntry> Instance = new AsyncLocal<ContextWithMessageLogEntry>();
+
         public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ContextWithMessage current)
             : base(current)
         {
@@ -16,8 +16,5 @@
         public static ContextWithMessageLogEntry Current => Instance.Value;
 
         public MessageLogEntry MessageLogEntry { get; }
-        
     }
-    
-    
 }

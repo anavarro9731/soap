@@ -7,11 +7,11 @@
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Context;
     using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Objects.Blended;
 
     public class P558UpgradeTheDatabase : Process, IBeginProcess<C101UpgradeTheDatabase>
     {
@@ -74,7 +74,7 @@
 
             Task SetDbVersion()
             {
-                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ServiceStateOperations.ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(C101UpgradeTheDatabase.ReleaseVersions.V2);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿namespace Soap.MessagePipeline
 {
     using System.Linq;
+    using Soap.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;

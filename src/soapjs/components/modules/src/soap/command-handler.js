@@ -31,6 +31,7 @@ export function mockEvent(command, correspondingEvents) {
 
 function addHeaders(command, event) {
 
+    
     event.headers = {
         conversationId: "we won't know till later, so we'll replace it later",
         channel: bus.channels.events, //- would normally be set with publisher which is out of our control (e.g. server)
@@ -54,7 +55,8 @@ export function cacheEvent(command, correspondingEvents) {
     //* because the queryCache module is a singleton ( making private vars are singletons ) we need to clear cache each test
     queryCache.clear();
 
-    const commandHash = md5Hash(command);
+    const {headers, ...payload} = command;
+    const commandHash = md5Hash(payload);
 
     correspondingEvents.forEach(event => {
 
@@ -104,6 +106,7 @@ export default {
         */
 
         //* set headers
+        
         command.headers.conversationId = conversationId;
         command.headers.channel = bus.channels.commands;
         command.headers.schema = command.constructor.name;

@@ -9,21 +9,16 @@
         {
             ReceivedAt = receivedAt;
             RequestedBy = requestedBy;
-            Schema = schema;
         }
 
-        public MessageMeta()
-        {
-            //- serialiser
-        }
+        public MessageMeta() {}
+        
 
         [JsonProperty]
         public (DateTime DateTime, long Ticks) ReceivedAt { get; internal set; }
 
-        [JsonProperty]
+        [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)]
         public IApiIdentity RequestedBy { get; internal set; }
-
-        [JsonProperty]
-        public string Schema { get; internal set; }
+        
     }
 }

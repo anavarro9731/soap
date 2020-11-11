@@ -6,6 +6,7 @@
     using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Operations;
 
     public static class BlobExtensions
@@ -28,7 +29,7 @@
         {
             var blob = new Blob(
                 id,
-                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(o)),
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(o, JsonNetSettings.ApiMessageSerialiserSettings)),
                 new Blob.BlobType(o.GetType().AssemblyQualifiedName, Blob.TypeClass.AssemblyQualifiedName));
             return blob;
         }
@@ -39,7 +40,7 @@
         {
             var type = Type.GetType(b.Type.TypeString);
             var json = Encoding.UTF8.GetString(b.Bytes);
-            var message = JsonConvert.DeserializeObject(json, type) as ApiMessage;
+            var message = JsonConvert.DeserializeObject(json, type, JsonNetSettings.ApiMessageDeserialisationSettings) as ApiMessage;
             return message;
         }
         

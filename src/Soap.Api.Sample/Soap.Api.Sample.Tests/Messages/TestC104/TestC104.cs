@@ -18,10 +18,10 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             : base(output)
         {
             //arrange
-            Add(Aggregates.HanSolo);
-            Add(Aggregates.DarthVader);
-            Add(Aggregates.PrincessLeia);
-            Add(Aggregates.LukeSkywalker);
+            SetupTestByAddingADatabaseEntry(Aggregates.HanSolo);
+            SetupTestByAddingADatabaseEntry(Aggregates.DarthVader);
+            SetupTestByAddingADatabaseEntry(Aggregates.PrincessLeia);
+            SetupTestByAddingADatabaseEntry(Aggregates.LukeSkywalker);
         }
 
         protected void CountDataStoreOperationsSaved(MessageLogEntry log)

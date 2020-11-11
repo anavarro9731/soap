@@ -6,9 +6,9 @@ namespace Soap.Api.Sample.Logic.Mappings
     using FluentValidation;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Context;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Objects.Blended;
 
     public class C106Mapping : IMessageFunctionsClientSide<C106LargeCommand>
     {

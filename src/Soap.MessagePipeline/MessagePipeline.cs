@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
     using Soap.Context.Logging;
@@ -73,9 +74,9 @@
             async Task FillMessageFromStorageIfApplicable()
             {
                 var blobId = message.Headers.GetBlobId();
-                if (blobId != Guid.Empty)
+                if (blobId.HasValue)
                 {
-                    message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId);
+                    message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
                 }
             }
 

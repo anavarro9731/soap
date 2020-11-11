@@ -18,8 +18,8 @@
     using Soap.Bus;
     using Soap.Config;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
-    using Soap.Utility.Objects.Blended;
 
     public static class ConfigFunctions
     {
@@ -95,7 +95,7 @@
                             MetadataReference.CreateFromFile(typeof(AzureBus).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(NotificationServer).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(IBus).Assembly.Location),
-                            MetadataReference.CreateFromFile(typeof(Soap.Utility.Objects.Blended.Enumeration<>).Assembly.Location), 
+                            MetadataReference.CreateFromFile(typeof(Enumeration<>).Assembly.Location), 
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),

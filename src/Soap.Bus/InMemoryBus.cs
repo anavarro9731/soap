@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
-    using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 

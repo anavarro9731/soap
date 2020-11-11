@@ -3,21 +3,6 @@ import config from './config'
 
 let messageTypesSingleton = {};
 
-export class ApiMessage {
-    constructor() {
-        this.headers = {
-            conversationId: undefined,
-            queryHash: undefined,
-            channel: undefined,
-            schema: undefined
-        };
-    }
-    
-    convertToAnonymousObject() {
-        return JSON.parse(JSON.stringify(this));
-    }
-}
-
 export function getListOfRegisteredMessages() {
     return Object.keys(messageTypesSingleton);
 }
@@ -102,7 +87,7 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousMessageObject
 
     const className = convertDotNetAssemblyQualifiedNameToJsClassName(anonymousMessageObject.$type);
 
-    if (!messageTypesSingleton[className]) { //* create definition if not exist
+    if (!messageTypesSingleton[className]) { //* create definition if not exist (some definitions of shared classes will be created)
 
         let classBody = "";
 
@@ -139,9 +124,8 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousMessageObject
         }
 
         const createClass = `
-                messageTypesSingleton["${className}"] = class extends ApiMessage {
+                messageTypesSingleton["${className}"] = class {
                     constructor(anonymousObject) {
-                        super();
                         ${classBody}    
                     }                 
                 }

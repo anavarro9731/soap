@@ -21,7 +21,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         public async void CheckTheUnitOfWorkIsSavedCorrectly()
         {
             //act
-            Execute(Commands.TestUnitOfWork(), Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.TestUnitOfWork(), Identities.UserOne);
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(

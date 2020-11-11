@@ -1,11 +1,9 @@
 ﻿namespace Soap.Context.Context
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Objects.Blended;
 
     public class ContextWithMessage : BoostrappedContext, IMessageFunctionsServerSide
     {
@@ -33,7 +31,6 @@
         public ApiMessage Message { get; }
 
         public (DateTime receivedTime, long receivedTicks) TimeStamp { get; }
-        
 
         public Task Handle(ApiMessage msg) => this.functions.Handle(msg);
 
@@ -41,5 +38,4 @@
 
         public void Validate(ApiMessage msg) => this.functions.Validate(msg);
     }
-    
 }

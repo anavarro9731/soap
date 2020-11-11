@@ -7,7 +7,6 @@
     using Soap.Context.Context;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
-    using Soap.Utility.Objects.Blended;
 
     public class FormattedExceptionInfo
     {
@@ -44,17 +43,14 @@
                 {
                     Errors.Add(
                         (CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
-                            domainExceptionWithErrorCode.Error.DisplayName));
+                            domainExceptionWithErrorCode.Error.Value));
                 }
                 else 
                 {
-                    var errorMessageAppendixWhenNoMapperExists = "Internal:" + domainExceptionWithErrorCode?.Error
-                                                                             + Environment.NewLine + domainExceptionWithErrorCode
-                                                                                 .ToString()
-                                                                                 .SubstringBefore("--- ");
-                    
-                    Errors.Add((CodePrefixes.DOMAIN, null, context.AppConfig.DefaultExceptionMessage));
-                    SensitiveInformation = $"No error code defined for: {errorMessageAppendixWhenNoMapperExists}";
+                    Errors.Add((CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error?.Key), context.AppConfig.DefaultExceptionMessage));
+                    SensitiveInformation = domainExceptionWithErrorCode.Error + Environment.NewLine + domainExceptionWithErrorCode
+                                               .ToString()
+                                               .SubstringBefore("--- ");;
                 }
             }
             else if (exception is ExceptionHandlingException)
@@ -72,7 +68,7 @@
                                          .Aggregate((a, b) => a + Environment.NewLine + b);
 
             ApplicationName = context.AppConfig.AppId;
-            EnvironmentName = context.AppConfig.Environment.DisplayName;
+            EnvironmentName = context.AppConfig.Environment.Value;
         }
 
         public FormattedExceptionInfo()

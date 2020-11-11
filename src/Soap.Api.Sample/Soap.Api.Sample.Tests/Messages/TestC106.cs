@@ -29,7 +29,7 @@
                 c.Headers.SetBlobId(id);
             }
 
-            var c106FromBlobStorage = new C106LargeCommand().Op(Set);
+            var c106FromBlobStorage = new C106LargeCommand().Op(Set).Op(c => c.Headers.SetDefaultHeadersForIncomingTestMessages(c));
             
             var c106In = new C106LargeCommand().Op(
                 c =>
@@ -38,7 +38,7 @@
                     c.Large256KbString = null;
                     });
 
-            Execute(
+             SetupTestByProcessingAMessage(
                 c106In, 
                 Identities.UserOne,
                 setup: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobDownloadEvent>()

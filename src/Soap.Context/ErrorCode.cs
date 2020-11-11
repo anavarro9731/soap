@@ -1,6 +1,7 @@
-﻿namespace Soap.Utility.Objects.Blended
+﻿namespace Soap.Context
 {
     using System;
+    using Soap.Interfaces.Messages;
 
     public class ErrorCode : Enumeration<ErrorCode>
     {

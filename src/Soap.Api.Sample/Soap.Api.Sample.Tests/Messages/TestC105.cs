@@ -14,7 +14,7 @@
         public TestC105(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            Execute(
+            SetupTestByProcessingAMessage(
                 new C105SendLargeMessage(), 
                 Identities.UserOne,
                 setup: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>()

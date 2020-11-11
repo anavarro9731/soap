@@ -12,6 +12,7 @@
     using Destructurama;
     using Microsoft.ApplicationInsights.Extensibility;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Serialization;
     using Serilog;
     using Serilog.Events;
     using Serilog.Exceptions;
@@ -19,6 +20,7 @@
     using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
+    using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Context.MessageMapping;
@@ -27,6 +29,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
@@ -122,7 +125,7 @@
             {
                 try //* deserialise the message
                 {
-                    message = JsonConvert.DeserializeObject(messageJson, type).As<ApiMessage>();
+                    message = JsonConvert.DeserializeObject(messageJson, type, JsonNetSettings.ApiMessageDeserialisationSettings).As<ApiMessage>();
 
                     Guard.Against(
                         messageId != message.Headers.GetMessageId(),
@@ -179,6 +182,7 @@
             {
                 try
                 {
+                    //* expect assembly qualified name
                     var typeString = userProperties["Type"] as string;
                     Guard.Against(typeString == null, "'Type' property not provided");
                     var type = Type.GetType(typeString);

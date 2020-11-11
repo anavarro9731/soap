@@ -1,6 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
-    using Soap.Utility.Objects.Blended;
+    using Soap.Interfaces.Messages;
 
     public class SoapEnvironments : Enumeration<SoapEnvironments>
     {

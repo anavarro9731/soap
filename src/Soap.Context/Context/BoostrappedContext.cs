@@ -16,14 +16,14 @@
 
         public readonly IAuthenticate Authenticator;
 
+        public readonly BlobStorage BlobStorage;
+
         public readonly IBus Bus;
 
         public readonly DataStore DataStore;
 
         public readonly ILogger Logger;
 
-        public readonly BlobStorage BlobStorage;
-        
         public readonly IMessageAggregator MessageAggregator;
 
         public readonly MapMessagesToFunctions MessageMapper;

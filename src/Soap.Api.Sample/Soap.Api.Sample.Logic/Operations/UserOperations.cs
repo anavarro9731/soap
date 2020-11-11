@@ -9,6 +9,7 @@
     using Soap.Context.Context;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Guard = Soap.Context.Guard;
 
     /// <summary>
     ///     ##REMOVE-IN-COPY##

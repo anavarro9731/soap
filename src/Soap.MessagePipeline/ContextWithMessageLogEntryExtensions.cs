@@ -419,7 +419,7 @@
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = meta != null ? CreateProfilingData(meta, context) : null,
-                EnvironmentName = context.AppConfig.Environment.DisplayName,
+                EnvironmentName = context.AppConfig.Environment.Value,
                 ApplicationName = context.AppConfig.AppFriendlyName
             };
 
@@ -438,12 +438,12 @@
                 SapiCompletedAt = DateTime.UtcNow,
                 UserName = meta.RequestedBy?.UserName,
                 MessageId = message.Headers.GetMessageId(),
-                Schema = meta.Schema,
+                Schema = message.Headers.GetSchema(),
                 Message = message,
                 IsCommand = message is ApiCommand,
                 IsEvent = message is ApiEvent,
                 ProfilingData = CreateProfilingData(meta, context),
-                EnvironmentName = context.AppConfig.Environment.DisplayName,
+                EnvironmentName = context.AppConfig.Environment.Value,
                 ApplicationName = context.AppConfig.AppFriendlyName
             };
 

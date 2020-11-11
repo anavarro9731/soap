@@ -6,7 +6,6 @@
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
-    using Soap.Utility.Objects.Blended;
 
     public class C103Mapping : IMessageFunctionsClientSide<C103StartPingPong>
     {

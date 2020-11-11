@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import {md5Hash, types, validateArgs} from './util';
-import {ApiMessage} from './messages';
+
 
 let cache = [];
 
 export default {
     addOrReplace: (commandHash, event) => {
-        validateArgs([{commandHash}, types.string], [{event}, ApiMessage]);
+        validateArgs([{commandHash}, types.string], [{event}, types.object]);
 
         /* concurrency risk, prob not possible with 
             default browser STA, unless interrupted by async etc */
@@ -22,7 +22,7 @@ export default {
 
     find: (command, acceptableStalenessFactorInSeconds) => {
         validateArgs(
-            [{command}, ApiMessage],
+            [{command}, types.object],
             [{acceptableStalenessFactorInSeconds}, types.number],
         );
 
@@ -31,14 +31,17 @@ export default {
 
         let result;
         if (acceptableStalenessFactorInSeconds > 0) {
+            console.log(cache);
             result = _.find(
                 cache,
                 i =>
                     i.commandHash === commandHash &&
                     new Date().getTime() - i.timestamp <=
                     acceptableStalenessFactorInSeconds * 1000,
-            ).event;
+            );
+            if (result !== undefined) result = result.event;
         }
+        console.log(result);
         return result;
     },
 };

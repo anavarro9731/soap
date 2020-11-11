@@ -9,9 +9,9 @@
     using FluentValidation;
     using Microsoft.Azure.ServiceBus;
     using Newtonsoft.Json;
-    using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class AzureBus : IBusClient
@@ -26,6 +26,10 @@
             this.settings = settings;
         }
 
+        public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
+
+        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
+
         private List<IQueuedBusOperation> QueuedChanges
         {
             get
@@ -37,17 +41,13 @@
             }
         }
 
-        public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
-
-        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
-
-        
-
         public async Task Publish(ApiEvent publishEvent)
         {
-            var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(publishEvent)))
+            var queueMessage = new Message(
+                Encoding.Default.GetBytes(
+                    JsonConvert.SerializeObject(publishEvent, JsonNetSettings.ApiMessageSerialiserSettings)))
             {
-                MessageId = publishEvent.Headers.GetMessageId().ToString(), 
+                MessageId = publishEvent.Headers.GetMessageId().ToString(),
                 Label = publishEvent.GetType().AssemblyQualifiedName,
                 UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().AssemblyQualifiedName) }
             };
@@ -55,13 +55,14 @@
             var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic().ToLower());
 
             await topicClient.SendAsync(queueMessage);
-            
+
             EventsPublished.Add(publishEvent.Clone());
         }
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
-            var queueMessage = new Message(Encoding.Default.GetBytes(JsonConvert.SerializeObject(sendCommand)))
+            var queueMessage = new Message(
+                Encoding.Default.GetBytes(JsonConvert.SerializeObject(sendCommand, JsonNetSettings.ApiMessageSerialiserSettings)))
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
@@ -77,18 +78,15 @@
             }
             else
             {
-                await queueClient.SendAsync(queueMessage);    
+                await queueClient.SendAsync(queueMessage);
             }
+
             CommandsSent.Add(sendCommand.Clone());
         }
 
         public class Settings : IBusSettings
         {
-            public Settings(
-                byte numberOfApiMessageRetries,
-                string busConnectionString,
-                string resourceGroup,
-                string busNamespace)
+            public Settings(byte numberOfApiMessageRetries, string busConnectionString, string resourceGroup, string busNamespace)
             {
                 NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 BusConnectionString = busConnectionString;

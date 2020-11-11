@@ -1,9 +1,8 @@
-﻿namespace Soap.Bus
+﻿namespace Soap.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
     public interface IBusClient

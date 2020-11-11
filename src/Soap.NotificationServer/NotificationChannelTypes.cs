@@ -1,6 +1,6 @@
 ﻿namespace Soap.NotificationServer
 {
-    using Soap.Utility.Objects.Blended;
+    using Soap.Interfaces.Messages;
 
     public class NotificationChannelTypes : Enumeration<NotificationChannelTypes>
     {

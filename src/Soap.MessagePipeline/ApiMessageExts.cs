@@ -2,6 +2,7 @@
 {
     using System;
     using Newtonsoft.Json;
+    using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
     using Soap.Context.Logging;
@@ -25,9 +26,7 @@
             {
                 var messageLogEntry = context.MessageLogEntry;
 
-                Guard.Against(
-                    message.Headers.GetMessageId() == Guid.Empty,
-                    "All ApiMessages must have a unique MessageId property value");
+                message.Headers.ValidateIncomingMessageHeaders();
 
                 Guard.Against(
                     IsADifferentMessageButWithTheSameId(messageLogEntry, message),

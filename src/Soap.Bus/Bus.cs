@@ -8,7 +8,6 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Newtonsoft.Json;
-    using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -51,8 +50,7 @@
         public async Task Publish<T>(T eventToPublish) where T : ApiEvent
         {
             eventToPublish = eventToPublish.Clone();
-            eventToPublish.Headers.EnsureRequiredHeaders();
-            eventToPublish.Headers.SetTopic(eventToPublish.GetType().FullName);
+            eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
@@ -71,8 +69,7 @@
         public async Task Send<T>(T commandToSend) where T : ApiCommand
         {
             commandToSend = commandToSend.Clone();
-            commandToSend.Headers.EnsureRequiredHeaders();
-            commandToSend.Headers.SetQueueName(commandToSend.GetType().Assembly.GetName().Name);
+            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend);
             await IfLargeMessageSaveToBlobStorage(commandToSend);
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
@@ -111,12 +108,12 @@
             {
                 var publicProperties = message.GetType()
                                               .GetProperties()
-                                              .Where(p => p.CanRead && p.CanWrite && (p.MemberType == MemberTypes.Property || p.MemberType == MemberTypes.Field));
-                
-                foreach (var publicProperty in publicProperties)
-                {
-                    publicProperty.SetValue(message, null);
-                }
+                                              .Where(
+                                                  p => p.CanRead && p.CanWrite
+                                                                 && (p.MemberType == MemberTypes.Property
+                                                                     || p.MemberType == MemberTypes.Field));
+
+                foreach (var publicProperty in publicProperties) publicProperty.SetValue(message, null);
             }
 
             int MessageSizeInBytes()

@@ -7,7 +7,6 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
-    using Soap.Utility.Objects.Blended;
 
     public class C104Mapping : IMessageFunctionsClientSide<C104TestUnitOfWork>
     {

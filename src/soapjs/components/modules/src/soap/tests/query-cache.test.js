@@ -1,49 +1,38 @@
 import queryCache from "../query-cache";
-import {ApiMessage} from "../messages";
+
 import * as __ from '../util'
 import {TestCommand_c100v1} from "./test-messages";
 
-test("queries filtered results", () => {
+test("queries filtered results1", () => {
 
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "2342342342"})),
-        Object.assign(new ApiMessage())
-    );
+    function Cache(code) {
+        const {headers, ...payload} = new TestCommand_c100v1({c100_pointlessProp: code});
+        const hash = __.md5Hash(payload);
+        queryCache.addOrReplace(hash, {id: code});
+    }
+    
+    Cache("abc");
+    Cache("def");
+    Cache("ghi");
+    
+    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "def"}), 10);
 
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "6788676576576"})),
-        Object.assign(new ApiMessage())
-    );
-
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "57567464564"})),
-        Object.assign(new ApiMessage())
-    );
-
-    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "2342342342"}), 10);
-
-    expect(result).toBeInstanceOf(ApiMessage);
+    expect(result).toEqual({id:"def"});
 });
 
-test("queries filtered results", () => {
+test("queries filtered results2", () => {
 
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "2342342342"})),
-        Object.assign(new ApiMessage())
-    );
+    function Cache(code) {
+        const {headers, ...payload} = new TestCommand_c100v1({c100_pointlessProp: code});
+        const hash = __.md5Hash(payload);
+        queryCache.addOrReplace(hash, {id: code});
+    }
 
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "6788676576576"})),
-        Object.assign(new ApiMessage())
-    );
+    Cache("abc");
+    Cache("def");
+    Cache("ghi");
 
-    queryCache.addOrReplace(
-        __.md5Hash(new TestCommand_c100v1({c100_pointlessProp: "57567464564"})),
-        Object.assign(new ApiMessage())
-    );
+    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "xyz"}), 10);
 
-    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "6788676576576"}), 5);
-
-    expect(result).toBeInstanceOf(ApiMessage);
+    expect(result).toBeUndefined();
 });
-

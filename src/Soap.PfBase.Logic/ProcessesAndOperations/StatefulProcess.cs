@@ -6,6 +6,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
     using DataStore;
     using DataStore.Interfaces;
     using Serilog;
+    using Soap.Context;
     using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -75,7 +76,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                                           message.Headers.GetStatefulProcessId().Value.InstanceId)
                                       .ConfigureAwait(false);
 
-            Guard.Against(this.processState.Flags.HasState(BuiltInStates.Completed), "Stateful Process Already Completed");
+            Guard.Against(this.processState.EnumFlags.HasFlag(BuiltInStates.Completed), "Stateful Process Already Completed");
 
             RecordContinued(message);
 
@@ -92,7 +93,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         private void RecordCompleted(string username)
         {
-            this.processState.Flags.AddState(BuiltInStates.Completed);
+            this.processState.EnumFlags.AddFlag(BuiltInStates.Completed);
             context.MessageAggregator.Collect(new StatefulProcessCompleted(GetType().Name, username, this.processState));
         }
 
@@ -108,7 +109,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         private void RecordStarted<TMessage>(TMessage message) where TMessage : ApiMessage
         {
-            this.processState.Flags.AddState(BuiltInStates.Started);
+            this.processState.EnumFlags.AddFlag(BuiltInStates.Started);
 
             context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
@@ -157,25 +158,25 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
             public Task<ProcessState> AddState<T>(T additionalStatus) where T : Enum
             {
-                this.processState.Flags.AddState(additionalStatus);
+                this.processState.EnumFlags.AddFlag(additionalStatus);
 
                 return this.dataStore.Update(this.processState);
             }
 
             public IReadOnlyList<TState> GetState<TState>() where TState : IConvertible =>
-                this.processState.Flags.StatesAsT<TState>();
+                this.processState.EnumFlags.AsTypedEnum<TState>();
 
-            public bool HasState<TState>(TState state) where TState : IConvertible => this.processState.Flags.HasState(state);
+            public bool HasState<TState>(TState state) where TState : IConvertible => this.processState.EnumFlags.HasFlag(state);
 
             public Task<ProcessState> RemoveState(Enum statusToRemove)
             {
-                this.processState.Flags.RemoveState(statusToRemove);
+                this.processState.EnumFlags.RemoveFlag(statusToRemove);
                 return this.dataStore.Update(this.processState);
             }
 
             public Task<ProcessState> ResetState(Enum newStatus)
             {
-                this.processState.Flags = new Flags(newStatus);
+                this.processState.EnumFlags = new EnumFlags(newStatus);
 
                 return this.dataStore.Update(this.processState);
             }

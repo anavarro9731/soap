@@ -7,7 +7,6 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.Utility.Functions.Operations;
     using Typesafe.Mailgun;
 
     public class EmailChannel : IServerChannelInfo
@@ -28,13 +27,18 @@
         {
             var recipients = notification.Recipient.Split(';');
             foreach (var s in recipients)
-                Guard.Against(
-                    () => !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
+                Prohibit(
+                    !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
                     $"Sending emails to {s} is not allowed.");
 
             return this.emailSettings.MessageAggregator
                        .CollectAndForward(new SendingEmail(notification.Body, notification.Subject, recipients))
                        .To(SendViaMailGun);
+        }
+
+        private static void Prohibit(bool condition, string message)
+        {
+            if (condition) throw new Exception(message);
         }
 
         private Task SendViaMailGun(SendingEmail sendingEmail)
@@ -61,11 +65,9 @@
                 IMessageAggregator messageAggregator)
             {
                 this.MessageAggregator = messageAggregator;
-                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
-                Guard.Against(
-                    string.IsNullOrEmpty(apiKey),
-                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
-                Guard.Against(
+                Prohibit(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
+                Prohibit(string.IsNullOrEmpty(apiKey), $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
+                Prohibit(
                     string.IsNullOrEmpty(mailGunDomain),
                     $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailGunDomain)} cannot be null");
 
@@ -114,4 +116,4 @@
             public string Text { get; }
         }
     }
-} 
+}

@@ -1,7 +1,6 @@
 ﻿namespace Soap.Bus
 {
     using CircuitBoard.Messages;
-    using Soap.Interfaces;
 
     /* this class inherits from IQueuedStateChange following the pattern of Circuitboard and Datastore
      It may seem unecessary and even useless to have a commitclosure (see IQueuedStateChange) and not just store the 
@@ -13,7 +12,7 @@
      we can use to pull out all changes. In theory is we were willing to refactor datastore (and the bus) 
      to use a revised IQueuedStateChange or another common interface with just Committed property we could
      probably lose IQueuedStateChange */
-    public interface IQueuedBusOperation : IQueuedStateChange 
+    public interface IQueuedBusOperation : IQueuedStateChange
     {
     }
 }

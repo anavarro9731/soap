@@ -1,8 +1,7 @@
-﻿namespace Soap.Context.BlobStorage
+﻿namespace Soap.Interfaces
 {
     using System;
     using System.Threading.Tasks;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
     public interface IBlobStorage

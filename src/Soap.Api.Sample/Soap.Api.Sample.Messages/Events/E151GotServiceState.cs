@@ -1,7 +1,6 @@
 ﻿namespace Soap.Api.Sample.Messages.Events
 {
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Objects.Binary;
 
     public class E151GotServiceState : ApiEvent
     {
@@ -11,7 +10,7 @@
 
         public class ServiceState
         {
-            public Flags DatabaseState { get; set; }
+            public EnumerationFlags DatabaseState { get; set; }
         }
     }
 }

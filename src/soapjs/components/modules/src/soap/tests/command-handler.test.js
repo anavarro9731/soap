@@ -44,13 +44,13 @@ test('commands can receive events from cache', () => {
     //- arrange
 
     defineTestMessages();
-    
-    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'});
+
+    const command = new TestCommand_c100v1({c100_pointlessProp: '12345'}).convertToAnonymousObject();
 
     let gotIt = false;
-    
-    const response = new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]})
-    cacheEvent(command, response);
+
+    const testEvent1 = new TestEvent_e200v1({e200_results: [new TestEvent_e200v1.Results({e200_id: 1}), new TestEvent_e200v1.Results({e200_id: 2})]}).convertToAnonymousObject();
+    cacheEvent(command, testEvent1);
     
     //- listen for response to query
     const conversationId = commandHandler.handle(

@@ -41,8 +41,6 @@
             {
                 var x = new Result();
 
-                message.Headers.EnsureRequiredHeaders();
-
                 CreateAppConfig(retries, out var appConfig);
 
                 CreateMessageAggregator(setup, out var messageAggregator);

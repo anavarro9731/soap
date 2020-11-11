@@ -2,7 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Soap.Bus;
     using Soap.Interfaces.Messages;
 
     public interface IBus
