@@ -23,7 +23,7 @@
             MessageMeta = meta;
             MaxRetriesAllowed = numberOfRetries + 1;
             SerialisedMessage = message.ToSerialisableObject();
-            MessageHash = JsonConvert.SerializeObject(message).ToMd5Hash();
+            MessageHash = message.ToJson(SerialiserIds.ApiBusMessage).ToMd5Hash();
             UnitOfWork = new UnitOfWork(optimisticConcurrency); //* determines how uow will behave
         }
 

@@ -13,12 +13,14 @@
         public Func<MessageFailedAllRetries, Task> BeginProcess =>
             async message =>
                 {
+                var failedMessage = message.ToApiMessage();
+                
                 await NotificationServer.Notify(
                     new Notification
                     {
                         Subject =
-                            @$"The message with id {message.FailedMessage.Headers.GetMessageId()} has failed the maximum number of times.
-                        The failed content was {message.FailedMessage.ToNewtonsoftJson()}."
+                            @$"The message with id {failedMessage.Headers.GetMessageId()} has failed the maximum number of times.
+                        The failed content was {failedMessage.ToJson(SerialiserIds.ApiBusMessage, true)}."
                     });
                 };
     }

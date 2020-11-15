@@ -118,7 +118,7 @@
 
             int MessageSizeInBytes()
             {
-                var json = JsonConvert.SerializeObject(message);
+                var json = message.ToJson(SerialiserIds.ApiBusMessage);
                 var byteCount = Encoding.UTF8.GetByteCount(json);
                 var indexingAndOtherExtras = Convert.ToInt32(byteCount / 0.9M);
                 return indexingAndOtherExtras;

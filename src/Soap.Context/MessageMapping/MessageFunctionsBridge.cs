@@ -36,11 +36,11 @@
             }
 
             bool IsOfCorrectType(IContinueStatefulProcess process) =>
-                process.GetType().InheritsOrImplements(Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
+                process.Is(Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
         }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.messageFunctionsTyped.HandleFinalFailure((MessageFailedAllRetries<T>)msg);
+            this.messageFunctionsTyped.HandleFinalFailure(msg);
 
         public void Validate(ApiMessage msg) => this.messageFunctionsTyped.Validate((T)msg);
     }

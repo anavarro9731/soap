@@ -36,7 +36,16 @@
         public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message)
         {
             messageHeaders.EnsureRequiredHeaders();
-            messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name);
+
+            if (message is MessageFailedAllRetries m)
+            {
+                messageHeaders.SetQueueName(Type.GetType(m.TypeName).Assembly.GetName().Name); //* send to owners queue
+            }
+            else
+            {
+                messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name); //* send to owners queue
+            }
+            
             messageHeaders.SetSchema(message.GetType().FullName);
 
             /* 1 */

@@ -8,6 +8,7 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;
 
     public class C106Mapping : IMessageFunctionsClientSide<C106LargeCommand>
@@ -20,7 +21,7 @@ namespace Soap.Api.Sample.Logic.Mappings
             return Task.CompletedTask;
         }
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C106LargeCommand> msg) =>
+        public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C106LargeCommand msg)

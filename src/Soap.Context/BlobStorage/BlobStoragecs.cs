@@ -11,6 +11,7 @@
     using CircuitBoard.Messages;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
     /* doesn't need it's own project right now because it is not needed by the Soap.Config repo
      since at present config only stores connection string and not a settings object and that 
@@ -75,12 +76,12 @@
                       .To(Upload);    
         }
 
-        public async Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getIdFromObject)
+        public async Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getIdFromObject, SerialiserIds serialiserId)
         {
             var objectId = getIdFromObject(@object);
 
             await this.blobStorageSettings.MessageAggregator
-                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId)))
+                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId, serialiserId)))
                       .To(Upload);    
         }
 

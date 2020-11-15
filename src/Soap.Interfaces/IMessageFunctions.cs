@@ -23,7 +23,7 @@
 
         Task Handle(T msg);
 
-        Task HandleFinalFailure(MessageFailedAllRetries<T> msg);
+        Task HandleFinalFailure(MessageFailedAllRetries msg);
 
         void Validate(T msg);
     }

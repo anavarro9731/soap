@@ -7,6 +7,7 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class C104Mapping : IMessageFunctionsClientSide<C104TestUnitOfWork>
     {
@@ -15,7 +16,7 @@ namespace Soap.Api.Sample.Logic.Mappings
 
         public Task Handle(C104TestUnitOfWork msg) => this.Get<P555TestUnitOfWork>().Call(s => s.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C104TestUnitOfWork> msg) =>
+        public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C104TestUnitOfWork msg) => new C104TestUnitOfWork.C104Validator().ValidateAndThrow(msg);

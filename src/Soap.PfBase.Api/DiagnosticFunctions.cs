@@ -26,7 +26,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
+    
 
     public static class DiagnosticFunctions
     {
@@ -63,6 +63,8 @@
 
             try
             {
+                logger.Information("Starting Health Check");
+                
                 await WriteLine("Loading Config...");
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
@@ -76,10 +78,13 @@
                 await GetPingPongMessageTestResults<TPing, TPong, TIdentity>(logger, appConfig, mapMessagesToFunctions, WriteLine);
                 
                 await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg, TIdentity>(logger, appConfig, mapMessagesToFunctions, WriteLine);
+                
+                logger.Information("Health Check Completed");
             }
             catch (Exception e)
             {
                 await outputStream.WriteAsync(Encoding.UTF8.GetBytes(e.ToString()));
+                logger.Error(e, "Error Checking Health {0}");
             }
             finally
             {
@@ -158,7 +163,7 @@
                 IpAddress = ipAddress
             };
 
-            var json = JsonConvert.SerializeObject(configAsObject, Formatting.Indented);
+            var json = configAsObject.ToJson(SerialiserIds.JsonDotNetDefault);
 
             return json;
         }
@@ -179,19 +184,19 @@
 
             await writeLine($"Sending {typeof(TPing).Name} ...");
 
-            //*  should publish e150pong which we subscribe to so it should come back to us
+            //*  should publish/send pong
             var r = await AzureFunctionContext.Execute<TIdentity>(
-                        message.ToNewtonsoftJson(),
+                        message.ToJson(SerialiserIds.ApiBusMessage),
                         mappings,
                         message.Headers.GetMessageId().ToString(),
                         new Dictionary<string, object>
                         {
-                            { "Type", message.GetType().AssemblyQualifiedName }
+                            { "Type", message.GetType().ToShortAssemblyTypeName() }
                         },
                         logger,
                         appConfig);
 
-            await writeLine(JsonConvert.SerializeObject(r, Formatting.Indented));
+            await writeLine(r.ToJson(SerialiserIds.JsonDotNetDefault));
 
             if (r.Success)
             {

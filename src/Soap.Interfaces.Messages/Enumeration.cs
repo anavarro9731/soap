@@ -18,6 +18,10 @@
         }
 
         public static IEnumerable<T> GetAll() => GetAll<T>();
+
+        public static T FromKey(string key) => FromKey<T>(key);
+        
+        public static string ListToString() => GetAll().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}");
     }
 
     /// <summary>
@@ -25,6 +29,9 @@
     /// </summary>
     public class Enumeration : IComparable, IEquatable<Enumeration>, IComparer<Enumeration>, IEqualityComparer<Enumeration>
     {
+        
+        
+        
         public Enumeration(string key, string value)
         {
             Key = key;

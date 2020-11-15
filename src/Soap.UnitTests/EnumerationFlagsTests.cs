@@ -3,6 +3,7 @@
     using System.Linq;
     using Newtonsoft.Json;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Objects.Binary;
     using Xunit;
 
@@ -59,8 +60,8 @@
             public void ItShouldWork()
             {
                 var x = new EnumerationFlags(StatesSample.One);
-                var json = JsonConvert.SerializeObject(x);
-                var y = JsonConvert.DeserializeObject<EnumerationFlags>(json);
+                var json = x.ToJson(SerialiserIds.JsonDotNetDefault);
+                var y = json.FromJson<EnumerationFlags>(SerialiserIds.JsonDotNetDefault);
                 Assert.True(y.HasFlag(StatesSample.One));
             }
         }
@@ -72,8 +73,8 @@
             {
                 var x = new EnumerationFlags(StatesSample.One);
                 x.AddFlag(StatesSample.Three);
-                var json = JsonConvert.SerializeObject(x);
-                var y = JsonConvert.DeserializeObject<EnumerationFlags>(json);
+                var json = x.ToJson(SerialiserIds.JsonDotNetDefault);
+                var y = json.FromJson<EnumerationFlags>(SerialiserIds.JsonDotNetDefault);
                 Assert.Equal(2, y.AsEnumerations<StatesSample>().Count);
                 Assert.Equal(StatesSample.Three, y.AsEnumerations<StatesSample>().Last());
             }

@@ -5,6 +5,7 @@
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class C100Mapping : IMessageFunctionsClientSide<C100Ping>
     {
@@ -12,7 +13,7 @@
 
         public Task Handle(C100Ping msg) => this.Get<P559PingPong>().Call(x => x.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C100Ping> msg) =>
+        public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C100Ping msg)

@@ -19,7 +19,7 @@
             outIdentity(identity);
         }
 
-        internal static string GetSchema(this ApiMessage m) => m.GetType().AssemblyQualifiedName;
+        internal static string GetSchema(this ApiMessage m) => m.GetType().ToShortAssemblyTypeName();
 
         internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)
         {
@@ -54,7 +54,7 @@
 
             bool IsADifferentMessageButWithTheSameId(MessageLogEntry messageLogEntry, ApiMessage message)
             {
-                var messageAsJson = JsonConvert.SerializeObject(message);
+                var messageAsJson = message.ToJson(SerialiserIds.ApiBusMessage);
                 var hashMatches = messageAsJson.Verify(messageLogEntry.MessageHash);
                 return !hashMatches;
             }

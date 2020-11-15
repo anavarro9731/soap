@@ -12,6 +12,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Binary;
 
@@ -52,7 +53,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
             this.processState = await context.DataStore.Create(new ProcessState()).ConfigureAwait(false);
 
-            this.Id = new StatefulProcessId(GetType().AssemblyQualifiedName, this.processState.id);
+            this.Id = new StatefulProcessId(GetType().ToShortAssemblyTypeName(), this.processState.id);
 
             message.Headers.SetStatefulProcessId(this.Id); //* keeps it aligned with the rest of the messages in the session 
 

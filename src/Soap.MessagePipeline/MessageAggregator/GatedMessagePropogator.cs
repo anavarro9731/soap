@@ -29,18 +29,18 @@ namespace Soap.MessagePipeline.MessageAggregator
                 throw new Exception(
                     $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                     But the object you have registered as a return value for this function is of the wrong type. 
-                    You registered a return value of type {this.toReturn.GetType().AsTypeNameString()} but the function requires a type of {
-                            typeof(TOut).AsTypeNameString()
+                    You registered a return value of type {this.toReturn.GetType().ToTypeNameString()} but the function requires a type of {
+                            typeof(TOut).ToTypeNameString()
                         }.                    
                     This could be because you have registered responses in the wrong order. 
                     Or perhaps you forgot to call .AsEnumerable() where the return type is IEnumerable. 
-                    Or perhaps you forgot to wrap your response in a task e.g. Task.FromResult( {this.toReturn.GetType().AsTypeNameString()} ) if its async.",
+                    Or perhaps you forgot to wrap your response in a task e.g. Task.FromResult( {this.toReturn.GetType().ToTypeNameString()} ) if its async.",
                     e);
             }
 
             throw new Exception(
                 $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
-                But none has been set. Use the .When<{typeof(TMessage).AsTypeNameString()}>({typeof(TOut).AsTypeNameString()}) function to set one.");
+                But none has been set. Use the .When<{typeof(TMessage).ToTypeNameString()}>({typeof(TOut).ToTypeNameString()}) function to set one.");
         }
     }
 }

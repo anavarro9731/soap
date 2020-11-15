@@ -6,6 +6,7 @@
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
 
     public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>
     {
@@ -14,7 +15,7 @@
 
         public Task Handle(C102GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
 
-        public Task HandleFinalFailure(MessageFailedAllRetries<C102GetServiceState> msg) =>
+        public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C102GetServiceState msg)

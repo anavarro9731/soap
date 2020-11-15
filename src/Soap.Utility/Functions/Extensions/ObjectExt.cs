@@ -1,137 +1,80 @@
 ﻿namespace Soap.Utility.Functions.Extensions
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
-    using Soap.Utility.Models;
+    using Newtonsoft.Json.Serialization;
+    using Soap.Interfaces.Messages;
+
+    public class SerialiserIds : Enumeration<SerialiserIds>
+    {
+        public static SerialiserIds ApiBusMessage = Create(nameof(ApiBusMessage), "Bus Messages");
+
+        public static SerialiserIds ClientSideMessageSchemaGeneraton = Create(
+            nameof(ClientSideMessageSchemaGeneraton),
+            "Schema for JS client");
+
+        public static SerialiserIds JsonDotNetDefault = Create(nameof(JsonDotNetDefault), "Json.NET Defaults");
+        
+        
+        
+    }
+
+    internal static class JsonNetSettings
+    {
+        public static readonly JsonSerializerSettings ApiMessageSerialiserSettings = new JsonSerializerSettings
+        {
+            DefaultValueHandling =
+                DefaultValueHandling
+                    .Include, //* this will result in some properties being output that are ignored in JS but i think that's OK
+            NullValueHandling =
+                NullValueHandling
+                    .Include, //* include them for debugging purposes on outgoing messages, but nulls will be changed to undefined in JS constructors as if they were never provided
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            TypeNameHandling =
+                TypeNameHandling
+                    .Objects, //* ideally could be ignored as already known by JS classes, but may affect object graph structure, checking into this means you may be able to make this NONE
+            DateTimeZoneHandling = DateTimeZoneHandling.Utc, ContractResolver = defaultContractResolver
+        };
+
+        public static readonly JsonSerializerSettings MessageSchemaSerialiserSettings = new JsonSerializerSettings
+        {
+            DefaultValueHandling =
+                DefaultValueHandling
+                    .Include, //* you want all intended properties to be output, false and 0 would otherwise be skipped
+            NullValueHandling =
+                NullValueHandling.Ignore, //* null however is considered unintended for schema purposes and should be skipped
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            TypeNameHandling = TypeNameHandling.Objects, //* important so we know how to create JS classes
+            DateTimeZoneHandling = DateTimeZoneHandling.Utc,
+            ContractResolver = defaultContractResolver
+        };
+
+        private static readonly DefaultContractResolver defaultContractResolver = new CamelCasePropertyNamesContractResolver();
+    }
 
     public static class ObjectExt
     {
-        private static readonly char[] SystemTypeChars =
-        {
-            '<', '>', '+'
-        };
-
         /// <summary>
         ///     a simpler cast
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static T As<T>(this object obj) where T : class => obj as T;
+        public static T As<T>(this object obj) where T : class => (T)obj;
 
-        public static string AsTypeNameString(this Type type, bool useFullyQualifiedAssemblyName = false)
+        public static T Clone<T>(this T source) where T : class
         {
-            var typesToShortNames = new Dictionary<Type, string>
-            {
-                {
-                    typeof(string), "string"
-                },
-                {
-                    typeof(object), "object"
-                },
-                {
-                    typeof(bool), "bool"
-                },
-                {
-                    typeof(byte), "byte"
-                },
-                {
-                    typeof(char), "char"
-                },
-                {
-                    typeof(decimal), "decimal"
-                },
-                {
-                    typeof(double), "double"
-                },
-                {
-                    typeof(short), "short"
-                },
-                {
-                    typeof(int), "int"
-                },
-                {
-                    typeof(long), "long"
-                },
-                {
-                    typeof(sbyte), "sbyte"
-                },
-                {
-                    typeof(float), "float"
-                },
-                {
-                    typeof(ushort), "ushort"
-                },
-                {
-                    typeof(uint), "uint"
-                },
-                {
-                    typeof(ulong), "ulong"
-                },
-                {
-                    typeof(void), "void"
-                }
-            };
-
-            if (typesToShortNames.TryGetValue(type, out var nameAsString))
-            {
-                return nameAsString;
-            }
-
-            nameAsString = NameOrFullName(type);
-
-            if (type.IsGenericType)
-            {
-                var backtick = nameAsString.IndexOf('`');
-                if (backtick > 0)
-                {
-                    nameAsString = nameAsString.Remove(backtick);
-                }
-
-                nameAsString += "<";
-                var typeParameters = type.GetGenericArguments();
-                for (var i = 0; i < typeParameters.Length; i++)
-                {
-                    var typeParamName = typeParameters[i].AsTypeNameString();
-                    nameAsString += i == 0 ? typeParamName : ", " + typeParamName;
-                }
-
-                nameAsString += ">";
-            }
-
-            if (type.IsArray)
-            {
-                return type.GetElementType().AsTypeNameString(useFullyQualifiedAssemblyName) + "[]";
-            }
-
-            return nameAsString;
-
-            string NameOrFullName(Type t)
-            {
-                var name = t.Name;
-                if (t.IsNested)
-                {
-                    var tempT = t;
-
-                    do
-                    {
-                        name = $"{tempT.DeclaringType.Name}+{name}";
-                        tempT = tempT.DeclaringType;
-                    }
-                    while (tempT != null && tempT.IsNested);
-                }
-
-                return useFullyQualifiedAssemblyName ? $"{t.Namespace}.{name}" : name;
-            }
+            var json = source.ToJson(SerialiserIds.JsonDotNetDefault);
+            var assemblyQualifiedName =
+                source.GetType()
+                      .AssemblyQualifiedName; //* be sure to use the underlying type in case source is assigned to a base class or interface
+            var obj = json.FromJson<T>(SerialiserIds.JsonDotNetDefault, assemblyQualifiedName);
+            return obj.As<T>();
         }
 
-        
         /// <summary>
         ///     copies the values of matching properties from one object to another regardless of type
         /// </summary>
@@ -165,120 +108,19 @@
                 props.targetProperty.SetValue(destination, props.sourceProperty.GetValue(source, null), null);
         }
 
-        public static T Clone<T>(this T source) where T : class
-        {
-            var json = source.ToNewtonsoftJson();
-            var assemblyQualifiedName = source.GetType().AssemblyQualifiedName;
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedName));
-            return obj.As<T>();
-        }
-
-        public static T FromJson<T>(this string json)
-        {
-            var obj = JsonConvert.DeserializeObject<T>(json);
-            return obj;
-        }
-        
-        
-           public static T FromJsonToInterface<T>(this string json, string assemblyQualifiedTypeName) where T : class //* t = interface
-        {
-            var obj = JsonConvert.DeserializeObject(json, Type.GetType(assemblyQualifiedTypeName));
-            return obj.As<T>();
-        }
-        
-        public static T FromSerialisableObject<T>(this SerialisableObject s) where T : class => s.Deserialise<T>();
-
-        /// <summary>
-        ///     get property name from current instance
-        /// </
-        ///
-        /// 
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="type"></param>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(this TObject type, Expression<Func<TObject, object>> propertyRefExpr) =>
-            // usage: obj.GetPropertyName(o => o.Member)
-            GetPropertyNameCore(propertyRefExpr.Body);
-
-        /// <summary>
-        ///     get property name from any class
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="propertyRefExpr"></param>
-        /// <returns></returns>
-        public static string GetPropertyName<TObject>(Expression<Func<TObject, object>> propertyRefExpr) =>
-            // usage: Objects.GetPropertyName<SomeClass>(sc => sc.Member)
-            GetPropertyNameCore(propertyRefExpr.Body);
-
-        /// <summary>
-        ///     get static property name from any class
-        /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="expression"></param>
-        /// <returns></returns>
-        public static string GetStaticPropertyName<TResult>(Expression<Func<TResult>> expression) =>
-            // usage: Objects.GetStaticPropertyName(t => t.StaticProperty)
-            GetPropertyNameCore(expression);
-
-        /// <summary>
-        ///     checks if a class inherits from or implements a base class/interface.
-        ///     Superbly supports generic interfaces and types!
-        /// </summary>
-        /// <param name="child"></param>
-        /// <param name="parent"></param>
-        /// <returns></returns>
-        public static bool InheritsOrImplements(this Type child, Type parent)
-        {
-            parent = ResolveGenericTypeDefinition(parent);
-
-            var currentChild = child.IsGenericType ? child.GetGenericTypeDefinition() : child;
-
-            while (currentChild != typeof(object))
-            {
-                if (parent == currentChild || //this get a direct match 
-                    parent == currentChild.BaseType || //this gets a specific generic impl BaseType<SomeType>
-                    HasAnyInterfaces(parent, currentChild))
-                    //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
-                {
-                    return true;
-                }
-
-                currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
-                                   ? currentChild.BaseType.GetGenericTypeDefinition() //this gets a generic impl BaseType<>
-                                   : currentChild.BaseType; //this just sets up the next child type
-
-                if (currentChild == null) return false;
-            }
-
-            return false;
-        }
-
         public static async Task<object> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
         {
             dynamic awaitable = @this.Invoke(obj, parameters);
-           await awaitable;
-           return awaitable.GetAwaiter().GetResult();
+            await awaitable;
+            return awaitable.GetAwaiter().GetResult();
         }
 
         public static bool Is(this object child, Type t) => child.GetType().InheritsOrImplements(t);
 
-        public static bool IsAnonymousType(this Type type)
-        {
-            var hasCompilerGeneratedAttribute = type.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false).Count() > 0;
-            var nameContainsAnonymousType = type.FullName.Contains("AnonymousType");
-            var isAnonymousType = hasCompilerGeneratedAttribute && nameContainsAnonymousType;
-
-            return isAnonymousType;
-        }
-
-        public static bool IsSystemType(this Type type) =>
-            type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
-
         public static To Map<T, To>(this T obj, Func<T, To> map) => map(obj);
 
         /// <summary>
-        ///     perform an operation on any class inline, (e.g. new Object().Op(o => someoperationon(o));
+        ///     perform an operation on any class inline, (e.g. new Object().Op(o => SomeOperationOn(o));
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
@@ -290,55 +132,35 @@
             return obj;
         }
 
-        public static string ToNewtonsoftJson(this object instance, bool prettyPrint = false)
+        public static string ToJson(this object instance, SerialiserIds serialiserId, bool prettyPrint = false)
         {
-            var json = JsonConvert.SerializeObject(instance, Formatting.Indented);
-            return json;
-        }
+            /* really important to consider the ramifications of changes in this method.
+             If you have historical object that were serialised with one of these settings and you
+             change them that would cause potential serious bugs. You should look at adding new items instead,
+             but even then you have to consider both serialisation and deserialisation code being updated
+             and you also have to consider a code branch to deal with old and new objects based on their serialisationId.
+             There is probably a better way but its much better than losing control of the situation entirely. 
+             All serialisation should then endeavour to use the ToJson and FromJson methods. Creating these
+             choke points will mean that you can easily make changes later without missing any of the many 
+             callers of these methods. */
 
-        public static SerialisableObject ToSerialisableObject(this object o) => new SerialisableObject(o);
-
-        private static string GetPropertyNameCore(Expression propertyRefExpr)
-        {
-            if (propertyRefExpr == null) throw new ArgumentNullException(nameof(propertyRefExpr), "propertyRefExpr is null.");
-
-            var memberExpr = propertyRefExpr as MemberExpression;
-            if (memberExpr == null)
+            
+            var json = serialiserId switch
             {
-                var unaryExpr = propertyRefExpr as UnaryExpression;
-                if (unaryExpr != null && unaryExpr.NodeType == ExpressionType.Convert)
-                {
-                    memberExpr = unaryExpr.Operand as MemberExpression;
-                }
-            }
-
-            if (memberExpr != null && memberExpr.Member.MemberType == MemberTypes.Property) return memberExpr.Member.Name;
-
-            throw new ArgumentException("No property reference expression was found.", nameof(propertyRefExpr));
-        }
-
-        private static bool HasAnyInterfaces(Type parent, Type child)
-        {
-            return child.GetInterfaces()
-                        .Any(
-                            childInterface =>
-                                {
-                                var currentInterface = childInterface.IsGenericType
-                                                           ? childInterface.GetGenericTypeDefinition()
-                                                           : childInterface;
-
-                                return currentInterface == parent;
-                                });
-        }
-
-        private static Type ResolveGenericTypeDefinition(Type parent)
-        {
-            var shouldUseGenericType = true;
-            if (parent.IsGenericType && parent.GetGenericTypeDefinition() != parent) shouldUseGenericType = false;
-
-            if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
-
-            return parent;
+                var x when x == SerialiserIds.JsonDotNetDefault => JsonConvert.SerializeObject(
+                    instance,
+                    prettyPrint ? Formatting.Indented : Formatting.None),
+                var x when x == SerialiserIds.ApiBusMessage => JsonConvert.SerializeObject(
+                    instance,
+                    prettyPrint ? Formatting.Indented : Formatting.None,
+                    JsonNetSettings.ApiMessageSerialiserSettings),
+                var x when x == SerialiserIds.ClientSideMessageSchemaGeneraton => JsonConvert.SerializeObject(
+                    instance,
+                    prettyPrint ? Formatting.Indented : Formatting.None,
+                    JsonNetSettings.MessageSchemaSerialiserSettings),
+                _ => throw new Exception($"Serialiser Id Not Found. Valid values are {SerialiserIds.ListToString()}")
+            };
+            return json;
         }
     }
 }

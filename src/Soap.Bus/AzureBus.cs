@@ -43,13 +43,11 @@
 
         public async Task Publish(ApiEvent publishEvent)
         {
-            var queueMessage = new Message(
-                Encoding.Default.GetBytes(
-                    JsonConvert.SerializeObject(publishEvent, JsonNetSettings.ApiMessageSerialiserSettings)))
-            {
+            var queueMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+                {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(),
                 Label = publishEvent.GetType().AssemblyQualifiedName,
-                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().AssemblyQualifiedName) }
+                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().ToShortAssemblyTypeName()) }
             };
 
             var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic().ToLower());
@@ -61,13 +59,12 @@
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
-            var queueMessage = new Message(
-                Encoding.Default.GetBytes(JsonConvert.SerializeObject(sendCommand, JsonNetSettings.ApiMessageSerialiserSettings)))
+            var queueMessage = new Message(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Label = sendCommand.GetType().AssemblyQualifiedName,
                 CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
-                UserProperties = { new KeyValuePair<string, object>("Type", sendCommand.GetType().AssemblyQualifiedName) }
+                UserProperties = { new KeyValuePair<string, object>("Type", sendCommand.GetType().ToShortAssemblyTypeName()) }
             };
 
             var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());

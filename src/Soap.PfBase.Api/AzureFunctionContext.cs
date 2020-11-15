@@ -125,7 +125,7 @@
             {
                 try //* deserialise the message
                 {
-                    message = JsonConvert.DeserializeObject(messageJson, type, JsonNetSettings.ApiMessageDeserialisationSettings).As<ApiMessage>();
+                    message = messageJson.FromJson<ApiMessage>(SerialiserIds.ApiBusMessage, type.ToShortAssemblyTypeName());
 
                     Guard.Against(
                         messageId != message.Headers.GetMessageId(),
@@ -186,7 +186,7 @@
                     var typeString = userProperties["Type"] as string;
                     Guard.Against(typeString == null, "'Type' property not provided");
                     var type = Type.GetType(typeString);
-                    Guard.Against(type?.AssemblyQualifiedName != typeString, "Message type does not correspond to internal type");
+                    Guard.Against(type?.ToShortAssemblyTypeName() != typeString, "Message type does not correspond to internal type");
                     messageType = type;
                 }
                 catch (Exception e)

@@ -2,6 +2,7 @@
 {
     using System;
     using Newtonsoft.Json;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Objects.Binary;
     using Xunit;
 
@@ -58,8 +59,8 @@
             public void ItShouldWork()
             {
                 var x = new EnumFlags(EnumFlagTestStates.State1);
-                var json = JsonConvert.SerializeObject(x);
-                var y = JsonConvert.DeserializeObject<EnumFlags>(json);
+                var json = x.ToJson(SerialiserIds.JsonDotNetDefault);
+                var y = json.FromJson<EnumFlags>(SerialiserIds.JsonDotNetDefault);
                 Assert.True(y.HasFlag(EnumFlagTestStates.State1));
             }
         }

@@ -21,7 +21,7 @@
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Models;
+    
 
     public static class ContextWithMessageLogEntryExtensions
     {
@@ -386,7 +386,7 @@
 
             bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage() =>
                 //- avoid infinite loop
-                context.Message.GetType().InheritsOrImplements(typeof(MessageFailedAllRetries));
+                context.Message.Is(typeof(MessageFailedAllRetries));
 
             bool ThisFailureIsTheFinalFailure() =>
                 //- remember that total attempts is initial message + retries
@@ -394,10 +394,14 @@
 
             void SendFinalFailureMessage()
             {
-                var genericTypeWithParam = typeof(MessageFailedAllRetries<>).MakeGenericType(context.Message.GetType());
-
-                var instanceOfMessageFailedAllRetries =
-                    (MessageFailedAllRetries)Activator.CreateInstance(genericTypeWithParam, context.Message);
+                var json = context.Message.ToJson(SerialiserIds.ApiBusMessage);
+                
+                var instanceOfMessageFailedAllRetries = new MessageFailedAllRetries()
+                {
+                    SerialiserId = SerialiserIds.ApiBusMessage.Key,
+                    TypeName = context.Message.GetType().ToShortAssemblyTypeName(),  //* you don't want the assembly version etc since that could break deserialisation
+                    SerialisedMessage = json
+                };
 
                 context.Bus.Send(instanceOfMessageFailedAllRetries);
             }
@@ -487,7 +491,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().AsTypeNameString(),
+                                Name = stateOperation.GetType().ToTypeNameString(),
                                 DataStore = dataStoreOperation.MethodCalled + (dataStoreOperation.TypeName != null ? "<" : "")
                                                                             + dataStoreOperation.TypeName.SubstringAfterLast('.')
                                                                             + (dataStoreOperation.TypeName != null ? ">" : "")
@@ -499,7 +503,7 @@
                             new
                             {
                                 Duration = stateOperation.StateOperationDuration.ToString(),
-                                Name = stateOperation.GetType().AsTypeNameString()
+                                Name = stateOperation.GetType().ToTypeNameString()
                             });
                     }
 

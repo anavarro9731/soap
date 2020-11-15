@@ -10,4 +10,7 @@
   <ItemGroup>
     <Folder Include="Objects\Blended" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Soap.Interfaces.Messages\Soap.Interfaces.Messages.csproj" />
+  </ItemGroup>
 </Project>

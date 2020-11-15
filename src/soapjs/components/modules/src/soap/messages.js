@@ -117,8 +117,9 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousMessageObject
 
                 classBody += `this.${propertyName} = typed${propertyName} === null ? undefined : typed${propertyName};\r\n`; //* set the property to the real type avoid nulls
 
-            } else {
-                classBody += `this.validate([{ ${propertyName} }, this.types.${typeof propertyValue}]);\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+            } else { //* primitives
+                const optional = isOptional(propertyValue) ? 'true': ''; 
+                classBody += `this.validate([{ ${propertyName} }, this.types.${typeof propertyValue}], ${optional});\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                 classBody += `this.${propertyName} = ${propertyName};\r\n`;
             }
         }
@@ -138,6 +139,33 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousMessageObject
         messageTypesSingleton[className].prototype.types = types;
 
         return className;
+    }
+    
+    function isOptional(contestant) {
+        
+        const optionalValues = [
+            "", //*string 
+            "00000000-0000-0000-0000-000000000000", //*guid
+            "0001-01-01T00:00:00Z", //*datetime
+            -79228162514264337593543950335.0, //*decimal
+            -9223372036854775808, //*long
+            -2147483648, //*int
+            -32769, //*short
+            0, //*byte
+            -128, //*sbyte
+            false, //*bool
+        ];
+        
+        return contains(optionalValues, contestant)
+
+        function contains(a, obj) {
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] === obj) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
 

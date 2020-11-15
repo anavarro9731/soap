@@ -1,5 +1,4 @@
 ﻿import * as testMessages from './test-messages';
-import * as messages from '../messages';
 import { registerMessageTypes } from '../messages';
 
 
