@@ -18,7 +18,7 @@
 
     public abstract class ApiMessage : IMessage
     {
-        public MessageHeaders Headers { get; } = new MessageHeaders();
+        public MessageHeaders Headers { get; set; } = new MessageHeaders();
 
         public abstract ApiPermission Permission { get; }
     }
@@ -35,8 +35,10 @@
     {
         public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message)
         {
-            messageHeaders.EnsureRequiredHeaders();
-
+            
+            messageHeaders.SetTimeOfCreationAtOrigin();
+            messageHeaders.SetMessageId(Guid.NewGuid()); 
+            
             if (message is MessageFailedAllRetries m)
             {
                 messageHeaders.SetQueueName(Type.GetType(m.TypeName).Assembly.GetName().Name); //* send to owners queue
@@ -47,165 +49,99 @@
             }
             
             messageHeaders.SetSchema(message.GetType().FullName);
-
-            /* 1 */
+            
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All outgoing Api messages must have a valid {nameof(Keys.MessageId)} header");
-            /* 2 */
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
-            /* 3 */ //* identity token optionally present, some message are anonymous though most aren't    
-            /* 4 */ //* stateful process id optionally present when stateful process is involved   
-            /* 5 */
+            //* identity token optionally present, some message are anonymous though most aren't    
+            //* stateful process id optionally present when stateful process is involved   
             Ensure(messageHeaders.GetQueue() != null, $"All outgoing Api commands must have a {Keys.QueueName} header set");
-            /* 6 */ /* topic n/a
-            /* 7 */
+            //* topic n/a
             //* azure sequence number, allows a scheduled message to be a cancelled later, but not sure its useful on the message itself so not setting yet
-            /* 8 */ //* blob id only present on large messages
-            /* 9 */ //* conversation id n/a only present on outgoing events or incoming commands
-            /* 10 */ //* command hash n/a only present on outgoing events or incoming commands
-            /* 11 */ //* channel n/a only present on outgoing events or incoming commands
-            /* 12 */
+            //* blob id only present on large messages
+            //* conversation id n/a only present on outgoing events or incoming commands
+            //* command hash n/a only present on outgoing events or incoming commands
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api commands must have a {nameof(Keys.Schema)} header set");
         }
 
         public static void SetAndCheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
         {
-            messageHeaders.EnsureRequiredHeaders();
+            messageHeaders.SetTimeOfCreationAtOrigin();
+            messageHeaders.SetMessageId(Guid.NewGuid()); 
             messageHeaders.SetTopic(message.GetType().FullName);
-            messageHeaders.SetChannel("events");
             messageHeaders.SetSchema(message.GetType().FullName);
 
-            /* 1 */
+
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All outgoing Api messages must have a valid {nameof(Keys.MessageId)} header");
-            /* 2 */
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
-            /* 3 */ //* identity token optionally present, some message are anonymous though most aren't    
-            /* 4 */ //* stateful process id optionally present when stateful process is involved    
-            /* 5 */ //* queue name n/a    
-            /* 6 */
+            //* identity token optionally present, some message are anonymous though most aren't    
+            //* stateful process id optionally present when stateful process is involved    
+            //* queue name n/a    
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
-            /* 7 */ //*azure sequence number n/a in test
-            /* 8 */ //*blob id only present on large messages
-            /* 9 */
+            //*azure sequence number n/a in test
+            //*blob id only present on large messages
             CheckCommandHash(messageHeaders);
-            /* 10 */
             CheckConversationId(messageHeaders);
-            /* 11 */
-            Ensure(messageHeaders.GetChannel() != null, $"All outgoing Api events must have a {nameof(Keys.Channel)} header set");
-            /* 12 */
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api events must have a {nameof(Keys.Schema)} header set");
         }
 
         public static void SetDefaultHeadersForIncomingTestMessages(this MessageHeaders messageHeaders, ApiMessage message)
         {
 
-            /* 1 */
             if (messageHeaders.GetMessageId() == Guid.Empty)
             messageHeaders.SetMessageId(Guid.NewGuid());
-            /* 2 */
+            
             if (messageHeaders.GetTimeOfCreationAtOrigin() == null)
             messageHeaders.SetTimeOfCreationAtOrigin();
-            /* 3 */
+            
             if (string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
             messageHeaders.SetIdentityToken("identity token");
-            /* 4 */
+            
             //messageHeaders.SetStatefulProcessId(new StatefulProcessId("type id", Guid.NewGuid()));
-            /* 5 */
+            
             if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
             messageHeaders.SetQueueName("queue name");
-            /* 6 */
+            
             if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
             messageHeaders.SetTopic("topic");
-            /* 7 */
-            if (string.IsNullOrEmpty(messageHeaders.GetAzureSequenceNumber()))
-            messageHeaders.SetAzureSequenceNumber("azure bus sequence number");
-            /* 8 */
-            //messageHeaders.SetBlobId(Guid.Empty); 
-            /* 9 */
+            
+            //messageHeaders.SetBlobId(Guid.Empty);
+            
             if (messageHeaders.GetConversationId() == null)
             messageHeaders.SetConversationId(Guid.NewGuid());
-            /* 10 */
+
             if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()))
             messageHeaders.SetCommandHash("command hash");
-            /* 11 */
-            if (string.IsNullOrEmpty(messageHeaders.GetChannel()))
-            messageHeaders.SetChannel("channel");
-            /* 12 */
+            
             if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
             messageHeaders.SetSchema(message.GetType().FullName);
             
         }
-
-        public static void SetHeadersOnSchemaModelMessage(this MessageHeaders messageHeaders, ApiMessage message)
-        {
-            /* 1 */
-            messageHeaders.SetMessageId(Guid.NewGuid());
-            /* 2 */
-            messageHeaders.SetTimeOfCreationAtOrigin();
-            /* 3 */
-            messageHeaders.SetIdentityToken("identity token");
-            /* 4 */
-            messageHeaders.SetStatefulProcessId(new StatefulProcessId("type id", Guid.NewGuid()));
-            /* 5 */
-            messageHeaders.SetQueueName("queue name");
-            /* 6 */
-            messageHeaders.SetTopic("topic");
-            /* 7 */
-            messageHeaders.SetAzureSequenceNumber("azure bus sequence number");
-            /* 8 */
-            messageHeaders.SetBlobId(Guid.Empty); 
-            /* 9 */
-            messageHeaders.SetConversationId(Guid.NewGuid());
-            /* 10 */
-            messageHeaders.SetCommandHash("command hash");
-            /* 11 */
-            messageHeaders.SetChannel("channel");
-            /* 12 */
-            messageHeaders.SetSchema(message.GetType().FullName);
-        }
-
+        
         public static void ValidateIncomingMessageHeaders(this MessageHeaders messageHeaders)
         {
-            /* 1 */
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All incoming Api messages must have a valid {nameof(Keys.MessageId)} header");
-            /* 2 */
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
-            /* 3 */ //* identity token optionally present, some message are anonymous though most aren't    
-            /* 4 */ //* stateful process id optionally present when stateful process is involved    
-            /* 5 */ //* queue name not relevant anymore
-            /* 6 */ //* topic not relevant anymore
-            /* 7 */ //* azure sequence number not relevant anymore
-            /* 8 */ //* blob id optional/present on large messages
-            /* 9 */
+            //* identity token optionally present, some message are anonymous though most aren't    
+            //* stateful process id optionally present when stateful process is involved    
+            //* queue name not relevant anymore
+            //* topic not relevant anymore
+            //* azure sequence number not relevant anymore
+            //* blob id optional/present on large messages
             CheckCommandHash(messageHeaders);
-            /* 10 */
             CheckConversationId(messageHeaders);
-            /* 11 */
-            Ensure(!(messageHeaders.GetQueue() != null && messageHeaders.GetChannel() == null), $"All incoming Api commands must have a {nameof(Keys.Channel)} header set");
-            /* 12 */
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
-        }
-        
-        public static void EnsureRequiredHeaders(this MessageHeaders headers)
-        {
-            /* needs to be called everywhere you can send a message (e.g. tests, bus)
-             using constructors will just be avoided and since you have to have
-            public parameterless ctor for serialisation no point, and 
-            properties just break serialisation. */
-
-            if (headers.GetTimeOfCreationAtOrigin() == null) headers.SetTimeOfCreationAtOrigin();
-            if (headers.GetMessageId() == Guid.Empty) headers.SetMessageId(Guid.NewGuid());
         }
         
         private static void CheckCommandHash(MessageHeaders messageHeaders)
@@ -215,7 +151,7 @@
             {
                 Ensure(
                     messageHeaders.GetCommandHash() != null,
-                    $"All Api messages with {Keys.ConversationId} header set must also have {Keys.CommandHash} set");
+                    $"All Api messages with {Keys.CommandConversationId} header set must also have {Keys.CommandHash} set");
             }
         }
 
@@ -226,7 +162,7 @@
             {
                 Ensure(
                     messageHeaders.GetConversationId() != null,
-                    $"All Api messages with {Keys.CommandHash} header set must also have {Keys.ConversationId} set");
+                    $"All Api messages with {Keys.CommandHash} header set must also have {Keys.CommandConversationId} set");
             }
         }
         
@@ -238,11 +174,6 @@
 
     public static class MessageHeaderExtensionsB
     {
-        public static string GetAzureSequenceNumber(this MessageHeaders m)
-        {
-            m.TryGetValue(Keys.AzureSequenceNumber, out var x);
-            return x;
-        }
 
         public static Guid? GetBlobId(this MessageHeaders m)
         {
@@ -250,13 +181,7 @@
             Guid.TryParse(x, out var result);
             return result == Guid.Empty ? (Guid?)null : result;
         }
-
-        public static string GetChannel(this MessageHeaders m)
-        {
-            m.TryGetValue(Keys.Channel, out var x);
-            return x;
-        }
-
+        
         public static string GetCommandHash(this MessageHeaders m)
         {
             m.TryGetValue(Keys.CommandHash, out var x);
@@ -265,7 +190,7 @@
 
         public static Guid? GetConversationId(this MessageHeaders m)
         {
-            m.TryGetValue(Keys.ConversationId, out var x);
+            m.TryGetValue(Keys.CommandConversationId, out var x);
             Guid.TryParse(x, out var result);
             return result == Guid.Empty ? (Guid?)null : result;
         }
@@ -330,13 +255,6 @@
 
         public static bool HasStatefulProcessId(this MessageHeaders m) => m.Exists(v => v.Key == Keys.StatefulProcessId);
 
-        public static MessageHeaders SetAzureSequenceNumber(this MessageHeaders m, string azureSequenceNumber)
-        {
-            if (!m.Exists(v => v.Key ==Keys.AzureSequenceNumber))
-            m.Add(new Enumeration(Keys.AzureSequenceNumber, azureSequenceNumber));
-            return m;
-        }
-
         public static MessageHeaders SetBlobId(this MessageHeaders m, Guid blobId)
         {
             if (!m.Exists(v => v.Key ==Keys.BlobId))
@@ -344,14 +262,7 @@
 
             return m;
         }
-
-        public static MessageHeaders SetChannel(this MessageHeaders m, string channel)
-        {
-            if (!m.Exists(v => v.Key ==Keys.Channel))
-            m.Add(new Enumeration(Keys.Channel, channel));
-            return m;
-        }
-
+        
         public static MessageHeaders SetCommandHash(this MessageHeaders m, string commandHash)
         {
             if (!m.Exists(v => v.Key ==Keys.CommandHash))
@@ -361,8 +272,8 @@
 
         public static MessageHeaders SetConversationId(this MessageHeaders m, Guid conversationId)
         {
-            if (!m.Exists(v => v.Key ==Keys.ConversationId))
-            m.Add(new Enumeration(Keys.ConversationId, conversationId.ToString()));
+            if (!m.Exists(v => v.Key ==Keys.CommandConversationId))
+            m.Add(new Enumeration(Keys.CommandConversationId, conversationId.ToString()));
             return m;
         }
 
@@ -425,20 +336,14 @@
         //* time when message was created / sent
         public const string TimeOfCreationAtOrigin = nameof(TimeOfCreationAtOrigin);
 
-        //* azure bus id
-        internal const string AzureSequenceNumber = nameof(AzureSequenceNumber);
-
         //* id of blob if message is large
         internal const string BlobId = nameof(BlobId);
-
-        //* id of client side channel
-        internal const string Channel = nameof(Channel);
 
         //* hash of message that started a client side conversation to link it up again (conversationid too specific for cache)
         internal const string CommandHash = nameof(CommandHash);
 
         //* id of client side conversation
-        internal const string ConversationId = nameof(ConversationId);
+        internal const string CommandConversationId = nameof(CommandConversationId);
 
         //* auth token
         internal const string IdentityToken = nameof(IdentityToken);

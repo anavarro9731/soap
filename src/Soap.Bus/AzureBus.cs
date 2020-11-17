@@ -45,12 +45,13 @@
         {
             var queueMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
-                MessageId = publishEvent.Headers.GetMessageId().ToString(),
-                Label = publishEvent.GetType().AssemblyQualifiedName,
-                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().ToShortAssemblyTypeName()) }
+                MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                Label = publishEvent.GetType().AssemblyQualifiedName, //* just there for debugging of actual type sent on bus, not required by any client
+                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().ToShortAssemblyTypeName()) } //* required by clients for quick deserialisation rather than parsing JSON $type
             };
 
-            var topicClient = new TopicClient(this.settings.BusConnectionString, publishEvent.Headers.GetTopic().ToLower());
+            var topic = publishEvent.Headers.GetTopic().ToLower();
+            var topicClient = new TopicClient(this.settings.BusConnectionString, topic);
 
             await topicClient.SendAsync(queueMessage);
 

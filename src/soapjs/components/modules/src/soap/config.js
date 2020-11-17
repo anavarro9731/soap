@@ -1,31 +1,28 @@
-if (
-  globalThis.soap_connected === undefined &&
-  globalThis.soap_startupCommandQueue === undefined
-) {
-  globalThis.soap_connected = false;
-  globalThis.soap_startupCommandQueue = [];
-}
+import { registerMessageTypes } from "./messages";
+import { fetch } from "../utils/fetch";
+
+
+
+
+
 
 export default {
   log(msg) {
     console.log(msg);
   },
-  setConnected(value) {
-    globalThis.soap_connected = value;
-  },
-  addToCommandQueue(command) {
-    globalThis.soap_startupCommandQueue.push(command);
-  },
-  getStartupCommandQueue() {
-    return globalThis.soap_startupCommandQueue;
-  },
-  getConnected() {
-    return globalThis.soap_connected;
-  },
-  setSend(sendFunction) {
-    if (sendFunction) globalThis.soap_send = sendFunction;
+  setup(sender) {
+    const fr = process.env.FunctionAppRoot;
+    const sr = process.env.ServiceBusRoot;
+    const qn = process.env.ServiceBusQueue;
+    this.sender = msg => sender(msg, sr, qn);
+    
+    //* register messages
+    fetch(`${fr}/GetJsonSchema`, (jsonArrayOfMessages)=> {
+      registerMessageTypes(jsonArrayOfMessages);
+    });
+    
   },
   send(message) {
-    globalThis.soap_send(message);
-  },
+    sender(message);
+  }
 };

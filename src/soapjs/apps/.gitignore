@@ -1,17 +1,11 @@
 # Don't check auto-generated stuff into git
-coverage
-build
-node_modules
-stats.json
-dist
 .cache
+.parcel-cache
+dist
+node_modules
 /index.html
 
 
-# Cruft
+# Win Cruft
 .DS_Store
-npm-debug.log
 .idea
-
-.bit
-node_modules

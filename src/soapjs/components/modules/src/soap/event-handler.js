@@ -5,17 +5,17 @@ export default {
 
     handle: event => {
 
-        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(event);
+        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(event, event.headers.schema);
 
         const {headers} = typedEventWrappedInProxy;
 
         cacheSoTheSameQueriesAreNotRepeated(typedEventWrappedInProxy);
 
         bus.publish(
-            headers.channel,
+            bus.channels.events,
             headers.schema,
             typedEventWrappedInProxy,
-            headers.conversationId,
+            headers.commandConversationId,
         );
 
         function cacheSoTheSameQueriesAreNotRepeated() {

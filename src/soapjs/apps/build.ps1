@@ -28,13 +28,13 @@ function Build {
          Remove-Item ./dist -Recurse
       }
 
-      npx parcel build ../index.html --out-dir dist --public-url ./
+      npm run-script build
 }
 
 function Run {
       WriteIndexFile
 
-      npx parcel ../index.html --out-dir dist
+        npm run-script run
 }
 
 

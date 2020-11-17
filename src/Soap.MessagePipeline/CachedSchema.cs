@@ -66,7 +66,6 @@
                     foreach (var type in messageTypes.ToList())
                     {
                         BuildJsonSchemaForMessageType(type, plainTextBuilder, out var message);
-                        message.Headers.SetHeadersOnSchemaModelMessage(message);
 
                         /* the only way to get null properties would be if they are ignored
                         that is the logic i think we should keep, null = ignored and you can 
@@ -74,8 +73,11 @@
                         jsonSchemaBuilder.AppendLine(message.ToJson(SerialiserIds.ClientSideMessageSchemaGeneraton, true) + ',');
                     }
 
-                    jsonSchemaBuilder.AppendLine("]");
-                    json = jsonSchemaBuilder.ToString();
+                    var j = jsonSchemaBuilder.ToString();
+                    j = j.Remove(j.Length - 3, 2); //remove \r\n
+                    j += "]";
+                    json = j;
+                    
                     text = plainTextBuilder.ToString();
                 }
 
@@ -146,6 +148,15 @@
                                         property.SetValue(
                                             instance,
                                             isHardToDetectNullableString ? string.Empty : GetDefault(propertyType));
+                                    } else if (propertyName == nameof(ApiMessage.Headers))
+                                    {
+                                        var @default = GetDefault(typeof(Enumeration)).As<Enumeration>();
+                                        var headers = new MessageHeaders
+                                        {
+                                            @default
+                                        };
+                                        property.SetValue(instance,headers);
+                                        
                                     }
                                     else if (propertyType.IsGenericType
                                              && propertyType.GetGenericTypeDefinition() == typeof(List<>))
@@ -156,7 +167,7 @@
                                         var @default = GetDefault(typeParam);
                                         l.Add(@default);
                                         property.SetValue(instance, l);
-                                    }
+                                    } 
                                     else
                                     {
                                         throw new Exception(

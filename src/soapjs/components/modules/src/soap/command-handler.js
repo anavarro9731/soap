@@ -1,7 +1,8 @@
-import {convertDotNetAssemblyQualifiedNameToJsClassName, md5Hash, types, uuidv4, validateArgs} from './util';
+import {parseDotNetShortAssemblyQualifiedName, md5Hash, types, uuidv4, validateArgs} from './util';
 import {bus, eventHandler, queryCache} from './index';
 import config from './config';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject} from './messages.js';
+import {convertDotNetAssemblyQualifiedNameToJsClassName} from "../../lib/soap/util";
 
 let mockEvents = {};
 
@@ -20,7 +21,7 @@ export function mockEvent(command, correspondingEvents) {
         addHeaders(command, event);
 
         //* save to queue
-        const commandName = command.constructor.name;  //* gets constructor name
+        const commandName = command.$type;  //* gets constructor name
         if (!mockEvents[commandName]) {
             mockEvents[commandName] = [];
         }
@@ -30,12 +31,10 @@ export function mockEvent(command, correspondingEvents) {
 }
 
 function addHeaders(command, event) {
-
     
     event.headers = {
-        conversationId: "we won't know till later, so we'll replace it later",
-        channel: bus.channels.events, //- would normally be set with publisher which is out of our control (e.g. server)
-        schema: convertDotNetAssemblyQualifiedNameToJsClassName(event.$type), //- would normally be set with publisher which is out of our control (e.g. server)
+        commandConversationId: "we won't know till later, so we'll replace it later",
+        schema: parseDotNetShortAssemblyQualifiedName(event.$type).className, //- would normally be set with publisher which is out of our control (e.g. server)
     };
     const {headers, ...payload} = command;
     event.headers.commandHash = md5Hash(payload);
@@ -97,37 +96,49 @@ export default {
         const conversationId = uuidv4();
 
         /* subscribe to response for just a brief moment
-        in the event that you send multiple identical requests before the first response is cached
-        you will get multiple commands/eventsubscriptions but that should be ok just a little less performant.
+        in the event that you send multiple identical commands before the first event response is cached
+        you will get multiple subscriptions but that should be ok just a little less performant.
        
-        also noteworthy is the fact that you can listen for multiple messages if they have different
-        schemas  and multiple messages of the same schema until the conversation is ended
-        all outbound queries have a conversationid which is terminated when CloseConversation is called
+        also noteworthy is the fact that you can listen for multiple events if they have different
+        schemas and multiple messages of the same schema until the conversation is ended
+        commands have a conversationId used to terminate the subscriptions when CloseConversation is called
         */
 
         //* set headers
-        
-        command.headers.conversationId = conversationId;
-        command.headers.channel = bus.channels.commands;
-        command.headers.schema = command.constructor.name;
+        command.headers.push(makeHeader("messageId", conversationId));
+        command.headers.push(makeHeader("timeOfCreationAtOrigin", new Date().toISOString()));
+        command.headers.push(makeHeader("commandConversationId", conversationId));
         const {headers, ...payload} = command;
-        command.headers.commandHash = md5Hash(payload);
-
+        command.headers.push(makeHeader("commandHash",  md5Hash(payload)));
+        command.headers.push(makeHeader("identityToken", "TBD"));
+        const {assemblyName, className} = convertDotNetAssemblyQualifiedNameToJsClassName(command.$type);
+        command.headers.push(makeHeader("queueName", assemblyName));
+        command.headers.push(makeHeader("schema", className));
+        //* statefulprocessid not used by client side code right now
+        //* topic only used by events
+        
+        //TODO upload to blob storage if too big
+        let tooBig = false;
+        let newBlobId = "";
+        command.headers.push(makeHeader("blobId", newBlobId));
+        
         subscribeCallerToEventResponses(command);
 
         sendCommandToApi(command);
 
         return conversationId;
 
-        /***********************************************************/
+        function makeHeader(name, value) {
+            return {key: name, value, active: true};
+        }
 
         function subscribeCallerToEventResponses(command) {
-            //- everything with this conversation id
+            //- to everything with this conversation id
             bus.subscribe(
                 bus.channels.events,
                 '#',
                 onResponse,
-                command.headers.conversationId,
+                command.headers.messageId
             );
         }
 
@@ -157,7 +168,7 @@ export default {
 
             const commandName = command.headers.schema;
             const mockedEventsForCommand = mockEvents[commandName];
-            const commandConversationId = command.headers.conversationId;
+            const commandConversationId = command.headers.messageId;
 
             if (!!mockedEventsForCommand) {
                 attemptToFakeEventResponseFromMockQueue(
@@ -165,9 +176,7 @@ export default {
                     commandConversationId,
                 );
             } else {
-                config.getConnected()
-                    ? config.send(command)
-                    : config.addToCommandQueue(command);
+                config.send(command, commandConversationId);
             }
 
             function attemptToFakeEventResponseFromMockQueue(
@@ -176,7 +185,7 @@ export default {
             ) {
                 // fake API responses
                 mockedEventsForCommand.forEach(anonymousEvent => {
-                    anonymousEvent.headers.conversationId = commandConversationId;
+                    anonymousEvent.headers.commandConversationId = commandConversationId;
                     eventHandler.handle(anonymousEvent);
                 });
             }
