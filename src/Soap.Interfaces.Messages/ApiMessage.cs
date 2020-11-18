@@ -114,8 +114,8 @@
             
             //messageHeaders.SetBlobId(Guid.Empty);
             
-            if (messageHeaders.GetConversationId() == null)
-            messageHeaders.SetConversationId(Guid.NewGuid());
+            if (messageHeaders.GetCommandConversationId() == null)
+            messageHeaders.SetCommandConversationId(Guid.NewGuid());
 
             if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()))
             messageHeaders.SetCommandHash("command hash");
@@ -147,7 +147,7 @@
         private static void CheckCommandHash(MessageHeaders messageHeaders)
         {
             //*command hash optionally present on commands coming from or events going to the client
-            if (messageHeaders.GetConversationId() != null)
+            if (messageHeaders.GetCommandConversationId() != null)
             {
                 Ensure(
                     messageHeaders.GetCommandHash() != null,
@@ -161,7 +161,7 @@
             if (messageHeaders.GetCommandHash() != null)
             {
                 Ensure(
-                    messageHeaders.GetConversationId() != null,
+                    messageHeaders.GetCommandConversationId() != null,
                     $"All Api messages with {Keys.CommandHash} header set must also have {Keys.CommandConversationId} set");
             }
         }
@@ -188,7 +188,7 @@
             return x;
         }
 
-        public static Guid? GetConversationId(this MessageHeaders m)
+        public static Guid? GetCommandConversationId(this MessageHeaders m)
         {
             m.TryGetValue(Keys.CommandConversationId, out var x);
             Guid.TryParse(x, out var result);
@@ -270,7 +270,7 @@
             return m;
         }
 
-        public static MessageHeaders SetConversationId(this MessageHeaders m, Guid conversationId)
+        public static MessageHeaders SetCommandConversationId(this MessageHeaders m, Guid conversationId)
         {
             if (!m.Exists(v => v.Key ==Keys.CommandConversationId))
             m.Add(new Enumeration(Keys.CommandConversationId, conversationId.ToString()));

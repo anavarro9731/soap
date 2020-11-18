@@ -9,7 +9,7 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
 
-    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103StartPingPong>, IContinueProcess<E150Pong>
+    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103v1StartPingPong>, IContinueProcess<E150Pong>
     {
         public enum States
         {
@@ -22,10 +22,10 @@
             ReceivedPong = 3
         }
 
-        public Func<C103StartPingPong, Task> BeginProcess =>
+        public Func<C103v1StartPingPong, Task> BeginProcess =>
             async message =>
                 {
-                var pingCommand = new C100Ping
+                var pingCommand = new C100v1Ping
                 {
                     PingedAt = DateTime.UtcNow, PingedBy = nameof(S888PingAndWaitForPong)
                 };

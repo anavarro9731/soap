@@ -1,6 +1,6 @@
 {
   "name": "@soap/modules",
-  "version": "1.11.0",
+  "version": "1.16.0",
   "peerDependencies": {},
   "dependencies": {
     "@babel/runtime": "^7.12.1",

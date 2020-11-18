@@ -8,9 +8,9 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P556GetServiceState : Process, IBeginProcess<C102GetServiceState>
+    public class P556GetServiceState : Process, IBeginProcess<C102v1GetServiceState>
     {
-        public Func<C102GetServiceState, Task> BeginProcess =>
+        public Func<C102v1GetServiceState, Task> BeginProcess =>
             async message =>
                 {
                 var serviceState = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();

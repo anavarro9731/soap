@@ -2,8 +2,8 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@azure/service-bus": "^1.1.10",
-    "@soap/modules": "^1.10.0",
+    "@azure/service-bus": "^7.0.0-preview.8",
+    "@soap/modules": "^1.16.0",
     "@soap/react": "^1.11.0",
     "prop-types": "15.7.2",
     "react": "^16.14.0",

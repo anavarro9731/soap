@@ -34,12 +34,12 @@
                     serviceState = new ServiceState
                     {
                         id = ServiceStateId,
-                        DatabaseState = new EnumerationFlags(C101UpgradeTheDatabase.ReleaseVersions.V1)
+                        DatabaseState = new EnumerationFlags(C101v1UpgradeTheDatabase.ReleaseVersions.V1)
                     };
                 }
                 };
 
-        public Func<C101UpgradeTheDatabase.ReleaseVersions, Task<ServiceState>> SetDatabaseVersion =>
+        public Func<C101v1UpgradeTheDatabase.ReleaseVersions, Task<ServiceState>> SetDatabaseVersion =>
             async newState =>
                 {
                 {

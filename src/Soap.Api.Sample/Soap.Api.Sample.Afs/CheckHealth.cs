@@ -34,7 +34,7 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100Ping, E150Pong, C105SendLargeMessage, C106LargeCommand, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
+                    Content = GetContent<C100v1Ping, E150Pong, C105v1SendLargeMessage, C106v1LargeCommand, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
                 };
 
                 return result;

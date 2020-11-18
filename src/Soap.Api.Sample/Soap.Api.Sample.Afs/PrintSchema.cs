@@ -25,7 +25,7 @@
                 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100Ping).Assembly).PlainTextSchema;
+                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100v1Ping).Assembly).PlainTextSchema;
 
                 return new OkObjectResult(result);
             }

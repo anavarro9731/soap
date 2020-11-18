@@ -1,88 +1,88 @@
 import React from 'react';
 import 'sanitize.css/sanitize.css';
-import * as ServiceBus from '@azure/service-bus/browser/service-bus';
+import {ServiceBusClient} from '@azure/service-bus';
 import {
     getListOfRegisteredMessages,
     getRegisteredMessageType,
+    headerKeys,
     registerMessageTypes
 } from "@soap/modules/lib/soap/messages";
+import {soap} from "@soap/modules";
+import {getHeader, uuidv4} from "@soap/modules/lib/soap/util";
 
+const eventHandler = soap.eventHandler;
+const config = soap.config;
+const commandHandler = soap.commandHandler;
+  
+config.sender = (msg) => {
 
-const config = {
-    log(msg) {
-        console.log(msg);
-    },
-    async setup(sender) {
-        const fr = process.env.FUNCTIONAPP_ROOT;
-        const sr = process.env.SERVICEBUS_ROOT;
-        const qn = process.env.SERVICEBUS_QUEUE;
+        let sessionDetails;
 
-        this.sender = msg => sender(msg, sr, qn);
+        (async function (typedMessage, logger) {
 
-        const endpoint = `${fr}api/GetJsonSchema`;
+            sessionDetails = sessionDetails || await register();
 
-        const jsonArrayOfMessages = await global.fetch(endpoint)
-            .then(response => response.json());
+            await send(typedMessage);
 
-        registerMessageTypes(jsonArrayOfMessages);
-        console.log(getListOfRegisteredMessages());
-        const x = getRegisteredMessageType("Enumeration");
-        const y = new x({});
+            async function register() {
 
-    },
-    send(message) {
-        sender(message);
-    }
-};
+                //* register message types from API
+                const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+                const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
+                const endpoint = `${functionAppRoot}api/GetJsonSchema`;
+                const jsonArrayOfMessages = await global.fetch(endpoint)
+                    .then(response => response.json());
+                registerMessageTypes(jsonArrayOfMessages);
+                logger.log(getListOfRegisteredMessages());
+                const x = getRegisteredMessageType("C100Ping");
 
-(async function () {
+                //* create listener for events from API(s)
+                const browserSessionId = "12345";// uuidv4();
+                const serviceBusClient = new ServiceBusClient(serviceBusConnectionString); //*  at the default of [5 minutes] of inactivity on the AMQP connection
+                //* will hold lock on the session for 5 mins. if the user F5's then you will get a new session id and the old one will die off with the servicebusClient after connection timeout since there are no lockRenewals on session or send calls on that client
+                const receiver = await serviceBusClient.acceptSession( "allevents", "browserclients", browserSessionId, {receiveMode: "receiveAndDelete"});
+                
+                const processMessage = async (message) => {
+                    logger.log(`Received: ${message.sessionId} - ${JSON.stringify(message.body)} `);
+                    eventHandler.handle(message.body);
+                };
+                const processError = async (args) => {
+                    logger.log(`>>>>> Error from error source ${args.errorSource} occurred: `, args.error);
+                };
+                
+                receiver.subscribe({
+                    processMessage,
+                    processError
+                });
 
-    await config.setup(async (msg, connectionString, queueName) => {
+                //* return sessionDetails for use by senders
+                return {
+                    browserSessionId,
+                    serviceBusClient
+                };
+            }
 
-        const sbClient = ServiceBus.ServiceBusClient.createFromConnectionString(connectionString);
+            async function send(message) {
 
-    });
+                const queue = getHeader(message, headerKeys.queueName);
+                const sender = sessionDetails.serviceBusClient.createSender(queue);
 
-    async function sendMessage(sbClient, command) {
+                logger.log(`Sending message ${getHeader(message, headerKeys.schema)} id/conversation ${getHeader(message, headerKeys.messageId)}`, message);
 
-        const queueClient = sbClient.createQueueClient(command.headers.queueName);
-        const sender = queueClient.createSender();
+                await sender.sendMessages({
+                    body: message,
+                    messageId: getHeader(message, headerKeys.messageId),
+                    subject: getHeader(message, headerKeys.schema),
+                    sessionId: sessionDetails.browserSessionId
+                });
 
-        const message = {
-            body: command,
-            label: command.headers.schema,
-            sessionId: command.headers.conversationId
-        };
+                logger.log(`Sent message ${getHeader(message, headerKeys.messageId)}`);
+                await sender.close();
+            }
+        }(msg, config.logger));
+    };
 
-        console.log(`Sending message ${command.headers.schema} id/conversation ${command.headers.conversationId}`, command);
-
-        await sender.send(message);
-        await queueClient.close();
-        
-        console.log(`Sent message ${command.headers.messageId}`);
-
-    }
-    
-    async function receiveMessages(sbClient, sessionId) {
-
-        const queueClient = sbClient.createSubscriptionClient("BrowserClients");
-        const receiver = queueClient.createReceiver(ServiceBus.ReceiveMode.peekLock, {
-            sessionId: sessionId
-        });
-
-        const onMessage = async (brokeredMessage) => {
-            console.log(`Received: ${brokeredMessage.sessionId} - ${brokeredMessage.body} `);
-        };
-        const onError = (err) => {
-            console.log(">>>>> Error occurred: ", err);
-        };
-        receiver.registerMessageHandler(onMessage, onError);
-        await delay(5000);
-
-        await queueClient.close();
-    }
-
-}());
-
+const c100Ping = { $type:'Soap.Api.Sample.Messages.Commands.C100v1Ping, Soap.Api.Sample.Messages', pingedAt: new Date().toISOString(), pingedBy: "aaron", headers : []};
+commandHandler.handle(c100Ping, msg => { config.log("GOT IT", msg)}, 0);
 
 //ReactDOM.render(<Welcome/>, document.getElementById('content'));

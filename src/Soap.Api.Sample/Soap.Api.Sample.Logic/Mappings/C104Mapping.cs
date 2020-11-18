@@ -9,16 +9,16 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C104Mapping : IMessageFunctionsClientSide<C104TestUnitOfWork>
+    public class C104Mapping : IMessageFunctionsClientSide<C104v1TestUnitOfWork>
     {
 
-        public IContinueProcess<C104TestUnitOfWork>[] HandleWithTheseStatefulProcesses { get; }
+        public IContinueProcess<C104v1TestUnitOfWork>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C104TestUnitOfWork msg) => this.Get<P555TestUnitOfWork>().Call(s => s.BeginProcess)(msg);
+        public Task Handle(C104v1TestUnitOfWork msg) => this.Get<P555TestUnitOfWork>().Call(s => s.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C104TestUnitOfWork msg) => new C104TestUnitOfWork.C104Validator().ValidateAndThrow(msg);
+        public void Validate(C104v1TestUnitOfWork msg) => new C104v1TestUnitOfWork.C104Validator().ValidateAndThrow(msg);
     }
 }

@@ -15,7 +15,7 @@ export default function wireErrorHandlerOfLastResort(finalGlobalCallback) {
         const complexError = { message, line, col, error };
         bus.publish(bus.channels.errors, "window", complexError);
 
-        config.log("** UNHANDLED ERROR: **\n" + complexError.message);
+        config.logger.log("** UNHANDLED ERROR: **\n" + complexError.message);
 
         const suppressErrorAlert = true;
         // If you return true, then any native browser error alerts will be suppressed.

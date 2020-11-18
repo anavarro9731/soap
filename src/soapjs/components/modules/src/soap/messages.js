@@ -12,6 +12,19 @@ export function getRegisteredMessageType(typeName) {
     return messageTypesSingleton[typeName];
 }
 
+export const headerKeys = {
+    messageId : "MessageId",
+    timeOfCreationAtOrigin: "TimeOfCreationAtOrigin",
+    commandConversationId: "CommandConversationId",
+    commandHash: "CommandHash",
+    identityToken: "IdentityToken",
+    queueName: "QueueName",
+    schema: "Schema",
+    statefulProcessId: "StatefulProcessId",
+    topic: "Topic",
+    blobId: "BlobId"
+};
+
 export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousMessageObject) {
 
     validateArgs([{instance: anonymousMessageObject}, types.object]);
@@ -24,7 +37,7 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
         typedObjectWrappedInProxy = wrapInProxy(typedObject);
 
     } catch (error) {
-        config.log('!! ERROR converting json received from API to event !! ', error);
+        config.logger.log('!! ERROR converting json received from API to event !! ', error);
         throw error;
     }
 
@@ -32,7 +45,7 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
 
     function makeInstanceOfCustomType(untypedMessageObject) {
 
-        const classType = parseDotNetShortAssemblyQualifiedName(untypedMessageObject.$type).className;
+        const { classType } = parseDotNetShortAssemblyQualifiedName(untypedMessageObject.$type);
         
         //* create a function which news up an instance of this class
         const newFunction = new Function(
@@ -53,7 +66,7 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
                 if (Object.keys(target).indexOf(property) !== -1) {
                     return target[property];
                 }
-                config.log(
+                config.logger.log(
                     `MISSING PROPERTY EXCEPTION: Attempted to write to ${typeof target}.${property.toString()} but it does not exist`,
                 );
             },
@@ -65,7 +78,7 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
                 ) {
                     return target[property];
                 } else if (property !== 'toJSON')
-                    config.log(
+                    config.logger.log(
                         `MISSING PROPERTY EXCEPTION: Attempted to read from ${typeof target}.${property.toString()} but it does not exist`,
                     );
             },

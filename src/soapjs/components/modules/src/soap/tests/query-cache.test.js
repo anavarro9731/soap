@@ -1,13 +1,13 @@
 import queryCache from "../query-cache";
 
 import * as __ from '../util'
-import {TestCommand_c100v1} from "./test-messages";
+import messageDefinitions, {TestCommand_c100v1} from "./test-messages";
+import {createRegisteredTypedMessageInstanceFromAnonymousObject, registerMessageTypes} from "../messages";
 
 test("queries filtered results1", () => {
 
     function Cache(code) {
-        const {headers, ...payload} = new TestCommand_c100v1({c100_pointlessProp: code});
-        const hash = __.md5Hash(payload);
+        const hash = __.md5Hash({id : code});
         queryCache.addOrReplace(hash, {id: code});
     }
     
@@ -15,16 +15,18 @@ test("queries filtered results1", () => {
     Cache("def");
     Cache("ghi");
     
-    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "def"}), 10);
-
+    let result = queryCache.find({id : 'def'}, 10);
     expect(result).toEqual({id:"def"});
 });
 
 test("queries filtered results2", () => {
 
+    registerMessageTypes(messageDefinitions);
+    
+    
+    
     function Cache(code) {
-        const {headers, ...payload} = new TestCommand_c100v1({c100_pointlessProp: code});
-        const hash = __.md5Hash(payload);
+        const hash = __.md5Hash({id : code});
         queryCache.addOrReplace(hash, {id: code});
     }
 
@@ -32,7 +34,7 @@ test("queries filtered results2", () => {
     Cache("def");
     Cache("ghi");
 
-    let result = queryCache.find(new TestCommand_c100v1({c100_pointlessProp: "xyz"}), 10);
+    let result = queryCache.find({id : 'zyx'}, 10);
 
     expect(result).toBeUndefined();
 });

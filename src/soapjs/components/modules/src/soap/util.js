@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export const types = Object.freeze({
     object: typeof {},
     undefined: typeof undefined,
@@ -11,13 +13,28 @@ export const types = Object.freeze({
 
 export const optional = true;
 
-export function parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName) {
+export function     parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName) {
     //* expect shortened .NET fully qualified assembly name e.g. Soap.Api.Messages.MessageA, Soap.Api.Messages
     const messageNameMatches = assemblyQualifiedName.match(/^(.+),.+$/i);
     const assemblyNameMatches = assemblyQualifiedName.match(/^.+, (.+)$/i)
     const className = messageNameMatches[1].replace(/\+/g, '.');
     const assemblyName = assemblyNameMatches[1];
     return {className, assemblyName};
+}
+
+export function getHeader(command, headerKey) {
+    const header = _.find(command.headers, h => h.key == headerKey);
+    if(!header) throw `header ${headerKey} not defined`;
+    return header.value;
+}
+
+export function setHeader(command, headerKey, value) {
+    _.remove(command.headers, h => h.key == headerKey);
+    command.headers.push(makeHeader(headerKey, value));
+    
+    function makeHeader(name, value) {
+        return {key: name, value, active: true};
+    }
 }
 
 export function validateArgs(...requiredArgs) {

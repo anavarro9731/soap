@@ -3,11 +3,11 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    public class C103StartPingPong : ApiCommand
+    public class C103v1StartPingPong : ApiCommand
     {
         public override ApiPermission Permission { get; }
 
-        public class C103Validator : AbstractValidator<C103StartPingPong>
+        public class C103Validator : AbstractValidator<C103v1StartPingPong>
         {
         }
     }

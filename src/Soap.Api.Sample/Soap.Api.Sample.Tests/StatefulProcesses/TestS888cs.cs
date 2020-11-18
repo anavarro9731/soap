@@ -24,7 +24,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -34,7 +34,7 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103StartPingPong();
+                var c103StartPingPong = new C103v1StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 
@@ -55,7 +55,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -64,7 +64,7 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103StartPingPong();
+                var c103StartPingPong = new C103v1StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 
@@ -85,7 +85,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -94,7 +94,7 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103StartPingPong();
+                var c103StartPingPong = new C103v1StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 

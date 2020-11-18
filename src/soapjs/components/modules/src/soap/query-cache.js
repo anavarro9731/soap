@@ -31,7 +31,7 @@ export default {
 
         let result;
         if (acceptableStalenessFactorInSeconds > 0) {
-            console.log(cache);
+            
             result = _.find(
                 cache,
                 i =>
@@ -41,7 +41,7 @@ export default {
             );
             if (result !== undefined) result = result.event;
         }
-        console.log(result);
+        
         return result;
     },
 };

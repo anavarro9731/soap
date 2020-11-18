@@ -189,10 +189,7 @@
                         message.ToJson(SerialiserIds.ApiBusMessage),
                         mappings,
                         message.Headers.GetMessageId().ToString(),
-                        new Dictionary<string, object>
-                        {
-                            { "Type", message.GetType().ToShortAssemblyTypeName() }
-                        },
+                        message.GetType().ToShortAssemblyTypeName(),
                         logger,
                         appConfig);
 

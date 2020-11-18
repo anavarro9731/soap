@@ -7,11 +7,12 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P559PingPong : Process, IBeginProcess<C100Ping>
+    public class P559PingPong : Process, IBeginProcess<C100v1Ping>
     {
-        public Func<C100Ping, Task> BeginProcess =>
+        public Func<C100v1Ping, Task> BeginProcess =>
             async message =>
                 {
+                
                 await Bus.Publish(
                     new E150Pong
                     {

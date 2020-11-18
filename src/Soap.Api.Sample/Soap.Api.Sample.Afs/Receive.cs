@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Soap.Api.Sample.Logic;
@@ -16,9 +18,8 @@
         public static async Task RunAsync(
             
             [ServiceBusTrigger("Soap.Api.Sample.Messages", Connection = "AzureWebJobsServiceBus")] //* this uses peeklockmode
-            string myQueueItem,
+            Message myQueueItem,
             string messageId,
-            IDictionary<string, object> UserProperties,
             ILogger log)
         {
             
@@ -30,10 +31,10 @@
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
                 
                 await AzureFunctionContext.Execute<User>(
-                    myQueueItem,
+                    Encoding.UTF8.GetString(myQueueItem.Body),
                     new MappingRegistration(),
                     messageId,
-                    UserProperties,
+                    myQueueItem.Label,
                     logger,
                     appConfig);
             }

@@ -22,7 +22,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public void ItShouldSetTheServiceStateDbVersionTo1()
         {
             var ss = Result.DataStore.Read<ServiceState>().Result.Single();
-            ss.DatabaseState.HasFlag(C101UpgradeTheDatabase.ReleaseVersions.V1).Should().BeTrue();
+            ss.DatabaseState.HasFlag(C101v1UpgradeTheDatabase.ReleaseVersions.V1).Should().BeTrue();
         }
     }
 }

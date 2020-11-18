@@ -15,9 +15,9 @@
     ///     ##REMOVE-IN-COPY##
     ///     This is not a normal process and uses a number of undocumented features
     /// </summary>
-    public class P555TestUnitOfWork : Process, IBeginProcess<C104TestUnitOfWork>
+    public class P555TestUnitOfWork : Process, IBeginProcess<C104v1TestUnitOfWork>
     {
-        public Func<C104TestUnitOfWork, Task> BeginProcess =>
+        public Func<C104v1TestUnitOfWork, Task> BeginProcess =>
             async message =>
                 {
                 if (ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId()
@@ -41,7 +41,7 @@
                 await this.Get<UserOperations>().Call(x => x.DeleteDarthVader)();
 
                 //* update 2 
-                await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.HansSoloNewName);
+                await this.Get<UserOperations>().Call(x => x.ChangeHansSoloName)(message.C104_HansSoloNewName);
 
                 await this.Get<UserOperations>().Call(x => x.ChangeLukeSkywalkersName)();
                 
@@ -62,7 +62,7 @@
                 async Task SendC100()
                 {
                     await Bus.Send(
-                        new C100Ping
+                        new C100v1Ping
                         {
                             PingedBy = nameof(P555TestUnitOfWork)
                         });

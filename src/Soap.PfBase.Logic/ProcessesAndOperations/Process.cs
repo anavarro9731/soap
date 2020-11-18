@@ -40,7 +40,7 @@
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
             RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.UserName));
-
+            
             await process.BeginProcess(message);
 
             RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));

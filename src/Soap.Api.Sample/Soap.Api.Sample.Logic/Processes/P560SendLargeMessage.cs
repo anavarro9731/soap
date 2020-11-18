@@ -6,8 +6,8 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P560SendLargeMessage : Process, IBeginProcess<C105SendLargeMessage>
+    public class P560SendLargeMessage : Process, IBeginProcess<C105v1SendLargeMessage>
     {
-        public Func<C105SendLargeMessage, Task> BeginProcess => async message => { await Bus.Send(new C106LargeCommand()); };
+        public Func<C105v1SendLargeMessage, Task> BeginProcess => async message => { await Bus.Send(new C106v1LargeCommand()); };
     }
 }

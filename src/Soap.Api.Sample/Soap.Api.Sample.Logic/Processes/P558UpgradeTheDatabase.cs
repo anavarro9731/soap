@@ -13,22 +13,22 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
 
-    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101UpgradeTheDatabase>
+    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101v1UpgradeTheDatabase>
     {
-        public Func<C101UpgradeTheDatabase, Task> BeginProcess =>
+        public Func<C101v1UpgradeTheDatabase, Task> BeginProcess =>
             async message =>
                 {
-                if (message.ReSeed)
+                if (message.C101_ReSeed)
                 {
                     await ExecuteOutsideTransactionUsingCurrentContext();
                 }
 
-                switch (message.ReleaseVersion)
+                switch (message.C101_ReleaseVersion)
                 {
-                    case var v when v == C101UpgradeTheDatabase.ReleaseVersions.V1:
+                    case var v when v == C101v1UpgradeTheDatabase.ReleaseVersions.V1:
                         await V1();
                         break;
-                    case var v when v == C101UpgradeTheDatabase.ReleaseVersions.V2:
+                    case var v when v == C101v1UpgradeTheDatabase.ReleaseVersions.V2:
                         await V2();
                         break;
                     default:
@@ -74,7 +74,7 @@
 
             Task SetDbVersion()
             {
-                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(C101UpgradeTheDatabase.ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(C101v1UpgradeTheDatabase.ReleaseVersions.V2);
             }
         }
 

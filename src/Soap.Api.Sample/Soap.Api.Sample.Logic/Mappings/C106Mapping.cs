@@ -11,20 +11,20 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;
 
-    public class C106Mapping : IMessageFunctionsClientSide<C106LargeCommand>
+    public class C106Mapping : IMessageFunctionsClientSide<C106v1LargeCommand>
     {
-        public IContinueProcess<C106LargeCommand>[] HandleWithTheseStatefulProcesses { get; }
+        public IContinueProcess<C106v1LargeCommand>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C106LargeCommand msg)
+        public Task Handle(C106v1LargeCommand msg)
         {
-            Guard.Against(string.IsNullOrEmpty(msg.Large256KbString), "Should have been restored from blob storage but wasn't");
+            Guard.Against(string.IsNullOrEmpty(msg.C106_Large256KbString), "Should have been restored from blob storage but wasn't");
             return Task.CompletedTask;
         }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C106LargeCommand msg)
+        public void Validate(C106v1LargeCommand msg)
         {
         }
     }

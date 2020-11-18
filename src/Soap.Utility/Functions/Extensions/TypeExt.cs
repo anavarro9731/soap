@@ -75,7 +75,7 @@
             return type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
         }
 
-        public static string ToShortAssemblyTypeName(this Type t) => $"{t.FullName}, {t.Assembly.GetName().FullName}";
+        public static string ToShortAssemblyTypeName(this Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
 
         public static string ToTypeNameString(this Type type, bool useFullyQualifiedAssemblyName = false)
         {

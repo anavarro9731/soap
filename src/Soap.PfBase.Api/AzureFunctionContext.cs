@@ -47,7 +47,7 @@
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
             string messageIdAsString,
-            IDictionary<string, object> userProperties,
+            string messageTypeShortAssemblyQualifiedName,
             ILogger logger,
             ApplicationConfig appConfig,
             DataStoreOptions dataStoreOptions = null) where TApiIdentity : class, IApiIdentity, new()
@@ -59,7 +59,7 @@
                 {
                     ParseMessageId(messageIdAsString, out var messageId);
 
-                    EnsureMessageType(userProperties, out var messageType);
+                    EnsureMessageType(messageTypeShortAssemblyQualifiedName, out var messageType);
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
@@ -178,12 +178,11 @@
                 blobStorage = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
             }
 
-            static void EnsureMessageType(IDictionary<string, object> userProperties, out Type messageType)
+            static void EnsureMessageType(string typeString, out Type messageType)
             {
                 try
                 {
                     //* expect assembly qualified name
-                    var typeString = userProperties["Type"] as string;
                     Guard.Against(typeString == null, "'Type' property not provided");
                     var type = Type.GetType(typeString);
                     Guard.Against(type?.ToShortAssemblyTypeName() != typeString, "Message type does not correspond to internal type");

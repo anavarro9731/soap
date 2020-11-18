@@ -14,7 +14,7 @@ export default {
     let topic = schema;
     if (!!conversationId) topic += `.${conversationId}`;
 
-    config.log(
+    config.logger.log(
       `PUBLISHING ${JSON.stringify(
         data,
       )} to channel: ${channel} topic: ${topic}`,
@@ -44,7 +44,7 @@ export default {
       callback: callback,
     });
 
-    config.log(`SUBSCRIBED to channel: ${channel} topic: ${topic}`);
+    config.logger.log(`SUBSCRIBED to channel: ${channel} topic: ${topic}`);
 
     return sub;
   },
@@ -54,7 +54,7 @@ export default {
 
     postal.unsubscribeFor(s => s.topic === `#.${conversationId}`);
 
-    config.log(
+    config.logger.log(
       `UNSUBSCRIBED to all messages in conversation: ${conversationId}`,
     );
   },

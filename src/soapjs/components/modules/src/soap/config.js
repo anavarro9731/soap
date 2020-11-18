@@ -1,28 +1,18 @@
-import { registerMessageTypes } from "./messages";
-import { fetch } from "../utils/fetch";
-
-
-
-
-
+let log = { log: console.log };
+let sendFunction;
 
 export default {
-  log(msg) {
-    console.log(msg);
-  },
-  setup(sender) {
-    const fr = process.env.FunctionAppRoot;
-    const sr = process.env.ServiceBusRoot;
-    const qn = process.env.ServiceBusQueue;
-    this.sender = msg => sender(msg, sr, qn);
-    
-    //* register messages
-    fetch(`${fr}/GetJsonSchema`, (jsonArrayOfMessages)=> {
-      registerMessageTypes(jsonArrayOfMessages);
-    });
-    
-  },
-  send(message) {
-    sender(message);
-  }
+    set logger(l) {
+        log = l;
+    },
+    get logger() {
+        return log;
+    },
+    set sender(s) {
+        sendFunction = s;
+    },
+    send(message) {
+        if (sendFunction === undefined) throw 'sender not defined please set config.sender = (msg) => {};';
+        sendFunction(message);
+    }
 };

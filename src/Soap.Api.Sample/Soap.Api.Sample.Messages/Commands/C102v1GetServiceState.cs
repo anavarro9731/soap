@@ -3,11 +3,11 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    public sealed class C102GetServiceState : ApiCommand
+    public sealed class C102v1GetServiceState : ApiCommand
     {
         public override ApiPermission Permission { get; }
 
-        public class Validator : AbstractValidator<C102GetServiceState>
+        public class Validator : AbstractValidator<C102v1GetServiceState>
         {
         }
     }

@@ -1,7 +1,9 @@
 ﻿import {types, validateArgs} from '../util';
 
 
-//* Js version of .NET message classes with nested classes and .NET names which would be serialised and sent to this code via a JSON schema array
+/* Js version of .NET message classes with nested classes and .NET names which would be serialised and sent to this code via a JSON schema array
+possible it would have been better just to put JSON in here rather than classes which have to be serialised it was hard to say which
+approach would produce more reliable tests long term both have their advantages in that regards */ 
 
 class TestCommand_c100v1 {
     constructor() {
@@ -23,12 +25,15 @@ class TestEvent_e200v1 {
     }
 }
 
+
 class Results {
     constructor() {
         this.$type = 'Soap.Api.Sample.Messages.Events.TestEvent_e200v1+Results, Soap.Api.Sample.Messages';
         this.e200_id = 255;
     }
 }
+//* would normally be nested in C#
+TestEvent_e200v1.Results = Results;
 
 class Enumeration {
     constructor() {
@@ -38,7 +43,7 @@ class Enumeration {
         this.key = "string";
     }
 }
-TestEvent_e200v1.Results = Results;
+
 
 function convertToAnonymousObject(o) {
     return JSON.parse(JSON.stringify(o));

@@ -26,6 +26,8 @@
             this.settings = settings;
         }
 
+        public string ClientSideSessionId { get; set; }
+        
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
         public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
@@ -46,15 +48,22 @@
             var queueMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
                 MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                Label = publishEvent.GetType().AssemblyQualifiedName, //* just there for debugging of actual type sent on bus, not required by any client
-                UserProperties = { new KeyValuePair<string, object>("Type", publishEvent.GetType().ToShortAssemblyTypeName()) } //* required by clients for quick deserialisation rather than parsing JSON $type
-            };
+                Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                };
 
             var topic = publishEvent.Headers.GetTopic().ToLower();
             var topicClient = new TopicClient(this.settings.BusConnectionString, topic);
-
             await topicClient.SendAsync(queueMessage);
-
+            
+            var queueMessage2 = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+            {
+                MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                SessionId = "12345"
+            };
+            var topicClient2 = new TopicClient(this.settings.BusConnectionString, "allevents");
+            await topicClient2.SendAsync(queueMessage2);
+            
             EventsPublished.Add(publishEvent.Clone());
         }
 
@@ -63,9 +72,8 @@
             var queueMessage = new Message(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
-                Label = sendCommand.GetType().AssemblyQualifiedName,
+                Label = sendCommand.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
                 CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
-                UserProperties = { new KeyValuePair<string, object>("Type", sendCommand.GetType().ToShortAssemblyTypeName()) }
             };
 
             var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());

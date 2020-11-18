@@ -1,8 +1,7 @@
-import {parseDotNetShortAssemblyQualifiedName, md5Hash, types, uuidv4, validateArgs} from './util';
+import {parseDotNetShortAssemblyQualifiedName, md5Hash, types, uuidv4, validateArgs, getHeader, setHeader} from './util';
 import {bus, eventHandler, queryCache} from './index';
 import config from './config';
-import {createRegisteredTypedMessageInstanceFromAnonymousObject} from './messages.js';
-import {convertDotNetAssemblyQualifiedNameToJsClassName} from "../../lib/soap/util";
+import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from './messages.js';
 
 let mockEvents = {};
 
@@ -21,23 +20,22 @@ export function mockEvent(command, correspondingEvents) {
         addHeaders(command, event);
 
         //* save to queue
-        const commandName = command.$type;  //* gets constructor name
-        if (!mockEvents[commandName]) {
-            mockEvents[commandName] = [];
+        const commandSchema = command.$type;  //* gets constructor name
+        if (!mockEvents[commandSchema]) {
+            mockEvents[commandSchema] = [];
         }
-        mockEvents[commandName].push(event);
+        mockEvents[commandSchema].push(event);
 
     });
 }
 
 function addHeaders(command, event) {
-    
-    event.headers = {
-        commandConversationId: "we won't know till later, so we'll replace it later",
-        schema: parseDotNetShortAssemblyQualifiedName(event.$type).className, //- would normally be set with publisher which is out of our control (e.g. server)
-    };
+
+    //* would normally be set with publisher which is out of our control (e.g. server)
+    setHeader(event, headerKeys.commandConversationId, "we won't know till later, so we'll replace it later");
+    setHeader(event, headerKeys.schema, event.$type);
     const {headers, ...payload} = command;
-    event.headers.commandHash = md5Hash(payload);
+    setHeader(event, headerKeys.commandHash, md5Hash(payload));
 
 }
 
@@ -94,51 +92,51 @@ export default {
         }
 
         const conversationId = uuidv4();
-
-        /* subscribe to response for just a brief moment
-        in the event that you send multiple identical commands before the first event response is cached
-        you will get multiple subscriptions but that should be ok just a little less performant.
-       
-        also noteworthy is the fact that you can listen for multiple events if they have different
-        schemas and multiple messages of the same schema until the conversation is ended
-        commands have a conversationId used to terminate the subscriptions when CloseConversation is called
-        */
-
-        //* set headers
-        command.headers.push(makeHeader("messageId", conversationId));
-        command.headers.push(makeHeader("timeOfCreationAtOrigin", new Date().toISOString()));
-        command.headers.push(makeHeader("commandConversationId", conversationId));
-        const {headers, ...payload} = command;
-        command.headers.push(makeHeader("commandHash",  md5Hash(payload)));
-        command.headers.push(makeHeader("identityToken", "TBD"));
-        const {assemblyName, className} = convertDotNetAssemblyQualifiedNameToJsClassName(command.$type);
-        command.headers.push(makeHeader("queueName", assemblyName));
-        command.headers.push(makeHeader("schema", className));
-        //* statefulprocessid not used by client side code right now
-        //* topic only used by events
         
-        //TODO upload to blob storage if too big
-        let tooBig = false;
-        let newBlobId = "";
-        command.headers.push(makeHeader("blobId", newBlobId));
-        
+        setupHeaders(command);
+
         subscribeCallerToEventResponses(command);
 
         sendCommandToApi(command);
 
         return conversationId;
+        
+        function setupHeaders(command) {
 
-        function makeHeader(name, value) {
-            return {key: name, value, active: true};
+            //* set headers on outgoing commands
+            setHeader(command, headerKeys.messageId, conversationId);
+            setHeader(command, headerKeys.timeOfCreationAtOrigin, new Date().toISOString());
+            setHeader(command, headerKeys.commandConversationId, conversationId);
+            const {headers, ...payload} = command;
+            setHeader(command, headerKeys.commandHash,  md5Hash(payload));
+            setHeader(command, headerKeys.identityToken, "TBD");
+            const {assemblyName} = parseDotNetShortAssemblyQualifiedName(command.$type);
+            setHeader(command, headerKeys.queueName, assemblyName);
+            setHeader(command, headerKeys.schema, command.$type);
+            //* headerKeys.statefulProcessId not used by client side code right now
+            //* headersKeys.topic only used by events
+
+            //TODO upload to blob storage if too big
+            let tooBig = false;
+            let newBlobId = "";
+            setHeader(command, headerKeys.blobId, newBlobId);
         }
-
+        
         function subscribeCallerToEventResponses(command) {
-            //- to everything with this conversation id
+            /* subscribe to response for just a brief moment
+            in the event that you send multiple identical commands before the first event response is cached
+            you will get multiple subscriptions but that should be ok just a little less performant.
+            
+            also noteworthy is the fact that you can listen for multiple events if they have different
+            schemas and multiple messages of the same schema until the conversation is ended
+            commands have a conversationId used to terminate the subscriptions when CloseConversation is called
+            */
+            
             bus.subscribe(
                 bus.channels.events,
-                '#',
+                '#', //* wildcard
                 onResponse,
-                command.headers.messageId
+                getHeader(command, headerKeys.commandConversationId)
             );
         }
 
@@ -154,7 +152,7 @@ export default {
                     acceptableStalenessFactorInSeconds,
                 );
 
-                config.log('cache result:', cacheResult);
+                config.logger.log('cache result:', cacheResult);
 
                 if (cacheResult) {
                     onResponse(cacheResult, undefined);
@@ -166,9 +164,9 @@ export default {
 
         function sendCommandToApi(command) {
 
-            const commandName = command.headers.schema;
-            const mockedEventsForCommand = mockEvents[commandName];
-            const commandConversationId = command.headers.messageId;
+            const commandSchema = getHeader(command, headerKeys.schema);
+            const mockedEventsForCommand = mockEvents[commandSchema];
+            const commandConversationId = getHeader(command, headerKeys.commandConversationId);
 
             if (!!mockedEventsForCommand) {
                 attemptToFakeEventResponseFromMockQueue(
@@ -176,7 +174,7 @@ export default {
                     commandConversationId,
                 );
             } else {
-                config.send(command, commandConversationId);
+                config.send(command);
             }
 
             function attemptToFakeEventResponseFromMockQueue(
@@ -185,7 +183,7 @@ export default {
             ) {
                 // fake API responses
                 mockedEventsForCommand.forEach(anonymousEvent => {
-                    anonymousEvent.headers.commandConversationId = commandConversationId;
+                    setHeader(anonymousEvent, headerKeys.commandConversationId, commandConversationId);
                     eventHandler.handle(anonymousEvent);
                 });
             }

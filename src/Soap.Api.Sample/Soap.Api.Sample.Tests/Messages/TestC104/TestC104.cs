@@ -34,7 +34,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         protected void CountMessagesSaved(MessageLogEntry log)
         {
             var c100wrapped = log.UnitOfWork.BusCommandMessages.Single();
-            var c100 = c100wrapped.Deserialise<C100Ping>();
+            var c100 = c100wrapped.Deserialise<C100v1Ping>();
             c100.PingedBy.Should().Be(nameof(P555TestUnitOfWork));
 
             var e150wrapped = log.UnitOfWork.BusEventMessages.Single();

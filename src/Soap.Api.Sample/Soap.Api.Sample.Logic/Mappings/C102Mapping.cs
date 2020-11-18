@@ -8,19 +8,19 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C102Mapping : IMessageFunctionsClientSide<C102GetServiceState>
+    public class C102Mapping : IMessageFunctionsClientSide<C102v1GetServiceState>
     {
 
-        public IContinueProcess<C102GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
+        public IContinueProcess<C102v1GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C102GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C102v1GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C102GetServiceState msg)
+        public void Validate(C102v1GetServiceState msg)
         {
-            new C102GetServiceState.Validator().ValidateAndThrow(msg);
+            new C102v1GetServiceState.Validator().ValidateAndThrow(msg);
         }
     }
 }
