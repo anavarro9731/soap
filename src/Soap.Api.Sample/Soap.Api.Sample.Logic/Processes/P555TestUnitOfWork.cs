@@ -52,8 +52,9 @@
 
                 async Task PublishE150()
                 {
-                    await Bus.Publish(
-                        new E150Pong
+                    
+                    await Publish(
+                        new E150v1Pong
                         {
                             PongedBy = nameof(P555TestUnitOfWork)
                         });
@@ -61,7 +62,7 @@
 
                 async Task SendC100()
                 {
-                    await Bus.Send(
+                    await Send(
                         new C100v1Ping
                         {
                             PingedBy = nameof(P555TestUnitOfWork)

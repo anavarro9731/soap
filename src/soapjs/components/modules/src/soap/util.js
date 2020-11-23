@@ -13,7 +13,7 @@ export const types = Object.freeze({
 
 export const optional = true;
 
-export function     parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName) {
+export function parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName) {
     //* expect shortened .NET fully qualified assembly name e.g. Soap.Api.Messages.MessageA, Soap.Api.Messages
     const messageNameMatches = assemblyQualifiedName.match(/^(.+),.+$/i);
     const assemblyNameMatches = assemblyQualifiedName.match(/^.+, (.+)$/i)
@@ -24,58 +24,76 @@ export function     parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName)
 
 export function getHeader(command, headerKey) {
     const header = _.find(command.headers, h => h.key == headerKey);
-    if(!header) throw `header ${headerKey} not defined`;
+    if (!header) throw `header ${headerKey} not defined`;
     return header.value;
 }
 
 export function setHeader(command, headerKey, value) {
     _.remove(command.headers, h => h.key == headerKey);
     command.headers.push(makeHeader(headerKey, value));
-    
+
     function makeHeader(name, value) {
         return {key: name, value, active: true};
     }
 }
 
 export function validateArgs(...requiredArgs) {
+    
+    const arrayOfErrors = [];
+    
     requiredArgs.forEach(arg => {
-        const argName = Object.keys(arg[0])[0]; //- get key of first property 
-        const argValue = Object.values(arg[0])[0]; //- get value of first property 
-        let requiredType = arg[1]; //- get next element (type)
-        let isOptional = !!arg[2]; //- get next element (optional)
-
-        const requireArrayOf = Array.isArray(requiredType);
-        if (requireArrayOf === true) {
-            if (Array.isArray(argValue) === false)
-                throw `Argument ${argName} is supposed to be an array but the value provided is of type ${typeof argValue}.`;
-            requiredType = requiredType[0];
-            argValue.forEach((v, i) => {
-                checkType(
-                    `Argument ${argName}, Index ${i}`,
-                    v,
-                    requiredType,
-                    isOptional,
-                );
-            });
-        } else {
-            checkType(`Argument ${argName}`, argValue, requiredType, isOptional);
+        try {
+            const argName = Object.keys(arg[0])[0]; //- get key of first property 
+            const argValue = Object.values(arg[0])[0]; //- get value of first property 
+            let requiredType = arg[1]; //- get next element (type)
+            let isOptional = !!arg[2]; //- get next element (optional)
+            
+            const requireArrayOf = Array.isArray(requiredType);
+            if (requireArrayOf === true) {
+                if (Array.isArray(argValue) === false)
+                    throw `Argument ${argName} is supposed to be an array but the value provided is of type ${typeof argValue}. E^05`;
+                requiredType = requiredType[0];
+                argValue.forEach((v, i) => {
+                    checkType(
+                        `Argument ${argName}, Index ${i}`,
+                        v,
+                        requiredType,
+                        isOptional,
+                    );
+                });
+            } else {
+                    checkType(`Argument ${argName}`, argValue, requiredType, isOptional);
+            }
+        } catch (err) {
+            if (err.toString().match(/E\^/g)) {
+                arrayOfErrors.push(err);
+            } else {
+                throw err;    
+            }
         }
     });
+    
+    if (arrayOfErrors.length > 0) throw arrayOfErrors.join(', \r\n');
 
     function checkType(argName, argValue, requiredType, isOptional) {
+        
         const requireClass = typeof requiredType === 'function';
 
-        if ((argValue === undefined || argValue === null) && isOptional) {
-            return;
+        if (argValue === undefined) {
+            if (isOptional) return;
+            throw  `${argName} is required but was undefined E^01`;
+        } else if (argValue === null) {
+            if (isOptional) return;
+            throw  `${argName} is required but was null. E^02`;            
         } else if (requireClass) {
             if (!(argValue instanceof requiredType)) {
                 throw new Error(
-                    `${argName} was of class type ${typeof argValue}, expected ${requiredType}`,
+                    `${argName} was of class type ${typeof argValue}, expected class ${requiredType.name} E^03`,
                 );
             }
         } else if (typeof argValue !== requiredType) {
             throw new Error(
-                `${argName} was of type ${typeof argValue}, expected ${requiredType}`,
+                `${argName} was of type ${typeof argValue}, expected ${requiredType} E^04`,
             );
         }
     }

@@ -2,10 +2,7 @@ import {mockEvent, default as commandHandler, cacheEvent} from '../command-handl
 import messageDefinitions from './test-messages';
 import bus from '../bus';
 import postal from 'postal';
-import {createRegisteredTypedMessageInstanceFromAnonymousObject, getRegisteredMessageType, registerMessageTypes, getListOfRegisteredMessages } from "../messages";
-
-
-
+import {createRegisteredTypedMessageInstanceFromAnonymousObject, getRegisteredMessageType, registerMessageTypes } from "../messages";
 
 test('event schema created without error', () => {
     registerMessageTypes(messageDefinitions);

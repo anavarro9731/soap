@@ -3,6 +3,7 @@
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
+    using DataStore.Models.PureFunctions.Extensions;
     using Serilog;
     using Soap.Context;
     using Soap.Context.Context;
@@ -23,7 +24,22 @@
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        protected IBus Bus => this.context.Bus;
+        protected Task Publish(ApiEvent e)
+        {
+            if (this.context.Message is ApiCommand c && !string.IsNullOrWhiteSpace(c.Headers.GetSessionId()))
+            {
+                //* transfer from incoming command to outgoing event for browser clients
+                e.Headers.SetSessionId(c.Headers.GetSessionId());
+                e.Headers.SetCommandHash(c.Headers.GetCommandHash());
+                e.Headers.SetCommandConversationId(c.Headers.GetCommandConversationId().Value);
+            }
+            return this.context.Bus.Publish(e);
+        }
+
+        protected Task Send(ApiCommand c)
+        {
+            return this.context.Bus.Send(c);
+        }
 
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 

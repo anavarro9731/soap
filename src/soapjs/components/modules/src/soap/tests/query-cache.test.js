@@ -1,8 +1,7 @@
 import queryCache from "../query-cache";
-
 import * as __ from '../util'
-import messageDefinitions, {TestCommand_c100v1} from "./test-messages";
-import {createRegisteredTypedMessageInstanceFromAnonymousObject, registerMessageTypes} from "../messages";
+import messageDefinitions from "./test-messages";
+import {registerMessageTypes} from "../messages";
 
 test("queries filtered results1", () => {
 

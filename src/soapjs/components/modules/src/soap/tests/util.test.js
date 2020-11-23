@@ -24,6 +24,8 @@ test("require args test", () => {
     expect(() => {
         testArgs("test", 1, new Date(), new classOne(), [new classOne(), null], { o1: 1, o2: "two" });
     }).toThrow();
+    //- pass empty array for classOneArrayArg
+    testArgs("test", 1, new Date(), new classOne(), [], { o1: 1, o2: "two" });
     //- fail optionsArg
     expect(() => {
         testArgs("test", 1, new Date(), new classOne(), [new classOne(), new classOne()], NaN); //use NaN cause null is an object in JS
@@ -32,6 +34,7 @@ test("require args test", () => {
     expect(() => {
         testArgs("test", 1, new Date(), new classOne(), [new classOne(), new classOne()], NaN, null);
     }).toThrow();
+    
 });
 
 class classOne {

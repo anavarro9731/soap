@@ -9,7 +9,7 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
 
-    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103v1StartPingPong>, IContinueProcess<E150Pong>
+    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103v1StartPingPong>, IContinueProcess<E150v1Pong>
     {
         public enum States
         {
@@ -37,7 +37,7 @@
                 References.PingId = pingCommand.Headers.GetMessageId();
                 };
 
-        public Func<E150Pong, Task> ContinueProcess =>
+        public Func<E150v1Pong, Task> ContinueProcess =>
             async message =>
                 {
                 if (message.PingReference.ToString() != References.PingId)

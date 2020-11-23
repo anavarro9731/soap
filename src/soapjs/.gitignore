@@ -3,7 +3,6 @@
 .parcel-cache
 dist
 node_modules
-/index.html
 
 
 # Win Cruft

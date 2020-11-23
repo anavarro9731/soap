@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "@azure/service-bus": "^7.0.0-preview.8",
-    "@soap/modules": "^1.16.0",
+    "@microsoft/applicationinsights-web": "^2.5.10",
+    "@soap/modules": "^1.22.0",
     "@soap/react": "^1.11.0",
     "prop-types": "15.7.2",
     "react": "^16.14.0",
@@ -12,10 +13,10 @@
   },
   "devDependencies": {
     "@babel/core": "7.4.3",
-    "parcel": "^2.0.0-beta.1"
+    "parcel": "^2.0.0-nightly.452"
   },
   "scripts": {
-    "build": "npx parcel build ../index.html --public-url ./",
-    "run": "npx parcel serve ../index.html"
+    "build": "npx parcel build ./index.html --public-url ./",
+    "run": "npx parcel serve ./index.html"
   }
 }

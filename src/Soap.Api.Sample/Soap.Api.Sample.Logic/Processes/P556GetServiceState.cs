@@ -15,15 +15,15 @@
                 {
                 var serviceState = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();
 
-                var gotServiceState = new E151GotServiceState
+                var gotServiceState = new E151v1GotServiceState
                 {
-                    State = new E151GotServiceState.ServiceState
+                    State = new E151v1GotServiceState.e151_ServiceState
                     {
                         DatabaseState = serviceState.DatabaseState
                     }
                 };
 
-                await Bus.Publish(gotServiceState);
+                await Publish(gotServiceState);
                 };
     }
 }

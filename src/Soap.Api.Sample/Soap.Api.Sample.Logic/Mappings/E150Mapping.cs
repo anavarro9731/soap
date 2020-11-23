@@ -7,20 +7,20 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class E150Mapping : IMessageFunctionsClientSide<E150Pong>
+    public class E150Mapping : IMessageFunctionsClientSide<E150v1Pong>
     {
 
-        public IContinueProcess<E150Pong>[] HandleWithTheseStatefulProcesses { get; } =
+        public IContinueProcess<E150v1Pong>[] HandleWithTheseStatefulProcesses { get; } =
         {
             new S888PingAndWaitForPong()
         };
 
-        public Task Handle(E150Pong msg) => Task.CompletedTask;
+        public Task Handle(E150v1Pong msg) => Task.CompletedTask;
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(E150Pong msg)
+        public void Validate(E150v1Pong msg)
         {
         }
     }

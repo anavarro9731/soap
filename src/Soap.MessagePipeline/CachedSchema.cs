@@ -192,10 +192,8 @@
 
                                     object @default = type switch
                                     {
-                                        Type t when t == typeof(bool) => true,
                                         Type t when t == typeof(bool?) => false,
-                                        Type t when t == typeof(sbyte?) => sbyte.MinValue, //-128
-                                        Type t when t == typeof(sbyte) => sbyte.MaxValue, //127
+                                        Type t when t == typeof(bool) => true,
                                         Type t when t == typeof(byte?) => byte.MinValue, //0
                                         Type t when t == typeof(byte) => byte.MaxValue, //255
                                         Type t when t == typeof(short?) => short.MinValue, //-32768
@@ -204,12 +202,13 @@
                                         Type t when t == typeof(int) => int.MaxValue, //2147483647
                                         Type t when t == typeof(long?) => long.MinValue, //-9223372036854775808
                                         Type t when t == typeof(long) => long.MaxValue, //9223372036854775807
-                                        Type t when t == typeof(decimal) => decimal.MinValue, //-79228162514264337593543950335.0
-                                        Type t when t == typeof(decimal?) => decimal.MaxValue, //79228162514264337593543950335.0
-                                        Type t when t == typeof(DateTime) => DateTime.MaxValue, //9999-12-31T23:59:59.9999999Z
+                                        Type t when t == typeof(decimal?) => decimal.MinValue, //-79228162514264337593543950335.0
+                                        Type t when t == typeof(decimal) => decimal.MaxValue, //79228162514264337593543950335.0
                                         Type t when t == typeof(DateTime?) => DateTime.MinValue, //0001-01-01T00:00:00Z
+                                        Type t when t == typeof(DateTime) => DateTime.MaxValue, //9999-12-31T23:59:59.9999999Z
                                         Type t when t == typeof(Guid?) => Guid.Empty, //00000000-0000-0000-0000-000000000000
-                                        Type t when t == typeof(Guid) => Guid.NewGuid(),
+                                        Type t when t == typeof(Guid) => Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+                                        //nullable string handled above
                                         Type t when t == typeof(string) => "string",
                                         _ => null
                                     };
@@ -241,6 +240,7 @@
                                             Type t when t == typeof(uint) => true,
                                             Type t when t == typeof(ulong) => true,
                                             Type t when t == typeof(ushort) => true,
+                                            Type t when t == typeof(sbyte) => true,
                                             Type t when t == typeof(char) => true,
                                             Type t when t == typeof(object) => true,
                                             Type t when t.InheritsOrImplements(typeof(ITuple)) => true,
@@ -250,7 +250,7 @@
 
                                         Guard.Against(
                                             isBad,
-                                            $"{errorMessagePrefix} The following types are not allowed in message contracts: anonymous types, float, double, object, uint, ulong, ushort, char, all Tuples, objects which implement IDynamicMetaObjectProvider");
+                                            $"{errorMessagePrefix} The following types are not allowed in message contracts: anonymous types, float, double, object, uint, ulong, ushort, sbyte, char, all Tuples, objects which implement IDynamicMetaObjectProvider");
                                     }
                                 }
 

@@ -13,8 +13,8 @@
             async message =>
                 {
                 
-                await Bus.Publish(
-                    new E150Pong
+                await Publish(
+                    new E150v1Pong
                     {
                         PingedAt = message.PingedAt,
                         PingedBy = message.PingedBy,

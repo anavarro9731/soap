@@ -22,8 +22,29 @@ export const headerKeys = {
     schema: "Schema",
     statefulProcessId: "StatefulProcessId",
     topic: "Topic",
-    blobId: "BlobId"
+    blobId: "BlobId",
+    sessionId: "SessionId"
 };
+
+export const stringMin = "";
+export const guidMin ="00000000-0000-0000-0000-000000000000";
+export const dateMin = "0001-01-01T00:00:00Z";
+export const decimalMin = -79228162514264337593543950335.0;
+export const longMin = -9223372036854775808;
+export const intMin = -2147483648;
+export const shortMin = -32769;
+export const byteMin = 0;
+export const boolMin = false;
+
+export const stringPresent = "string";
+export const guidMax ="ffffffff-ffff-ffff-ffff-ffffffffffff";
+export const dateMax = "9999-12-31T23:59:59.9999999Z";
+export const decimalMax = 79228162514264337593543950335.0;
+export const longMax = 9223372036854775807;
+export const intMax = 2147483647;
+export const shortMax = 32767;
+export const byteMax = 255;
+export const boolMax = true;
 
 export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousMessageObject) {
 
@@ -45,13 +66,13 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
 
     function makeInstanceOfCustomType(untypedMessageObject) {
 
-        const { classType } = parseDotNetShortAssemblyQualifiedName(untypedMessageObject.$type);
+        const { className } = parseDotNetShortAssemblyQualifiedName(untypedMessageObject.$type);
         
         //* create a function which news up an instance of this class
         const newFunction = new Function(
             'messages',
             'values',
-            `return new messages["${classType}"](values)`,  //* class def should already be created in messages module by defineMessageTypes()
+            `return new messages["${className}"](values)`,  //* class def should already be created in messages module by defineMessageTypes()
         );
 
         return newFunction(messageTypesSingleton, untypedMessageObject);
@@ -97,14 +118,18 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
     This is different from createRegisteredTypedMessageInstanceFromAnonymousObject.
      */
 
-    //* class def JSON is basically a JSON.NET serialised message
+    //* class def JSON is basically a JSON.NET serialised message, make sure you have not been passed null or undefined as an anonymous object
     validateArgs([{instance: anonymousInstance}, types.object]);
     
     const {className} = parseDotNetShortAssemblyQualifiedName(anonymousInstance.$type);
 
     if (messageTypesSingleton[className] === undefined) { //* create definition if not exist (some definitions of shared classes will be created)
 
-        let classBody = "";
+        let typeLine = "";
+        let destructureLines = "";
+        let validateLines = "";
+        let setterLines = "";
+        let debugLines = "";
 
         for (let propertyName in anonymousInstance) {
 
@@ -115,9 +140,9 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                 if (propertyValue == null || propertyValue == undefined) { //* error in received json
                     throw "Cannot have null or undefined values when creating schema"
                 }
-                //classBody += `log('According to the schema of ${className} a "${propertyName}" property should be present and of the right type on the following object provided to the constructor, validating now:', anonymousObject);`;
+                //debugLines += `console.log('According to the schema of ${className} a "${propertyName}" property should be present and of the right type on the following object provided to the constructor, validating now:', anonymousObject);`;
                 
-                classBody += `const {${propertyName}} = anonymousObject;\r\n`; //* destructure anonymousObject defined in class ctor below
+                destructureLines += '\t'.repeat(7) +`${propertyName},\r\n`; //* get property names
                 
                 if (isCustomType(propertyValue)) {
 
@@ -126,57 +151,63 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                     if (propertyValue instanceof Array) {
                             classNameOfPropertyValue = registerTypeDefinitionFromAnonymousObject(propertyValue[0]); //* use first element to determine properties' real type
                             if (classNameOfPropertyValue === undefined) {
-                                //log("Could not register type def from anonymous object for property " + propertyName, propertyValue[0]);
-                                throw "Could not register type def from anonymous object for property " + propertyName;
+                                throw "Could not register type def from anonymous object for property " + propertyName; //* console.log(propertyValue[0])
                             }
-                            classBody += `this.validate([{ ${propertyName} }, [this.types.object]]);\r\n`;  //* validate the conversion
-                            classBody += `const typed${propertyName} = ${propertyName}.map(el => new messageTypesSingleton["${classNameOfPropertyValue}"](el));\r\n`; //*  convert it to an array of typed items
-                            classBody += `this.validate([{ typed${propertyName} }, [messageTypesSingleton["${classNameOfPropertyValue}"]]]);\r\n`;  //* validate the conversion    
+                            //* map to typed version
+                            validateLines += '\t'.repeat(7) +`[{ ${propertyName} : !!${propertyName} ? ${propertyName}.map(el => new messageTypesSingleton["${classNameOfPropertyValue}"](el)) : undefined }, [messageTypesSingleton["${classNameOfPropertyValue}"]]],\r\n`;
+                            setterLines += '\t'.repeat(6) +`this.${propertyName} =  ${propertyName}.map(el => new messageTypesSingleton["${classNameOfPropertyValue}"](el));\r\n`; //* set the property to the real type avoid nulls
                         
                     } else {
-                        
                         classNameOfPropertyValue = registerTypeDefinitionFromAnonymousObject(propertyValue);
                         if (classNameOfPropertyValue === undefined) {
-                            //log("Could not register type def from anonymous object for property " + propertyName, propertyValue);
-                            throw "Could not register type def from anonymous object for property " + propertyName;
+                            throw "Could not register type def from anonymous object for property " + propertyName; //* console.log(propertyValue[0])
+                            
                         }
-                        classBody += `const typed${propertyName} = new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName});\r\n`; //*  convert it to a typed item
-                        classBody += `this.validate([{ typed${propertyName} }, messageTypesSingleton["${classNameOfPropertyValue}"]]);\r\n`;  //* validate the conversion
+                        
+                        validateLines += '\t'.repeat(7) +`[{ ${propertyName} : !!${propertyName} ? new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName}) : undefined }, messageTypesSingleton["${classNameOfPropertyValue}"]],\r\n`;  //* validate the conversion
+                        setterLines += '\t'.repeat(6) +`this.${propertyName} = new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName});\r\n`; //* set the property to the real type avoid nulls
                     }
-
-                    classBody += `this.${propertyName} = typed${propertyName} === null ? undefined : typed${propertyName};\r\n`; //* set the property to the real type avoid nulls
-
                 } else { //* primitives
 
                     if (propertyValue instanceof Array) {
                          
-                            const optional = isOptional(propertyValue[0]) ? ',true' : '';
-                            classBody += `this.validate([{ ${propertyName} }, [this.types.${typeof propertyValue}]] ${optional});\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        const optional = isOptional(propertyValue[0]) ? ',true' : '';
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     } else {
                         const optional = isOptional(propertyValue) ? ',true' : '';
-                        classBody += `this.validate([{ ${propertyName} }, this.types.${typeof propertyValue}] ${optional});\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        validateLines += '\t'.repeat(7) +`[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     }
-                    classBody += `this.${propertyName} = ${propertyName};\r\n`;
+                    setterLines += '\t'.repeat(6) + `this.${propertyName} = ${propertyName};\r\n`;
                     
                 }
             } else {
-                classBody += `this.$type="${propertyValue}";\r\n`
+                typeLine = `this.$type="${propertyValue}";\r\n`
             }
         }
 
         const createClass = `
                 messageTypesSingleton["${className}"] = class {
-                    constructor(anonymousObject) {
-                        ${classBody}                       
+                    constructor(objectValues) {
+                        this.validate([{ objectValues }, this.types.object]);
+                        
+                        const {
+${destructureLines}                        } = objectValues;
+${debugLines}
+                        this.validate(
+${validateLines}                        );
+
+${setterLines}        
+${typeLine}
                     }                 
-                }
+                };
                 Object.defineProperty (messageTypesSingleton["${className}"], 'name', {value: "${className}"});
                 `;
         eval(createClass);
 
-        messageTypesSingleton[className].prototype.validate = args => {
+        messageTypesSingleton[className].prototype.validate = (...args) => {  //* be very careful arrow functions must have rest param ... to capture all arguments
+
             try {
-                validateArgs(args);
+                validateArgs(...args); //* and then spread them out again or you will get an extra array wrapped around the arguments and they will be passed as one argument rather then them passed as a list of args
             } catch(err) {
                 throw `Error initialising class ${className}: ${err}`;  
             }
@@ -185,20 +216,19 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
         
     }
     return className;
-
+    
     function isOptional(contestant) {
 
         const optionalValues = [
-            "", //*string 
-            "00000000-0000-0000-0000-000000000000", //*guid
-            "0001-01-01T00:00:00Z", //*datetime
-            -79228162514264337593543950335.0, //*decimal
-            -9223372036854775808, //*long
-            -2147483648, //*int
-            -32769, //*short
-            0, //*byte
-            -128, //*sbyte
-            false, //*bool
+            stringMin,
+            guidMin,
+            dateMin,
+            decimalMin,
+            longMin,
+            intMin,
+            shortMin,
+            byteMin,
+            boolMin
         ];
 
         return contains(optionalValues, contestant)

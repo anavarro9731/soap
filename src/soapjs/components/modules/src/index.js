@@ -1,5 +1,5 @@
-
-export { useQuery, command } from './hooks/api-request';
-export * as i18n from './i18n/index';
-export * as soap from './soap/index' ;
-export * as utils from './utils/index'
+export {useQuery, command} from './hooks/api-request';
+export {keys, languages, translate, useNewLanguage} from './i18n/index';
+export {
+    bus, commandHandler, eventHandler, wireErrorHandlerOfLastResort, config, types, validateArgs, optional, getHeader, uuidv4
+} from './soap/index' ;

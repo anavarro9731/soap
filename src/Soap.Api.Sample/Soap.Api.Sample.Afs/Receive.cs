@@ -31,11 +31,11 @@
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
                 
                 await AzureFunctionContext.Execute<User>(
-                    Encoding.UTF8.GetString(myQueueItem.Body),
+                    messageAsJson:Encoding.UTF8.GetString(myQueueItem.Body),
                     new MappingRegistration(),
-                    messageId,
-                    myQueueItem.Label,
-                    logger,
+                    messageIdAsString:messageId,
+                    messageTypeShortAssemblyQualifiedName:myQueueItem.Label,
+                    logger:logger,
                     appConfig);
             }
             catch (Exception e)

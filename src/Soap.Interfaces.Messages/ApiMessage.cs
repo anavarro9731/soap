@@ -35,7 +35,6 @@
     {
         public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message)
         {
-            
             messageHeaders.SetTimeOfCreationAtOrigin();
             messageHeaders.SetMessageId(Guid.NewGuid()); 
             
@@ -56,15 +55,19 @@
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
-            //* identity token optionally present, some message are anonymous though most aren't    
-            //* stateful process id optionally present when stateful process is involved   
+
             Ensure(messageHeaders.GetQueue() != null, $"All outgoing Api commands must have a {Keys.QueueName} header set");
-            //* topic n/a
-            //* azure sequence number, allows a scheduled message to be a cancelled later, but not sure its useful on the message itself so not setting yet
-            //* blob id only present on large messages
-            //* conversation id n/a only present on outgoing events or incoming commands
-            //* command hash n/a only present on outgoing events or incoming commands
+            
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api commands must have a {nameof(Keys.Schema)} header set");
+            
+            /* NOT SET
+            identity token optionally present, some message are anonymous though most aren't    
+            stateful process id optionally present when stateful process is involved   
+            topic n/a
+            azure sequence number, allows a scheduled message to be a cancelled later, but not sure its useful on the message itself so not setting yet
+            blob id only present on large messages
+            BROWSERCLIENT IDS only applicable on outgoing events or incoming commands 
+            */
         }
 
         public static void SetAndCheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
@@ -73,23 +76,27 @@
             messageHeaders.SetMessageId(Guid.NewGuid()); 
             messageHeaders.SetTopic(message.GetType().FullName);
             messageHeaders.SetSchema(message.GetType().FullName);
-
-
+            
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All outgoing Api messages must have a valid {nameof(Keys.MessageId)} header");
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
-            //* identity token optionally present, some message are anonymous though most aren't    
-            //* stateful process id optionally present when stateful process is involved    
-            //* queue name n/a    
+
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
-            //*azure sequence number n/a in test
-            //*blob id only present on large messages
-            CheckCommandHash(messageHeaders);
-            CheckConversationId(messageHeaders);
+
+            CheckBrowserClientHeaders(messageHeaders);
+            
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api events must have a {nameof(Keys.Schema)} header set");
+            
+            /* NOT SET
+            identity token optionally present, some message are anonymous though most aren't    
+            stateful process id optionally present when stateful process is involved    
+            queue name n/a
+            blob id only present on large messages
+            */
+
         }
 
         public static void SetDefaultHeadersForIncomingTestMessages(this MessageHeaders messageHeaders, ApiMessage message)
@@ -104,15 +111,11 @@
             if (string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
             messageHeaders.SetIdentityToken("identity token");
             
-            //messageHeaders.SetStatefulProcessId(new StatefulProcessId("type id", Guid.NewGuid()));
-            
             if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
             messageHeaders.SetQueueName("queue name");
             
             if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
             messageHeaders.SetTopic("topic");
-            
-            //messageHeaders.SetBlobId(Guid.Empty);
             
             if (messageHeaders.GetCommandConversationId() == null)
             messageHeaders.SetCommandConversationId(Guid.NewGuid());
@@ -122,6 +125,12 @@
             
             if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
             messageHeaders.SetSchema(message.GetType().FullName);
+
+            /* NOT SET
+             BLOBID
+             STATEFULPROCESSID
+             BROWSERCLIENT IDS
+             */
             
         }
         
@@ -133,39 +142,35 @@
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
+
+            CheckBrowserClientHeaders(messageHeaders); 
+            Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
+            
+            //* not validated
             //* identity token optionally present, some message are anonymous though most aren't    
             //* stateful process id optionally present when stateful process is involved    
             //* queue name not relevant anymore
             //* topic not relevant anymore
             //* azure sequence number not relevant anymore
             //* blob id optional/present on large messages
-            CheckCommandHash(messageHeaders);
-            CheckConversationId(messageHeaders);
-            Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
+            
         }
         
-        private static void CheckCommandHash(MessageHeaders messageHeaders)
+        private static void CheckBrowserClientHeaders(MessageHeaders messageHeaders)
         {
             //*command hash optionally present on commands coming from or events going to the client
-            if (messageHeaders.GetCommandConversationId() != null)
+            if (messageHeaders.GetSessionId() != null)
             {
                 Ensure(
                     messageHeaders.GetCommandHash() != null,
-                    $"All Api messages with {Keys.CommandConversationId} header set must also have {Keys.CommandHash} set");
+                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandHash} set");
+                
+                Ensure(
+                    messageHeaders.GetCommandConversationId() != null,
+                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
             }
         }
 
-        private static void CheckConversationId(MessageHeaders messageHeaders)
-        {
-            //*conversation id optionally present on commands coming from or events going to the client
-            if (messageHeaders.GetCommandHash() != null)
-            {
-                Ensure(
-                    messageHeaders.GetCommandConversationId() != null,
-                    $"All Api messages with {Keys.CommandHash} header set must also have {Keys.CommandConversationId} set");
-            }
-        }
-        
         private static void Ensure(bool acceptable, string errorMessage)
         {
             if (!acceptable) throw new Exception(errorMessage);
@@ -213,6 +218,12 @@
         public static string GetQueue(this MessageHeaders m)
         {
             m.TryGetValue(Keys.QueueName, out var x);
+            return x;
+        }
+        
+        public static string GetSessionId(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.SessionId, out var x);
             return x;
         }
 
@@ -326,6 +337,13 @@
             m.Add(new Enumeration(Keys.Topic, topic));
             return m;
         }
+        
+        public static MessageHeaders SetSessionId(this MessageHeaders m, string sessionId)
+        {
+            if (!m.Exists(v => v.Key == Keys.SessionId))
+                m.Add(new Enumeration(Keys.SessionId, sessionId));
+            return m;
+        }
 
     }
     public class Keys
@@ -359,5 +377,8 @@
 
         //* dest topic when its an event
         internal const string Topic = nameof(Topic);
+
+        //* servicebus messagesession Id
+        internal const string SessionId = nameof(SessionId);
     }
 }

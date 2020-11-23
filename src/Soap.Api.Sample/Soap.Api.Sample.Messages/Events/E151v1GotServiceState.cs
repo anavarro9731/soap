@@ -2,13 +2,13 @@
 {
     using Soap.Interfaces.Messages;
 
-    public class E151GotServiceState : ApiEvent
+    public class E151v1GotServiceState : ApiEvent
     {
         public override ApiPermission Permission { get; }
 
-        public ServiceState State { get; set; }
+        public e151_ServiceState State { get; set; }
 
-        public class ServiceState
+        public class e151_ServiceState
         {
             public EnumerationFlags DatabaseState { get; set; }
         }

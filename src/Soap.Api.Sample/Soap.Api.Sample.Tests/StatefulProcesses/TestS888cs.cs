@@ -40,7 +40,7 @@
 
             void SendE150()
             {
-                var pong = new E150Pong
+                var pong = new E150v1Pong
                 {
                     PingReference = Guid.NewGuid(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
@@ -70,7 +70,7 @@
 
             void SendE150()
             {
-                var pong = new E150Pong
+                var pong = new E150v1Pong
                 {
                     PingReference = ping.Headers.GetMessageId(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
@@ -100,7 +100,7 @@
 
             void SendE150()
             {
-                var pong = new E150Pong
+                var pong = new E150v1Pong
                 {
                     PingReference = Guid.NewGuid(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };

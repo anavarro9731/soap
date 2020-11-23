@@ -24,7 +24,7 @@
 
     internal static class JsonNetSettings
     {
-        public static readonly JsonSerializerSettings ApiMessageSerialiserSettings = new JsonSerializerSettings
+        public static JsonSerializerSettings ApiMessageSerialiserSettings => new JsonSerializerSettings
         {
             DefaultValueHandling =
                 DefaultValueHandling
@@ -36,10 +36,11 @@
             TypeNameHandling =
                 TypeNameHandling
                     .Objects, //* ideally could be ignored as already known by JS classes, but may affect object graph structure, checking into this means you may be able to make this NONE
-            DateTimeZoneHandling = DateTimeZoneHandling.Utc, ContractResolver = defaultContractResolver
+            DateTimeZoneHandling = DateTimeZoneHandling.Utc, 
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
 
-        public static readonly JsonSerializerSettings MessageSchemaSerialiserSettings = new JsonSerializerSettings
+        public static JsonSerializerSettings MessageSchemaSerialiserSettings => new JsonSerializerSettings
         {
             DefaultValueHandling =
                 DefaultValueHandling
@@ -49,10 +50,9 @@
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameHandling = TypeNameHandling.Objects, //* important so we know how to create JS classes
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,
-            ContractResolver = defaultContractResolver
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
         };
-
-        private static readonly DefaultContractResolver defaultContractResolver = new CamelCasePropertyNamesContractResolver();
+        
     }
 
     public static class ObjectExt
@@ -144,7 +144,6 @@
              choke points will mean that you can easily make changes later without missing any of the many 
              callers of these methods. */
 
-            
             var json = serialiserId switch
             {
                 var x when x == SerialiserIds.JsonDotNetDefault => JsonConvert.SerializeObject(

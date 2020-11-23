@@ -38,7 +38,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             c100.PingedBy.Should().Be(nameof(P555TestUnitOfWork));
 
             var e150wrapped = log.UnitOfWork.BusEventMessages.Single();
-            var e150 = e150wrapped.Deserialise<E150Pong>();
+            var e150 = e150wrapped.Deserialise<E150v1Pong>();
             e150.PongedBy.Should().Be(nameof(P555TestUnitOfWork));
         }
         

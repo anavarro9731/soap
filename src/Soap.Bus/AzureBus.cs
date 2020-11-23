@@ -45,26 +45,36 @@
 
         public async Task Publish(ApiEvent publishEvent)
         {
-            var queueMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
-                {
-                MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                };
-
-            var topic = publishEvent.Headers.GetTopic().ToLower();
-            var topicClient = new TopicClient(this.settings.BusConnectionString, topic);
-            await topicClient.SendAsync(queueMessage);
-            
-            var queueMessage2 = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
-            {
-                MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                SessionId = "12345"
-            };
-            var topicClient2 = new TopicClient(this.settings.BusConnectionString, "allevents");
-            await topicClient2.SendAsync(queueMessage2);
+            await SendTopicMessage();
+            await SendBroadCastMessage();
             
             EventsPublished.Add(publishEvent.Clone());
+
+            async Task SendBroadCastMessage()
+            {
+                var broadCastMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+                {
+                    MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                    Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                    SessionId = publishEvent.Headers.GetSessionId()
+                };
+                var broadcastClient = new TopicClient(this.settings.BusConnectionString, "allevents");
+                await broadcastClient.SendAsync(broadCastMessage);
+            }
+            
+            async Task SendTopicMessage()
+            {
+                var topicMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+                {
+                    MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                    Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                };
+
+                var topic = publishEvent.Headers.GetTopic().ToLower();
+                var topicClient = new TopicClient(this.settings.BusConnectionString, topic);
+                await topicClient.SendAsync(topicMessage);
+            }
+            
         }
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
