@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using Soap.Interfaces.Messages;

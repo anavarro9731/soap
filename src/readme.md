@@ -75,8 +75,21 @@ Now wait for the resource group you defined in ```.\create-new-service.psm1```
 Open the new Solution in Jetbrains Rider. 
 Edit the local.settings.json file and update with the settings from the new cloud resources
 
-Now you are ready for local development and can run the Azure Function Project ```YourProject.Afs``` 
+Now you are ready for local development and can run the Azure Function Project ```YourProject.Afs```
+
+When running locally you don't get messages in the trace logs. 
 
 ### NOTES
 
-- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops 
+- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops
+- Azure SDK releases found here: https://azure.github.io/azure-sdk/releases/latest/dotnet.html
+
+### BackLog
+- Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
+
+- Adding a Special Flag or Tag to Denote builds that were sent to product (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
+- Fixing DateTime fragility by abstracting all date/time functionality and/or using NodaTime rather than DateTime.
+- Request/Reply Queries for data between services (i.e. sending and waiting in-process as a way to query another service rather than a series of bus messages and a statefulprocess) implement using MessageSessions in Azure ServiceBus
+- Client-Side Batching using native Azure ServiceBus feature
+- Hide Datastore extension methods from Soap (https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm)
+- Add  DataStore "Document Size Limit" on write error. It will still fail with a less friendly native error from CosmosDB as-is. Also, hitting the 2MB limit should not happen really without bad design.

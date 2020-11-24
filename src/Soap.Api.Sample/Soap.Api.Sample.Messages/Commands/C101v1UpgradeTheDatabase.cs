@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Messages.Commands
 {
     using System;
+    using CircuitBoard;
     using FluentValidation;
     using Soap.Interfaces.Messages;
 

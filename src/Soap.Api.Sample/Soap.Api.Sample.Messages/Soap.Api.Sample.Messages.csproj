@@ -13,5 +13,9 @@
     <ProjectReference Include="..\..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Constants\Soap.Api.Sample.Constants.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\UI" />
+  </ItemGroup>
   
 </Project>

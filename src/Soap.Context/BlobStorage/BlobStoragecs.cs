@@ -7,6 +7,7 @@
     using Azure;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using Soap.Interfaces;

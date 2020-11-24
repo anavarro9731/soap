@@ -1,14 +1,28 @@
 import React from 'react';
 import WelcomeImage from 'url:./assets/images/hello_world.png';
-import { i18n } from '@soap/modules';
+import {translate, keys, useQuery, getHeader, headerKeys } from '@soap/modules';
 
-const { translate, keys } = i18n;
 
-const Welcome = () => (
-  <div>
-      <img src={WelcomeImage} alt="Logo" />
-      <h1>{translate(keys.back)}</h1>
-  </div>
-);
+function Welcome() {
+
+    const c100v1Ping = {
+        $type: 'Soap.Api.Sample.Messages.Commands.C100v1Ping, Soap.Api.Sample.Messages',
+        pingedAt: new Date().toISOString(),
+        pingedBy: "aaron",
+        headers: []
+    };
+    
+    const pong = useQuery(c100v1Ping);
+    
+    if (!pong) return (<h1>Loading...</h1>);
+    
+    return (
+    <div>
+        <img src={WelcomeImage} alt="Logo"/>
+        <h1>{translate(keys.back)}</h1>
+        <h2>{getHeader(pong, headerKeys.messageId)}</h2>
+    </div>
+    );
+}
 
 export default Welcome;

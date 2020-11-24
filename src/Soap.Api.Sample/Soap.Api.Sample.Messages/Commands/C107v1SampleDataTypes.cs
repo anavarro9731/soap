@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using CircuitBoard;
     using Soap.Interfaces.Messages;
     
     public class C107v1SampleDataTypes : ApiMessage

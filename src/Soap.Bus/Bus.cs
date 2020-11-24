@@ -91,7 +91,7 @@
                 if (MessageIsTooBigForServiceBus())
                 {
                     await this.blobStorage.SaveApiMessageAsBlob(message);
-                    ClearAllPublicPropertyValues();
+                    ClearAllPublicPropertyValuesExceptHeaders();
                     SetBlobIdHeader();
                 }
             }
@@ -104,12 +104,13 @@
 
             bool MessageIsTooBigForServiceBus() => MessageSizeInBytes() > 256000; //* servicebus max size is 256KB
 
-            void ClearAllPublicPropertyValues()
+            void ClearAllPublicPropertyValuesExceptHeaders()
             {
                 var publicProperties = message.GetType()
                                               .GetProperties()
                                               .Where(
-                                                  p => p.CanRead && p.CanWrite
+                                                  p => p.Name != nameof(ApiMessage.Headers) &&
+                                                       p.CanRead && p.CanWrite
                                                                  && (p.MemberType == MemberTypes.Property
                                                                      || p.MemberType == MemberTypes.Field));
 

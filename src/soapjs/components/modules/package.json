@@ -1,9 +1,11 @@
 {
   "name": "@soap/modules",
-  "version": "1.22.0",
+  "version": "1.25.0",
   "peerDependencies": {},
   "dependencies": {
+    "@azure/service-bus": "^7.0.0",
     "@babel/runtime": "^7.12.1",
+    "@microsoft/applicationinsights-web": "^2.5.10",
     "i18next": "^17.0.7",
     "i18next-xhr-backend": "^3.0.0",
     "lodash": "^4.17.20",

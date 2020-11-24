@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Messages.Commands;

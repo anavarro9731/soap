@@ -8,6 +8,15 @@
 
     public class P560SendLargeMessage : Process, IBeginProcess<C105v1SendLargeMessage>
     {
-        public Func<C105v1SendLargeMessage, Task> BeginProcess => async message => { await Send(new C106v1LargeCommand()); };
+        public Func<C105v1SendLargeMessage, Task> BeginProcess
+        {
+            get
+            {
+                return async message =>
+                    {
+                    await Send(new C106v1LargeCommand());
+                    };
+            }
+        }
     }
 }

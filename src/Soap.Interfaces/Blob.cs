@@ -1,6 +1,7 @@
 ﻿namespace Soap.Interfaces
 {
     using System;
+    using CircuitBoard;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;
 

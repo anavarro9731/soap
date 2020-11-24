@@ -1,6 +1,7 @@
 ﻿namespace Soap.Context
 {
     using System;
+    using CircuitBoard;
     using Soap.Interfaces.Messages;
 
     public class ErrorCode : Enumeration<ErrorCode>

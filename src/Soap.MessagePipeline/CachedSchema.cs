@@ -8,6 +8,7 @@
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using CircuitBoard;
     using Namotion.Reflection;
     using Newtonsoft.Json;
     using Soap.Config;

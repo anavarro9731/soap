@@ -5,13 +5,11 @@
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Azure.Messaging.ServiceBus;
     using CircuitBoard.MessageAggregator;
     using FluentValidation;
-    using Microsoft.Azure.ServiceBus;
-    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class AzureBus : IBusClient
@@ -19,6 +17,8 @@
         private readonly IMessageAggregator messageAggregator;
 
         private readonly Settings settings;
+        
+        
 
         private AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
@@ -26,8 +26,6 @@
             this.settings = settings;
         }
 
-        public string ClientSideSessionId { get; set; }
-        
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
         public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
@@ -45,56 +43,66 @@
 
         public async Task Publish(ApiEvent publishEvent)
         {
-            await SendTopicMessage();
-            await SendBroadCastMessage();
+            await using var client = new ServiceBusClient(this.settings.BusConnectionString);
+            
+            await SendTopicMessage(client);
+            await SendBroadCastMessage(client);
             
             EventsPublished.Add(publishEvent.Clone());
 
-            async Task SendBroadCastMessage()
+            async Task SendBroadCastMessage(ServiceBusClient serviceBusClient)
             {
-                var broadCastMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
-                {
-                    MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                    Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                    SessionId = publishEvent.Headers.GetSessionId()
-                };
-                var broadcastClient = new TopicClient(this.settings.BusConnectionString, "allevents");
-                await broadcastClient.SendAsync(broadCastMessage);
+                var sender = client.CreateSender("allevents");
+
+                var broadCastMessage =
+                    new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+                    {
+                        MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                      Subject = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                        SessionId = publishEvent.Headers.GetSessionId()
+                    };
+                
+                await sender.SendMessageAsync(broadCastMessage);
             }
             
-            async Task SendTopicMessage()
+            async Task SendTopicMessage(ServiceBusClient serviceBusClient)
             {
-                var topicMessage = new Message(Encoding.Default.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
-                {
-                    MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                    Label = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                };
-
                 var topic = publishEvent.Headers.GetTopic().ToLower();
-                var topicClient = new TopicClient(this.settings.BusConnectionString, topic);
-                await topicClient.SendAsync(topicMessage);
+                var sender = client.CreateSender(topic);
+                
+
+                var topicMessage =
+                    new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
+                    {
+                        MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
+                        Subject = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                    };
+                
+                await sender.SendMessageAsync(topicMessage);
             }
             
         }
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
-            var queueMessage = new Message(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
+            await using var client =  new ServiceBusClient(this.settings.BusConnectionString);
+
+            var sender = client.CreateSender(sendCommand.Headers.GetQueue());
+            
+            var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
-                Label = sendCommand.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                Subject = sendCommand.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
                 CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
             };
-
-            var queueClient = new QueueClient(this.settings.BusConnectionString, sendCommand.Headers.GetQueue());
-
+            
             if (scheduleAt.HasValue)
             {
-                var sequenceNumber = await queueClient.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
+                var sequenceNumber = await sender.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
             }
             else
             {
-                await queueClient.SendAsync(queueMessage);
+                await sender.SendMessageAsync(queueMessage);
             }
 
             CommandsSent.Add(sendCommand.Clone());

@@ -1,6 +1,7 @@
 namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
+    using CircuitBoard;
     using FluentAssertions;
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Messages.Commands;

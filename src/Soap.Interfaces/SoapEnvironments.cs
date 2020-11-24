@@ -1,5 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
+    using CircuitBoard;
     using Soap.Interfaces.Messages;
 
     public class SoapEnvironments : Enumeration<SoapEnvironments>

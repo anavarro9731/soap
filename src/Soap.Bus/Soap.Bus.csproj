@@ -4,9 +4,9 @@
     <Version>4.9.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="5.0.0" />
+    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.0.0" />
   </ItemGroup>
 </Project>
