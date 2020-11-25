@@ -7,52 +7,51 @@
 
     public static class TypeExt
     {
-        public static bool InheritsOrImplements(this Type child, Type parent)
+        
+        
+        /// <summary>
+        /// This is like using IsAssignableTo/From (or "is" if you have an instance) but the difference is
+        /// those approaches won't work open generics i.e. typeof(I<>).IsAssignableFrom(type) which makes
+        /// sense because you can't assign to an open generic. otherwise use "is"
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="implementedInterfaceToCheckFor"></param>
+        /// <returns></returns>
+        public static bool InheritsOrImplements(this Type typeBeingTested, Type implementedInterfaceToCheckFor)
         {
-            parent = ResolveGenericTypeDefinition(parent);
+            return implementedInterfaceToCheckFor.IsAssignableFrom(typeBeingTested) || 
+                   IterateTypeStack(typeBeingTested, implementedInterfaceToCheckFor);
 
-            var currentChild = child.IsGenericType ? child.GetGenericTypeDefinition() : child;
-
-            while (currentChild != typeof(object))
+            static bool IterateTypeStack(Type t, Type implementedInterfaceToCheckFor)
             {
-                if (parent == currentChild || //this get a direct match 
-                    parent == currentChild.BaseType || //this gets a specific generic impl BaseType<SomeType>
-                    HasAnyInterfaces(parent, currentChild))
-                    //this child implements any parent interfaces (not sure about specific impl like BaseType<SomeType> requires a test
+                if (CheckAType(t, implementedInterfaceToCheckFor)) return true;
+                
+                return t.BaseType != null && IterateTypeStack(t.BaseType, implementedInterfaceToCheckFor);
+
+                static bool CheckAType(Type t, Type implementedInterfaceToCheckFor)
                 {
-                    return true;
+                    return t switch
+                    {
+                        _ when t == implementedInterfaceToCheckFor => true,
+                        _ when CheckForMatchOnInterfaces(t, implementedInterfaceToCheckFor) => true,
+                        _ when CheckConstructedTypeForOpenGenericTypeMatch(t, implementedInterfaceToCheckFor) => true,
+                        _ => false
+                    };
                 }
-
-                currentChild = currentChild.BaseType != null && currentChild.BaseType.IsGenericType
-                                   ? currentChild.BaseType.GetGenericTypeDefinition() //this gets a generic impl BaseType<>
-                                   : currentChild.BaseType; //this just sets up the next child type
-
-                if (currentChild == null) return false;
-            }
-
-            return false;
-
-            static bool HasAnyInterfaces(Type parent, Type child)
-            {
-                return child.GetInterfaces()
-                            .Any(
-                                childInterface =>
-                                    {
-                                    var currentInterface = childInterface.IsGenericType
-                                                               ? childInterface.GetGenericTypeDefinition()
-                                                               : childInterface;
-
-                                    return currentInterface == parent;
-                                    });
-            }
-
-            static Type ResolveGenericTypeDefinition(Type parent)
-            {
-                var shouldUseGenericType = !(parent.IsGenericType && parent.GetGenericTypeDefinition() != parent);
-
-                if (parent.IsGenericType && shouldUseGenericType) parent = parent.GetGenericTypeDefinition();
-
-                return parent;
+                
+                static bool CheckForMatchOnInterfaces(Type t, Type implementedInterfaceToCheckFor)
+                {
+                    return t.GetInterfaces().Any(i => CheckAType(i,implementedInterfaceToCheckFor));
+                }
+                
+                static bool CheckConstructedTypeForOpenGenericTypeMatch(Type t, Type implementedInterfaceToCheckFor)
+                {
+                    return t switch
+                    {
+                        _ when t.IsConstructedGenericType => t.GetGenericTypeDefinition() == implementedInterfaceToCheckFor,
+                        _ => false
+                    };
+                }
             }
         }
 

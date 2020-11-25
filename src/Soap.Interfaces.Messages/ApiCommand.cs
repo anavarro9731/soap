@@ -15,28 +15,5 @@
     {
     }
 
-    public abstract class UIFormData : ApiEvent
-    {
-        public ApiCommand Command { get; set; }
-        public List<FieldMeta> FieldData { get; set; }
-
-        public class FieldMeta
-        {
-            public string FieldName { get; set; }
-            public string InitialValue { get; set; }
-            public List<string> SelectableValues { get; set; }
-            public string FieldLabel { get; set; }
-        }
-
-        protected abstract List<string> GetPotentialErrors();
-
-        public string Validate()
-        {
-            var errors = GetPotentialErrors();
-            var errorString = errors.Aggregate((e1, e2) => $"{e1}{Environment.NewLine}{e2}");
-            return string.IsNullOrWhiteSpace(errorString) ? "+" : errorString;
-        }
-        
-        
-    }
+    
 }

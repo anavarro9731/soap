@@ -8,7 +8,6 @@ namespace Soap.Api.Sample.Messages.Commands
     {
         public string C104_HansSoloNewName { get; set; }
 
-        public override ApiPermission Permission { get; }
 
         public class C104Validator : AbstractValidator<C104v1TestUnitOfWork>
         {

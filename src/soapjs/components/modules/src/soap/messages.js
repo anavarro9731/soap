@@ -12,7 +12,7 @@ export function getRegisteredMessageType(typeName) {
     return messageTypesSingleton[typeName];
 }
 
-export const enum = {
+export const headerKeys = {
     messageId: "MessageId",
     timeOfCreationAtOrigin: "TimeOfCreationAtOrigin",
     commandConversationId: "CommandConversationId",
@@ -26,25 +26,7 @@ export const enum = {
     sessionId: "SessionId"
 };
 
-export const stringMin = "";
-export const guidMin = "00000000-0000-0000-0000-000000000000";
-export const dateMin = "0001-01-01T00:00:00Z";
-export const decimalMin = -79228162514264337593543950335.0;
-export const longMin = -9223372036854775808;
-export const intMin = -2147483648;
-export const shortMin = -32769;
-export const byteMin = 0;
-export const boolMin = false;
 
-export const stringPresent = "string";
-export const guidMax = "ffffffff-ffff-ffff-ffff-ffffffffffff";
-export const dateMax = "9999-12-31T23:59:59.9999999Z";
-export const decimalMax = 79228162514264337593543950335.0;
-export const longMax = 9223372036854775807;
-export const intMax = 2147483647;
-export const shortMax = 32767;
-export const byteMax = 255;
-export const boolMax = true;
 
 export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousMessageObject) {
 
@@ -167,15 +149,15 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                         validateLines += '\t'.repeat(7) + `[{ ${propertyName} : !!${propertyName} ? new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName}) : undefined }, messageTypesSingleton["${classNameOfPropertyValue}"]],\r\n`;  //* validate the conversion
                         setterLines += '\t'.repeat(6) + `this.${propertyName} = new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName});\r\n`; //* set the property to the real type avoid nulls
                     }
-                } else { //* primitives
+                } else { 
+                    /* primitives (are always optional since they all resolve to .NET nullable types, not only does solve issues with unintended defaults values being set on deserialisaton, or
+                    in the case of guids and dates not even being handleable.
+                     */
 
                     if (propertyValue instanceof Array) {
-
-                        const optional = isOptional(propertyValue[0]) ? ',true' : '';
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ,true],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     } else {
-                        const optional = isOptional(propertyValue) ? ',true' : '';
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue}, true],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     }
                     setterLines += '\t'.repeat(6) + `this.${propertyName} = ${propertyName};\r\n`;
 
@@ -216,34 +198,7 @@ ${typeLine}
 
     }
     return className;
-
-    function isOptional(contestant) {
-
-        const optionalValues = [
-            stringMin,
-            guidMin,
-            dateMin,
-            decimalMin,
-            longMin,
-            intMin,
-            shortMin,
-            byteMin,
-            boolMin
-        ];
-
-        return contains(optionalValues, contestant)
-
-        function contains(a, obj) {
-            for (let i = 0; i < a.length; i++) {
-                if (a[i] === obj) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-
+    
     function isCustomType(value) {
 
         if (value instanceof Array) {

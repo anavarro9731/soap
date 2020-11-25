@@ -5,8 +5,6 @@
 
     public class E151v1GotServiceState : ApiEvent
     {
-        public override ApiPermission Permission { get; }
-
         public e151_ServiceState State { get; set; }
 
         public class e151_ServiceState

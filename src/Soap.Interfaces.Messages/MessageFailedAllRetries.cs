@@ -30,7 +30,6 @@
         public string SerialisedMessage { get; set; }
         
         public string SerialiserId { get; set; } 
-
-        public override ApiPermission Permission { get; }
+        
     }
 }

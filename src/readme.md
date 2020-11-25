@@ -86,9 +86,9 @@ When running locally you don't get messages in the trace logs.
 
 ### BackLog
 - Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
-
+- What to do about the local and cloud fighting each other when debugging and no dev database?
 - Adding a Special Flag or Tag to Denote builds that were sent to product (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
-- Fixing DateTime fragility by abstracting all date/time functionality and/or using NodaTime rather than DateTime.
+- Fixing DateTime fragility by abstracting all date/time functionality and/or using NodaTime rather than DateTime. (NodaTime will not pass IsSystemType checks may need to adjust those functions (there are private versions))
 - Request/Reply Queries for data between services (i.e. sending and waiting in-process as a way to query another service rather than a series of bus messages and a statefulprocess) implement using MessageSessions in Azure ServiceBus
 - Client-Side Batching using native Azure ServiceBus feature
 - Hide Datastore extension methods from Soap (https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm)

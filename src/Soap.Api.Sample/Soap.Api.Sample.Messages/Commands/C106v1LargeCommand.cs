@@ -18,6 +18,5 @@
         // ReSharper disable once StringLiteralTypo
         public string C106_Large256KbString { get; set; } = new String('*',256000);
 
-        public override ApiPermission Permission { get; }
     }
 }

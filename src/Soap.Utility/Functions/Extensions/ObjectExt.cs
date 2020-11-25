@@ -29,7 +29,8 @@
         {
             DefaultValueHandling =
                 DefaultValueHandling
-                    .Include, //* this will result in some properties being output that are ignored in JS but i think that's OK
+                    .Include, //* you always want this i think, there could be many reasons subtle errors might be produced, in most cases I think JS will just resolve to undefined which is *mostly* treated all the same but some functions
+                              //will error on undefined and not null, in any case its clearer when you can see the fields there (e.g. having default values for FieldData for UICommands) 
             NullValueHandling =
                 NullValueHandling
                     .Include, //* include them for debugging purposes on outgoing messages, but nulls will be changed to undefined in JS constructors as if they were never provided

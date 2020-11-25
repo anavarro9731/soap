@@ -5,6 +5,5 @@
 
     public class C100v1Ping : AbstractPingCommand
     {
-        public override ApiPermission Permission { get; }
     }
 }

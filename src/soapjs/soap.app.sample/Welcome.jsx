@@ -2,7 +2,6 @@ import React from 'react';
 import WelcomeImage from 'url:./assets/images/hello_world.png';
 import {translate, keys, useQuery, getHeader, headerKeys } from '@soap/modules';
 
-
 function Welcome() {
 
     const c100v1Ping = {

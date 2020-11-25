@@ -20,8 +20,7 @@
     public abstract class ApiMessage : IMessage
     {
         public MessageHeaders Headers { get; set; } = new MessageHeaders();
-
-        public abstract ApiPermission Permission { get; }
+        
     }
     
     public class MessageHeaders : List<Enumeration>

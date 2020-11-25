@@ -22,7 +22,6 @@
 
         public bool C101_ReSeed { get; set; }
 
-        public override ApiPermission Permission { get; }
 
         public class ReleaseVersions : Enumeration<ReleaseVersions>
         {

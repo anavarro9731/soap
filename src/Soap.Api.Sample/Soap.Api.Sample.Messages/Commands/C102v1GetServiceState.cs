@@ -5,7 +5,6 @@
 
     public sealed class C102v1GetServiceState : ApiCommand
     {
-        public override ApiPermission Permission { get; }
 
         public class Validator : AbstractValidator<C102v1GetServiceState>
         {

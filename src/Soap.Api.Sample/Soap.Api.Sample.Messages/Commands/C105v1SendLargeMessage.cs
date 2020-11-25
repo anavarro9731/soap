@@ -4,6 +4,5 @@
 
     public class C105v1SendLargeMessage : ApiCommand
     {
-        public override ApiPermission Permission { get; }
     }
 }
