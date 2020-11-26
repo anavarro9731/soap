@@ -133,7 +133,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new Exception("Cannot deserialise message", e);
+                    throw new ApplicationException("Cannot deserialise message", e);
                 }
             }
 
@@ -190,7 +190,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new Exception("Could not verify message type", e);
+                    throw new ApplicationException("Could not verify message type", e);
                 }
             }
         }
@@ -227,7 +227,7 @@
             }
             catch (Exception e)
             {
-                throw new Exception("Error retrieving config", e);
+                throw new ApplicationException("Error retrieving config", e);
             }
 
             static void EnsureEnvironmentVars()

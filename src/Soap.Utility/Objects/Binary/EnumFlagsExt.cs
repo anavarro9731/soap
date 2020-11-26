@@ -16,7 +16,7 @@
     {
         private static void ThrowIf(bool condition, string message)
         {
-            if (condition) throw new Exception(message);
+            if (condition) throw new ApplicationException(message);
         }
         
         public static EnumFlags AddFlag<T>(this EnumFlags flags, T newState)

@@ -6,13 +6,12 @@ import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from "./m
 
 let _appInsights;
 
-let _logger = { log: (msg, object, toAzure) => {
+let _logger = { log: (logMsg, logObject, toAzure) => {
 
-        if (typeof msg === types.object) msg = msg.toString();
+        if (typeof logMsg === types.object) logMsg = logMsg.toString();
         
         validateArgs(
-            [{ msg }, types.string],
-            [{ object }, types.object, optional],
+            [{ msg: logMsg }, types.string],
             [{ toAzure }, types.boolean, optional]
         );
 
@@ -22,12 +21,12 @@ let _logger = { log: (msg, object, toAzure) => {
             }
         });
 
-        if (object === undefined) console.log(msg)
-        else console.log(msg, object);
+        if (logObject === undefined) console.log(logMsg)
+        else console.log(logMsg, logObject);
 
         if (toAzure) {
             _appInsights.loadAppInsights();
-            _appInsights.trackTrace({message: msg});
+            _appInsights.trackTrace({message: logMsg});
         }
     }};
 

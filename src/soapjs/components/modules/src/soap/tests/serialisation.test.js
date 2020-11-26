@@ -22,26 +22,31 @@ test('test deserialisation of data type max values', () => {
 
 test('test deserialisation of data type optional values', () => {
 
-    try {
         registerMessageTypes(messageDefinitions);
-        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("optional")));
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("optionalAreOptional")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
-    } catch(err) {
-        const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(10); //* 1/2 should pass
-    }
-
 });
 
 test('test deserialisation of data type required values', () => {
 
     try {
         registerMessageTypes(messageDefinitions);
-        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("required")));
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsRequiredUndefined")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(10); //* 1/2 should pass
+        expect(errorCount).toBe(8); //* 1/2 should pass
+    }
+
+    try {
+        registerMessageTypes(messageDefinitions);
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsRequiredNull")));
+        createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
+    } catch(err) {
+        const errorCount = (err.match(/\^/g)||[]).length;
+        expect(errorCount).toBe(8); //* 1/2 should pass
     }
 
 });
@@ -56,18 +61,20 @@ test('test deserialisation of data type list', () => {
         registerMessageTypes(messageDefinitions);
         const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("nullinlist")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(1); //* 1/2 should pass
+        expect(errorCount).toBe(1); 
     }
 
     try {
         registerMessageTypes(messageDefinitions);
-        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("undefined")));
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("undefinedinlist")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(1); //* 1/2 should pass
+        expect(errorCount).toBe(1); 
     }
 
 });
@@ -78,18 +85,20 @@ test('test deserialisation of invalid data in child object', () => {
         registerMessageTypes(messageDefinitions);
         const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("childcontainsnull")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(2); //* 1/2 should pass
+        expect(errorCount).toBe(2); 
     }
 
     try {
         registerMessageTypes(messageDefinitions);
         const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("childcontainsundefined")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
+        throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(1); //* 1/2 should pass
+        expect(errorCount).toBe(1); 
     }
 
 });

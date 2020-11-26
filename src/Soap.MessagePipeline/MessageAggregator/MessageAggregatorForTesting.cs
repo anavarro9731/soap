@@ -40,7 +40,7 @@
 
             if (this.ReturnValues.ContainsKey(eventType) && this.ReturnValues[eventType].Count == 0)
             {
-                throw new Exception(
+                throw new ApplicationException(
                     $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                     The return value has been registered by a call to When<{
                             typeof(TMessage).Name

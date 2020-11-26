@@ -38,7 +38,7 @@
 
         private static void Prohibit(bool condition, string message)
         {
-            if (condition) throw new Exception(message);
+            if (condition) throw new ApplicationException(message);
         }
 
         private Task SendViaMailGun(SendingEmail sendingEmail)

@@ -15,7 +15,7 @@
                 var x when x == SerialiserIds.JsonDotNetDefault  => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT)): JsonConvert.DeserializeObject<T>(json),
                 var x when x == SerialiserIds.ClientSideMessageSchemaGeneraton => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT), JsonNetSettings.MessageSchemaSerialiserSettings) : JsonConvert.DeserializeObject<T>(json, JsonNetSettings.MessageSchemaSerialiserSettings),
                 var x when x == SerialiserIds.ApiBusMessage => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT), JsonNetSettings.ApiMessageSerialiserSettings) : JsonConvert.DeserializeObject<T>(json, JsonNetSettings.ApiMessageSerialiserSettings),
-                _ => throw new Exception($"Serialiser Id Not Found. Valid values are {SerialiserIds.ListToString()}")
+                _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.ListToString()}")
             };
 
             return obj;

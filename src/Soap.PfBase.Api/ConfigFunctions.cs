@@ -41,7 +41,7 @@
             }
             catch (Exception e)
             {
-                throw new Exception($"Could not compile config from remote repo {url}", e);
+                throw new ApplicationException($"Could not compile config from remote repo {url}", e);
             }
 
             static ApplicationConfig LoadAndExecute(string source)
@@ -72,7 +72,7 @@
                                              .Select(x => x.GetMessage())
                                              .ToList();
                         var error = string.Join(' ', failures);
-                        throw new Exception(error);
+                        throw new ApplicationException(error);
                     }
 
                     peStream.Seek(0, SeekOrigin.Begin);

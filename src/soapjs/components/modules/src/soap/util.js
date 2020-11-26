@@ -8,7 +8,8 @@ export const types = Object.freeze({
     string: typeof '',
     function: typeof eval,
     symbol: typeof Symbol(),
-    datetime: 'datetime'
+    datetime: 'datetime',
+    guid: 'guid'
 });
 
 export const optional = true;
@@ -43,10 +44,10 @@ export function validateArgs(...requiredArgs) {
     
     requiredArgs.forEach(arg => {
         try {
-            const argName = Object.keys(arg[0])[0]; //- get key of first property 
-            const argValue = Object.values(arg[0])[0]; //- get value of first property 
-            let requiredType = arg[1]; //- get next element (type)
-            let isOptional = !!arg[2]; //- get next element (optional)
+            const argName = Object.keys(arg[0])[0]; //- get first key of 1st element which is an object 
+            const argValue = Object.values(arg[0])[0]; //- get first value of 1st element which is an object
+            let requiredType = arg[1]; //- get 2nd element (type)
+            let isOptional = !!arg[2]; //- get 3rd element (optional)
             
             const requireArrayOf = Array.isArray(requiredType);
             if (requireArrayOf === true) {
@@ -84,8 +85,20 @@ export function validateArgs(...requiredArgs) {
             throw  `${argName} is required but was undefined E^01`;
         } else if (argValue === null) {
             if (isOptional) return;
-            throw  `${argName} is required but was null. E^02`;            
-        } else if (requireClass) {
+            throw  `${argName} is required but was null. E^02`;
+        } else if (requiredType === 'datetime') {
+            if (!isISODateTime(argValue.toString())) {
+                throw new Error(
+                    `${argName} is expected to be an ISO Date Time formatted string E^06`,
+                );
+            }
+        } else if (requiredType === 'guid') {
+            if (!isGuid(argValue.toString()))
+            throw new Error(
+                `${argName} is expected to be a UUID/GUID formatted string E^07`,
+            );
+        }
+         else if (requireClass) {
             if (!(argValue instanceof requiredType)) {
                 throw new Error(
                     `${argName} was of class type ${typeof argValue}, expected class ${requiredType.name} E^03`,
@@ -95,6 +108,15 @@ export function validateArgs(...requiredArgs) {
             throw new Error(
                 `${argName} was of type ${typeof argValue}, expected ${requiredType} E^04`,
             );
+        }
+         
+        function isGuid(string) {
+            return string.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+        }
+
+        function isISODateTime(string) {
+            //* https://stackoverflow.com/questions/3143070/javascript-regex-iso-datetime
+            return string.match(/^(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))$/);
         }
     }
 }

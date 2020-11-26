@@ -173,7 +173,7 @@
 
         private static void Ensure(bool acceptable, string errorMessage)
         {
-            if (!acceptable) throw new Exception(errorMessage);
+            if (!acceptable) throw new ApplicationException(errorMessage);
         }
     }
 

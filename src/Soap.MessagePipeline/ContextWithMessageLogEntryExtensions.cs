@@ -370,7 +370,7 @@
 
             catch (Exception e)
             {
-                throw new Exception(
+                throw new ApplicationException(
                     $"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore",
                     e);
             }

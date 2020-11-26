@@ -26,7 +26,19 @@ export const headerKeys = {
     sessionId: "SessionId"
 };
 
+export const optionalStringFlag = "";
+export const optionalGuidFlag = "00000000-0000-0000-0000-000000000000";
+export const optionalDateFlag = "0001-01-01T00:00:00Z";
+export const optionalDecimalFlag = -79228162514264337593543950335.0;
+export const optionalLongFlag = -9223372036854775808;
+export const optionalBoolFlag = false;
 
+export const requiredStringFlag = "string";
+export const requiredGuidFlag = "ffffffff-ffff-ffff-ffff-ffffffffffff";
+export const requiredDateFlag = "9999-12-31T23:59:59.9999999Z";
+export const requiredDecimalFlag = 79228162514264337593543950335.0;
+export const requiredLongFlag = 9223372036854775807;
+export const requiredBoolFlag = true;
 
 export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousMessageObject) {
 
@@ -40,7 +52,7 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
         typedObjectWrappedInProxy = wrapInProxy(typedObject);
 
     } catch (error) {
-        config.logger.log('!! ERROR converting json received from API to event !! ', error);
+        config.logger.log('!! ERROR converting json received from API to event !!\r\n' +  error);
         throw error;
     }
 
@@ -155,9 +167,11 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                      */
 
                     if (propertyValue instanceof Array) {
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ,true],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        const optional = isOptional(propertyValue[0]) ? ',true' : '';
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     } else {
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue}, true],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        const optional = isOptional(propertyValue) ? ',true' : '';
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                     }
                     setterLines += '\t'.repeat(6) + `this.${propertyName} = ${propertyName};\r\n`;
 
@@ -191,13 +205,38 @@ ${typeLine}
             try {
                 validateArgs(...args); //* and then spread them out again or you will get an extra array wrapped around the arguments and they will be passed as one argument rather then them passed as a list of args
             } catch (err) {
-                throw `Error initialising class ${className}: ${err}`;
+                throw `Error initialising class ${className}: \r\n${err}`;
             }
         };  //* wasn't sure how else to get these in scope may be a better way
         messageTypesSingleton[className].prototype.types = types;
 
     }
     return className;
+
+    function isOptional(contestant) {
+
+        const optionalValues = [
+            optionalStringFlag,
+            optionalGuidFlag,
+            optionalDateFlag,
+            optionalDecimalFlag,
+            optionalLongFlag,
+            optionalBoolFlag
+        ];
+
+        return contains(optionalValues, contestant)
+
+        function contains(a, obj) {
+            for (let i = 0; i < a.length; i++) {
+                if (a[i] === obj) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+
     
     function isCustomType(value) {
 

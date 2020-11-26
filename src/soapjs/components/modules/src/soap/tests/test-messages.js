@@ -1,16 +1,17 @@
-﻿const stringNullable = "";
-const guidMin = "00000000-0000-0000-0000-000000000000";
-const dateMin = "0001-01-01T00:00:00Z";
-const decimalMin = -79228162514264337593543950335.0;
-const longMin = -9223372036854775808;
-const boolMin = false;
-
-const stringPresent = "string";
-const guidMax = "ffffffff-ffff-ffff-ffff-ffffffffffff";
-const dateMax = "9999-12-31T23:59:59.9999999Z";
-const decimalMax = 79228162514264337593543950335.0;
-const longMax = 9223372036854775807;
-const boolMax = true;
+﻿import {
+    requiredBoolFlag,
+    optionalBoolFlag,
+    requiredDateFlag,
+    optionalDateFlag,
+    requiredDecimalFlag,
+    optionalDecimalFlag,
+    requiredGuidFlag,
+    optionalGuidFlag,
+    requiredLongFlag,
+    optionalLongFlag,
+    optionalStringFlag,
+    requiredStringFlag
+} from '../messages'
 
 /* Js version of .NET message classes with nested classes and .NET names which would be serialised and sent to this code via a JSON schema array
 possible it would have been better just to put JSON in here rather than classes which have to be serialised it was hard to say which
@@ -61,116 +62,187 @@ export class TestCommand_c101v1 {
 
         this.$type = 'Soap.Api.Sample.Messages.Commands.TestCommand_c101v1, Soap.Messages';
         this.headers = [new Enumeration()];
-        
+
+
         switch (scenario) {
             default: //* schema
-                this.c101_BooleanOptional = boolMin
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringNullable;
-                this.c101_LongOptional = longMin;
-                this.c101_DecimalOptional = decimalMin;
-                this.c101_GuidOptional = guidMin;
-                this.c101_DateTimeOptional = dateMin;
+                this.c101_Boolean = requiredBoolFlag
+                this.c101_BooleanOptional = optionalBoolFlag
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = optionalStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = optionalLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = optionalDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = optionalGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = optionalDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [new Enumeration()];
                 break;
             case "min": //* should all work
-                this.c101_BooleanOptional = boolMin;
-                this.c101_String == stringNullable;
-                this.c101_StringOptional = stringNullable;
-                this.c101_LongOptional = longMin;
-                this.c101_DecimalOptional = decimalMin;
-                this.c101_GuidOptional = guidMin;
-                this.c101_DateTimeOptional = dateMin;
+                this.c101_Boolean = optionalBoolFlag;
+                this.c101_BooleanOptional = optionalBoolFlag;
+                this.c101_String = optionalStringFlag;
+                this.c101_StringOptional = optionalStringFlag;
+                this.c101_Long = optionalLongFlag;
+                this.c101_LongOptional = optionalLongFlag;
+                this.c101_Decimal = optionalDecimalFlag;
+                this.c101_DecimalOptional = optionalDecimalFlag;
+                this.c101_Guid = optionalGuidFlag;
+                this.c101_GuidOptional = optionalGuidFlag;
+                this.c101_DateTime = optionalDateFlag;
+                this.c101_DateTimeOptional = optionalDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = []; //* we do allow empty lists
                 break;
             case "max": //* should all work
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [new Enumeration(), new Enumeration()];
                 break;
-            case "optionals": //* should pass
-                this.c101_String = stringPresent;
+            case "optionalAreOptional": //* should pass
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
                 this.c101_BooleanOptional = undefined;
                 this.c101_StringOptional = undefined;
                 this.c101_LongOptional = undefined;
                 this.c101_DecimalOptional = undefined;
                 this.c101_GuidOptional = undefined;
                 this.c101_DateTimeOptional = undefined;
+                this.c101_Object = new Enumeration();
+                this.c101_ListOfObjects = [];
                 break;
-            case "required": //* should pass
+            case "requiredIsRequiredUndefined": //* should pass
+                this.c101_Boolean = undefined;
                 this.c101_String = undefined;
+                this.c101_Long = undefined;
+                this.c101_Decimal = undefined;
+                this.c101_Guid = undefined;
+                this.c101_DateTime = undefined;
                 this.c101_BooleanOptional = undefined;
                 this.c101_StringOptional = undefined;
                 this.c101_LongOptional = undefined;
                 this.c101_DecimalOptional = undefined;
                 this.c101_GuidOptional = undefined;
                 this.c101_DateTimeOptional = undefined;
+                this.c101_Object = undefined;
+                this.c101_ListOfObjects = undefined;
+                break;
+            case "requiredIsRequiredNull": //* should pass
+                this.c101_Boolean = null;
+                this.c101_String = null;
+                this.c101_Long = null;
+                this.c101_Decimal = null;
+                this.c101_Guid = null;
+                this.c101_DateTime = null;
+                this.c101_BooleanOptional = null;
+                this.c101_StringOptional = null;
+                this.c101_LongOptional = null;
+                this.c101_DecimalOptional = null;
+                this.c101_GuidOptional = null;
+                this.c101_DateTimeOptional = null;
+                this.c101_Object = null;
+                this.c101_ListOfObjects = null;
                 break;
             case "emptylist": //* pass list
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [];
                 break;
             case "nullinlist": //* fail list
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [null];
                 break;
             case "undefinedinlist": //* fail list
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [undefined];
                 break;
             case "childcontainsundefined":
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 const brokenChild1 = new Enumeration();
                 brokenChild1.value = undefined;
                 this.c101_Object = brokenChild1;
                 this.c101_ListOfObjects = [new Enumeration()];
                 break;
             case "childcontainsnull":
-                this.c101_BooleanOptional = boolMax;
-                this.c101_String == stringPresent;
-                this.c101_StringOptional = stringPresent;
-                this.c101_LongOptional = longMax;
-                this.c101_DecimalOptional = decimalMax;
-                this.c101_GuidOptional = guidMax;
-                this.c101_DateTimeOptional = dateMax;
+                this.c101_Boolean = requiredBoolFlag;
+                this.c101_BooleanOptional = requiredBoolFlag;
+                this.c101_String = requiredStringFlag;
+                this.c101_StringOptional = requiredStringFlag;
+                this.c101_Long = requiredLongFlag;
+                this.c101_LongOptional = requiredLongFlag;
+                this.c101_Decimal = requiredDecimalFlag;
+                this.c101_DecimalOptional = requiredDecimalFlag;
+                this.c101_Guid = requiredGuidFlag;
+                this.c101_GuidOptional = requiredGuidFlag;
+                this.c101_DateTime = requiredDateFlag;
+                this.c101_DateTimeOptional = requiredDateFlag;
                 const brokenChild2 = new Enumeration();
                 brokenChild2.value = null;
-                brokenChild2.key = null;    
+                brokenChild2.key = null;
                 this.c101_Object = brokenChild2;
                 this.c101_ListOfObjects = [new Enumeration()];
                 break;

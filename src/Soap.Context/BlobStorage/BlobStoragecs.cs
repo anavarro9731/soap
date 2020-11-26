@@ -44,7 +44,7 @@
             }
             catch (RequestFailedException r)
             {
-                throw new Exception($"Could not read blob with id {id} from storage", r);
+                throw new ApplicationException($"Could not read blob with id {id} from storage", r);
             }
 
             static async Task<Blob> Download(Events.BlobDownloadEvent @event)
