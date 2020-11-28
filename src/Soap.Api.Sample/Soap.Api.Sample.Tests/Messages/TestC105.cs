@@ -15,7 +15,7 @@
             : base(outputHelper)
         {
             SetupTestByProcessingAMessage(
-                new C105v1SendLargeMessage(), 
+                new C105v1_SendLargeMessage(), 
                 Identities.UserOne,
                 setup: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>()
                                                                                  .Return(Task.CompletedTask));
@@ -25,8 +25,8 @@
         public void ItShouldSendAMessageWhoseDataHasBeenSavedToBlobStorage()
         {
             Result.MessageBus.CommandsSent.Should().ContainSingle();
-            Result.MessageBus.CommandsSent.Single().Should().BeOfType<C106v1LargeCommand>();
-            var sent = Result.MessageBus.CommandsSent.Single() as C106v1LargeCommand;
+            Result.MessageBus.CommandsSent.Single().Should().BeOfType<C106v1_LargeCommand>();
+            var sent = Result.MessageBus.CommandsSent.Single() as C106v1_LargeCommand;
             sent.Headers.GetBlobId().Should().Be(sent.Headers.GetMessageId());
             sent.C106_Large256KbString.Should().BeNull();
         }

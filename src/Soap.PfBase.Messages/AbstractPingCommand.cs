@@ -6,16 +6,16 @@
 
     public abstract class AbstractPingCommand : ApiCommand
     {
-        public DateTime PingedAt { get; set; }
+        public DateTime? C000_PingedAt { get; set; }
 
-        public string PingedBy { get; set; }
+        public string? C000_PingedBy { get; set; }
 
         public class Validator : AbstractValidator<AbstractPingCommand>
         {
             public Validator()
             {
-                RuleFor(x => x.PingedBy).NotEmpty();
-                RuleFor(x => x.PingedAt).NotEmpty();
+                RuleFor(x => x.C000_PingedBy).NotEmpty();
+                RuleFor(x => x.C000_PingedAt).NotEmpty();
             }
         }
     }

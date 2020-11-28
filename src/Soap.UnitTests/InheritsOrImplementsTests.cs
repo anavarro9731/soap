@@ -6,37 +6,37 @@
     public class InheritsOrImplementsTests
     {
         [Fact]
-        public void ShouldGetBaseTypesDownTheChain() => Assert.True(new V().Is(typeof(W)));
+        public void ShouldGetBaseTypesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(W)));
 
         [Fact]
-        public void ShouldGetInterfacesDownTheChain() => Assert.True(new V().Is(typeof(J)));
+        public void ShouldGetInterfacesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(J)));
 
         [Fact]
-        public void ShouldGetInterfacesOfInterfacesDownTheChain() => Assert.True(new V().Is(typeof(K)));
+        public void ShouldGetInterfacesOfInterfacesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(K)));
 
         [Fact]
-        public void ShouldGetItsBaseType() => Assert.True(new V().Is(typeof(W)));
+        public void ShouldGetItsBaseType() => Assert.True(new V().GetType().InheritsOrImplements(typeof(W)));
 
         [Fact]
-        public void ShouldGetItself() => Assert.True(new V().Is(typeof(V)));
+        public void ShouldGetItself() => Assert.True(new V().GetType().InheritsOrImplements(typeof(V)));
 
         [Fact]
-        public void ShouldGetObject() => Assert.True(new V().Is(typeof(object)));
+        public void ShouldGetObject() => Assert.True(new V().GetType().InheritsOrImplements(typeof(object)));
 
         [Fact]
-        public void ShouldGetOpenGenericBaseTypesDownTheChain() => Assert.True(new V().Is(typeof(Z<>)));
+        public void ShouldGetOpenGenericBaseTypesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(Z<>)));
 
         [Fact]
-        public void ShouldGetOpenGenericInterfacesDownTheChain() => Assert.True(new V().Is(typeof(I<>)));
+        public void ShouldGetOpenGenericInterfacesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(I<>)));
 
         [Fact]
-        public void ShouldGetSpecificGenericBaseTypesDownTheChain() => Assert.True(new V().Is(typeof(Z<string>)));
+        public void ShouldGetSpecificGenericBaseTypesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(Z<string>)));
 
         [Fact]
-        public void ShouldGetSpecificGenericInterfacesDownTheChain() => Assert.True(new V().Is(typeof(I<string>)));
+        public void ShouldGetSpecificGenericInterfacesDownTheChain() => Assert.True(new V().GetType().InheritsOrImplements(typeof(I<string>)));
 
         [Fact]
-        public void ShouldNotGetUnimplementedTypes() => Assert.False(new V().Is(typeof(INotImplemented)));
+        public void ShouldNotGetUnimplementedTypes() => Assert.False(new V().GetType().InheritsOrImplements(typeof(INotImplemented)));
     }
 
     internal class V : W

@@ -59,7 +59,7 @@
                 return new Blob(
                     @event.BlobId,
                     allBytes,
-                    new Blob.BlobType(typeString, Enumeration.FromKey<Blob.TypeClass>(typeClass)));
+                    new Blob.BlobType(typeString, TypedEnumeration<Blob.TypeClass>.GetInstanceFromKey(typeClass)));
             }
         }
 

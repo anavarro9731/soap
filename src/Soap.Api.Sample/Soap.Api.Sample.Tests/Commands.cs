@@ -10,17 +10,17 @@
 
     public static partial class Commands
     {
-        public static C102v1GetServiceState GetServiceState => new C102v1GetServiceState();
+        public static C102v1_GetServiceState GetServiceState => new C102v1_GetServiceState();
 
-        public static C100v1Ping Ping =>
-            new C100v1Ping
+        public static C100v1_Ping Ping =>
+            new C100v1_Ping
             {
-                PingedAt = DateTime.UtcNow
+                C000_PingedAt = DateTime.UtcNow
             };
 
-        public static C101v1UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101v1UpgradeTheDatabase(C101v1UpgradeTheDatabase.ReleaseVersions.V1);
+        public static C101v1_UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101v1_UpgradeTheDatabase(ReleaseVersions.V1);
 
-        public static C101v1UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101v1UpgradeTheDatabase(C101v1UpgradeTheDatabase.ReleaseVersions.V2);
+        public static C101v1_UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101v1_UpgradeTheDatabase(ReleaseVersions.V2);
         
     }
 }

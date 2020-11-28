@@ -34,12 +34,12 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         protected void CountMessagesSaved(MessageLogEntry log)
         {
             var c100wrapped = log.UnitOfWork.BusCommandMessages.Single();
-            var c100 = c100wrapped.Deserialise<C100v1Ping>();
-            c100.PingedBy.Should().Be(nameof(P555TestUnitOfWork));
+            var c100 = c100wrapped.Deserialise<C100v1_Ping>();
+            c100.C000_PingedBy.Should().Be(nameof(P555TestUnitOfWork));
 
             var e150wrapped = log.UnitOfWork.BusEventMessages.Single();
-            var e150 = e150wrapped.Deserialise<E150v1Pong>();
-            e150.PongedBy.Should().Be(nameof(P555TestUnitOfWork));
+            var e150 = e150wrapped.Deserialise<E150v1_Pong>();
+            e150.C000_PongedBy.Should().Be(nameof(P555TestUnitOfWork));
         }
         
         protected async Task RecordsShouldBeReturnToOriginalState(DataStore store)

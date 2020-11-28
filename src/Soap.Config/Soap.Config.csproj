@@ -4,11 +4,10 @@
     <Version>4.9.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces" Version="13.7.0-alpha" />
-    <PackageReference Include="DataStore.Providers.CosmosDb" Version="13.7.0-alpha" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
     <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DataStore.Providers.CosmosDb" Version="13.9.0-alpha" />
   </ItemGroup>
 </Project>

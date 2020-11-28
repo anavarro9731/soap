@@ -5,9 +5,9 @@
     using Microsoft.VisualBasic;
     using Soap.Interfaces.Messages;
 
-    public class C106v1LargeCommand : ApiCommand
+    public class C106v1_LargeCommand : ApiCommand
     {
-        public class C106Validator : AbstractValidator<C106v1LargeCommand>
+        public class C106Validator : AbstractValidator<C106v1_LargeCommand>
         {
             public C106Validator()
             {
@@ -15,8 +15,7 @@
             }
         }
         
-        // ReSharper disable once StringLiteralTypo
-        public string C106_Large256KbString { get; set; } = new String('*',256000);
+        public string? C106_Large256KbString { get; set; } = new String('*',256000);
 
     }
 }

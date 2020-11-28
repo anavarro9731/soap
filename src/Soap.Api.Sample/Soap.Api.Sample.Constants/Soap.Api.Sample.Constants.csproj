@@ -5,4 +5,8 @@
     <Version>0.0.0</Version>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CircuitBoard" Version="4.3.0-alpha" />
+  </ItemGroup>
+
 </Project>

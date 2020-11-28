@@ -34,7 +34,7 @@
 
         public T Deserialise<T>() where T : class
         {
-            var obj = ObjectData.FromJson<T>(SerialiserIds.FromKey(SerialiserId), TypeName);
+            var obj = ObjectData.FromJson<T>(SerialiserIds.GetInstanceFromKey(SerialiserId), TypeName);
             return obj;
         }
     }

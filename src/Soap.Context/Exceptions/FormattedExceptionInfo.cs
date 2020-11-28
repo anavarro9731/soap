@@ -39,7 +39,7 @@
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
-                if (GlobalErrorCodes.GetAll<GlobalErrorCodes>().Contains(domainExceptionWithErrorCode.Error))
+                if (GlobalErrorCodes.GetAllInstances().Contains(domainExceptionWithErrorCode.Error))
                 {
                     Errors.Add(
                         (CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),

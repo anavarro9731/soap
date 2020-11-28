@@ -13,8 +13,8 @@ namespace Soap.Api.Sample.Tests
 
     public static partial class Commands
     {
-        public static C104v1TestUnitOfWork TestUnitOfWork(Guid? messageId = null) =>
-            new C104v1TestUnitOfWork
+        public static C104v1_TestUnitOfWork TestUnitOfWork(Guid? messageId = null) =>
+            new C104v1_TestUnitOfWork
             {
                 C104_HansSoloNewName = "Hairy-son Ford"
             }.Op(x => x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully));

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
     using Soap.Api.Sample.Constants;
@@ -13,22 +14,22 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
 
-    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101v1UpgradeTheDatabase>
+    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101v1_UpgradeTheDatabase>
     {
-        public Func<C101v1UpgradeTheDatabase, Task> BeginProcess =>
+        public Func<C101v1_UpgradeTheDatabase, Task> BeginProcess =>
             async message =>
                 {
-                if (message.C101_ReSeed)
+                if (message.C101_ReSeed.GetValueOrDefault())
                 {
                     await ExecuteOutsideTransactionUsingCurrentContext();
                 }
 
                 switch (message.C101_ReleaseVersion)
                 {
-                    case var v when v == C101v1UpgradeTheDatabase.ReleaseVersions.V1:
+                    case var v when v.HasFlag(ReleaseVersions.V1):
                         await V1();
                         break;
-                    case var v when v == C101v1UpgradeTheDatabase.ReleaseVersions.V2:
+                    case var v when v.HasFlag(ReleaseVersions.V2):
                         await V2();
                         break;
                     default:
@@ -38,7 +39,7 @@
                 };
 
         /// <summary>
-        ///     *** WARNING DANGER USE ONLY UNDER SUPERVISION THIS IS REALLY A HIDDEN CAPABILITY OF DATASTORE
+        ///     *** WARNING: THIS IS REALLY A HIDDEN CAPABILITY OF DATASTORE
         ///     BEING USED ONLY FOR THE VERY UNIQUE CASE OF RESEEDING THE DATABASE AND WOULD NOT BE PART OF ANY
         ///     NORMAL BUSINESS LOGIC ***
         /// </summary>
@@ -74,7 +75,7 @@
 
             Task SetDbVersion()
             {
-                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(C101v1UpgradeTheDatabase.ReleaseVersions.V2);
+                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
             }
         }
 

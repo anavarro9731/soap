@@ -386,7 +386,7 @@
 
             bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage() =>
                 //- avoid infinite loop
-                context.Message.Is(typeof(MessageFailedAllRetries));
+                context.Message.GetType().InheritsOrImplements(typeof(MessageFailedAllRetries));
 
             bool ThisFailureIsTheFinalFailure() =>
                 //- remember that total attempts is initial message + retries
@@ -595,15 +595,15 @@
 
                     switch (queuedStateChange)
                     {
-                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedCommandToSend)):
+                        case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedCommandToSend)):
                             u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend));
                             break;
 
-                        case IQueuedBusOperation b1 when b1.Is(typeof(QueuedEventToPublish)):
+                        case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedEventToPublish)):
                             u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish));
                             break;
 
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedCreateOperation<>)):
+                        case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)):
                             u.DataStoreCreateOperations.Add(
                                 new DataStoreUnitOfWorkItem(
                                     d1.PreviousModel,
@@ -611,7 +611,7 @@
                                     soapUnitOfWorkId,
                                     DataStoreUnitOfWorkItem.OperationTypes.Create));
                             break;
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedHardDeleteOperation<>)):
+                        case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedHardDeleteOperation<>)):
                             u.DataStoreDeleteOperations.Add(
                                 new DataStoreUnitOfWorkItem(
                                     d1.PreviousModel,
@@ -619,7 +619,7 @@
                                     soapUnitOfWorkId,
                                     DataStoreUnitOfWorkItem.OperationTypes.HardDelete));
                             break;
-                        case IQueuedDataStoreWriteOperation d1 when d1.Is(typeof(QueuedUpdateOperation<>)):
+                        case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedUpdateOperation<>)):
                             u.DataStoreUpdateOperations.Add(
                                 new DataStoreUnitOfWorkItem(
                                     d1.PreviousModel,

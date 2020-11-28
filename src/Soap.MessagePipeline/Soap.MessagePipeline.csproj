@@ -4,7 +4,6 @@
     <Version>4.9.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore" Version="13.7.0-alpha" />
     <PackageReference Include="Namotion.Reflection" Version="1.0.14" />
   </ItemGroup>
   <ItemGroup>

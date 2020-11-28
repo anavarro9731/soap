@@ -8,7 +8,7 @@
         {
             return message.Map(
                 x => message.SerialisedMessage.FromJson<ApiMessage>(
-                    SerialiserIds.FromKey(message.SerialiserId),
+                    SerialiserIds.GetInstanceFromKey(message.SerialiserId),
                     message.TypeName));
         }
     }

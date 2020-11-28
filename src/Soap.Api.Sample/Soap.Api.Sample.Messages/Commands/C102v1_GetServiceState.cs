@@ -3,10 +3,10 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    public class C103v1StartPingPong : ApiCommand
+    public sealed class C102v1_GetServiceState : ApiCommand
     {
 
-        public class C103Validator : AbstractValidator<C103v1StartPingPong>
+        public class Validator : AbstractValidator<C102v1_GetServiceState>
         {
         }
     }

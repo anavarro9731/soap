@@ -2,7 +2,7 @@
 {
     using Soap.Interfaces.Messages;
 
-    public class C105v1SendLargeMessage : ApiCommand
+    public class C105v1_SendLargeMessage : ApiCommand
     {
     }
 }

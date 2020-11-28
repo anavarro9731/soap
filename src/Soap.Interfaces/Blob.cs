@@ -43,7 +43,7 @@
             public string TypeString { get; }
         }
 
-        public class TypeClass : Enumeration<TypeClass>
+        public class TypeClass : TypedEnumeration<TypeClass>
         {
             public static TypeClass AssemblyQualifiedName = Create(nameof(AssemblyQualifiedName), "Assembly Qualified Name");
 

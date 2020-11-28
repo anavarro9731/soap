@@ -3,7 +3,7 @@
     using CircuitBoard;
     using Soap.Interfaces.Messages;
 
-    public class NotificationChannelTypes : Enumeration<NotificationChannelTypes>
+    public class NotificationChannelTypes : TypedEnumeration<NotificationChannelTypes>
     {
         public static NotificationChannelTypes Email = Create(nameof(Email), "Email");
 

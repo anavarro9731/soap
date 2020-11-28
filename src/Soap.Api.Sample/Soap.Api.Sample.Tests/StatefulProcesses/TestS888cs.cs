@@ -24,7 +24,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -34,15 +34,15 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103v1StartPingPong();
+                var c103StartPingPong = new C103v1_StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 
             void SendE150()
             {
-                var pong = new E150v1Pong
+                var pong = new E150v1_Pong
                 {
-                    PingReference = Guid.NewGuid(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    C000_PingReference = Guid.NewGuid(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
@@ -55,7 +55,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -64,15 +64,15 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103v1StartPingPong();
+                var c103StartPingPong = new C103v1_StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 
             void SendE150()
             {
-                var pong = new E150v1Pong
+                var pong = new E150v1_Pong
                 {
-                    PingReference = ping.Headers.GetMessageId(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    C000_PingReference = ping.Headers.GetMessageId(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
@@ -85,7 +85,7 @@
             SendC103();
 
             Result.ActiveProcessState.EnumFlags.HasFlag(S888PingAndWaitForPong.States.SentPing).Should().BeTrue();
-            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1Ping));
+            var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
@@ -94,15 +94,15 @@
 
             void SendC103()
             {
-                var c103StartPingPong = new C103v1StartPingPong();
+                var c103StartPingPong = new C103v1_StartPingPong();
                 SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
             }
 
             void SendE150()
             {
-                var pong = new E150v1Pong
+                var pong = new E150v1_Pong
                 {
-                    PingReference = Guid.NewGuid(), PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    C000_PingReference = Guid.NewGuid(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
             }

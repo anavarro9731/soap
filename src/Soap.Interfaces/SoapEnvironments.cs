@@ -3,7 +3,7 @@
     using CircuitBoard;
     using Soap.Interfaces.Messages;
 
-    public class SoapEnvironments : Enumeration<SoapEnvironments>
+    public class SoapEnvironments : TypedEnumeration<SoapEnvironments>
     {
         public static SoapEnvironments Development = Create("DEV", nameof(Development));
 

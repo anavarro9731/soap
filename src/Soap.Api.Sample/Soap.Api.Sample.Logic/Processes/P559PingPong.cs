@@ -7,19 +7,19 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P559PingPong : Process, IBeginProcess<C100v1Ping>
+    public class P559PingPong : Process, IBeginProcess<C100v1_Ping>
     {
-        public Func<C100v1Ping, Task> BeginProcess =>
+        public Func<C100v1_Ping, Task> BeginProcess =>
             async message =>
                 {
                 
                 await Publish(
-                    new E150v1Pong
+                    new E150v1_Pong
                     {
-                        PingedAt = message.PingedAt,
-                        PingedBy = message.PingedBy,
-                        PongedAt = DateTime.UtcNow,
-                        PongedBy = nameof(P559PingPong)
+                        C000_PingedAt = message.C000_PingedAt,
+                        C000_PingedBy = message.C000_PingedBy,
+                        C000_PongedAt = DateTime.UtcNow,
+                        C000_PongedBy = nameof(P559PingPong)
                     });
                 };
     }

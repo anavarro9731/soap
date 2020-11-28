@@ -97,7 +97,7 @@
                             MetadataReference.CreateFromFile(typeof(AzureBus).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(NotificationServer).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(IBus).Assembly.Location),
-                            MetadataReference.CreateFromFile(typeof(Enumeration<>).Assembly.Location), 
+                            MetadataReference.CreateFromFile(typeof(TypedEnumeration<>).Assembly.Location), 
                             MetadataReference.CreateFromFile(typeof(ErrorMessageSensitivity).Assembly.Location), //?
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),

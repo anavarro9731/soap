@@ -15,9 +15,9 @@
     ///     ##REMOVE-IN-COPY##
     ///     This is not a normal process and uses a number of undocumented features
     /// </summary>
-    public class P555TestUnitOfWork : Process, IBeginProcess<C104v1TestUnitOfWork>
+    public class P555TestUnitOfWork : Process, IBeginProcess<C104v1_TestUnitOfWork>
     {
-        public Func<C104v1TestUnitOfWork, Task> BeginProcess =>
+        public Func<C104v1_TestUnitOfWork, Task> BeginProcess =>
             async message =>
                 {
                 if (ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId()
@@ -54,18 +54,18 @@
                 {
                     
                     await Publish(
-                        new E150v1Pong
+                        new E150v1_Pong
                         {
-                            PongedBy = nameof(P555TestUnitOfWork)
+                            C000_PongedBy = nameof(P555TestUnitOfWork)
                         });
                 }
 
                 async Task SendC100()
                 {
                     await Send(
-                        new C100v1Ping
+                        new C100v1_Ping
                         {
-                            PingedBy = nameof(P555TestUnitOfWork)
+                            C000_PingedBy = nameof(P555TestUnitOfWork)
                         });
                 }
                 };

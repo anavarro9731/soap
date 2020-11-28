@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using System.Reflection;
 
     public static class AttributeExt
     {
@@ -16,13 +17,18 @@
                        .SingleOrDefault();
         }
 
-        //from any class or struct
+        //from any class or struct 
         public static TValue GetAttribute<TAttribute, TValue>(this Type type, Func<TAttribute, TValue> valueSelector)
             where TAttribute : Attribute
         {
             var att = type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() as TAttribute;
             if (att != null) return valueSelector(att);
             return default;
+        }
+        
+        public static bool HasAttribute(this PropertyInfo prop, Type attributeType){
+            var att = prop.GetCustomAttributes(attributeType, true);
+            return(att == null || !att.Any());
         }
     }
 }

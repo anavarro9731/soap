@@ -23,15 +23,15 @@
             : base(outputHelper)
         {
 
-            void Set(C106v1LargeCommand c)
+            void Set(C106v1_LargeCommand c)
             {
                 c.Headers.SetMessageId(id);
                 c.Headers.SetBlobId(id);
             }
 
-            var c106FromBlobStorage = new C106v1LargeCommand().Op(Set).Op(c => c.Headers.SetDefaultHeadersForIncomingTestMessages(c));
+            var c106FromBlobStorage = new C106v1_LargeCommand().Op(Set).Op(c => c.Headers.SetDefaultHeadersForIncomingTestMessages(c));
             
-            var c106In = new C106v1LargeCommand().Op(
+            var c106In = new C106v1_LargeCommand().Op(
                 c =>
                     {
                     Set(c);
@@ -49,7 +49,7 @@
         public async void ItShouldNotFailToRetrieveTheValuesFromBlobStorage()
         {
             var entry = await Result.DataStore.ReadById<MessageLogEntry>(id);
-            entry.SerialisedMessage.Deserialise<C106v1LargeCommand>().C106_Large256KbString.Should().NotBeNullOrEmpty();
+            entry.SerialisedMessage.Deserialise<C106v1_LargeCommand>().C106_Large256KbString.Should().NotBeNullOrEmpty();
         }
     }
 }

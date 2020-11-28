@@ -9,7 +9,7 @@
     using Newtonsoft.Json.Serialization;
     using Soap.Interfaces.Messages;
 
-    public class SerialiserIds : Enumeration<SerialiserIds>
+    public class SerialiserIds : TypedEnumeration<SerialiserIds>
     {
         public static SerialiserIds ApiBusMessage = Create(nameof(ApiBusMessage), "Bus Messages");
 
@@ -117,7 +117,7 @@
             return awaitable.GetAwaiter().GetResult();
         }
 
-        public static bool Is(this object child, Type t) => child.GetType().InheritsOrImplements(t);
+        
 
         public static To Map<T, To>(this T obj, Func<T, To> map) => map(obj);
 
@@ -159,7 +159,8 @@
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None,
                     JsonNetSettings.MessageSchemaSerialiserSettings),
-                _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.ListToString()}")
+                _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
+
             };
             return json;
         }

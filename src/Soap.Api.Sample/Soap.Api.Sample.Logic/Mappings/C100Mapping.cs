@@ -7,16 +7,16 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C100Mapping : IMessageFunctionsClientSide<C100v1Ping>
+    public class C100Mapping : IMessageFunctionsClientSide<C100v1_Ping>
     {
-        public IContinueProcess<C100v1Ping>[] HandleWithTheseStatefulProcesses { get; }
+        public IContinueProcess<C100v1_Ping>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C100v1Ping msg) => this.Get<P559PingPong>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C100v1_Ping msg) => this.Get<P559PingPong>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C100v1Ping msg)
+        public void Validate(C100v1_Ping msg)
         {
         }
     }
