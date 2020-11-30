@@ -33,7 +33,7 @@
                               //will error on undefined and not null, in any case its clearer when you can see the fields there (e.g. having default values for FieldData for UICommands) 
             NullValueHandling =
                 NullValueHandling
-                    .Include, //* include them for debugging purposes on outgoing messages, but nulls will be changed to undefined in JS constructors as if they were never provided
+                    .Include, //* include them for debugging purposes on outgoing messages, otherwise they would be considered undefined for JS constructors and product the same result, null values are then changed to undefined in JS constructors
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameHandling =
                 TypeNameHandling

@@ -1,5 +1,5 @@
 const languages = [
-  "en",
+  "en"
 ];
 
 const languageMap = {};

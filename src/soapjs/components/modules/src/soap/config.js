@@ -77,9 +77,8 @@ let _sender = (msg) => {
                             logger.log(`Received message ${message.messageId} on bus for session: ${message.sessionId}`, anonymousEvent);
                             eventHandler.handle(anonymousEvent);
                         } catch (err) {
-                            logger.log(`>>>>> Error unpacking message ${message.messageId}, ${err}`);
+                            logger.log(`>>>>> Error unpacking message ${message.messageId}, ${err + err.stack}`);
                         }
-
                     };
                     
                     const processError = async (args) => {
@@ -139,5 +138,6 @@ export default {
     send(message) {
         if (_sender === undefined) throw 'sender not defined please set config.sender = (msg) => {};';
         _sender(message);
-    }
+    },
+    logClassDeclarations : false 
 };

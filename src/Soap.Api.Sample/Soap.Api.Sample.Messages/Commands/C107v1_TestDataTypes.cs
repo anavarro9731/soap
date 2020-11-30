@@ -6,7 +6,7 @@
     using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Interfaces.Messages;
 
-    public class C107v1_SampleDataTypes : ApiCommand
+    public class C107v1_TestDataTypes : ApiCommand
     {
         //* see JSON.NET serialisation modes for how this is handled by default on .NET side
 

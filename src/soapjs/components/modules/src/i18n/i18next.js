@@ -5,29 +5,23 @@ import languageKeys from './languages'
 const defaultNs = 'translation';
 
 (async function() {
-  await i18next.init({
-    interpolation: {
-      //* react already does escaping
-      escapeValue: false
-    },
-    lng: languageKeys.en,
-    fallbackLng: languageKeys.en
-  });
+    await i18next.init({
+        interpolation: {
+            //* react already does escaping
+            escapeValue: false
+        },
+        lng: "en",
+        fallbackLng: 'en',
+        defaultNs,
+        debug: true,
+        resources: {
+            en,
+        }
+    });
 })();
 
-i18next.addResourceBundle(languageKeys.en, defaultNs, en);
-
-export const useNewLanguage = async (language, translations) => {
-  const validLanguageAndTranslations =
-    language &&
-    translations &&
-    typeof language === 'string' &&
-    typeof translations === 'object';
-
-  if (validLanguageAndTranslations) {
-    i18next.addResourceBundle(language, defaultNs, translations);
-    await i18next.changeLanguage(language);
-  }
+export const addTranslations = (translations) => {
+    i18next.addResourceBundle('en', defaultNs, translations);
 };
 export const translate = key => i18next.t(key);
 

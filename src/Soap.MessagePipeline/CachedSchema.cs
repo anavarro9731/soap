@@ -77,7 +77,8 @@
                         /* the only way to get null properties would be if they are ignored
                         that is the logic i think we should keep, null = ignored and you can 
                         use the plaintext version to compare for a difference */
-                        jsonSchemaBuilder.AppendLine(message.ToJson(SerialiserIds.ClientSideMessageSchemaGeneraton, true) + ',');
+                        var fromMessage = message.ToJson(SerialiserIds.ClientSideMessageSchemaGeneraton, true) + ',';
+                        jsonSchemaBuilder.AppendLine(fromMessage);
                     }
 
                     var j = jsonSchemaBuilder.ToString();
@@ -171,7 +172,7 @@
 
                                 ProhibitDisallowedTypes(propertyType, errorMessagePrefix, property);
 
-                                var isRequired = property.HasAttribute(typeof(RequiredAttribute));
+                                var isRequired = property.HasAttribute(typeof(RequiredAttribute)) && !(property.Name == nameof(Enumeration.Active) && property.DeclaringType == typeof(Enumeration));
                                 
                                 PrintPropertySchema(indent, property, plainTextBuilder, out var totalIndent);
                                 
@@ -202,6 +203,7 @@
                                         _ when t == typeof(Guid?) => isRequired
                                                                          ? Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff")
                                                                          : Guid.Empty,
+                                        _ when t == typeof(object) => "optional-primitive", //* this is a very special case only the FieldMeta.InitialValue property and should always be a primitive
                                         //* or break it down till you get to a primitive
                                         _ => GetWithDefaults(t, propNamesList, totalIndent, propertyName)
                                     };
@@ -291,7 +293,7 @@
                                             _ when t == typeof(sbyte?) => false,
                                             _ when t == typeof(char) => false,
                                             _ when t == typeof(char?) => false,
-                                            _ when t == typeof(object) => property.DeclaringType == typeof(FieldMeta) ? true : false,
+                                            _ when t == typeof(object) => property.DeclaringType == typeof(FieldMeta) && property.Name == nameof(FieldMeta.InitialValue) ? true : false,
                                             _ when t.InheritsOrImplements(typeof(ITuple)) => false,
                                             _ when t.InheritsOrImplements(typeof(IDynamicMetaObjectProvider)) => false,
 

@@ -32,6 +32,7 @@ export const optionalDateFlag = "0001-01-01T00:00:00Z";
 export const optionalDecimalFlag = -79228162514264337593543950335.0;
 export const optionalLongFlag = -9223372036854775808;
 export const optionalBoolFlag = false;
+export const optionalPrimitiveFlag = "optional-primitive";
 
 export const requiredStringFlag = "string";
 export const requiredGuidFlag = "ffffffff-ffff-ffff-ffff-ffffffffffff";
@@ -166,14 +167,16 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                     in the case of guids and dates not even being handleable.
                      */
 
-                    if (propertyValue instanceof Array) {
-                        const optional = isOptional(propertyValue[0]) ? ',true' : '';
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
-                    } else {
-                        const optional = isOptional(propertyValue) ? ',true' : '';
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                    if (propertyValue != 'optional-primitive') {
+                        if (propertyValue instanceof Array) {
+                            const optional = isOptional(propertyValue[0]) ? ',true' : '';
+                            validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        } else {
+                            const optional = isOptional(propertyValue) ? ',true' : '';
+                            validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                        }
                     }
-                    setterLines += '\t'.repeat(6) + `this.${propertyName} = ${propertyName};\r\n`;
+                    setterLines += '\t'.repeat(6) + `this.${propertyName} = !!${propertyName} ? ${propertyName} : undefined;\r\n`;
 
                 }
             } else {
@@ -198,6 +201,7 @@ ${typeLine}
                 };
                 Object.defineProperty (messageTypesSingleton["${className}"], 'name', {value: "${className}"});
                 `;
+        if (config.logClassDeclarations)config.logger.log(createClass);
         eval(createClass);
 
         messageTypesSingleton[className].prototype.validate = (...args) => {  //* be very careful arrow functions must have rest param ... to capture all arguments
@@ -221,7 +225,8 @@ ${typeLine}
             optionalDateFlag,
             optionalDecimalFlag,
             optionalLongFlag,
-            optionalBoolFlag
+            optionalBoolFlag,
+            optionalPrimitiveFlag
         ];
 
         return contains(optionalValues, contestant)
@@ -247,7 +252,7 @@ ${typeLine}
         }
 
         function isObjectAndNotPrimitive(value) {
-            return typeof value === 'object' && value !== undefined;
+            return typeof value === 'object' && value !== undefined && value !== null;
         }
     }
 

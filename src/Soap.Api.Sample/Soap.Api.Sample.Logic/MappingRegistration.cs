@@ -14,6 +14,8 @@
             Register(new C105Mapping());
             Register(new C106Mapping());
             Register(new E150Mapping());
+            Register(new C107Mapping());
+            Register(new C109Mapping());
             AddSpecial();
         }
     }
