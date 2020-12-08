@@ -39,10 +39,21 @@
         public string? C107_String { get; set; }
 
         public string? C107_StringOptional { get; set; }
+        
+        [MultiLine]
+        public string? C107_StringOptionalMultiline { get; set; }
 
         public Address C107_CustomObject { get; set; }
         
-        public EnumerationAndFlags C107_PostCodes { get; set; }
+        [Required]
+        public EnumerationAndFlags C107_PostCodesSingle { get; set; }
+        
+        public EnumerationAndFlags C107_PostCodesSingleOptional { get; set; }
+        
+        [Required]
+        public EnumerationAndFlags C107_PostCodesMulti { get; set; }
+        
+        public EnumerationAndFlags C107_PostCodesMultiOptional { get; set; }
 
         public class Address
         {
@@ -54,5 +65,22 @@
 
             public string? C107_Town { get; set; }
         }
+        
+        [Required]
+        [Base64(Base64Attribute.BlobType.Image)]
+        public string? C107_Image { get; set; }
+        
+        [Base64(Base64Attribute.BlobType.Image)]
+        public string? C107_ImageOptional { get; set; }
+        
+        
+        [Required]
+        [Base64(Base64Attribute.BlobType.File)]
+        public string? C107_File { get; set; }
+        
+        [Base64(Base64Attribute.BlobType.File)]
+        public string? C107_FileOptional { get; set; }
+        
+        
     }
 }

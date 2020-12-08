@@ -83,13 +83,18 @@ When running locally you don't get messages in the trace logs.
 
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops
 - Azure SDK releases found here: https://azure.github.io/azure-sdk/releases/latest/dotnet.html
+- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. You need to invalidate caches/restart for it to properly display pickup the implicit imports
 
 ### BackLog
+MUST
 - Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
+SHOULD
 - What to do about the local and cloud fighting each other when debugging and no dev database?
+- Hide Datastore extension methods from Soap (https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm)
+COULD
 - Adding a Special Flag or Tag to Denote builds that were sent to product (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
 - Fixing DateTime fragility by abstracting all date/time functionality and/or using NodaTime rather than DateTime. (NodaTime will not pass IsSystemType checks may need to adjust those functions (there are private versions))
 - Request/Reply Queries for data between services (i.e. sending and waiting in-process as a way to query another service rather than a series of bus messages and a statefulprocess) implement using MessageSessions in Azure ServiceBus
 - Client-Side Batching using native Azure ServiceBus feature
-- Hide Datastore extension methods from Soap (https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm)
 - Add  DataStore "Document Size Limit" on write error. It will still fail with a less friendly native error from CosmosDB as-is. Also, hitting the 2MB limit should not happen really without bad design.
+- Cleanup i18next module in soapjs

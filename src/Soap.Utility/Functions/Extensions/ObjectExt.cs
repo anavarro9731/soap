@@ -48,7 +48,7 @@
                 DefaultValueHandling
                     .Include, //* you want all intended properties to be output, false and 0 would otherwise be skipped
             NullValueHandling =
-                NullValueHandling.Ignore, //* null however is considered unintended for schema purposes and should be skipped
+                NullValueHandling.Ignore, //* null is considered unintended for schema purposes and should be skipped
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameHandling = TypeNameHandling.Objects, //* important so we know how to create JS classes
             DateTimeZoneHandling = DateTimeZoneHandling.Utc,

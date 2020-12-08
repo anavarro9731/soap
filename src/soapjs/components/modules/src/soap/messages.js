@@ -176,7 +176,7 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                             validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                         }
                     }
-                    setterLines += '\t'.repeat(6) + `this.${propertyName} = !!${propertyName} ? ${propertyName} : undefined;\r\n`;
+                    setterLines += '\t'.repeat(6) + `this.${propertyName} = ${propertyName};\r\n`;
 
                 }
             } else {

@@ -10,14 +10,13 @@
 
     public abstract class UIFormDataEvent : ApiEvent
     {
-        protected UIFormDataEvent()
+        public void SetFieldMeta()
         {
             {
-                E000_CommandName = UserDefinedValues().GetType().FullName;
-                
                 var fieldData = new List<FieldMeta>();
                 BuildFieldData(UserDefinedValues().GetType(), UserDefinedValues(), string.Empty, fieldData, E000_CommandName);
-                E000_FieldData = fieldData;
+                this.E000_FieldData = fieldData;
+                this.E000_CommandName = UserDefinedValues().GetType().FullName;
             }
 
             /*
@@ -76,22 +75,25 @@
                     foreach (var validProperty in type.GetProperties().Where(t => t.Name != nameof(Headers)))
                     {
                         //* FRAGILE CachedSchema checks format, but this is still tying that check to this code in a weak way
-                        var defaultLabel = validProperty.Name.Substring(validProperty.Name.IndexOf('_'));
+                        var defaultLabel = validProperty.Name.Substring(validProperty.Name.IndexOf('_') + 1);
 
                         if (IsMessagePrimitive(validProperty))
                         {
                             var fieldMeta = new FieldMeta
                             {
-                                FieldName = GetPropertyPath(validProperty, typePath),
+                                Name = GetPropertyPath(validProperty, typePath),
                                 Required = HasAttribute(validProperty, typeof(RequiredAttribute)),
-                                FieldLabel = HasAttribute(validProperty, typeof(LabelAttribute))
+                                
+                                Caption = HasAttribute(validProperty, typeof(RequiredAttribute)) ? "required" : string.Empty,
+                                Label = HasAttribute(validProperty, typeof(LabelAttribute))
                                                  ? validProperty.GetCustomAttribute<LabelAttribute>().Label
                                                  : defaultLabel,
                                 DataType = validProperty.PropertyType switch
                                 {
                                     var t when t == typeof(DateTime?) => "datetime", // -> datepicker
                                     var t when t == typeof(Guid?) => "guid", // -> guid textbox
-                                    var t when t == typeof(string) => "string", // -> textbox or textarea
+                                    var t when t == typeof(string) && !HasAttribute(validProperty, typeof(Base64Attribute)) => HasAttribute(validProperty, typeof(MultiLineAttribute)) ? "multilinestring" : "string", // -> textbox or textarea
+                                    var t when t == typeof(string) && HasAttribute(validProperty, typeof(Base64Attribute)) => validProperty.GetCustomAttribute<Base64Attribute>().Type == Base64Attribute.BlobType.Image ? "image" : "file", // -> fileinput
                                     var t when t == typeof(long?) => "number", // -> number textbox
                                     var t when t == typeof(decimal?) => "number", // -> number textbox
                                     var t when t == typeof(bool?) => "boolean", // -> toggle

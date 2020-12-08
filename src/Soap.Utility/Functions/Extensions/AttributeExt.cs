@@ -27,8 +27,8 @@
         }
         
         public static bool HasAttribute(this PropertyInfo prop, Type attributeType){
-            var att = prop.GetCustomAttributes(attributeType, true);
-            return(att == null || !att.Any());
+            var att = prop.GetCustomAttributes(attributeType, true).FirstOrDefault();
+            return att != null;
         }
     }
 }

@@ -5,18 +5,21 @@
     "@azure/service-bus": "^7.0.0",
     "@microsoft/applicationinsights-web": "^2.5.10",
     "@soap/modules": "^1.24.0",
-    "@soap/react": "^1.11.0",
-    "prop-types": "15.7.2",
+    "baseui": "^9.106.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "sanitize.css": "^8.0.1"
+    "react-hook-form": "^6.12.2",
+    "react-image-file-resizer": "^0.3.8",
+    "styletron-engine-atomic": "^1.4.6",
+    "styletron-react": "^5.2.7"
   },
   "devDependencies": {
     "@babel/core": "^7.12.8",
-    "parcel": "^2.0.0-beta.1"
+    "parcel": "^2.0.0-nightly.464"
   },
   "scripts": {
-    "build": "npx parcel build ./index.html --public-url ./",
-    "run": "npx parcel serve ./index.html"
-  }
+    "build": "parcel build ./index.html --public-url ./",
+    "serve": "parcel serve ./index.html"
+  },
+  "peerDependencies": {}
 }

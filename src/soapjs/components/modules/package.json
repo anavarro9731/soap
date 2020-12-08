@@ -1,6 +1,6 @@
 {
   "name": "@soap/modules",
-  "version": "1.44.0",
+  "version": "1.48.0",
   "peerDependencies": {},
   "dependencies": {
     "@azure/service-bus": "^7.0.0",

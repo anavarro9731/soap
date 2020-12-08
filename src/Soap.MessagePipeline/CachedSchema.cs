@@ -144,6 +144,15 @@
                         plainTextBuilder.AppendLine(border);
                     }
 
+                    void AddToPropNamesList(PropertyInfo propertyInfo, List<string> list, string s)
+                    {
+                        if (!propertyInfo.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) //* there are multiple types
+                            && !(propertyInfo.DeclaringType == typeof(Enumeration) && !(propertyInfo.DeclaringType == typeof(FieldMeta))))
+                        {
+                            list.Add(s);
+                        }
+                    }
+
                     object GetWithDefaults(Type aType, List<string> propNamesList, int indent = 0, string parentName = null)
                     {
                         var instance = Activator.CreateInstance(aType);
@@ -164,24 +173,25 @@
                                 var propertyNameRegex = @"^[EC]\d{3}_[A-Z]+[a-zA-Z0-9]{2,50}$";
                                 Guard.Against(
                                     !Regex.IsMatch(propertyName, propertyNameRegex) && 
-                                    !(propertyType == typeof(MessageHeaders)) &&
-                                    !(property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags))) &&
-                                    !(property.DeclaringType == typeof(FieldMeta)) &&
-                                    !(property.DeclaringType == typeof(Enumeration)),
+                                    !TypeIsExceptional(),
                                     $"{errorMessagePrefix} property name does not match correct format must match regex {propertyNameRegex}");
 
                                 ProhibitDisallowedTypes(propertyType, errorMessagePrefix, property);
-
-                                var isRequired = property.HasAttribute(typeof(RequiredAttribute)) && !(property.Name == nameof(Enumeration.Active) && property.DeclaringType == typeof(Enumeration));
+                                
+                                var isRequired = property.HasAttribute(typeof(RequiredAttribute));
                                 
                                 PrintPropertySchema(indent, property, plainTextBuilder, out var totalIndent);
                                 
                                 property.SetValue(instance, GetDefault(propertyType));
 
-                                if (!property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags))
-                                    && !(property.DeclaringType == typeof(Enumeration)))
+                                AddToPropNamesList(property, propNamesList, propertyName);
+
+                                bool TypeIsExceptional()
                                 {
-                                    propNamesList.Add(propertyName);    
+                                    return propertyType == typeof(MessageHeaders) ||
+                                           property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) ||
+                                           property.DeclaringType == typeof(FieldMeta) ||
+                                           property.DeclaringType == typeof(Enumeration);
                                 }
                                 
                                 object GetDefault(Type t)
@@ -203,7 +213,8 @@
                                         _ when t == typeof(Guid?) => isRequired
                                                                          ? Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff")
                                                                          : Guid.Empty,
-                                        _ when t == typeof(object) => "optional-primitive", //* this is a very special case only the FieldMeta.InitialValue property and should always be a primitive
+                                        _ when t == typeof(bool) && TypeIsExceptional() => true, //* this is a very special case only the Enumeration.AllowMultiple property
+                                        _ when t == typeof(object) && TypeIsExceptional() => "optional-primitive", //* this is a very special case for the FieldMeta.InitialValue property, which should always be a primitive
                                         //* or break it down till you get to a primitive
                                         _ => GetWithDefaults(t, propNamesList, totalIndent, propertyName)
                                     };
@@ -303,7 +314,7 @@
                                             there are similar problems serialising outwards, see notes in UIFormEvent */
                                             _ when t == typeof(Guid) => false,
                                             _ when t == typeof(DateTime) => false,
-                                            _ when t == typeof(bool) => false,
+                                            _ when t == typeof(bool) => property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) ? true : false,
                                             _ when t == typeof(long) => false,
                                             _ when t == typeof(decimal) => false,
                                             //nullable strings allowed non-nullables are not, exception for Enumeration class

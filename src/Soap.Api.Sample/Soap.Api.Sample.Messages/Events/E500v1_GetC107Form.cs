@@ -16,11 +16,19 @@
             new Enumeration("al55ng", "AL55NG"),
             new Enumeration("ox29ju", "OX2 9JU")
         };
-        
-        protected override ApiCommand UserDefinedValues() => new C107v1_TestDataTypes()
+
+        protected override ApiCommand UserDefinedValues()
         {
-            C107_String = "test default",
-            C107_PostCodes = new EnumerationAndFlags(this.postCodes.First(), this.postCodes)
-        };
+            var c107PostCodesSingle = new EnumerationAndFlags(this.postCodes.First(), this.postCodes, allowMultipleSelections:false);
+            var c107PostCodesSingleOptional = new EnumerationAndFlags(allEnumerations:this.postCodes, allowMultipleSelections:false);
+            return new C107v1_TestDataTypes()
+            {
+                C107_String = "test default",
+                C107_PostCodesSingle = c107PostCodesSingle,
+                C107_PostCodesSingleOptional = c107PostCodesSingleOptional,
+                C107_PostCodesMulti = new EnumerationAndFlags(this.postCodes.First(), this.postCodes),
+                C107_PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations:this.postCodes)
+            };
+        }
     }
 }

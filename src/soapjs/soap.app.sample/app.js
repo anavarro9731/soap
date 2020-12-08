@@ -1,12 +1,34 @@
 import React from 'react';
-import 'sanitize.css/sanitize.css';
 import ReactDOM from 'react-dom';
-import FormControl from "./FormControl";
-
-import { translate, addTranslations } from '@soap/modules';
+import {addTranslations, config } from '@soap/modules';
 import translations from "./translations/en-soap.app.sample-default";
-import wordKeys from './translations/word-keys'
+import {Client as Styletron} from 'styletron-engine-atomic';
+import {Provider as StyletronProvider} from 'styletron-react';
+import {BaseProvider, LightTheme} from 'baseui';
+import SoapFormControl from "./FormControl";
+import {LocaleProvider} from 'baseui'
+
+const localeOverride = {
+    fileuploader: {
+        dropFilesToUpload: "Drop a file here, or ",
+        browseFiles: "Browse for a file"
+    }
+};
+
+const engine = new Styletron();
 
 addTranslations(translations);
+//* config.logClassDeclarations = true;
 
-ReactDOM.render(<FormControl formEventName="E500v1_GetC107Form"/>, document.getElementById('content'));
+function App() {
+    return (
+        <LocaleProvider locale={localeOverride}>
+        <StyletronProvider value={engine}>
+            <BaseProvider theme={LightTheme}>
+                <SoapFormControl formEventName="E500v1_GetC107Form"/>
+            </BaseProvider>
+        </StyletronProvider>
+        </LocaleProvider>);
+}
+
+ReactDOM.render(<App/>, document.getElementById('content'));
