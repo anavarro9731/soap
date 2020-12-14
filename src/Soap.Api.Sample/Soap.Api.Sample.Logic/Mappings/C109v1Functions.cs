@@ -6,7 +6,7 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C109Mapping : IMessageFunctionsClientSide<C109v1_GetForm>
+    public class C109v1Functions : IMessageFunctionsClientSide<C109v1_GetForm>
     {
         public IContinueProcess<C109v1_GetForm>[] HandleWithTheseStatefulProcesses { get; }
 
@@ -17,6 +17,7 @@
 
         public void Validate(C109v1_GetForm msg)
         {
+            msg.Validate();
         }
     }
 }

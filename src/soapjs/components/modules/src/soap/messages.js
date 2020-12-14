@@ -13,6 +13,7 @@ export function getRegisteredMessageType(typeName) {
 }
 
 export const headerKeys = {
+    sasStorageToken: "SasStorageToken",
     messageId: "MessageId",
     timeOfCreationAtOrigin: "TimeOfCreationAtOrigin",
     commandConversationId: "CommandConversationId",
@@ -148,7 +149,7 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                         if (classNameOfPropertyValue === undefined) {
                             throw "Could not register type def from anonymous object for property " + propertyName; //* console.log(propertyValue[0])
                         }
-                        //* map to typed version
+                        //* map to typed version, lists of things are not options, they will failed validation if falsey, you need to pass an empty list if there is no value, this should always be the case due to formcontrol logic for commands
                         validateLines += '\t'.repeat(7) + `[{ ${propertyName} : !!${propertyName} ? ${propertyName}.map(el => new messageTypesSingleton["${classNameOfPropertyValue}"](el)) : undefined }, [messageTypesSingleton["${classNameOfPropertyValue}"]]],\r\n`;
                         setterLines += '\t'.repeat(6) + `this.${propertyName} =  ${propertyName}.map(el => new messageTypesSingleton["${classNameOfPropertyValue}"](el));\r\n`; //* set the property to the real type avoid nulls
 
@@ -158,19 +159,19 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
                             throw "Could not register type def from anonymous object for property " + propertyName; //* console.log(propertyValue[0])
 
                         }
-
-                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} : !!${propertyName} ? new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName}) : undefined }, messageTypesSingleton["${classNameOfPropertyValue}"]],\r\n`;  //* validate the conversion
-                        setterLines += '\t'.repeat(6) + `this.${propertyName} = new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName});\r\n`; //* set the property to the real type avoid nulls
+                        //* custom objects are always optional, but should always be present due to formcontrol logic with the exception of a message primitive like base64blob
+                        validateLines += '\t'.repeat(7) + `[{ ${propertyName} : !!${propertyName} ? new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName}) : undefined }, messageTypesSingleton["${classNameOfPropertyValue}"], true],\r\n`;  //* validate the conversion
+                        setterLines += '\t'.repeat(6) + `this.${propertyName} = !!${propertyName} ? new messageTypesSingleton["${classNameOfPropertyValue}"](${propertyName}) : null;\r\n`; //* set the property to the real type avoid nulls
                     }
                 } else { 
-                    /* primitives (are always optional since they all resolve to .NET nullable types, not only does solve issues with unintended defaults values being set on deserialisaton, or
+                    /* primitives (are always optional since they all resolve to .NET nullable types, this solves issues with unintended defaults values being set on deserialisaton, or
                     in the case of guids and dates not even being handleable.
                      */
 
                     if (propertyValue != 'optional-primitive') {
                         if (propertyValue instanceof Array) {
                             const optional = isOptional(propertyValue[0]) ? ',true' : '';
-                            validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
+                            validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, [this.types.${typeof propertyValue[0]}] ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic
                         } else {
                             const optional = isOptional(propertyValue) ? ',true' : '';
                             validateLines += '\t'.repeat(7) + `[{ ${propertyName} }, this.types.${typeof propertyValue} ${optional}],\r\n`; //* cannot directly use typeof or calculation in ctor calls would be dynamic

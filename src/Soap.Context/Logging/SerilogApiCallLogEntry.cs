@@ -41,12 +41,12 @@
 
     public class FailedAttempt : SerilogApiCallLogEntry
     {
-        public FailedAttempt(FormattedExceptionInfo exceptionInfo)
+        public FailedAttempt(FormattedExceptionInfo formattedExceptionInfoInfo)
         {
             Succeeded = false;
-            ExceptionFormatteds = exceptionInfo;
+            FormattedExceptionInfo = formattedExceptionInfoInfo;
         }
 
-        public FormattedExceptionInfo ExceptionFormatteds { get; internal set; }
+        public FormattedExceptionInfo FormattedExceptionInfo { get; internal set; }
     }
 }

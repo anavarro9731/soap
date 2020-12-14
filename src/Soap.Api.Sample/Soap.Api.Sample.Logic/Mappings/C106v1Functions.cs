@@ -11,7 +11,7 @@ namespace Soap.Api.Sample.Logic.Mappings
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Operations;
 
-    public class C106Mapping : IMessageFunctionsClientSide<C106v1_LargeCommand>
+    public class C106v1Functions : IMessageFunctionsClientSide<C106v1_LargeCommand>
     {
         public IContinueProcess<C106v1_LargeCommand>[] HandleWithTheseStatefulProcesses { get; }
 
@@ -26,6 +26,7 @@ namespace Soap.Api.Sample.Logic.Mappings
 
         public void Validate(C106v1_LargeCommand msg)
         {
+            msg.Validate();
         }
     }
 }

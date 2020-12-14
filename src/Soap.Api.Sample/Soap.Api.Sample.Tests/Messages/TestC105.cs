@@ -14,11 +14,16 @@
         public TestC105(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
+            
+            
             SetupTestByProcessingAMessage(
                 new C105v1_SendLargeMessage(), 
                 Identities.UserOne,
-                setup: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>()
-                                                                                 .Return(Task.CompletedTask));
+                setup: messageAggregatorForTesting =>
+                    {
+                    messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
+                    messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>().Return(Task.CompletedTask);
+                    });
         }
 
         [Fact]
@@ -27,7 +32,7 @@
             Result.MessageBus.CommandsSent.Should().ContainSingle();
             Result.MessageBus.CommandsSent.Single().Should().BeOfType<C106v1_LargeCommand>();
             var sent = Result.MessageBus.CommandsSent.Single() as C106v1_LargeCommand;
-            sent.Headers.GetBlobId().Should().Be(sent.Headers.GetMessageId());
+            sent.Headers.GetBlobId().Should().Be(sent.Headers.GetBlobId());
             sent.C106_Large256KbString.Should().BeNull();
         }
     }

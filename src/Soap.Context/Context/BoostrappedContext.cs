@@ -16,7 +16,7 @@
 
         public readonly IAuthenticate Authenticator;
 
-        public readonly BlobStorage BlobStorage;
+        public readonly IBlobStorage BlobStorage;
 
         public readonly IBus Bus;
 

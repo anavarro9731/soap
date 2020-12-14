@@ -50,8 +50,8 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                         SpecialIds.ProcessesDataAndMessagesButFailsBeforeMarkingCompleteThenRetriesSuccessfully);
                     var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                     log.Attempts[0] //* 0 is latest attempt they are inserted
-                       .Errors.Errors[0]
-                       .message.Should()
+                       .Errors.AllErrors[0]
+                       .ExternalMessage.Should()
                        .Be(SpecialIds.ProcessesDataAndMessagesButFailsBeforeMarkingCompleteThenRetriesSuccessfully.ToString());
 
                     log.ProcessingComplete.Should().BeFalse();

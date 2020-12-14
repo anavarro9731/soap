@@ -1,9 +1,10 @@
 {
   "name": "@soap/modules",
-  "version": "1.48.0",
+  "version": "1.97.0",
   "peerDependencies": {},
   "dependencies": {
     "@azure/service-bus": "^7.0.0",
+    "@azure/storage-blob": "^12.3.0",
     "@babel/runtime": "^7.12.1",
     "@microsoft/applicationinsights-web": "^2.5.10",
     "i18next": "^17.0.7",
@@ -23,6 +24,11 @@
     "jest-cli": "^26.6.2",
     "parcel": "^2.0.0-beta.1"
   },
+  "browserslist": [
+    "last 1 Edge version",
+    "last 1 Chrome version",
+    "last 1 Firefox version"
+  ],
   "files": [
     "/lib/"
   ],

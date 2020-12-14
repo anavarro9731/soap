@@ -5,5 +5,9 @@
 
     public class E150v1_Pong : AbstractPongEvent
     {
+        public override void Validate()
+        {
+            
+        }
     }
 }

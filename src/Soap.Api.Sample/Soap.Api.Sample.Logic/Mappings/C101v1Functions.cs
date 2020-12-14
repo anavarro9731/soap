@@ -3,24 +3,25 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using FluentValidation;
+    using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C102Mapping : IMessageFunctionsClientSide<C102v1_GetServiceState>
+    public class C101v1Functions : IMessageFunctionsClientSide<C101v1_UpgradeTheDatabase>
     {
+        public IContinueProcess<C101v1_UpgradeTheDatabase>[] HandleWithTheseStatefulProcesses { get; }
 
-        public IContinueProcess<C102v1_GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
-
-        public Task Handle(C102v1_GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C101v1_UpgradeTheDatabase msg) => this.Get<P558UpgradeTheDatabase>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C102v1_GetServiceState msg)
+        public void Validate(C101v1_UpgradeTheDatabase msg)
         {
-            new C102v1_GetServiceState.Validator().ValidateAndThrow(msg);
+            msg.Validate();
+            
         }
     }
 }

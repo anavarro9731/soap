@@ -129,7 +129,7 @@ export class TestCommand_c101v1 {
                 this.c101_Object = new Enumeration();
                 this.c101_ListOfObjects = [];
                 break;
-            case "requiredIsRequiredUndefined": //* should pass
+            case "requiredIsUndefined": //* should pass
                 this.c101_Boolean = undefined;
                 this.c101_String = undefined;
                 this.c101_Long = undefined;
@@ -145,7 +145,7 @@ export class TestCommand_c101v1 {
                 this.c101_Object = undefined;
                 this.c101_ListOfObjects = undefined;
                 break;
-            case "requiredIsRequiredNull": //* should pass
+            case "requiredIsNull": //* should pass
                 this.c101_Boolean = null;
                 this.c101_String = null;
                 this.c101_Long = null;

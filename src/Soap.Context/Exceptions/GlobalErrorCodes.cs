@@ -22,6 +22,6 @@
 
         public static readonly ErrorCode UnitOfWorkFailedUnitOfWorkRolledBack = Create(
             Guid.Parse("36312a82-ca04-4b09-978f-5bb9e2809c2d"),
-            "Unit of work was rolled back successfully and cannot be processed again due to concurrency issues");
+            "Unit of work was rolled back successfully and cannot be processed again");
     }
 }

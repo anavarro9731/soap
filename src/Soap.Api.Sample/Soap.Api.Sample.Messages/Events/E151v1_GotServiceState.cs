@@ -11,5 +11,10 @@
         {
             public EnumerationFlags E151_DatabaseState { get; set; }
         }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

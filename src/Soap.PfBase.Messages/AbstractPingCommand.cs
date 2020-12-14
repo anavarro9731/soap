@@ -8,7 +8,7 @@
     {
         public DateTime? C000_PingedAt { get; set; }
 
-        public string? C000_PingedBy { get; set; }
+        public string C000_PingedBy { get; set; }
 
         public class Validator : AbstractValidator<AbstractPingCommand>
         {

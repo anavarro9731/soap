@@ -6,6 +6,7 @@
     using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using Newtonsoft.Json;
     using Soap.Interfaces;
@@ -49,9 +50,12 @@
 
         public async Task Publish<T>(T eventToPublish) where T : ApiEvent
         {
+            eventToPublish.Validate();
             eventToPublish = eventToPublish.Clone();
             eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
+            //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
+            
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
              the unit of work directly from the queuedmessage, publish is not called again. This is very important because
@@ -68,9 +72,12 @@
 
         public async Task Send<T>(T commandToSend) where T : ApiCommand
         {
+            commandToSend.Validate();
             commandToSend = commandToSend.Clone();
             commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend);
+            //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
+            
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
              the unit of work directly from the queuedmessage, publish is not called again. This is very important because
@@ -90,16 +97,19 @@
             {
                 if (MessageIsTooBigForServiceBus())
                 {
+                    SetBlobIdAndSasStorageTokenHeader();
                     await this.blobStorage.SaveApiMessageAsBlob(message);
                     ClearAllPublicPropertyValuesExceptHeaders();
-                    SetBlobIdHeader();
                 }
             }
 
-            void SetBlobIdHeader()
+            void SetBlobIdAndSasStorageTokenHeader()
             {
-                var blobId = message.Headers.GetMessageId(); //* for messages use the message id as the blob id
+                var blobId = Guid.NewGuid();
                 message.Headers.SetBlobId(blobId);
+                
+                var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(blobId, new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete));
+                message.Headers.SetSasStorageToken(sasStorageToken);
             }
 
             bool MessageIsTooBigForServiceBus() => MessageSizeInBytes() > 256000; //* servicebus max size is 256KB

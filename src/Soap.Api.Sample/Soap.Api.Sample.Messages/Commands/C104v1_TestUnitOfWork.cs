@@ -6,11 +6,16 @@ namespace Soap.Api.Sample.Messages.Commands
     
     public class C104v1_TestUnitOfWork : ApiCommand
     {
-        public string? C104_HansSoloNewName { get; set; }
+        public string C104_HansSoloNewName { get; set; }
 
 
         public class C104Validator : AbstractValidator<C104v1_TestUnitOfWork>
         {
+        }
+
+        public override void Validate()
+        {
+            
         }
     }
 }

@@ -6,6 +6,7 @@ import {Client as Styletron} from 'styletron-engine-atomic';
 import {Provider as StyletronProvider} from 'styletron-react';
 import {BaseProvider, LightTheme} from 'baseui';
 import SoapFormControl from "./FormControl";
+import DataViewControl from "./DataViewControl";
 import {LocaleProvider} from 'baseui'
 
 const localeOverride = {
@@ -14,18 +15,26 @@ const localeOverride = {
         browseFiles: "Browse for a file"
     }
 };
-
 const engine = new Styletron();
 
 addTranslations(translations);
-//* config.logClassDeclarations = true;
+//config.logClassDeclarations = true;
+//config.logFormDetail = true;
 
 function App() {
     return (
         <LocaleProvider locale={localeOverride}>
         <StyletronProvider value={engine}>
             <BaseProvider theme={LightTheme}>
-                <SoapFormControl formEventName="E500v1_GetC107Form"/>
+                <div>
+                    <DataViewControl query={{
+                        $type: 'Soap.Api.Sample.Messages.Commands.C110v1_GetTestData, Soap.Api.Sample.Messages',
+                        c110_TestDataId:"597961fb-b86a-420f-bd7e-2226081293c9",
+                        headers: []
+                    }} />
+                    <SoapFormControl formEventName="E500v1_GetC107Form"/>    
+                </div>
+                
             </BaseProvider>
         </StyletronProvider>
         </LocaleProvider>);

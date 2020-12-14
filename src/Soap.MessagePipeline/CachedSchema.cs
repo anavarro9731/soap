@@ -17,10 +17,18 @@
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
 
+    
+    /*
+     * three areas to consider when adding a new shared type
+     * 1. name excluded from convention checks
+     * 2. default values
+     * 3. prohibited types check
+     */
     public class CachedSchema
     {
+        //*FRAGILE* future changes to .NET APIs could allow for new types which might slip by or corrupt existing checks 
         private const string disallowedTypes = " The following types are not allowed in message contracts:"
-                                               + "anonymous types, string (use string?), object, [float, double, uint, ulong, ushort, short, sbyte, byte, long (use long?), int (use long?), decimal (use decimal?)], "
+                                               + "anonymous types, object, [float, double, uint, ulong, ushort, short, sbyte, byte, long (use long?), int (use long?), decimal (use decimal?)], "
                                                + "bool (use bool?), Guid (use Guid?), DateTime (use DateTime?), char, enum (use EnumerationAndFlags) all tuples, objects which implement IDynamicMetaObjectProvider";
 
         private static string _json;
@@ -132,6 +140,20 @@
                             propNamesList.HasDuplicates(),
                             $"Cannot have multiple properties with the same name in the same message. {propNamesList.GetDuplicatesOrNull()?.Aggregate((x, y) => $"{x},{y}")} Check all nested class properties.");
 
+                        //*FRAGILE* see match in config.js, these have special meaning client-side
+                        Guard.Against(propNamesList.Any(x =>
+                                {
+                                var lower = x.ToLower();
+                                return lower switch
+                                {
+                                    "$type" => true,
+                                    "types" => true,
+                                    "validate" => true,
+                                    "constructor" => true,
+                                    _ => false
+                                };
+                                }), "\"type\", \"types\", \"validate\" and \"constructor\" are reserved property names and cannot be used on message schemas regardless of casing");
+                        
                         message = (ApiMessage)messageWithDefaults;
                     }
 
@@ -146,11 +168,20 @@
 
                     void AddToPropNamesList(PropertyInfo propertyInfo, List<string> list, string s)
                     {
-                        if (!propertyInfo.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) //* there are multiple types
-                            && !(propertyInfo.DeclaringType == typeof(Enumeration) && !(propertyInfo.DeclaringType == typeof(FieldMeta))))
+                        if (!TypeIsExceptional(propertyInfo))
                         {
                             list.Add(s);
                         }
+                    }
+                    
+                    static bool TypeIsExceptional(PropertyInfo property)
+                    {
+                        return property.PropertyType == typeof(MessageHeaders) ||  
+                               property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) || //* there are multiple types
+                               property.DeclaringType == typeof(FieldMeta) ||
+                               property.DeclaringType == typeof(ObjectMeta) ||
+                               property.DeclaringType == typeof(Base64Blob) ||
+                               property.DeclaringType == typeof(Enumeration);
                     }
 
                     object GetWithDefaults(Type aType, List<string> propNamesList, int indent = 0, string parentName = null)
@@ -173,7 +204,7 @@
                                 var propertyNameRegex = @"^[EC]\d{3}_[A-Z]+[a-zA-Z0-9]{2,50}$";
                                 Guard.Against(
                                     !Regex.IsMatch(propertyName, propertyNameRegex) && 
-                                    !TypeIsExceptional(),
+                                    !TypeIsExceptional(property),
                                     $"{errorMessagePrefix} property name does not match correct format must match regex {propertyNameRegex}");
 
                                 ProhibitDisallowedTypes(propertyType, errorMessagePrefix, property);
@@ -186,13 +217,7 @@
 
                                 AddToPropNamesList(property, propNamesList, propertyName);
 
-                                bool TypeIsExceptional()
-                                {
-                                    return propertyType == typeof(MessageHeaders) ||
-                                           property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) ||
-                                           property.DeclaringType == typeof(FieldMeta) ||
-                                           property.DeclaringType == typeof(Enumeration);
-                                }
+
                                 
                                 object GetDefault(Type t)
                                 {
@@ -201,7 +226,7 @@
                                         //* handle primitives
                                         _ when t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => GetDefaultList(t),  
                                         _ when t == typeof(MessageHeaders) => new MessageHeaders() { GetWithDefaults(typeof(Enumeration), propNamesList, totalIndent, nameof(Enumeration)).As<Enumeration>() }, //don't break this down, we don't break down lists
-                                        _ when t == typeof(string) => isRequired ? "string" : string.Empty, //will actually be a string? as checked above but nullable ref types aren't real at run-time
+                                        _ when t == typeof(string) => isRequired ? "string" : string.Empty, 
                                         _ when t == typeof(bool?) => isRequired,
                                         _ when t == typeof(long?) => isRequired
                                                                          ? long.MaxValue
@@ -213,8 +238,8 @@
                                         _ when t == typeof(Guid?) => isRequired
                                                                          ? Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff")
                                                                          : Guid.Empty,
-                                        _ when t == typeof(bool) && TypeIsExceptional() => true, //* this is a very special case only the Enumeration.AllowMultiple property
-                                        _ when t == typeof(object) && TypeIsExceptional() => "optional-primitive", //* this is a very special case for the FieldMeta.InitialValue property, which should always be a primitive
+                                        _ when t == typeof(bool) && TypeIsExceptional(property) => true, //* this is a very special case only the Enumeration.AllowMultiple property should get this treatment
+                                        _ when t == typeof(object) && TypeIsExceptional(property) => "optional-primitive", //* this is a very special case for the FieldMeta.InitialValue property, which should always be a primitive
                                         //* or break it down till you get to a primitive
                                         _ => GetWithDefaults(t, propNamesList, totalIndent, propertyName)
                                     };
@@ -266,7 +291,7 @@
                                         }
 
                                         var tIsAllowedNonNestedCustomType =
-                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t == typeof(Enumeration) || t == typeof(MessageHeaders);
+                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t == typeof(Enumeration) || t == typeof(MessageHeaders) || t == typeof(Base64Blob);
 
                                         Guard.Against(
                                             !tIsAllowedNonNestedCustomType
@@ -317,9 +342,8 @@
                                             _ when t == typeof(bool) => property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) ? true : false,
                                             _ when t == typeof(long) => false,
                                             _ when t == typeof(decimal) => false,
-                                            //nullable strings allowed non-nullables are not, exception for Enumeration class
-                                            _ when t == typeof(string) => IsNullableReferenceType(property) || property.DeclaringType == typeof(Enumeration) ? true : false,
                                             /* the only allowable system types in messages */
+                                            _ when t == typeof(string) => true,
                                             _ when t == typeof(bool?) => true,
                                             _ when t == typeof(long?) => true,
                                             _ when t == typeof(decimal?) => true,
@@ -332,8 +356,9 @@
 
                                         Guard.Against(!isAllowed, errPrefix + disallowedTypes);
 
-                                        bool IsNullableReferenceType(PropertyInfo property) =>
-                                            property.ToContextualMember().Nullability == Nullability.Nullable;
+                                        //* was used to check for nullable string possibly used again in future, but right now they are causing too many problems for too little benefit, especially on message dtos
+                                        // bool IsNullableReferenceType(PropertyInfo property) =>
+                                        //     property.ToContextualMember().Nullability == Nullability.Nullable;
                                     }
                                 }
 

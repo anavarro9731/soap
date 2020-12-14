@@ -8,7 +8,7 @@ namespace Soap.Api.Sample.Logic
     {
         public override void AddSpecial()
         {
-            Register(new C104Mapping());
+            Register(new C104v1Functions());
             base.AddSpecial();
         }
     }

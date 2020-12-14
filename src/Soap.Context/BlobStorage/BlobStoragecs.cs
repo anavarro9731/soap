@@ -7,6 +7,8 @@
     using Azure;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
+    using Azure.Storage.Blobs.Specialized;
+    using Azure.Storage.Sas;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
@@ -63,27 +65,64 @@
             }
         }
 
+        public string GetStorageSasTokenForBlob(Guid blobId, EnumerationFlags permissions)
+        {
+            return this.blobStorageSettings.MessageAggregator
+                       .CollectAndForward(new Events.BlobGetSasTokenEvent(blobId.ToString()))
+                       .To(GetToken);
+
+            string GetToken(Events.BlobGetSasTokenEvent args)
+            {
+                var blobClient = this.blobStorageSettings.CreateClient(args.BlobId);
+
+                //* Check whether this BlobClient object has been authorized with Shared Key.
+                Guard.Against(
+                    !blobClient.CanGenerateSasUri,
+                    "BlobClient must be authorized with Shared Key credentials to create a service SAS.");
+
+                // Create a SAS token that's valid for one hour.
+                var sasBuilder = new BlobSasBuilder
+                {
+                    BlobContainerName = blobClient.GetParentBlobContainerClient().Name,
+                    BlobName = blobClient.Name,
+                    Resource = "b",
+                    ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+                };
+                
+                sasBuilder.SetPermissions(permissions switch
+                {
+                    _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.ReadAndDelete) => (BlobSasPermissions.Read | BlobSasPermissions.Delete),
+                    _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => (BlobSasPermissions.Create),
+                    _ => throw new ApplicationException("Must specify an accepted set of blob permissions")
+                });
+
+                var sasUri = blobClient.GenerateSasUri(sasBuilder);
+                var sasToken = sasUri.Query;
+                return sasToken;
+            }
+        }
+
         public async Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
             await this.blobStorageSettings.MessageAggregator
                       .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, message.ToBlob()))
-                      .To(Upload);            
+                      .To(Upload);
         }
 
         public async Task SaveBase64StringAsBlob(string base64, Guid id, string mimeType)
         {
             await this.blobStorageSettings.MessageAggregator
                       .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, base64.ToBlob(id, mimeType)))
-                      .To(Upload);    
+                      .To(Upload);
         }
 
-        public async Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getIdFromObject, SerialiserIds serialiserId)
+        public async Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getId, SerialiserIds serialiserId)
         {
-            var objectId = getIdFromObject(@object);
+            var objectId = getId(@object);
 
-            await this.blobStorageSettings.MessageAggregator
-                      .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId, serialiserId)))
-                      .To(Upload);    
+            await this.blobStorageSettings.MessageAggregator.CollectAndForward(
+                          new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId, serialiserId)))
+                      .To(Upload);
         }
 
         private static async Task Upload(Events.BlobUploadEvent args)
@@ -112,6 +151,16 @@
                 public string ContainerName { get; }
 
                 public Settings StorageSettings { get; }
+            }
+
+            public class BlobGetSasTokenEvent : IMessage
+            {
+                public BlobGetSasTokenEvent(string blobId)
+                {
+                    BlobId = blobId;
+                }
+
+                public string BlobId { get; set; }
             }
 
             public class BlobUploadEvent : IMessage

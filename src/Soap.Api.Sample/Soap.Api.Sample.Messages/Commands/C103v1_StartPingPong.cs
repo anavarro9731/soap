@@ -9,5 +9,10 @@
         public class C103Validator : AbstractValidator<C103v1_StartPingPong>
         {
         }
+
+        public override void Validate()
+        {
+            
+        }
     }
 }

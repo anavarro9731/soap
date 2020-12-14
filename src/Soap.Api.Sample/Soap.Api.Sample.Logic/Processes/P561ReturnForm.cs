@@ -2,10 +2,12 @@ namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore.Models.PureFunctions.Extensions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context;
+    using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Pf.MessageContractsBase;
@@ -18,12 +20,26 @@ namespace Soap.Api.Sample.Logic.Processes
                 {
                 var eventName =
                     $"{typeof(E500v1_GetC107Form).Namespace}.{message.C109_FormDataEventName}, {typeof(E500v1_GetC107Form).Assembly.GetName().Name}";
+
                 var formDataEventType = Type.GetType(eventName);
+
                 Guard.Against(formDataEventType == null, "Cannot find command of type: " + message.C109_FormDataEventName);
-                Guard.Against(!formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)), $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
-                
+                Guard.Against(
+                    !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
+                    $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
+
                 var @event = Activator.CreateInstance(formDataEventType) as ApiEvent;
-                @event.As<UIFormDataEvent>().SetFieldMeta();
+                @event.As<UIFormDataEvent>()
+                      .Op(
+                          e =>
+                              {
+                              var commandId = Guid.NewGuid();
+                              var sasToken = ContextWithMessageLogEntry.Current.BlobStorage.GetStorageSasTokenForBlob(
+                                  commandId,
+                                  new EnumerationFlags(IBlobStorage.BlobSasPermissions.CreateNew));
+                              e.SetProperties(sasToken, commandId);
+                              });
+
                 await Publish(@event);
                 };
     }

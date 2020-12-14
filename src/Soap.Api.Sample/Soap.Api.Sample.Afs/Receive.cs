@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.ExceptionServices;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
@@ -30,17 +31,20 @@
                 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
                 
-                await AzureFunctionContext.Execute<User>(
+                var result = await AzureFunctionContext.Execute<User>(
                     messageAsJson:Encoding.UTF8.GetString(myQueueItem.Body),
                     new MappingRegistration(),
                     messageIdAsString:messageId,
                     messageTypeShortAssemblyQualifiedName:myQueueItem.Label,
                     logger:logger,
                     appConfig);
+
+                if (result.Success == false) 
+                    ExceptionDispatchInfo.Capture(result.UnhandledError).Throw();
             }
             catch (Exception e)
             {
-                logger?.Fatal(e, "Could not execute function");
+                logger?.Fatal(e, "Could not execute function.");
                 log.LogCritical(e.ToString());
             }
             

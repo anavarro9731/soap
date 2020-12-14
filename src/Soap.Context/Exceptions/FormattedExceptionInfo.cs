@@ -6,66 +6,94 @@
     using FluentValidation;
     using Soap.Context.Context;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Models;
 
     public class FormattedExceptionInfo
     {
-        private readonly ContextWithMessageLogEntry context;
-
         public FormattedExceptionInfo(Exception exception, ContextWithMessageLogEntry context)
         {
-            this.context = context;
             if (exception is ValidationException validationException)
             {
                 foreach (var validationExceptionError in validationException.Errors)
+                {
                     if (Guid.TryParse(validationExceptionError.ErrorCode, out var errorCodeGuid))
                     {
-                        Errors.Add((CodePrefixes.SYNTAX, errorCodeGuid, validationExceptionError.ErrorMessage));
+                        AllErrors.Add(
+                            (CodePrefixes.INVALID, errorCodeGuid, validationExceptionError.ErrorMessage,
+                                validationExceptionError.ErrorMessage));
                     }
                     else
                     {
-                        Errors.Add((CodePrefixes.SYNTAX, null, validationExceptionError.ErrorMessage));
+                        AllErrors.Add(
+                            (CodePrefixes.INVALID, null, validationExceptionError.ErrorMessage,
+                                validationExceptionError.ErrorMessage));
                     }
+                }
             }
-            else if (exception is DomainException)
+            else if (exception is DomainException || exception is ApplicationException)
             {
+                //* we may have a message crafted as safe for external clients otherwise use default
                 var externalErrorMessage = exception.Message == "#default-message#"
                                                ? context.AppConfig.DefaultExceptionMessage
                                                : exception.Message;
 
-                Errors.Add((CodePrefixes.DOMAIN, null, externalErrorMessage));
+                //*FRAGILE* based on .NET exception syntax
+                var internalErrorMessage = exception.InnerException?.ToString().SubstringBefore("--- ");
 
-                SensitiveInformation = exception.InnerException?.ToString().SubstringBefore("--- ");
+                var prefix = exception switch
+                {
+                    ApplicationException _ => CodePrefixes.RAW,
+                    DomainException _ => CodePrefixes.GUARD,
+                    _ => string.Empty
+                };
+
+                AllErrors.Add((prefix, null, externalErrorMessage, internalErrorMessage));
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
+                var internalErrorMessage =
+                    $"{domainExceptionWithErrorCode.Error.Key} [{domainExceptionWithErrorCode.Error.Value}]"
+                    + domainExceptionWithErrorCode.StackTrace;
+
                 if (GlobalErrorCodes.GetAllInstances().Contains(domainExceptionWithErrorCode.Error))
                 {
-                    Errors.Add(
-                        (CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
-                            domainExceptionWithErrorCode.Error.Value));
+                    AllErrors.Add(
+                        (CodePrefixes.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
+                            context.AppConfig
+                                   .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
+                            internalErrorMessage));
                 }
-                else 
+                else
                 {
-                    Errors.Add((CodePrefixes.DOMAIN, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error?.Key), context.AppConfig.DefaultExceptionMessage));
-                    SensitiveInformation = domainExceptionWithErrorCode.Error + Environment.NewLine + domainExceptionWithErrorCode
-                                               .ToString()
-                                               .SubstringBefore("--- ");;
+                    AllErrors.Add(
+                        (CodePrefixes.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error?.Key),
+                            context.AppConfig
+                                   .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
+                            internalErrorMessage));
+
+                    ;
                 }
             }
             else if (exception is ExceptionHandlingException)
             {
-                Errors.Add((CodePrefixes.EXWHEX, null, context.AppConfig.DefaultExceptionMessage));
-                SensitiveInformation = exception.ToString();
+                AllErrors.Add((CodePrefixes.EXWHEX, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
             }
             else
             {
-                Errors.Add((CodePrefixes.CLR, null, context.AppConfig.DefaultExceptionMessage));
-                SensitiveInformation = exception.ToString();
+                AllErrors.Add((CodePrefixes.CLR, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
             }
 
-            ExternalErrorMessage = Errors.Select(x => $"{x.prefix}:{x.code}:{x.message}")
-                                         .Aggregate((a, b) => a + Environment.NewLine + b);
+            var count = 0;
+            SummaryOfExternalErrorMessages = AllErrors
+                                             .Select(
+                                                 x =>
+                                                     $"Type:{x.Prefix}---Code:{(x.Code.HasValue ? x.Code.ToString() : "N/A")}---ErrorMessage:{x.ExternalMessage}")
+                                             .Aggregate(
+                                                 (aggregated, next) =>
+                                                     {
+                                                     var currentCount = ++count;
+                                                     return aggregated + Environment.NewLine
+                                                                       + $"Error {currentCount} of {AllErrors.Count}" + next;
+                                                     });
 
             ApplicationName = context.AppConfig.AppId;
             EnvironmentName = context.AppConfig.Environment.Value;
@@ -76,56 +104,45 @@
             //* serialiser
         }
 
+        public List<(string Prefix, Guid? Code, string ExternalMessage, string InternalMessage)> AllErrors { get; set; } =
+            new List<(string Prefix, Guid? Code, string ExternalMessage, string InternalMessage)>();
+
         public string ApplicationName { get; set; }
 
         public string EnvironmentName { get; set; }
 
-        public List<(string prefix, Guid? code, string message)> Errors { get; set; } =
-            new List<(string prefix, Guid? code, string message)>();
+        public string SummaryOfExternalErrorMessages { get; set; }
 
-        public string ExternalErrorMessage { get; set; }
-
-        public Guid MessageId { get; set; }
-
-        public string MessageSchema { get; set; }
-
-        public string SensitiveInformation { get; set; }
-
-        public Exception ToEnvironmentSpecificError()
+        /* think this is really only used in terms of testing against specific error codes.
+         Either in testing, or by frontend clients for very exceptional circumstances.
+         Ideally a generic error toaster is fine on the front-end. */
+        public Exception ExceptionThrownToContext()
         {
-            if (this.context.AppConfig.ReturnExplicitErrorMessages)
-            {
-                return new PipelineException(
-                    ExternalErrorMessage +  Environment.NewLine + Environment.NewLine + 
-                    "ERROR DETAILS BELOW" + Environment.NewLine + Environment.NewLine + SensitiveInformation,
-                    Errors.Where(e => e.code.HasValue).Select(e => e.code.Value.ToString()).ToList());
-            }
-
-            return new Exception(ExternalErrorMessage);
+            return new PipelineException(SummaryOfExternalErrorMessages).Op(
+                e => e.KnownErrorCodes = AllErrors.Where(e => e.Code.HasValue).Select(e => e.Code.Value).ToList());
         }
 
         public class CodePrefixes
         {
             public const string CLR = nameof(CLR);
 
-            public const string DOMAIN = nameof(DOMAIN);
-
             public const string EXWHEX = nameof(EXWHEX);
+
+            public const string GUARD = nameof(GUARD);
 
             public const string INVALID = nameof(INVALID);
 
-            public const string SYNTAX = nameof(SYNTAX);
+            public const string RAW = nameof(RAW);
         }
-    }
 
-    public class PipelineException : Exception
-    {
-        public PipelineException(string message, List<string> errors)
-            : base(message)
+        public class PipelineException : Exception
         {
-            Errors = errors;
-        }
+            public PipelineException(string message)
+                : base(message)
+            {
+            }
 
-        public List<string> Errors { get; set; }
+            public List<Guid> KnownErrorCodes { get; set; }
+        }
     }
 }

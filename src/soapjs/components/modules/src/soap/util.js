@@ -29,6 +29,7 @@ export function getHeader(command, headerKey) {
     return header.value;
 }
 
+
 export function setHeader(command, headerKey, value) {
     _.remove(command.headers, h => h.key == headerKey);
     command.headers.push(makeHeader(headerKey, value));

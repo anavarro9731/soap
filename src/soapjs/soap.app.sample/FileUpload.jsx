@@ -3,6 +3,7 @@ import { FileUploader } from "baseui/file-uploader";
 import { ListItem, ListItemLabel } from "baseui/list";
 import { Button } from "baseui/button";
 import Delete from "baseui/icon/delete";
+import Download from "baseui/icon/arrow-down"
 import Resizer from "react-image-file-resizer";
 import { StyledLink } from "baseui/link";
 import { Modal, ModalHeader, ModalBody, SIZE, ROLE } from "baseui/modal";
@@ -24,14 +25,30 @@ const resizeTo = (blob, { maxHeight, maxWidth }) =>
         );
     });
 
-export default (props) => {
-    const { value, onChange, onBlur, error } = props;
-    const dimensions = props.dimensions ?? { maxWidth: 1024, maxHeight: 768 };
+function blobToDataURL(blob){
+    return new Promise((resolve, reject) => {
+        var fr = new FileReader();
+        fr.onload = () => {
+            resolve(fr.result )
+        };
+        fr.readAsDataURL(blob);
+    });
+}
 
+export default (props) => {
+    
+    const { value, onChange, onBlur, error, acceptedTypes } = props;
+    const dimensions = props.dimensions ?? { maxWidth: 1024, maxHeight: 768 };
     const [isUploading, setIsUploading] = React.useState(false);
+    const [isLoaded, setIsLoaded] = React.useState(false);
     const [isOpen, setIsOpen] = React.useState(false);
     const [css] = useStyletron();
 
+    if (!isLoaded) {
+        onChange(value);
+        setIsLoaded(true);
+    }
+    
     async function handleFile(file) {
         const fileInfo = await new Promise((resolve) => {
             const reader = new FileReader();
@@ -43,7 +60,6 @@ export default (props) => {
                     type: file.type,
                     size: Math.round(file.size / 1000) + " kB",
                     blob: new Blob([reader.result]),
-                    file: file
                 };
 
                 resolve(fileInfo);
@@ -62,26 +78,35 @@ export default (props) => {
                     maxWidth: dimensions.maxWidth,
                     maxHeight: dimensions.maxHeight
                 });
-                var img = new Image();
+                const img = new Image();
                 img.src = fileInfo.fullSize;
                 await new Promise((resolve) => {
                     img.onload = resolve;
                 });
 
-                fileInfo.fullSizeDimensions = {
-                    width: img.width,
-                    height: img.height
-                };
+                fileInfo.fullSizeHeight = img.height;
+                fileInfo.fullSizeWidth = img.width;
+                fileInfo.blob = null;
                 break;
+                
             default:
+                fileInfo.blob = await blobToDataURL(fileInfo.blob);
+                break;
         }
         return fileInfo;
     }
 
     function renderUploadedItem(item) {
         if (isUploading) return;
-        let thumb, fullSize;
+        let thumb, fullSize, fileLink;
+        
         if (item) {
+            fileLink = item.blob ? <StyledLink
+                href={item.blob}
+                download={item.name}
+            >
+                <Download size={20} />
+            </StyledLink> : null; 
             thumb = item.thumb ? <img src={item.thumb} alt={item.name} /> : null;
             fullSize = item.fullSize ? (
                 <span>
@@ -91,7 +116,7 @@ export default (props) => {
                   cursor: "pointer"
               })}
           >
-            {item.fullSizeDimensions.width}x{item.fullSizeDimensions.height}
+            {item.fullSizeWidth}x{item.fullSizeHeight}
           </StyledLink>
           <Modal
               onClose={() => setIsOpen(false)}
@@ -109,7 +134,7 @@ export default (props) => {
         </span>
             ) : null;
         }
-
+        
         if (item) {
             return (
                 <ListItem
@@ -122,9 +147,7 @@ export default (props) => {
                             size="compact"
                             kind="secondary"
                             onClick={() => {
-                                if (typeof onChange === "function") {
-                                    onChange(undefined);
-                                }
+                                    onChange(null);
                             }}
                         >
                             <Delete />
@@ -135,6 +158,7 @@ export default (props) => {
                     <ListItemLabel>
                         {item.name}&nbsp;
                         {fullSize}
+                        {fileLink}
                     </ListItemLabel>
                 </ListItem>
             );
@@ -148,20 +172,18 @@ export default (props) => {
     return (
         <div>
             <FileUploader
+                accept = {props.acceptedTypes}
                 onBlur={onBlur}
                 multiple={false}
                 progressMessage={isUploading ? `Processing... hang tight.` : ""}
                 onDrop={async (acceptedFiles, rejectedFiles) => {
-                    var start = Date.now();
+                    const start = Date.now();
                     setIsUploading(true);
-                    var fileInfo = await handleFile(acceptedFiles[0]);
-                    var delta = Date.now() - start; // milliseconds elapsed since start
+                    const fileInfo = await handleFile(acceptedFiles[0]);
+                    const delta = Date.now() - start; // milliseconds elapsed since start
                     await sleep(Math.max(1000 - delta, 0));
                     setIsUploading(false);
-                    if (typeof onChange === "function") {
-                        console.log(fileInfo);
-                        onChange(fileInfo);
-                    }
+                    onChange(fileInfo);
                 }}
                 overrides={{
                     FileDragAndDrop: {

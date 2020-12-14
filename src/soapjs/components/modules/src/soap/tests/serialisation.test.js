@@ -29,24 +29,25 @@ test('test deserialisation of data type optional values', () => {
 
 test('test deserialisation of data type required values', () => {
 
+    
     try {
         registerMessageTypes(messageDefinitions);
-        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsRequiredUndefined")));
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsUndefined")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
         throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(8); //* 1/2 should pass
+        expect(errorCount).toBe(7); //* all non-optional except for object should fail, object is always allowed to be null
     }
 
     try {
         registerMessageTypes(messageDefinitions);
-        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsRequiredNull")));
+        const anonymousCommand = JSON.parse(JSON.stringify(new TestCommand_c101v1("requiredIsNull")));
         createRegisteredTypedMessageInstanceFromAnonymousObject(anonymousCommand);
         throw "should have thrown";
     } catch(err) {
         const errorCount = (err.match(/\^/g)||[]).length;
-        expect(errorCount).toBe(8); //* 1/2 should pass
+        expect(errorCount).toBe(7); //* all non-optional except for object should fail, object is always allowed to be null
     }
 
 });

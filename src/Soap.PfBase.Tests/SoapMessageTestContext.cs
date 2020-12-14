@@ -232,7 +232,7 @@
             
             static void CreateBlobStorage(IMessageAggregator messageAggregator, out BlobStorage blobStorage)
             {
-                blobStorage = new BlobStorage(new BlobStorage.Settings(null,messageAggregator));
+                blobStorage = new BlobStorage(new BlobStorage.Settings("fake-conn-string",messageAggregator));
             }
         }
 

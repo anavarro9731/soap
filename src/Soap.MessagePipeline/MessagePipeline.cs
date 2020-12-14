@@ -19,7 +19,6 @@
         public static async Task Execute(ApiMessage message, BoostrappedContext bootstrappedContext)
         {
             {
-
                 await FillMessageFromStorageIfApplicable();
                 
                 ContextWithMessageLogEntry matureContext = null;
@@ -124,17 +123,18 @@
 
             async Task HandleFailure(ContextWithMessageLogEntry context, Exception exception)
             {
-                Exception finalException;
+                Exception exceptionThrownBackToFunctionRuntime;
 
                 try //- log the message failure
                 {
                     var exceptionMessages = new FormattedExceptionInfo(exception, context);
 
-                    finalException = exceptionMessages.ToEnvironmentSpecificError();
+                    exceptionThrownBackToFunctionRuntime = exceptionMessages.ExceptionThrownToContext();
 
                     await context.MarkFailureInMessageLog(exceptionMessages);
 
                     context.SerilogFailure(exceptionMessages);
+                    
                 }
                 catch (Exception exceptionHandlingException)
                 {
@@ -145,7 +145,7 @@
 
                         var exceptionMessages = new FormattedExceptionInfo(originalExceptionPlusHandlingException, context);
 
-                        finalException = exceptionMessages.ToEnvironmentSpecificError();
+                        exceptionThrownBackToFunctionRuntime = exceptionMessages.ExceptionThrownToContext();
 
                         context.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
                     }
@@ -153,7 +153,7 @@
                     {
                         /* avoid use of PipelineExceptionMessages here as it theoretically could be the source of the error
                         * this goes raw to the caller so show don't show any exception details
-                        * Serilog should swallow it's own internal errors so logging should be safe here
+                        * Serilog should swallow it's own internal errors so logging attempts that way should be safe here
                         */
 
                         context.Logger.Fatal(
@@ -164,13 +164,13 @@
                             lastChanceException);
 
                         var lastChanceExceptionMessageForCaller =
-                            $"{FormattedExceptionInfo.CodePrefixes.EXWHEX}: {context.AppConfig.DefaultExceptionMessage}";
+                            $"Type:{FormattedExceptionInfo.CodePrefixes.EXWHEX}---Code:000---Could not log error to db message log or seq using standard code.";
 
-                        finalException = new Exception(lastChanceExceptionMessageForCaller);
+                        exceptionThrownBackToFunctionRuntime = new Exception(lastChanceExceptionMessageForCaller);
                     }
                 }
 
-                throw finalException;
+                throw exceptionThrownBackToFunctionRuntime;
             }
         }
     }

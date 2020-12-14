@@ -3,10 +3,11 @@
     using System;
     using System.Collections.Generic;
     using CircuitBoard;
+    using FluentValidation;
     using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Interfaces.Messages;
 
-    public class C107v1_TestDataTypes : ApiCommand
+    public class C107v1_CreateOrUpdateTestDataTypes : ApiCommand
     {
         //* see JSON.NET serialisation modes for how this is handled by default on .NET side
 
@@ -36,12 +37,12 @@
         public long? C107_LongOptional { get; set; }
 
         [Required]
-        public string? C107_String { get; set; }
+        public string C107_String { get; set; }
 
-        public string? C107_StringOptional { get; set; }
+        public string C107_StringOptional { get; set; }
         
         [MultiLine]
-        public string? C107_StringOptionalMultiline { get; set; }
+        public string C107_StringOptionalMultiline { get; set; }
 
         public Address C107_CustomObject { get; set; }
         
@@ -58,29 +59,41 @@
         public class Address
         {
             [Label("House Name")]
-            public string? C107_House { get; set; }
+            public string C107_House { get; set; }
 
             [Label("Post Code")]
-            public string? C107_PostCode { get; set; }
+            public string C107_PostCode { get; set; }
 
-            public string? C107_Town { get; set; }
+            [Required]
+            public string C107_Town { get; set; }
         }
         
         [Required]
-        [Base64(Base64Attribute.BlobType.Image)]
-        public string? C107_Image { get; set; }
+        [IsImage]
+        public Base64Blob C107_Image { get; set; }
         
-        [Base64(Base64Attribute.BlobType.Image)]
-        public string? C107_ImageOptional { get; set; }
+        [IsImage]
+        public Base64Blob C107_ImageOptional { get; set; }
         
         
         [Required]
-        [Base64(Base64Attribute.BlobType.File)]
-        public string? C107_File { get; set; }
+        public Base64Blob C107_File { get; set; }
         
-        [Base64(Base64Attribute.BlobType.File)]
-        public string? C107_FileOptional { get; set; }
+        public Base64Blob C107_FileOptional { get; set; }
         
-        
+        public class Validator : AbstractValidator<C107v1_CreateOrUpdateTestDataTypes>
+        {
+            public Validator()
+            {
+                RuleFor(x => x.C107_Guid).NotEmpty();
+            }
+        }
+
+        public override void Validate()
+        {
+            
+        }
     }
+    
+    
 }

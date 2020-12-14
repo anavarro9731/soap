@@ -8,13 +8,13 @@
     {
         public DateTime? C000_PingedAt { get; set; }
 
-        public string? C000_PingedBy { get; set; }
+        public string C000_PingedBy { get; set; }
 
         public Guid? C000_PingReference { get; set; }
 
         public DateTime? C000_PongedAt { get; set; }
 
-        public string? C000_PongedBy { get; set; }
+        public string C000_PongedBy { get; set; }
 
         public class Validator : AbstractValidator<AbstractPongEvent>
         {

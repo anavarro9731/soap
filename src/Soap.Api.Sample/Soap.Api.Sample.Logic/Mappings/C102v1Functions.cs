@@ -8,16 +8,19 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class C103Mapping : IMessageFunctionsClientSide<C103v1_StartPingPong>
+    public class C102v1Functions : IMessageFunctionsClientSide<C102v1_GetServiceState>
     {
 
-        public IContinueProcess<C103v1_StartPingPong>[] HandleWithTheseStatefulProcesses { get; }
+        public IContinueProcess<C102v1_GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C103v1_StartPingPong msg) => this.Get<S888PingAndWaitForPong>().Call(s => s.BeginProcess)(msg);
+        public Task Handle(C102v1_GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
-        public void Validate(C103v1_StartPingPong msg) => new C103v1_StartPingPong.C103Validator().ValidateAndThrow(msg);
+        public void Validate(C102v1_GetServiceState msg)
+        {
+            msg.Validate();
+        }
     }
 }
