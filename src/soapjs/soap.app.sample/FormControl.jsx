@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {config, translate, useCommand, useQuery} from '@soap/modules';
+import {config, translate, useCommand, useQuery, headerKeys} from '@soap/modules';
 import {Button, KIND} from 'baseui/button';
 import {Input} from 'baseui/input'
 import FileUpload from './FileUpload';
@@ -19,11 +19,13 @@ function SoapFormControl(props) {
 
     const [query, setQuery] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const {handleSubmit, control, errors} = useForm();
-
+    const {formEventName, afterSubmit } = props;
+    
     const c109v1_GetForm = {
         $type: 'Soap.Api.Sample.Messages.Commands.C109v1_GetForm, Soap.Api.Sample.Messages',
-        c109_FormDataEventName: props.formEventName,
+        c109_FormDataEventName: formEventName,
         headers: []
     };
 
@@ -45,8 +47,11 @@ function SoapFormControl(props) {
             if (config.logFormDetail) config.logger.log("MessageFromCleansedFormValues", JSON.stringify(formValues, null, 2));
             
             useCommand(command);
+            console.log("b", afterSubmit);
+            if (!!afterSubmit) afterSubmit(command);
 
         } finally {
+            setIsSubmitted(true);
             setIsSubmitting(false);
         }
 
@@ -98,7 +103,7 @@ function SoapFormControl(props) {
     }
 
     function onError(errors) {
-        console.log(JSON.stringify(errors, null, 2));
+        config.logger.log(JSON.stringify(errors, null, 2));
     }
 
     function renderField(fieldMeta) {
@@ -168,6 +173,7 @@ function SoapFormControl(props) {
                             return (
                                 <FormControl
                                     label={fieldMeta.label} caption={fieldMeta.caption}
+                                    disabled={isSubmitted}
                                 >
                                     <Checkbox
                                         name={name}
@@ -191,6 +197,7 @@ function SoapFormControl(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
                                 <FormControl
+                                    disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <Input
@@ -214,6 +221,7 @@ function SoapFormControl(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
                                 <FormControl
+                                    disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <Textarea
@@ -237,6 +245,7 @@ function SoapFormControl(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
                                 <FormControl
+                                    disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <Input
@@ -261,6 +270,7 @@ function SoapFormControl(props) {
                         render={({onChange, value, name}) => {
                             return (
                                 <FormControl
+                                    disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <DatePicker
@@ -290,6 +300,7 @@ function SoapFormControl(props) {
                         render={({onChange, onBlur, value, name}) => {
                             return (
                                 <FormControl
+                                    disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <Select
@@ -324,6 +335,7 @@ function SoapFormControl(props) {
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <FileUpload
+                                        disabled={isSubmitted}
                                         error={Object.keys(errors).includes(name) ? "required" : undefined}
                                         value={value}
                                         onBlur={onBlur}
@@ -349,6 +361,7 @@ function SoapFormControl(props) {
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <FileUpload
+                                        disabled={isSubmitted}
                                         acceptedTypes=".jpg,.jpeg,.jfif,.png"
                                         onBlur={onBlur}
                                         //dimensions={{maxWidth:640,maxHeight:480}}

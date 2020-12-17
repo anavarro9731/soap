@@ -35,11 +35,11 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         {
             var c100wrapped = log.UnitOfWork.BusCommandMessages.Single();
             var c100 = c100wrapped.Deserialise<C100v1_Ping>();
-            c100.C000_PingedBy.Should().Be(nameof(P555TestUnitOfWork));
+            c100.C000_PingedBy.Should().Be(nameof(P201TestUnitOfWork));
 
             var e150wrapped = log.UnitOfWork.BusEventMessages.Single();
-            var e150 = e150wrapped.Deserialise<E150v1_Pong>();
-            e150.C000_PongedBy.Should().Be(nameof(P555TestUnitOfWork));
+            var e150 = e150wrapped.Deserialise<E100v1_Pong>();
+            e150.C000_PongedBy.Should().Be(nameof(P201TestUnitOfWork));
         }
         
         protected async Task RecordsShouldBeReturnToOriginalState(DataStore store)

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Soap.Api.Sample.Logic\Soap.Api.Sample.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Models\Soap.Api.Sample.Models.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="soap.jpg" />
+    <None Remove="soap.zip" />
+  </ItemGroup>
 </Project>

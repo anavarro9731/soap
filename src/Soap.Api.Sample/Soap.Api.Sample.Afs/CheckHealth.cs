@@ -34,14 +34,14 @@
                 var result = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = GetContent<C100v1_Ping, E150v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, User>(new MappingRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
+                    Content = GetContent<C100v1_Ping, E100v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, User>(new HandlerRegistration(), logger, $"{req.Scheme}://{req.Host.ToUriComponent()}")
                 };
 
                 return result;
             }
             catch (Exception e)
             {
-                logger?.Fatal(e, "Could not execute function");
+                logger?.Fatal(e, $"Could not execute function {nameof(CheckHealth)}");
                 log.LogCritical(e.ToString());
 
                 var result = new HttpResponseMessage

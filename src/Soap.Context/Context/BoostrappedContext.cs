@@ -60,6 +60,7 @@
             this.MessageAggregator = c.MessageAggregator;
             this.Logger = c.Logger;
             this.Bus = c.Bus;
+            this.NotificationServer = c.NotificationServer;
             this.MessageMapper = c.MessageMapper;
             this.BlobStorage = c.BlobStorage;
         }

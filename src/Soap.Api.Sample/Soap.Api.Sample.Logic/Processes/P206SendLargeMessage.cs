@@ -6,7 +6,7 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P560SendLargeMessage : Process, IBeginProcess<C105v1_SendLargeMessage>
+    public class P206SendLargeMessage : Process, IBeginProcess<C105v1_SendLargeMessage>
     {
         public Func<C105v1_SendLargeMessage, Task> BeginProcess
         {

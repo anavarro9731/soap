@@ -14,7 +14,7 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Operations;
 
-    public class P558UpgradeTheDatabase : Process, IBeginProcess<C101v1_UpgradeTheDatabase>
+    public class P204UpgradeTheDatabase : Process, IBeginProcess<C101v1_UpgradeTheDatabase>
     {
         public Func<C101v1_UpgradeTheDatabase, Task> BeginProcess =>
             async message =>

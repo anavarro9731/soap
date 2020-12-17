@@ -31,7 +31,7 @@
             }
             catch (Exception e)
             {
-                logger?.Fatal(e, "Could not execute function");
+                logger?.Fatal(e, $"Could not execute function {nameof(PrintSchema)}");
                 log.LogCritical(e.ToString());
                 return new OkObjectResult(e.ToString());
             }

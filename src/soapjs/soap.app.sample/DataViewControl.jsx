@@ -3,9 +3,11 @@ import {useQuery} from '@soap/modules';
 
 export default function DataViewControl(props) {
     
-    let dataViewEvent = useQuery(props.query);
+    const { query } = props.query;
     
-    if (!dataViewEvent) {
+    let dataViewEvent = useQuery(query);
+    
+    if (dataViewEvent) {
         return (<pre>{JSON.stringify(dataViewEvent, undefined, 2)}</pre>);
-    }
+    } else return null;
 }

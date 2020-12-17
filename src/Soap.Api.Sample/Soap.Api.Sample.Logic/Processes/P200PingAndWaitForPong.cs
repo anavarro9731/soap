@@ -7,9 +7,8 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
-    using Soap.Utility.Functions.Extensions;
 
-    public class S888PingAndWaitForPong : StatefulProcess, IBeginProcess<C103v1_StartPingPong>, IContinueProcess<E150v1_Pong>
+    public class S301PingAndWaitForPong : StatefulProcess, IBeginProcess<C103v1_StartPingPong>, IContinueProcess<E100v1_Pong>
     {
         public enum States
         {
@@ -27,7 +26,7 @@
                 {
                 var pingCommand = new C100v1_Ping
                 {
-                    C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(S888PingAndWaitForPong)
+                    C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(S301PingAndWaitForPong)
                 };
                 pingCommand.Headers.SetMessageId(Guid.NewGuid());
 
@@ -37,7 +36,7 @@
                 References.PingId = pingCommand.Headers.GetMessageId();
                 };
 
-        public Func<E150v1_Pong, Task> ContinueProcess =>
+        public Func<E100v1_Pong, Task> ContinueProcess =>
             async message =>
                 {
                 if (message.C000_PingReference.ToString() != References.PingId)

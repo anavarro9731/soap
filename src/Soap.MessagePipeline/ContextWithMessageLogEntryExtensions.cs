@@ -319,7 +319,7 @@
             }
         }
 
-        internal static async Task MarkFailureInMessageLog(
+        internal static async Task TakeFailureActions(
             this ContextWithMessageLogEntry context,
             FormattedExceptionInfo exceptionInfo)
         {

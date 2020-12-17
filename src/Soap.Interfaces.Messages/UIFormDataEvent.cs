@@ -61,16 +61,16 @@
 
         
         
-        public void SetProperties(string sasTokenForCommand, Guid idOfCommand)
+        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, dynamic bag = null)
         {
             {
-                E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues().GetType());
+                E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues(bag).GetType());
                 
                 var fieldData = new List<FieldMeta>();
 
                 BuildFieldAndObjectStructureData(
-                    UserDefinedValues().GetType(),
-                    UserDefinedValues(),
+                    UserDefinedValues(bag).GetType(),
+                    UserDefinedValues(bag),
                     string.Empty,
                     fieldData,
                     E000_CommandName);
@@ -215,6 +215,6 @@
             }
         }
 
-        protected abstract ApiCommand UserDefinedValues();
+        protected abstract ApiCommand UserDefinedValues(dynamic bag);
     }
 }

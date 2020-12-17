@@ -8,7 +8,7 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
 
-    public class P557NotifyOfFinalFailure : Process, IBeginProcess<MessageFailedAllRetries>
+    public class P203NotifyOfFinalFailure : Process, IBeginProcess<MessageFailedAllRetries>
     {
         public Func<MessageFailedAllRetries, Task> BeginProcess =>
             async message =>

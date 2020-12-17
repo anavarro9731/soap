@@ -13,10 +13,10 @@
     {
         public IContinueProcess<C101v1_UpgradeTheDatabase>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C101v1_UpgradeTheDatabase msg) => this.Get<P558UpgradeTheDatabase>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C101v1_UpgradeTheDatabase msg) => this.Get<P204UpgradeTheDatabase>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C101v1_UpgradeTheDatabase msg)
         {

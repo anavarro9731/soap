@@ -1,33 +1,29 @@
 import * as React from "react";
-import { FileUploader } from "baseui/file-uploader";
-import { ListItem, ListItemLabel } from "baseui/list";
-import { Button } from "baseui/button";
+import {useEffect, useState} from "react";
+import {FileUploader} from "baseui/file-uploader";
+import {ListItem, ListItemLabel} from "baseui/list";
+import {Button} from "baseui/button";
 import Delete from "baseui/icon/delete";
 import Download from "baseui/icon/arrow-down"
-import Resizer from "react-image-file-resizer";
-import { StyledLink } from "baseui/link";
-import { Modal, ModalHeader, ModalBody, SIZE, ROLE } from "baseui/modal";
-import { useStyletron } from "baseui";
+import {StyledLink} from "baseui/link";
+import {Modal, ModalBody, ModalHeader, ROLE, SIZE} from "baseui/modal";
+import {useStyletron} from "baseui";
 import {uuidv4} from "@soap/modules";
-import {useEffect, useState} from "react";
+import Compressor from 'compressorjs'
+import {Label3} from "baseui/typography";
 
 const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
 functionAppRoot || config.logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
 
-function resizeTo(blob, { maxHeight, maxWidth }) {
-    new Promise((resolve) => {
-        Resizer.imageFileResizer(
-            blob,
-            maxWidth,
-            maxHeight,
-            "JPEG",
-            100,
-            0,
-            (uri) => {
-                resolve(uri);
-            },
-            "base64"
-        );
+function resizeTo(blob, {maxHeight, maxWidth}) {
+    return new Promise((resolve, reject) => {
+        new Compressor(blob, {
+            checkOrientation: false,
+            maxHeight: maxHeight,
+            maxWidth: maxWidth,
+            success: resolve,
+            error: reject
+        });
     });
 }
 
@@ -41,20 +37,14 @@ async function uploadBlobToBackend(blobInfo) {
     });
 }
 
-function dataURLtoBlob(dataUrl) {
-    let arr = dataUrl.split(','), 
-        mime = arr[0].match(/:(.*?);/)[1],
-        bStr = atob(arr[1]), n = bStr.length, u8arr = new Uint8Array(n);
-    
-    while(n--){
-        u8arr[n] = bStr.charCodeAt(n);
-    }
-    return new Blob([u8arr], {type:mime});
+async function objectUrlToBlob(objectUrl) {
+    let blob = await fetch(objectUrl).then(r => r.blob());
+    return blob;
 }
 
 export default (props) => {
-    
-    const { onChange, onBlur, error, acceptedTypes, value } = props;
+
+    const {onChange, onBlur, error, acceptedTypes, value, disabled} = props;
     const [isUploading, setIsLoading] = useState(false);
 
     //* run to get the blob state after first render is complete
@@ -65,23 +55,24 @@ export default (props) => {
                 const endpoint = `${functionAppRoot}GetBlob`;
                 let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
                 const blob = await response.blob();
-                
-                blob.id = value.id;
-                blob.name = value.name;
-                blob.type = response.headers.get('Content-Type');
-                const enrichedBlob = enrichBlobInfo(blob);
+                const blobInfo = {
+                    id: value.id,
+                    name: value.name,
+                    blob: blob
+                };
+                const enrichedBlob = await enrichBlobInfo(blobInfo);
                 onChange(enrichedBlob);  //* forces react hook form to record value
                 setIsLoading(false);
             }
         })();
     }, []) //* run only once
 
-    const dimensions = props.dimensions ?? { maxWidth: 1024, maxHeight: 768 };
+    const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
     const [isOpen, setIsOpen] = useState(false);
     const [css] = useStyletron();
 
     async function getBlobFromDisk(file) {
-        
+
         const blobInfo = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsArrayBuffer(file);
@@ -90,47 +81,45 @@ export default (props) => {
                 const blobInfo = {
                     name: file.name,
                     id: uuidv4(),
-                    blob: new Blob([reader.result]),
-                    type: file.type
+                    blob: new Blob([reader.result], {type: file.type})
                 };
                 resolve(blobInfo);
-                
             };
         });
-        
+
         return blobInfo;
     }
-    
+
     async function enrichBlobInfo(blobInfo) {
 
-        console.log('a', blobInfo);
-        switch (blobInfo.type) {
+        switch (blobInfo.blob.type) {
             case "image/png":
             case "image/jpeg":
             case "image/jpg":
             case "image/jfif":
 
-                blobInfo.thumb = await resizeTo(blobInfo.blob, {
+                blobInfo.thumb = URL.createObjectURL(await resizeTo(blobInfo.blob, {
                     maxWidth: 100,
                     maxHeight: 100
-                });
+                }));
 
-                const resizedAsDataUrl = await resizeTo(blobInfo.blob, {
+                const resizedBlob = await resizeTo(blobInfo.blob, {
                     maxWidth: dimensions.maxWidth,
                     maxHeight: dimensions.maxHeight
                 });
-                console.log('b');
+
+                const objectUrl = URL.createObjectURL(resizedBlob);
+
                 const img = new Image();
-                console.log('b1', resizedAsDataUrl);
-                img.src = resizedAsDataUrl;
-                
+                img.src = objectUrl;
+
                 await new Promise((resolve) => {
                     img.onload = resolve;
                 });
-                console.log('c');
+
                 blobInfo.height = img.height;
                 blobInfo.width = img.width;
-                blobInfo.objectUrl = URL.createObjectURL(dataURLtoBlob(resizedAsDataUrl));
+                blobInfo.objectUrl = objectUrl;
                 blobInfo.isImage = true;
                 break;
 
@@ -141,20 +130,24 @@ export default (props) => {
         }
         blobInfo.id = uuidv4();
         blobInfo.sizeInKb = Math.round(blobInfo.blob.size / 1000) + " kb";
-        console.log('d');
-        //delete blobInfo.blob;
-        console.log('e');
+        delete blobInfo.blob;
         return blobInfo;
     }
 
+
     function renderUploadedItem() {
-        
+
         if (isUploading) return;  //* show nothing while preparing value
         
         if (value && value.objectUrl !== undefined) { //* could be null on empty new form
+
+            if (disabled) {
+                return (<Label3>Uploaded {value.name}</Label3>);
+            }
+            
             let thumb, fullSize, file;
             if (value.isImage) {
-                thumb = <img src={value.thumb} alt={value.name} />;
+                thumb = <img src={value.thumb} alt={value.name}/>;
                 fullSize = (
                     <span>
           <StyledLink
@@ -175,7 +168,7 @@ export default (props) => {
           >
             <ModalHeader>{value.name}</ModalHeader>
             <ModalBody>
-              <img src={value.objectUrl} alt={value.name} />
+              <img src={value.objectUrl} alt={value.name}/>
             </ModalBody>
           </Modal>
         </span>
@@ -185,14 +178,14 @@ export default (props) => {
                     href={value.objectUrl}
                     download={value.name}
                 >
-                    <Download size={20} />
+                    <Download size={20}/>
                 </StyledLink> : null;
             }
-            
+
             return (
                 <ListItem
                     overrides={{
-                        Root: { style: { height: "100px", marginTop: "10px" } }
+                        Root: {style: {height: "100px", marginTop: "10px"}}
                     }}
                     endEnhancer={() => (
                         <Button
@@ -200,10 +193,10 @@ export default (props) => {
                             size="compact"
                             kind="secondary"
                             onClick={() => {
-                                    onChange(null);
+                                onChange(null);
                             }}
                         >
-                            <Delete />
+                            <Delete/>
                         </Button>
                     )}
                 >
@@ -221,16 +214,18 @@ export default (props) => {
     return (
         <div>
             <FileUploader
-                accept = {acceptedTypes}
+                accept={acceptedTypes}
+                disabled={disabled}
                 onBlur={onBlur}
                 multiple={false}
                 progressMessage={isUploading ? `Processing... hang tight.` : ""}
                 onDrop={async (acceptedFiles, rejectedFiles) => {
-                    setIsLoading(true); 
+                    setIsLoading(true);
                     const blob = await getBlobFromDisk(acceptedFiles[0]);
-                    await uploadBlobToBackend(blob);
                     const enrichedBlob = await enrichBlobInfo(blob);
                     console.log(enrichedBlob);
+                    const blobToUpload = objectUrlToBlob(enrichedBlob.objectUrl);
+                    await uploadBlobToBackend(blobToUpload);
                     onChange(enrichedBlob);
                     setIsLoading(false);
                 }}

@@ -6,10 +6,11 @@ export function useEvent(
     eventName,
     onEventReceived,
     channel = bus.channels.events,
+    conversationId
 ) {
     useEffect(() => {
-        const sub = bus.subscribe(channel, eventName, onEventReceived);
-        
+        const sub = bus.subscribe(channel, eventName, onEventReceived, conversationId);
+
         //* cleanup hook
         return () => {
             postal.unsubscribe(sub);

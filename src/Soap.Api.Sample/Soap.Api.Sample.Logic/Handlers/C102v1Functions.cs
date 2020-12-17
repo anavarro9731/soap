@@ -13,10 +13,10 @@
 
         public IContinueProcess<C102v1_GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C102v1_GetServiceState msg) => this.Get<P556GetServiceState>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C102v1_GetServiceState msg) => this.Get<P202GetServiceState>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C102v1_GetServiceState msg)
         {

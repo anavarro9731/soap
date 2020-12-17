@@ -2,12 +2,12 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "^1.100.0",
+    "@soap/modules": "^1.106.0",
     "baseui": "^9.106.0",
+    "compressorjs": "^1.0.7",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-hook-form": "^6.12.2",
-    "react-image-file-resizer": "^0.3.8",
     "styletron-engine-atomic": "^1.4.6",
     "styletron-react": "^5.2.7"
   },

@@ -18,7 +18,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public void ItShouldPublishAPongEvent()
         {
             Result.MessageBus.EventsPublished.Should().ContainSingle();
-            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E150v1_Pong>();
+            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E100v1_Pong>();
         }
     }
 }

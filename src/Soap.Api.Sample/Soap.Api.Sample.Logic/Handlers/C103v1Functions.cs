@@ -13,10 +13,10 @@
 
         public IContinueProcess<C103v1_StartPingPong>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C103v1_StartPingPong msg) => this.Get<S888PingAndWaitForPong>().Call(s => s.BeginProcess)(msg);
+        public Task Handle(C103v1_StartPingPong msg) => this.Get<S301PingAndWaitForPong>().Call(s => s.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C103v1_StartPingPong msg) => msg.Validate();
     }

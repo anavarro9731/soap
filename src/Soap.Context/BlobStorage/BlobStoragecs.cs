@@ -65,6 +65,28 @@
             }
         }
 
+        public async Task<bool> Exists(Guid id, string containerName = "content")
+        {
+            try
+            {
+                var exists = await this.blobStorageSettings.MessageAggregator
+                                     .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
+                                     .To(Exists);
+                return exists;
+            }
+            catch (RequestFailedException r)
+            {
+                throw new ApplicationException($"Could not read blob with id {id} from storage", r);
+            }
+
+            static async Task<bool> Exists(Events.BlobDownloadEvent @event)
+            {
+                var client = @event.StorageSettings.CreateClient(@event.BlobId.ToString(), @event.ContainerName);
+                var result = await client.ExistsAsync();
+                return result;
+            }
+        }
+
         public string GetStorageSasTokenForBlob(Guid blobId, EnumerationFlags permissions)
         {
             return this.blobStorageSettings.MessageAggregator

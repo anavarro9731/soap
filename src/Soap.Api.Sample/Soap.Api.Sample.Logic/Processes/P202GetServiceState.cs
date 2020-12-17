@@ -8,18 +8,18 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P556GetServiceState : Process, IBeginProcess<C102v1_GetServiceState>
+    public class P202GetServiceState : Process, IBeginProcess<C102v1_GetServiceState>
     {
         public Func<C102v1_GetServiceState, Task> BeginProcess =>
             async message =>
                 {
                 var serviceState = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();
 
-                var gotServiceState = new E151v1_GotServiceState
+                var gotServiceState = new E101v1_GotServiceState
                 {
-                    E151_State = new E151v1_GotServiceState.ServiceState
+                    E101_State = new E101v1_GotServiceState.ServiceState
                     {
-                        E151_DatabaseState = serviceState.DatabaseState
+                        E101_DatabaseState = serviceState.DatabaseState
                     }
                 };
 

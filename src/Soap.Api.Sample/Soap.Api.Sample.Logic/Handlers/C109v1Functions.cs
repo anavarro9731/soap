@@ -10,10 +10,10 @@
     {
         public IContinueProcess<C109v1_GetForm>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C109v1_GetForm msg) => this.Get<P561ReturnForm>().Call(x => x.BeginProcess)(msg);
+        public Task Handle(C109v1_GetForm msg) => this.Get<P207ReturnForm>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C109v1_GetForm msg)
         {

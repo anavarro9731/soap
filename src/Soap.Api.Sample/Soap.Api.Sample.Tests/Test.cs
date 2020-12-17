@@ -16,7 +16,7 @@ namespace Soap.Api.Sample.Tests
     public class Test : SoapMessageTest
     {
         protected Test(ITestOutputHelper output)
-            : base(output, new MappingRegistration())
+            : base(output, new HandlerRegistration())
         {
         }
     }

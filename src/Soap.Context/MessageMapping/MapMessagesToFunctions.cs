@@ -36,9 +36,18 @@
         {
             var messageType = message.GetType();
 
-            Guard.Against(!this.messageMappings.ContainsKey(messageType), "Could not find a mapping for message this message");
+            if (message is MessageFailedAllRetries f)
+            {
+                var typeOfFailedMessage = Type.GetType(f.TypeName);
+                return this.messageMappings[typeOfFailedMessage];
+            }
+            else
+            {
+                Guard.Against(!this.messageMappings.ContainsKey(messageType),
+                    $"Could not find a mapping for message this message { messageType.FullName }");
 
-            return this.messageMappings[messageType];
+                return this.messageMappings[messageType];    
+            }
         }
     }
 }

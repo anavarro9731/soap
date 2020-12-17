@@ -3,7 +3,7 @@
     using Soap.Interfaces.Messages;
     using Soap.Pf.MessageContractsBase;
 
-    public class E150v1_Pong : AbstractPongEvent
+    public class E100v1_Pong : AbstractPongEvent
     {
         public override void Validate()
         {

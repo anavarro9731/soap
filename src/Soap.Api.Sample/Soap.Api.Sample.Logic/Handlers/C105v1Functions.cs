@@ -14,10 +14,10 @@ namespace Soap.Api.Sample.Logic.Mappings
 
         public IContinueProcess<C105v1_SendLargeMessage>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C105v1_SendLargeMessage msg) => this.Get<P560SendLargeMessage>().Call(s => s.BeginProcess)(msg);
+        public Task Handle(C105v1_SendLargeMessage msg) => this.Get<P206SendLargeMessage>().Call(s => s.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C105v1_SendLargeMessage msg)
         {

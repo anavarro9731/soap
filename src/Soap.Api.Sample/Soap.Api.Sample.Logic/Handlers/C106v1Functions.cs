@@ -22,7 +22,7 @@ namespace Soap.Api.Sample.Logic.Mappings
         }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C106v1_LargeCommand msg)
         {

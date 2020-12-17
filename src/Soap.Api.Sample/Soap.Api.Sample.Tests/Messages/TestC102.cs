@@ -19,7 +19,7 @@
         public void ItShouldSendAGotMessageEvent()
         {
             Result.MessageBus.EventsPublished.Should().ContainSingle();
-            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E151v1_GotServiceState>();
+            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E101v1_GotServiceState>();
         }
     }
 }

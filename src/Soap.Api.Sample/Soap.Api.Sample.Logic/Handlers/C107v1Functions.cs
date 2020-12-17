@@ -15,7 +15,7 @@
         public Task Handle(C107v1_CreateOrUpdateTestDataTypes msg) => this.Get<TestDataOperations>().Call(x => x.SetTestData)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
-            this.Get<P557NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
+            this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);
 
         public void Validate(C107v1_CreateOrUpdateTestDataTypes msg)
         {

@@ -82,7 +82,6 @@
             async Task ProcessMessage(ContextWithMessageLogEntry context)
             {
                 var msg = context.Message;
-                msg.ValidateOrThrow(context);
 
                 var result = await context.AttemptToFinishAnUnfinishedUnitOfWork();
 
@@ -103,9 +102,15 @@
                                 await context.HandleFinalFailure(m);
                                 break;
                             case ApiCommand c:
+                                /* validate here rather than beginning of method because there can be variable validation logic and you want
+                                 to attempt to finish an unfinished uow if possible, also because you don't want to validate MessageFailedAllRetries
+                                 because it would try to case it to the type of the message that failed since you use the MessageFunctions for the failed
+                                 message type when you have MessageFailedAllRetries (see MapMessagesToFunctions.MapMessage for details */
+                                msg.ValidateOrThrow(context);   
                                 await context.Handle(c);
                                 break;
                             case ApiEvent e:
+                                msg.ValidateOrThrow(context);
                                 await context.Handle(e);
                                 break;
                         }
@@ -131,7 +136,7 @@
 
                     exceptionThrownBackToFunctionRuntime = exceptionMessages.ExceptionThrownToContext();
 
-                    await context.MarkFailureInMessageLog(exceptionMessages);
+                    await context.TakeFailureActions(exceptionMessages);
 
                     context.SerilogFailure(exceptionMessages);
                     

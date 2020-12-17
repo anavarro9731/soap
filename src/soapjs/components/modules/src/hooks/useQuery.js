@@ -1,16 +1,6 @@
 import {useEffect, useState} from 'react';
 import {bus, commandHandler, validateArgs} from '../soap';
 
-// export class queryOptions {
-//     constructor(condition, arrayWhichCausesRequeryOnChange, acceptableStalenessFactorInSeconds) {
-//         this.condition = condition ?? true;
-//         this.arrayWhichCausesRequeryOnChange = (Array.isArray(arrayWhichCausesRequeryOnChange)
-//             ? arrayWhichCausesRequeryOnChange
-//             : [arrayWhichCausesRequeryOnChange]) ?? [];
-//         this.acceptableStalenessFactorInSeconds = acceptableStalenessFactorInSeconds ?? 0;
-//     }
-// }
-
 export function useQuery(query, acceptableStalenessFactorInSeconds = 0) {
     
         const [queryResult, setQueryResult] = useState();

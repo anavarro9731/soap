@@ -33,7 +33,7 @@
                 
                 var result = await AzureFunctionContext.Execute<User>(
                     messageAsJson:Encoding.UTF8.GetString(myQueueItem.Body),
-                    new MappingRegistration(),
+                    new HandlerRegistration(),
                     messageIdAsString:messageId,
                     messageTypeShortAssemblyQualifiedName:myQueueItem.Label,
                     logger:logger,
@@ -44,7 +44,7 @@
             }
             catch (Exception e)
             {
-                logger?.Fatal(e, "Could not execute function.");
+                logger?.Fatal(e, $"Could not execute function {nameof(ReceiveMessage)} for message type ${myQueueItem.Label ?? "unknown"} with id {myQueueItem.MessageId ?? "unknown"}");
                 log.LogCritical(e.ToString());
             }
             
