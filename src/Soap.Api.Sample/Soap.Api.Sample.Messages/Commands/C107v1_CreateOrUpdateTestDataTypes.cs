@@ -70,16 +70,16 @@
         
         [Required]
         [IsImage]
-        public Base64Blob C107_Image { get; set; }
+        public BlobMeta C107_Image { get; set; }
         
         [IsImage]
-        public Base64Blob C107_ImageOptional { get; set; }
+        public BlobMeta C107_ImageOptional { get; set; }
         
         
         [Required]
-        public Base64Blob C107_File { get; set; }
+        public BlobMeta C107_File { get; set; }
         
-        public Base64Blob C107_FileOptional { get; set; }
+        public BlobMeta C107_FileOptional { get; set; }
         
         public class Validator : AbstractValidator<C107v1_CreateOrUpdateTestDataTypes>
         {

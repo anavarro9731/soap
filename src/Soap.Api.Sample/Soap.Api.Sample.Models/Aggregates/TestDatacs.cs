@@ -21,17 +21,17 @@ namespace Soap.Api.Sample.Models.Aggregates
 
         public decimal? DecimalOptional { get; set; }
 
-        public Base64Blob File { get; set; }
+        public BlobMeta File { get; set; }
 
-        public Base64Blob FileOptional { get; set; }
+        public BlobMeta FileOptional { get; set; }
 
         public Guid? Guid { get; set; }
 
         public Guid? GuidOptional { get; set; }
 
-        public Base64Blob Image { get; set; }
+        public BlobMeta Image { get; set; }
 
-        public Base64Blob ImageOptional { get; set; }
+        public BlobMeta ImageOptional { get; set; }
 
         public long? Long { get; set; }
 

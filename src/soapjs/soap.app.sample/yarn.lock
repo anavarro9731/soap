@@ -1192,10 +1192,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
-"@soap/modules@^1.97.0":
-  version "1.97.0"
-  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.97.0.tgz#884a29562fdd1d408c67d0f04678a64e4310bf20"
-  integrity sha1-iEopVi/dHUCMZ9DwRnimTkMQvyA=
+"@soap/modules@^1.100.0":
+  version "1.100.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.100.0.tgz#4c1f5dfe2fa68af7b4a1781780b542fa038c6456"
+  integrity sha1-TB9d/i+mive0oXgXgLVC+gOMZFY=
   dependencies:
     "@azure/service-bus" "^7.0.0"
     "@azure/storage-blob" "^12.3.0"

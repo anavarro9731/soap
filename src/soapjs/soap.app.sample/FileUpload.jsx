@@ -8,8 +8,13 @@ import Resizer from "react-image-file-resizer";
 import { StyledLink } from "baseui/link";
 import { Modal, ModalHeader, ModalBody, SIZE, ROLE } from "baseui/modal";
 import { useStyletron } from "baseui";
+import {uuidv4} from "@soap/modules";
+import {useEffect, useState} from "react";
 
-const resizeTo = (blob, { maxHeight, maxWidth }) =>
+const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+functionAppRoot || config.logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
+
+function resizeTo(blob, { maxHeight, maxWidth }) {
     new Promise((resolve) => {
         Resizer.imageFileResizer(
             blob,
@@ -24,99 +29,141 @@ const resizeTo = (blob, { maxHeight, maxWidth }) =>
             "base64"
         );
     });
+}
 
-function blobToDataURL(blob){
-    return new Promise((resolve, reject) => {
-        var fr = new FileReader();
-        fr.onload = () => {
-            resolve(fr.result )
-        };
-        fr.readAsDataURL(blob);
+async function uploadBlobToBackend(blobInfo) {
+
+    const endpoint = `${functionAppRoot}AddBlob`;
+    await fetch(`${endpoint}?id=${blobInfo.id}`, {
+        method: "post",
+        //we don’t set Content-Type header manually, because a Blob object has a built-in type for Blob objects that type becomes the value of Content-Type.
+        body: blobInfo.blob
     });
+}
+
+function dataURLtoBlob(dataUrl) {
+    let arr = dataUrl.split(','), 
+        mime = arr[0].match(/:(.*?);/)[1],
+        bStr = atob(arr[1]), n = bStr.length, u8arr = new Uint8Array(n);
+    
+    while(n--){
+        u8arr[n] = bStr.charCodeAt(n);
+    }
+    return new Blob([u8arr], {type:mime});
 }
 
 export default (props) => {
     
-    const { value, onChange, onBlur, error, acceptedTypes } = props;
+    const { onChange, onBlur, error, acceptedTypes, value } = props;
+    const [isUploading, setIsLoading] = useState(false);
+
+    //* run to get the blob state after first render is complete
+    useEffect(() => {
+        (async function GetBlobFromBackend() {
+            if (value !== null && value.objectUrl === undefined) {
+                setIsLoading(true);
+                const endpoint = `${functionAppRoot}GetBlob`;
+                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
+                const blob = await response.blob();
+                
+                blob.id = value.id;
+                blob.name = value.name;
+                blob.type = response.headers.get('Content-Type');
+                const enrichedBlob = enrichBlobInfo(blob);
+                onChange(enrichedBlob);  //* forces react hook form to record value
+                setIsLoading(false);
+            }
+        })();
+    }, []) //* run only once
+
     const dimensions = props.dimensions ?? { maxWidth: 1024, maxHeight: 768 };
-    const [isUploading, setIsUploading] = React.useState(false);
-    const [isLoaded, setIsLoaded] = React.useState(false);
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [css] = useStyletron();
 
-    if (!isLoaded) {
-        onChange(value);
-        setIsLoaded(true);
-    }
-    
-    async function handleFile(file) {
-        const fileInfo = await new Promise((resolve) => {
+    async function getBlobFromDisk(file) {
+        
+        const blobInfo = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsArrayBuffer(file);
 
             reader.onload = () => {
-                const fileInfo = {
+                const blobInfo = {
                     name: file.name,
-                    type: file.type,
-                    size: Math.round(file.size / 1000) + " kB",
+                    id: uuidv4(),
                     blob: new Blob([reader.result]),
+                    type: file.type
                 };
-
-                resolve(fileInfo);
+                resolve(blobInfo);
+                
             };
         });
-        switch (file.type) {
+        
+        return blobInfo;
+    }
+    
+    async function enrichBlobInfo(blobInfo) {
+
+        console.log('a', blobInfo);
+        switch (blobInfo.type) {
             case "image/png":
             case "image/jpeg":
+            case "image/jpg":
             case "image/jfif":
-            case "image/gif":
-                fileInfo.thumb = await resizeTo(fileInfo.blob, {
+
+                blobInfo.thumb = await resizeTo(blobInfo.blob, {
                     maxWidth: 100,
                     maxHeight: 100
                 });
-                fileInfo.fullSize = await resizeTo(fileInfo.blob, {
+
+                const resizedAsDataUrl = await resizeTo(blobInfo.blob, {
                     maxWidth: dimensions.maxWidth,
                     maxHeight: dimensions.maxHeight
                 });
+                console.log('b');
                 const img = new Image();
-                img.src = fileInfo.fullSize;
+                console.log('b1', resizedAsDataUrl);
+                img.src = resizedAsDataUrl;
+                
                 await new Promise((resolve) => {
                     img.onload = resolve;
                 });
-
-                fileInfo.fullSizeHeight = img.height;
-                fileInfo.fullSizeWidth = img.width;
-                fileInfo.blob = null;
+                console.log('c');
+                blobInfo.height = img.height;
+                blobInfo.width = img.width;
+                blobInfo.objectUrl = URL.createObjectURL(dataURLtoBlob(resizedAsDataUrl));
+                blobInfo.isImage = true;
                 break;
-                
+
             default:
-                fileInfo.blob = await blobToDataURL(fileInfo.blob);
+                blobInfo.isImage = false;
+                blobInfo.objectUrl = URL.createObjectURL(blobInfo.blob);
                 break;
         }
-        return fileInfo;
+        blobInfo.id = uuidv4();
+        blobInfo.sizeInKb = Math.round(blobInfo.blob.size / 1000) + " kb";
+        console.log('d');
+        //delete blobInfo.blob;
+        console.log('e');
+        return blobInfo;
     }
 
-    function renderUploadedItem(item) {
-        if (isUploading) return;
-        let thumb, fullSize, fileLink;
+    function renderUploadedItem() {
         
-        if (item) {
-            fileLink = item.blob ? <StyledLink
-                href={item.blob}
-                download={item.name}
-            >
-                <Download size={20} />
-            </StyledLink> : null; 
-            thumb = item.thumb ? <img src={item.thumb} alt={item.name} /> : null;
-            fullSize = item.fullSize ? (
-                <span>
+        if (isUploading) return;  //* show nothing while preparing value
+        
+        if (value && value.objectUrl !== undefined) { //* could be null on empty new form
+            let thumb, fullSize, file;
+            if (value.isImage) {
+                thumb = <img src={value.thumb} alt={value.name} />;
+                fullSize = (
+                    <span>
           <StyledLink
               onClick={() => setIsOpen(true)}
               className={css({
                   cursor: "pointer"
               })}
           >
-            {item.fullSizeWidth}x{item.fullSizeHeight}
+            {value.width}x{value.height}
           </StyledLink>
           <Modal
               onClose={() => setIsOpen(false)}
@@ -126,16 +173,22 @@ export default (props) => {
               size={SIZE.auto}
               role={ROLE.dialog}
           >
-            <ModalHeader>{item.name}</ModalHeader>
+            <ModalHeader>{value.name}</ModalHeader>
             <ModalBody>
-              <img src={item.fullSize} alt={item.name} />
+              <img src={value.objectUrl} alt={value.name} />
             </ModalBody>
           </Modal>
         </span>
-            ) : null;
-        }
-        
-        if (item) {
+                );
+            } else {
+                file = value.objectUrl ? <StyledLink
+                    href={value.objectUrl}
+                    download={value.name}
+                >
+                    <Download size={20} />
+                </StyledLink> : null;
+            }
+            
             return (
                 <ListItem
                     overrides={{
@@ -156,34 +209,30 @@ export default (props) => {
                 >
                     {thumb}
                     <ListItemLabel>
-                        {item.name}&nbsp;
+                        {value.name}&nbsp;({value.sizeInKb})&nbsp;
                         {fullSize}
-                        {fileLink}
+                        {file}
                     </ListItemLabel>
                 </ListItem>
             );
         }
     }
-
-    async function sleep(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
+    
     return (
         <div>
             <FileUploader
-                accept = {props.acceptedTypes}
+                accept = {acceptedTypes}
                 onBlur={onBlur}
                 multiple={false}
                 progressMessage={isUploading ? `Processing... hang tight.` : ""}
                 onDrop={async (acceptedFiles, rejectedFiles) => {
-                    const start = Date.now();
-                    setIsUploading(true);
-                    const fileInfo = await handleFile(acceptedFiles[0]);
-                    const delta = Date.now() - start; // milliseconds elapsed since start
-                    await sleep(Math.max(1000 - delta, 0));
-                    setIsUploading(false);
-                    onChange(fileInfo);
+                    setIsLoading(true); 
+                    const blob = await getBlobFromDisk(acceptedFiles[0]);
+                    await uploadBlobToBackend(blob);
+                    const enrichedBlob = await enrichBlobInfo(blob);
+                    console.log(enrichedBlob);
+                    onChange(enrichedBlob);
+                    setIsLoading(false);
                 }}
                 overrides={{
                     FileDragAndDrop: {
@@ -207,7 +256,7 @@ export default (props) => {
                     }
                 }}
             />
-            {renderUploadedItem(value)}
+            {renderUploadedItem()}
         </div>
     );
 };

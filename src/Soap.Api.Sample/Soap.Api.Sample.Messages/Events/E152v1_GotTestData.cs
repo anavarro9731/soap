@@ -25,17 +25,17 @@
 
             public decimal? E152_DecimalOptional { get; set; }
 
-            public Base64Blob E152_File { get; set; }
+            public BlobMeta E152_File { get; set; }
 
-            public Base64Blob E152_FileOptional { get; set; }
+            public BlobMeta E152_FileOptional { get; set; }
 
             public Guid? E152_Guid { get; set; }
 
             public Guid? E152_GuidOptional { get; set; }
 
-            public Base64Blob E152_Image { get; set; }
+            public BlobMeta E152_Image { get; set; }
 
-            public Base64Blob E152_ImageOptional { get; set; }
+            public BlobMeta E152_ImageOptional { get; set; }
 
             public long? E152_Long { get; set; }
 

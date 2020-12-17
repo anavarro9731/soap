@@ -13,7 +13,6 @@ import wordKeys from './translations/word-keys';
 import {Select} from "baseui/select";
 import {Textarea} from "baseui/textarea";
 import {createRegisteredTypedMessageInstanceFromAnonymousObject} from '@soap/modules/lib/soap/messages';
-import {headerKeys} from "../components/modules/src/soap";
 
 
 function SoapFormControl(props) {
@@ -84,6 +83,10 @@ function SoapFormControl(props) {
                                 cleanProperties(value);
                             }
                         } else {
+                            if (value.isImage !== undefined && value.objectUrl !== undefined) {
+                                //* it's a fileInfo object you need to convert to send just the id of the already uploaded blob which is what the backend expects
+                                obj[key] = { id: value.id, name : value.name };
+                            }
                             cleanProperties(value);
                         }
                     } else if (value === "") {
@@ -125,7 +128,7 @@ function SoapFormControl(props) {
             for (const key in obj) {
 
                 const newKey = key.charAt(0).toLowerCase() + key.substring(1);
-                if (newKey !== key) { 
+                if (newKey !== key || Array.isArray(obj)) { 
                     if (!Array.isArray(obj)) { //* convert it's property names
                         //* convert it first or you'll end up deleting its converted children
                         Object.defineProperty(obj, newKey, Object.getOwnPropertyDescriptor(obj, key)); //* create new
@@ -276,7 +279,7 @@ function SoapFormControl(props) {
                 const defaultValue = fieldMeta.initialValue.selectedKeys.length > 0 ? fieldMeta.initialValue.selectedKeys.map(v => ({
                     key: v,
                     active: null,
-                    value: ""
+                    value: fieldMeta.initialValue.allEnumerations.find(e => e.key === v).value
                 })) : [];
                 return (
                     <Controller
@@ -346,7 +349,7 @@ function SoapFormControl(props) {
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={Object.keys(errors).includes(name) ? "required" : undefined}>
                                     <FileUpload
-                                        acceptedTypes=".jpg,.jpeg,.jfif,.png,.gif"
+                                        acceptedTypes=".jpg,.jpeg,.jfif,.png"
                                         onBlur={onBlur}
                                         //dimensions={{maxWidth:640,maxHeight:480}}
                                         error={Object.keys(errors).includes(name) ? "required" : undefined}

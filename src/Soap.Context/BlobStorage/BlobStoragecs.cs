@@ -88,13 +88,15 @@
                     Resource = "b",
                     ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
                 };
-                
-                sasBuilder.SetPermissions(permissions switch
-                {
-                    _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.ReadAndDelete) => (BlobSasPermissions.Read | BlobSasPermissions.Delete),
-                    _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => (BlobSasPermissions.Create),
-                    _ => throw new ApplicationException("Must specify an accepted set of blob permissions")
-                });
+
+                sasBuilder.SetPermissions(
+                    permissions switch
+                    {
+                        _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.ReadAndDelete) => BlobSasPermissions.Read
+                            | BlobSasPermissions.Delete,
+                        _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => BlobSasPermissions.Create,
+                        _ => throw new ApplicationException("Must specify an accepted set of blob permissions")
+                    });
 
                 var sasUri = blobClient.GenerateSasUri(sasBuilder);
                 var sasToken = sasUri.Query;
@@ -113,6 +115,13 @@
         {
             await this.blobStorageSettings.MessageAggregator
                       .CollectAndForward(new Events.BlobUploadEvent(this.blobStorageSettings, base64.ToBlob(id, mimeType)))
+                      .To(Upload);
+        }
+
+        public async Task SaveByteArrayAsBlob(byte[] bytes, Guid id, string mimeType)
+        {
+            await this.blobStorageSettings.MessageAggregator.CollectAndForward(
+                          new Events.BlobUploadEvent(this.blobStorageSettings, bytes.ToBlob(id, mimeType)))
                       .To(Upload);
         }
 

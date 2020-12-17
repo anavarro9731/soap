@@ -10,7 +10,6 @@
         public Blob(Guid id, byte[] bytes, BlobType type)
         {
             if (id.Equals(Guid.Empty)) throw new ArgumentException("Blob id cannot be empty.");
-
             Bytes = bytes;
             Type = type;
             Id = id;

@@ -180,7 +180,7 @@
                                property.DeclaringType.InheritsOrImplements(typeof(EnumerationFlags)) || //* there are multiple types
                                property.DeclaringType == typeof(FieldMeta) ||
                                property.DeclaringType == typeof(ObjectMeta) ||
-                               property.DeclaringType == typeof(Base64Blob) ||
+                               property.DeclaringType == typeof(BlobMeta) ||
                                property.DeclaringType == typeof(Enumeration);
                     }
 
@@ -291,7 +291,7 @@
                                         }
 
                                         var tIsAllowedNonNestedCustomType =
-                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t == typeof(Enumeration) || t == typeof(MessageHeaders) || t == typeof(Base64Blob);
+                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t == typeof(Enumeration) || t == typeof(MessageHeaders) || t == typeof(BlobMeta);
 
                                         Guard.Against(
                                             !tIsAllowedNonNestedCustomType

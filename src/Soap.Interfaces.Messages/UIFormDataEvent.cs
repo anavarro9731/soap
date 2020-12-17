@@ -146,7 +146,7 @@
                                 var t when t == typeof(string) => HasAttribute(validProperty, typeof(MultiLineAttribute))
                                                                       ? "multilinestring"
                                                                       : "string", // -> textbox or textarea
-                                var t when t == typeof(Base64Blob) => HasAttribute(validProperty, typeof(IsImageAttribute))
+                                var t when t == typeof(BlobMeta) => HasAttribute(validProperty, typeof(IsImageAttribute))
                                                                           ? "image"
                                                                           : "file", //-> fileupload //* we don't break down blobs, like other custom objects, they are considered primitives for form-building
                                 var t when t == typeof(long?) => "number", // -> number textbox
@@ -209,7 +209,7 @@
 
                         return IsSystemType(propertyInfo.PropertyType)
                                || typeof(EnumerationFlags).IsAssignableFrom(propertyInfo.PropertyType)
-                               || propertyInfo.PropertyType == typeof(Base64Blob);
+                               || propertyInfo.PropertyType == typeof(BlobMeta);
                     }
                 }
             }

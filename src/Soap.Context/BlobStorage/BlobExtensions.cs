@@ -5,6 +5,7 @@
     using System.Text.RegularExpressions;
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
+    using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
@@ -13,6 +14,14 @@
 
     public static class BlobExtensions
     {
+
+        public static Blob ToBlob(this byte[] byteArray, Guid id, string mimeType)
+        {
+            var blob = new Blob(id, byteArray, new Blob.BlobType(mimeType, Blob.TypeClass.Mime));
+
+            return blob;
+        }
+
         public static Blob ToBlob(this string base64String, Guid id, string mimeType)
         {
             Guard.Against(
@@ -44,7 +53,12 @@
             var message = json.FromJson<ApiMessage>(SerialiserIds.ApiBusMessage, b.Type.TypeString);
             return message;
         }
-        
-        
+
+        public static T ToObject<T>(this Blob b, SerialiserIds serialiserId) where T : class, new()
+        {
+            var json = Encoding.UTF8.GetString(b.Bytes);
+            var @object = json.FromJson<T>(serialiserId, b.Type.TypeString);
+            return @object;
+        }
     }
 }

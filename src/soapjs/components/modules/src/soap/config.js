@@ -128,7 +128,7 @@ let _sender = (msg) => {
             try {
                 logger.log(`Received message ${message.messageId} on bus for session: ${message.sessionId}`, anonymousEvent);
 
-                if (!!getHeader(anonymousEvent, headerKeys.blobId)) {
+                if (_.find(message.headers, h => h.key == headerKeys.blobId)) {
                     //* make the swap
                     anonymousEvent = await downloadMessageBlob(anonymousEvent);
                 }
@@ -176,7 +176,7 @@ let _sender = (msg) => {
 
             const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
             functionAppRoot || logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
-            const endpoint = `${functionAppRoot}api/GetJsonSchema`;
+            const endpoint = `${functionAppRoot}GetJsonSchema`;
             const jsonArrayOfMessages = await global.fetch(endpoint)
                 .then(response => response.json());
 
