@@ -1,19 +1,23 @@
 import {useEffect} from 'react';
 import postal from 'postal';
-import {bus} from '../soap';
+import { bus } from '../soap';
 
 export function useEvent(
-    eventName,
-    onEventReceived,
+    args,
     channel = bus.channels.events,
-    conversationId
 ) {
+    const { eventName, conversationId, onEventReceived } = args;
+    
     useEffect(() => {
-        const sub = bus.subscribe(channel, eventName, onEventReceived, conversationId);
+
+        let sub;
+        if (!!args) {
+            sub = bus.subscribe(channel, eventName, onEventReceived, conversationId);
+        }
 
         //* cleanup hook
         return () => {
-            postal.unsubscribe(sub);
+            if (!!sub) postal.unsubscribe(sub);
         };
-    }, []);
+    }, [args]);
 }

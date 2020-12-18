@@ -20,17 +20,17 @@
 
         public bool? C101_ReSeed { get; set; }
 
+        public override void Validate()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
+
         public class Validator : AbstractValidator<C101v1_UpgradeTheDatabase>
         {
             public Validator()
             {
                 RuleFor(x => x.C101_ReleaseVersion).NotNull();
             }
-        }
-
-        public override void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
         }
     }
 }

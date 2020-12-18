@@ -7,14 +7,13 @@
     {
         public ServiceState E101_State { get; set; }
 
+        public override void Validate()
+        {
+        }
+
         public class ServiceState
         {
             public EnumerationFlags E101_DatabaseState { get; set; }
-        }
-
-        public override void Validate()
-        {
-            
         }
     }
 }

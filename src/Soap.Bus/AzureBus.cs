@@ -6,6 +6,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using FluentValidation;
     using Soap.Interfaces;
@@ -18,8 +19,6 @@
 
         private readonly Settings settings;
         
-        
-
         private AzureBus(IMessageAggregator messageAggregator, Settings settings)
         {
             this.messageAggregator = messageAggregator;
@@ -41,35 +40,52 @@
             }
         }
 
-        public async Task Publish(ApiEvent publishEvent)
+        public async Task Publish(ApiEvent publishEvent, EnumerationFlags eventVisibility)
         {
-            await using var client = new ServiceBusClient(this.settings.BusConnectionString);
+            await using var serviceBusClient = new ServiceBusClient(this.settings.BusConnectionString);
             
-            await SendTopicMessage(client);
-            await SendBroadCastMessage(client);
-            
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.WebSocketSender))
+            {
+                await SendReplyToWsClient(serviceBusClient);    
+            }
+
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.AllBusSubscriptions))
+            {
+                await BusBroadcastToAllSubscribers(serviceBusClient);
+            }
+
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.AllWebSocketClientsNoConversationId))
+            {
+                await WsBroadCastToAllSubscribers();
+            }
+
             EventsPublished.Add(publishEvent.Clone());
 
-            async Task SendBroadCastMessage(ServiceBusClient serviceBusClient)
+            async Task WsBroadCastToAllSubscribers()
             {
-                var sender = client.CreateSender("allevents");
+                //TODO
+                await Task.CompletedTask;
+            }
+
+            async Task SendReplyToWsClient(ServiceBusClient serviceBusClient)
+            {
+                var sender = serviceBusClient.CreateSender("allevents");
 
                 var broadCastMessage =
                     new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                     {
                         MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                        Subject = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                        Subject = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by .net clients for quick deserialisation rather than parsing JSON $type
                         SessionId = publishEvent.Headers.GetSessionId()
                     };
                 
                 await sender.SendMessageAsync(broadCastMessage);
             }
-            
-            async Task SendTopicMessage(ServiceBusClient serviceBusClient)
+
+            async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
                 var topic = publishEvent.Headers.GetTopic().ToLower();
-                var sender = client.CreateSender(topic);
-                
+                var sender = serviceBusClient.CreateSender(topic);
 
                 var topicMessage =
                     new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
@@ -82,6 +98,8 @@
             }
             
         }
+
+        public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibility sendTo) => throw new NotImplementedException();
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {

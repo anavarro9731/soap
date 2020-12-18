@@ -3,6 +3,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
     using Serilog;
@@ -31,7 +32,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         public StateClass State => new StateClass(this.processState, context.DataStore);
 
-        protected BusWrapper Bus => new BusWrapper(context.Bus, this.Id);
+        protected BusWrapper Bus => new BusWrapper(context.Bus, this.Id, context.Message);
 
         protected DataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
 
@@ -126,16 +127,19 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
             private readonly StatefulProcessId id;
 
-            public BusWrapper(IBus bus, StatefulProcessId id)
+            private readonly ApiMessage contextMessage;
+
+            public BusWrapper(IBus bus, StatefulProcessId id, ApiMessage contextMessage)
             {
                 this.bus = bus;
                 this.id = id;
+                this.contextMessage = contextMessage;
             }
 
-            public Task Publish(ApiEvent publishEvent)
+            public Task Publish(ApiEvent publishEvent, EnumerationFlags eventVisibility = null)
             {
                 publishEvent.Headers.SetStatefulProcessId(this.id);
-                return this.bus.Publish(publishEvent);
+                return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
 
             public Task Send(ApiCommand sendCommand)

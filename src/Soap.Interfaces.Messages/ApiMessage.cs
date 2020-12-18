@@ -55,7 +55,7 @@
                 messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name); //* send to owners queue
             }
 
-            messageHeaders.SetSchema(message.GetType().FullName);
+            messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -75,7 +75,7 @@
             azure sequence number, allows a scheduled message to be a cancelled later, but not sure its useful on the message itself so not setting yet
             blob id only present on large messages
             sasstoragetoken only present on large commands
-            BROWSERCLIENT IDS only applicable on outgoing events or incoming commands 
+            SESSION IDS only applicable on outgoing events or incoming commands 
             */
         }
 
@@ -84,7 +84,7 @@
             messageHeaders.SetTimeOfCreationAtOrigin();
             messageHeaders.SetMessageId(Guid.NewGuid());
             messageHeaders.SetTopic(message.GetType().FullName);
-            messageHeaders.SetSchema(message.GetType().FullName);
+            messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -95,7 +95,7 @@
 
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
 
-            CheckBrowserClientHeaders(messageHeaders);
+            CheckWebSocketClientHeaders(messageHeaders);
 
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api events must have a {nameof(Keys.Schema)} header set");
 
@@ -147,17 +147,18 @@
 
             if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
             {
-                messageHeaders.SetSchema(message.GetType().FullName);
+                messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
             }
 
             /* NOT SET
              BLOBID 
              SASSTORAGETOKEN
              STATEFULPROCESSID
-             BROWSERCLIENT IDS
+             SESSION IDS
              */
         }
 
+        private static string ToShortAssemblyTypeName(this Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
         public static void ValidateIncomingMessageHeaders(this MessageHeaders messageHeaders)
         {
             Ensure(
@@ -167,7 +168,7 @@
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
-            CheckBrowserClientHeaders(messageHeaders);
+            CheckWebSocketClientHeaders(messageHeaders);
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
 
             //* not validated
@@ -180,7 +181,7 @@
             //* sasstoragetoken only present on outgoing UIFormEvents or large incoming commands
         }
 
-        private static void CheckBrowserClientHeaders(MessageHeaders messageHeaders)
+        private static void CheckWebSocketClientHeaders(MessageHeaders messageHeaders)
         {
             //*command hash optionally present on commands coming from or events going to the client
             if (messageHeaders.GetSessionId() != null)
@@ -261,7 +262,7 @@
             m.TryGetValue(Keys.SessionId, out var x);
             return x;
         }
-
+        
         public static StatefulProcessId? GetStatefulProcessId(this MessageHeaders m)
         {
             m.TryGetValue(Keys.StatefulProcessId, out var x);
@@ -444,7 +445,7 @@
         //* id of client side conversation
         internal const string CommandConversationId = nameof(CommandConversationId);
 
-        //* hash of message that started a client side conversation to link it up again (conversationid too specific for cache)
+        //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
         internal const string CommandHash = nameof(CommandHash);
 
         //* auth token
@@ -456,16 +457,13 @@
         //* token used for uploading and downloading event message blobs 
         internal const string SasStorageToken = nameof(SasStorageToken);
         
-        //* token used for uploading and downloading command message blobs 
-        internal const string SasStorageTokenForCommands = nameof(SasStorageTokenForCommands);
-
         //* short type name
         internal const string Schema = nameof(Schema);
 
-        //* servicebus messagesession Id
+        //* SessionId (in the case of WS Client)
         internal const string SessionId = nameof(SessionId);
 
-        //* server side conversation id
+        //* server side conversation id 
         internal const string StatefulProcessId = nameof(StatefulProcessId);
 
         //* dest topic when its an event

@@ -5,6 +5,7 @@
     using System.Linq;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Pf.MessageContractsBase;
     using Soap.Utility.Functions.Extensions;
     
     using Guard = Soap.Context.Guard;

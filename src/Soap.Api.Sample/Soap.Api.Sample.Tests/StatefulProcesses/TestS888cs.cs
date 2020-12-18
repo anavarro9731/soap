@@ -42,7 +42,7 @@
             {
                 var pong = new E100v1_Pong
                 {
-                    C000_PingReference = Guid.NewGuid(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    E000_PingReference = Guid.NewGuid(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
@@ -72,7 +72,7 @@
             {
                 var pong = new E100v1_Pong
                 {
-                    C000_PingReference = ping.Headers.GetMessageId(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    E000_PingReference = ping.Headers.GetMessageId(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
@@ -102,7 +102,7 @@
             {
                 var pong = new E100v1_Pong
                 {
-                    C000_PingReference = Guid.NewGuid(), C000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
+                    E000_PingReference = Guid.NewGuid(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 SetupTestByProcessingAMessage(pong, Identities.UserOne);
             }

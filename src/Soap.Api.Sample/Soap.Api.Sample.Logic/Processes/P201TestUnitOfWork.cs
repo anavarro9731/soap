@@ -56,7 +56,7 @@
                     await Publish(
                         new E100v1_Pong
                         {
-                            C000_PongedBy = nameof(P201TestUnitOfWork)
+                            E000_PongedBy = nameof(P201TestUnitOfWork)
                         });
                 }
 

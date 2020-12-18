@@ -7,16 +7,17 @@ namespace Soap.Api.Sample.Messages.Commands
     {
         public string C109_FormDataEventName { get; set; }
 
+        public override void Validate()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
+
         public class Validator : AbstractValidator<C109v1_GetForm>
         {
             public Validator()
             {
                 RuleFor(x => x.C109_FormDataEventName).NotEmpty();
             }
-        }
-        public override void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Models.PureFunctions.Extensions;
@@ -24,16 +25,9 @@
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        protected Task Publish(ApiEvent e)
+        protected Task Publish(ApiEvent e, EnumerationFlags eventVisibility = null)
         {
-            if (this.context.Message is ApiCommand c && !string.IsNullOrWhiteSpace(c.Headers.GetSessionId()))
-            {
-                //* transfer from incoming command to outgoing event for browser clients
-                e.Headers.SetSessionId(c.Headers.GetSessionId());
-                e.Headers.SetCommandHash(c.Headers.GetCommandHash());
-                e.Headers.SetCommandConversationId(c.Headers.GetCommandConversationId().Value);
-            }
-            return this.context.Bus.Publish(e);
+            return this.context.Bus.Publish(e, this.context.Message, eventVisibility);
         }
 
         protected Task Send(ApiCommand c)

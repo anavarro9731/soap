@@ -1,7 +1,6 @@
 ﻿namespace Soap.Api.Sample.Messages.Commands
 {
     using System;
-    using System.Collections.Generic;
     using CircuitBoard;
     using FluentValidation;
     using Soap.Api.Sample.Messages.Commands.UI;
@@ -16,6 +15,8 @@
 
         public bool? C107_BooleanOptional { get; set; }
 
+        public Address C107_CustomObject { get; set; }
+
         [Required]
         public DateTime? C107_DateTime { get; set; }
 
@@ -27,9 +28,21 @@
         public decimal? C107_DecimalOptional { get; set; }
 
         [Required]
+        public BlobMeta C107_File { get; set; }
+
+        public BlobMeta C107_FileOptional { get; set; }
+
+        [Required]
         public Guid? C107_Guid { get; set; }
 
         public Guid? C107_GuidOptional { get; set; }
+
+        [Required]
+        [IsImage]
+        public BlobMeta C107_Image { get; set; }
+
+        [IsImage]
+        public BlobMeta C107_ImageOptional { get; set; }
 
         [Required]
         public long? C107_Long { get; set; }
@@ -37,24 +50,27 @@
         public long? C107_LongOptional { get; set; }
 
         [Required]
+        public EnumerationAndFlags C107_PostCodesMulti { get; set; }
+
+        public EnumerationAndFlags C107_PostCodesMultiOptional { get; set; }
+
+        [Required]
+        public EnumerationAndFlags C107_PostCodesSingle { get; set; }
+
+        public EnumerationAndFlags C107_PostCodesSingleOptional { get; set; }
+
+        [Required]
         public string C107_String { get; set; }
 
         public string C107_StringOptional { get; set; }
-        
+
         [MultiLine]
         public string C107_StringOptionalMultiline { get; set; }
 
-        public Address C107_CustomObject { get; set; }
-        
-        [Required]
-        public EnumerationAndFlags C107_PostCodesSingle { get; set; }
-        
-        public EnumerationAndFlags C107_PostCodesSingleOptional { get; set; }
-        
-        [Required]
-        public EnumerationAndFlags C107_PostCodesMulti { get; set; }
-        
-        public EnumerationAndFlags C107_PostCodesMultiOptional { get; set; }
+        public override void Validate()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
 
         public class Address
         {
@@ -67,20 +83,7 @@
             [Required]
             public string C107_Town { get; set; }
         }
-        
-        [Required]
-        [IsImage]
-        public BlobMeta C107_Image { get; set; }
-        
-        [IsImage]
-        public BlobMeta C107_ImageOptional { get; set; }
-        
-        
-        [Required]
-        public BlobMeta C107_File { get; set; }
-        
-        public BlobMeta C107_FileOptional { get; set; }
-        
+
         public class Validator : AbstractValidator<C107v1_CreateOrUpdateTestDataTypes>
         {
             public Validator()
@@ -88,12 +91,5 @@
                 RuleFor(x => x.C107_Guid).NotEmpty();
             }
         }
-
-        public override void Validate()
-        {
-            
-        }
     }
-    
-    
 }

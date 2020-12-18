@@ -6,24 +6,24 @@
 
     public abstract class AbstractPongEvent : ApiEvent
     {
-        public DateTime? C000_PingedAt { get; set; }
+        public DateTime? E000_PingedAt { get; set; }
 
-        public string C000_PingedBy { get; set; }
+        public string E000_PingedBy { get; set; }
 
-        public Guid? C000_PingReference { get; set; }
+        public Guid? E000_PingReference { get; set; }
 
-        public DateTime? C000_PongedAt { get; set; }
+        public DateTime? E000_PongedAt { get; set; }
 
-        public string C000_PongedBy { get; set; }
+        public string E000_PongedBy { get; set; }
 
         public class Validator : AbstractValidator<AbstractPongEvent>
         {
             public Validator()
             {
-                RuleFor(x => x.C000_PingedBy).NotEmpty();
-                RuleFor(x => x.C000_PingedAt).NotEmpty();
-                RuleFor(x => x.C000_PongedAt).NotEmpty();
-                RuleFor(x => x.C000_PongedBy).NotEmpty();
+                RuleFor(x => x.E000_PingedBy).NotEmpty();
+                RuleFor(x => x.E000_PingedAt).NotEmpty();
+                RuleFor(x => x.E000_PongedAt).NotEmpty();
+                RuleFor(x => x.E000_PongedBy).NotEmpty();
             }
         }
     }

@@ -50,7 +50,6 @@ namespace Soap.Api.Sample.Logic.Processes
                 };
 
                 await Publish(response);
-                
                 };
     }
 }

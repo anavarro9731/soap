@@ -9,7 +9,11 @@
     {
         public TestData E102_TestData { get; set; }
 
-        public class TestData 
+        public override void Validate()
+        {
+        }
+
+        public class TestData
         {
             public bool? E102_Boolean { get; set; }
 
@@ -63,11 +67,6 @@
 
                 public string E102_Town { get; set; }
             }
-        }
-
-        public override void Validate()
-        {
-            
         }
     }
 }

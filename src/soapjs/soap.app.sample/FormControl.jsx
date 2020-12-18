@@ -47,7 +47,7 @@ function SoapFormControl(props) {
             if (config.logFormDetail) config.logger.log("MessageFromCleansedFormValues", JSON.stringify(formValues, null, 2));
             
             useCommand(command);
-            console.log("b", afterSubmit);
+
             if (!!afterSubmit) afterSubmit(command);
 
         } finally {
@@ -393,7 +393,10 @@ function SoapFormControl(props) {
                         {renderField(field)}
                     </ReactErrorBoundary>)
                 )}
-                <Button kind={KIND.primary} isLoading={isSubmitting}>
+                <Button 
+                    disabled={isSubmitted} 
+                    kind={KIND.primary} 
+                    isLoading={isSubmitting}>
                     Submit
                 </Button>
             </form>

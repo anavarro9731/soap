@@ -5,14 +5,12 @@
 
     public sealed class C102v1_GetServiceState : ApiCommand
     {
-
-        public class Validator : AbstractValidator<C102v1_GetServiceState>
+        public override void Validate()
         {
         }
 
-        public override void Validate()
+        public class Validator : AbstractValidator<C102v1_GetServiceState>
         {
-            
         }
     }
 }

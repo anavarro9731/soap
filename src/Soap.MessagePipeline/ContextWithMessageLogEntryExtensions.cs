@@ -44,7 +44,7 @@
                 SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully.ToString());
 
             await context.DataStore.CommitChanges();
-
+            
             Guard.Against(
                 context.Message.Headers.GetMessageId() == SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully
                 && context.MessageLogEntry.Attempts.Count == 0,
@@ -303,8 +303,8 @@
                 commands.ForEach(async i => await busClient.Send(i));
 
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                var events = incompleteEvents.Select(x => x.Deserialise<ApiEvent>()).ToList();
-                events.ForEach(async x => await busClient.Publish(x));
+                var events = incompleteEvents.Select(x => new { Event = x.Deserialise<ApiEvent>(), Visibility = x.EventVisibility }).ToList();
+                events.ForEach(async x => await busClient.Publish(x.Event, x.Visibility));
                 
             }
 
@@ -596,11 +596,11 @@
                     switch (queuedStateChange)
                     {
                         case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedCommandToSend)):
-                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend));
+                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend, null));
                             break;
 
                         case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedEventToPublish)):
-                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish));
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish,((QueuedEventToPublish)b1).EventVisibility));
                             break;
 
                         case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)):

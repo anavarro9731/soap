@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import ReactDOM from 'react-dom';
-import {addTranslations, useEvent, bus } from '@soap/modules';
+import {addTranslations, useEvent, bus, getHeader, headerKeys } from '@soap/modules';
 import translations from "./translations/en-soap.app.sample-default";
 import {Client as Styletron} from 'styletron-engine-atomic';
 import {Provider as StyletronProvider} from 'styletron-react';
@@ -24,15 +24,21 @@ addTranslations(translations);
 
 function App() {
     
-    const [testDataId, setTestDataId] = useState(null);
+    const [testDataId, setTestDataId] = useState();
+    const [testDataCreated, setTestDataCreated] = useState(false);
     
-    // useEvent("test-data-submitted", (data, env) => {
-    //     setTestDataId(data);
-    // });
-//afterSubmit={(command) => bus.publish(bus.channels.events, "test-data-submitted", command.c107_Guid)
+    useEvent({ 
+        eventName: "#", 
+        onEventReceived(event, envelope) {
+            console.log("z",event, envelope);
+            if (event.e104_TestDataId === testDataId) {
+                setTestDataCreated(true);    
+            }
+        }
+    });
     
     function renderDataView(testDataId) {
-      return !!testDataId ? (<DataViewControl query={{
+      return testDataCreated ? (<DataViewControl query={{
           $type: 'Soap.Api.Sample.Messages.Commands.C110v1_GetTestData, Soap.Api.Sample.Messages',
           c110_TestDataId: testDataId,
           headers: []
@@ -46,7 +52,7 @@ function App() {
                     <Grid>
                         <Cell span={6}>
                             <H1>Form</H1>
-                            <SoapFormControl formEventName="E103v1_GetC107Form" afterSubmit={(command) => { console.log("a",command.c107_Guid); setTestDataId(command.c107_Guid); }}/>
+                            <SoapFormControl formEventName="E103v1_GetC107Form" afterSubmit={(command) => setTestDataId(command.c107_Guid)} />
                         </Cell>
                         <Cell span={6}>
                             <H1>View</H1>

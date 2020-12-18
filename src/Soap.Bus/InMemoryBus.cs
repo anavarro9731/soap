@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -20,7 +21,7 @@
 
         public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
 
-        public Task Publish(ApiEvent publishEvent)
+        public Task Publish(ApiEvent publishEvent, EnumerationFlags enumerationFlags)
         {
             EventsPublished.Add(publishEvent);
             return Task.CompletedTask;

@@ -39,7 +39,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
 
             var e150wrapped = log.UnitOfWork.BusEventMessages.Single();
             var e150 = e150wrapped.Deserialise<E100v1_Pong>();
-            e150.C000_PongedBy.Should().Be(nameof(P201TestUnitOfWork));
+            e150.E000_PongedBy.Should().Be(nameof(P201TestUnitOfWork));
         }
         
         protected async Task RecordsShouldBeReturnToOriginalState(DataStore store)

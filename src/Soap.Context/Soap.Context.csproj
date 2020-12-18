@@ -7,6 +7,7 @@
     <ProjectReference Include="..\Soap.Bus\Soap.Bus.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
+    <ProjectReference Include="..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.7.0" />

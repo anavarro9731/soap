@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore.Interfaces;
     using Newtonsoft.Json;
     using Soap.Context.Logging;
@@ -11,10 +12,11 @@
 
     public class BusMessageUnitOfWorkItem : SerialisableObject
     {
-        public BusMessageUnitOfWorkItem(ApiMessage x)
+        public BusMessageUnitOfWorkItem(ApiMessage x, EnumerationFlags eventVisibility)
             : base(x)
         {
             MessageId = x.Headers.GetMessageId();
+            EventVisibility = eventVisibility;
         }
 
         public BusMessageUnitOfWorkItem()
@@ -24,6 +26,9 @@
 
         [JsonProperty]
         public Guid MessageId { get; internal set; }
+        
+        [JsonProperty]
+        public EnumerationFlags EventVisibility { get; internal set; }
     }
 
     public static class BusMessageUnitOfWorkItemExtensions

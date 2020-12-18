@@ -8,7 +8,6 @@
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
-    using Newtonsoft.Json;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -48,14 +47,40 @@
             }
         }
 
-        public async Task Publish<T>(T eventToPublish) where T : ApiEvent
+        public async Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, EnumerationFlags eventVisibility = null)
+            where T : ApiEvent where Tm : ApiMessage
         {
+            eventVisibility ??= GetDefaultVisibility(eventToPublish, contextMessage);
+
+            static EnumerationFlags GetDefaultVisibility(ApiEvent eventToPublish, ApiMessage contextMessage)
+            {
+                var eventVisibility = new EnumerationFlags();
+
+                if (!string.IsNullOrWhiteSpace(contextMessage.Headers.GetSessionId()))
+                {
+                    if (!(contextMessage is ApiCommand))
+                    {
+                        throw new ApplicationException("Incoming Messages with a Session/ClientId are always expected to be commands");
+                    }
+
+                    eventVisibility.AddFlag(IBusClient.EventVisibility.WebSocketSender);
+                    //* transfer from incoming command to outgoing event for websocket clients
+                    eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
+                    eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
+                    eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);
+                }
+
+                eventVisibility.AddFlag(IBusClient.EventVisibility.AllBusSubscriptions);
+
+                return eventVisibility;
+            }
+
             eventToPublish.Validate();
             eventToPublish = eventToPublish.Clone();
             eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
-            
+
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
              the unit of work directly from the queuedmessage, publish is not called again. This is very important because
@@ -65,8 +90,9 @@
             this.messageAggregator.Collect(
                 new QueuedEventToPublish
                 {
+                    EventVisibility = eventVisibility,
                     EventToPublish = eventToPublish,
-                    CommitClosure = async () => await BusClient.Publish(eventToPublish)
+                    CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility)
                 });
         }
 
@@ -77,7 +103,7 @@
             commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
-            
+
             /* All operations that modify the original message to get it ready must happen in the Publish and Send commands
              and they must happen before the command is "collected" because that final state of the message is then retried by
              the unit of work directly from the queuedmessage, publish is not called again. This is very important because
@@ -107,8 +133,10 @@
             {
                 var blobId = Guid.NewGuid();
                 message.Headers.SetBlobId(blobId);
-                
-                var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(blobId, new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete));
+
+                var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(
+                    blobId,
+                    new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete));
                 message.Headers.SetSasStorageToken(sasStorageToken);
             }
 
@@ -119,10 +147,9 @@
                 var publicProperties = message.GetType()
                                               .GetProperties()
                                               .Where(
-                                                  p => p.Name != nameof(ApiMessage.Headers) &&
-                                                       p.CanRead && p.CanWrite
-                                                                 && (p.MemberType == MemberTypes.Property
-                                                                     || p.MemberType == MemberTypes.Field));
+                                                  p => p.Name != nameof(ApiMessage.Headers) && p.CanRead && p.CanWrite
+                                                       && (p.MemberType == MemberTypes.Property
+                                                           || p.MemberType == MemberTypes.Field));
 
                 foreach (var publicProperty in publicProperties) publicProperty.SetValue(message, null);
             }

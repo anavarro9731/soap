@@ -12,7 +12,8 @@
     {
         public IContinueProcess<C107v1_CreateOrUpdateTestDataTypes>[] HandleWithTheseStatefulProcesses { get; }
 
-        public Task Handle(C107v1_CreateOrUpdateTestDataTypes msg) => this.Get<TestDataOperations>().Call(x => x.SetTestData)(msg);
+        public Task Handle(C107v1_CreateOrUpdateTestDataTypes msg) =>
+            this.Get<P209CreateOrUpdateTestData>().Call(x => x.BeginProcess)(msg);
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.Get<P203NotifyOfFinalFailure>().Call(x => x.BeginProcess)(msg);

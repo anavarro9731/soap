@@ -29,6 +29,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
+    using Soap.Pf.MessageContractsBase;
     using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
@@ -51,6 +52,7 @@
             ILogger logger,
             ApplicationConfig appConfig,
             DataStoreOptions dataStoreOptions = null) where TApiIdentity : class, IApiIdentity, new()
+        
         {
             {
                 var x = new Result();

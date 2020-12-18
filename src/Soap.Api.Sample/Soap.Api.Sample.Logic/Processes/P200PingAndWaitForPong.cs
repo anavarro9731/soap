@@ -39,7 +39,7 @@
         public Func<E100v1_Pong, Task> ContinueProcess =>
             async message =>
                 {
-                if (message.C000_PingReference.ToString() != References.PingId)
+                if (message.E000_PingReference.ToString() != References.PingId)
                 {
                     await State.AddState(States.PongDoesNotMatchPing);
                 }

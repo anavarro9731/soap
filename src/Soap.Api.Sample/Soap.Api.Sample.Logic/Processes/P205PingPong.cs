@@ -16,10 +16,10 @@
                 await Publish(
                     new E100v1_Pong
                     {
-                        C000_PingedAt = message.C000_PingedAt,
-                        C000_PingedBy = message.C000_PingedBy,
-                        C000_PongedAt = DateTime.UtcNow,
-                        C000_PongedBy = nameof(P205PingPong)
+                        E000_PingedAt = message.C000_PingedAt,
+                        E000_PingedBy = message.C000_PingedBy,
+                        E000_PongedAt = DateTime.UtcNow,
+                        E000_PongedBy = nameof(P205PingPong)
                     });
                 };
     }

@@ -23,7 +23,7 @@
                 foreach (var process in this.messageFunctionsTyped.HandleWithTheseStatefulProcesses)
                 {
                     var asIContinueStatefulProcess = (IContinueStatefulProcess)process;
-                    ;
+                    
                     if (IsOfCorrectType(asIContinueStatefulProcess))
                     {
                         await asIContinueStatefulProcess.ContinueProcess((T)msg);

@@ -8,17 +8,17 @@
     {
         public Guid? C110_TestDataId { get; set; }
 
+        public override void Validate()
+        {
+            new Validator().ValidateAndThrow(this);
+        }
+
         public class Validator : AbstractValidator<C110v1_GetTestData>
         {
             public Validator()
             {
                 RuleFor(x => x.C110_TestDataId).NotEmpty();
             }
-        }
-
-        public override void Validate()
-        {
-            new Validator().ValidateAndThrow(this);
         }
     }
 }
