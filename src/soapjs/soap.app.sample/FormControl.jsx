@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {config, translate, useCommand, useQuery, headerKeys} from '@soap/modules';
+import React, {useEffect, useState} from 'react';
+import {config, headerKeys, translate, useCommand, useQuery} from '@soap/modules';
 import {Button, KIND} from 'baseui/button';
 import {Input} from 'baseui/input'
 import FileUpload from './FileUpload';
@@ -13,7 +13,9 @@ import wordKeys from './translations/word-keys';
 import {Select} from "baseui/select";
 import {Textarea} from "baseui/textarea";
 import {createRegisteredTypedMessageInstanceFromAnonymousObject} from '@soap/modules/lib/soap/messages';
-
+import {SnackbarProvider, useSnackbar,} from 'baseui/snackbar';
+import {Check} from "baseui/icon";
+import {toaster, ToasterContainer} from 'baseui/toast';
 
 function SoapFormControl(props) {
 
@@ -21,8 +23,16 @@ function SoapFormControl(props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const {handleSubmit, control, errors} = useForm();
-    const {formEventName, afterSubmit } = props;
-    
+    const {formEventName, afterSubmit} = props;
+
+    useEffect(() => {
+        if (isSubmitted) {
+            window.scrollTo(0, 0);
+        }
+    }, [isSubmitted])
+
+    const {enqueue} = useSnackbar();
+
     const c109v1_GetForm = {
         $type: 'Soap.Api.Sample.Messages.Commands.C109v1_GetForm, Soap.Api.Sample.Messages',
         c109_FormDataEventName: formEventName,
@@ -30,37 +40,65 @@ function SoapFormControl(props) {
     };
 
     let formDataEvent = useQuery(query);
-    
+
     if (!formDataEvent) return (<Button onClick={() => setQuery(c109v1_GetForm)}>Test</Button>);
 
-    function onSubmit(formValues) {
+    async function onSubmit(formValues) {
 
         try {
+
+            const {e000_ValidationEndpoint: validationEndpoint} = formDataEvent;
+
             setIsSubmitting(true);
 
             if (config.logFormDetail) config.logger.log("FormValues", JSON.stringify(formValues, null, 2));
 
             mutateFormValuesIntoAnonymousCommandObject(formValues, formDataEvent);
-            
-            const command = createRegisteredTypedMessageInstanceFromAnonymousObject(formValues);
-            
+
             if (config.logFormDetail) config.logger.log("MessageFromCleansedFormValues", JSON.stringify(formValues, null, 2));
-            
-            useCommand(command);
 
-            if (!!afterSubmit) afterSubmit(command);
+            const command = createRegisteredTypedMessageInstanceFromAnonymousObject(formValues);
 
+            let response = await fetch(validationEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(command) // body data type must match "Content-Type" header
+            });
+            const msg = await response.text();
+
+            if (msg) {
+                toaster.warning(msg);
+            } else {
+                try {
+                    useCommand(command);
+
+                    if (!!afterSubmit) afterSubmit(command);
+
+                    //* snackbar here
+                    enqueue({
+                        message: 'Form Submitted Successfully',
+                        startEnhancer: ({size}) => <Check size={size}/>,
+                    })
+                } finally {
+                    setIsSubmitted(true);
+                }
+
+            }
         } finally {
-            setIsSubmitted(true);
             setIsSubmitting(false);
         }
 
-
         function mutateFormValuesIntoAnonymousCommandObject(obj, formDataEvent) {
-
+            console.log("x",obj);
             cleanProperties(obj);
-            
-            const {e000_CommandName: commandAssemblyTypeName, e000_SasStorageTokenForCommand: sasToken, e000_CommandBlobId: blobId } = formDataEvent;
+
+            const {
+                e000_CommandName: commandAssemblyTypeName,
+                e000_SasStorageTokenForCommand: sasToken,
+                e000_CommandBlobId: blobId
+            } = formDataEvent;
 
             obj.$type = commandAssemblyTypeName;  //* set root type
             //* add blob headers (the rest are added by command handler)
@@ -68,7 +106,7 @@ function SoapFormControl(props) {
                 {active: null, key: headerKeys.sasStorageToken, value: sasToken},
                 {active: null, key: headerKeys.blobId, value: blobId}
             ];
-            
+
             function cleanProperties(obj) {
 
                 for (const key in obj) {
@@ -90,7 +128,7 @@ function SoapFormControl(props) {
                         } else {
                             if (value.isImage !== undefined && value.objectUrl !== undefined) {
                                 //* it's a fileInfo object you need to convert to send just the id of the already uploaded blob which is what the backend expects
-                                obj[key] = { id: value.id, name : value.name };
+                                obj[key] = {id: value.id, name: value.name};
                             }
                             cleanProperties(value);
                         }
@@ -133,7 +171,7 @@ function SoapFormControl(props) {
             for (const key in obj) {
 
                 const newKey = key.charAt(0).toLowerCase() + key.substring(1);
-                if (newKey !== key || Array.isArray(obj)) { 
+                if (newKey !== key || Array.isArray(obj)) {
                     if (!Array.isArray(obj)) { //* convert it's property names
                         //* convert it first or you'll end up deleting its converted children
                         Object.defineProperty(obj, newKey, Object.getOwnPropertyDescriptor(obj, key)); //* create new
@@ -195,6 +233,7 @@ function SoapFormControl(props) {
                         defaultValue={fieldMeta.initialValue ?? ''}
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
+                            
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
@@ -243,6 +282,14 @@ function SoapFormControl(props) {
                         defaultValue={fieldMeta.initialValue ?? ''}
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
+                            const transform = {
+                                input: (value) =>
+                                    isNaN(value) || value === 0 ? "" : value.toString(), // incoming input value
+                                    output: (e) => {
+                                    const output = parseFloat(e.target.value, 10);
+                                    return isNaN(output) ? 0 : output; // what's going to the final submit and store
+                                } 
+                            };
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
@@ -252,9 +299,10 @@ function SoapFormControl(props) {
                                         error={Object.keys(errors).includes(name) ? "required" : undefined}
                                         inputRef={ref}
                                         name={name}
+                                        valueAsNumber
                                         type="number"
-                                        value={value}
-                                        onChange={onChange}
+                                        value={transform.input(value)}
+                                        onChange={(v) => onChange(transform.output(v))}
                                         onBlur={onBlur}
                                     /></FormControl>
                             );
@@ -384,25 +432,34 @@ function SoapFormControl(props) {
     }
 
     return (
-        <div>
-            <H1> {translate(wordKeys.testFormHeader)} </H1>
-
-            <form onSubmit={handleSubmit(onSubmit, onError)}>
-                {formDataEvent.e000_FieldData.map(field =>
-                    (<ReactErrorBoundary key={field.name + "-errorB"}>
-                        {renderField(field)}
-                    </ReactErrorBoundary>)
-                )}
-                <Button 
-                    disabled={isSubmitted} 
-                    kind={KIND.primary} 
-                    isLoading={isSubmitting}>
-                    Submit
-                </Button>
-            </form>
-            {renderDebug()}
-        </div>
+        <ToasterContainer  autoHideDuration={3000}>
+            <div>
+                <H1> {translate(wordKeys.testFormHeader)} </H1>
+                <form onSubmit={handleSubmit(onSubmit, onError)}>
+                    {formDataEvent.e000_FieldData.map(field =>
+                        (<ReactErrorBoundary key={field.name + "-errorB"}>
+                            {renderField(field)}
+                        </ReactErrorBoundary>)
+                    )}
+                    <Button
+                        disabled={isSubmitted}
+                        kind={KIND.primary}
+                        isLoading={isSubmitting}>
+                        Submit
+                    </Button>
+                </form>
+                {renderDebug()}
+            </div>
+        </ToasterContainer>
     );
 }
 
-export default SoapFormControl;
+
+export default function SoapForm(props) {
+    return (
+        <SnackbarProvider>
+            <SoapFormControl {...props} />
+        </SnackbarProvider>
+    );
+}
+

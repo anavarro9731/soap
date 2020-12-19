@@ -2,7 +2,6 @@
 {
     using System;
     using CircuitBoard;
-    using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Interfaces.Messages;
 
     public class E102v1_GotTestData : ApiEvent

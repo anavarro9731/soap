@@ -11,7 +11,6 @@
     using System.Text.RegularExpressions;
     using CircuitBoard;
     using Namotion.Reflection;
-    using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Config;
     using Soap.Context;
     using Soap.Interfaces.Messages;

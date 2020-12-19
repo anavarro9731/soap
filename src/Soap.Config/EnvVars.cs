@@ -9,6 +9,8 @@
         public static string AppInsightsInstrumentationKey =>
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
+        public static string FunctionAppHostUrl = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
+        
         public static string AzureBusNamespace => Environment.GetEnvironmentVariable(nameof(AzureBusNamespace));
 
         public static string AzureDevopsOrganisation => Environment.GetEnvironmentVariable(nameof(AzureDevopsOrganisation));

@@ -3,7 +3,6 @@
     using Soap.Api.Sample.Logic.Mappings;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.MessageMapping;
-    using Soap.Pf.MessageContractsBase;
 
     public partial class HandlerRegistration : MapMessagesToFunctions
     {

@@ -9,19 +9,29 @@
         
         public static T FromJson<T>(this string json, SerialiserIds serialiserId, string actualSerialisedTypeWhenDifferentFromT = null) 
         {
-            var hasUnderlyingType = !string.IsNullOrEmpty(actualSerialisedTypeWhenDifferentFromT); 
-            
+            var hasUnderlyingType = !string.IsNullOrEmpty(actualSerialisedTypeWhenDifferentFromT);
+
+            var actualType = Type.GetType(actualSerialisedTypeWhenDifferentFromT);
+
+            var result = (T) (hasUnderlyingType ? json.FromJson(actualType, serialiserId) : json.FromJson(typeof(T), serialiserId));
+
+            return result;
+        }
+        
+
+        public static object FromJson(this string json, Type type, SerialiserIds serialiserId) 
+        {
             var obj = serialiserId switch
             {
-                var x when x == SerialiserIds.JsonDotNetDefault  => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT)): JsonConvert.DeserializeObject<T>(json),
-                var x when x == SerialiserIds.ClientSideMessageSchemaGeneraton => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT), JsonNetSettings.MessageSchemaSerialiserSettings) : JsonConvert.DeserializeObject<T>(json, JsonNetSettings.MessageSchemaSerialiserSettings),
-                var x when x == SerialiserIds.ApiBusMessage => hasUnderlyingType ? (T)JsonConvert.DeserializeObject(json, Type.GetType(actualSerialisedTypeWhenDifferentFromT), JsonNetSettings.ApiMessageSerialiserSettings) : JsonConvert.DeserializeObject<T>(json, JsonNetSettings.ApiMessageSerialiserSettings),
+                var x when x == SerialiserIds.JsonDotNetDefault  => JsonConvert.DeserializeObject(json, type),
+                var x when x == SerialiserIds.ClientSideMessageSchemaGeneraton => JsonConvert.DeserializeObject(json, type, JsonNetSettings.MessageSchemaSerialiserSettings),
+                var x when x == SerialiserIds.ApiBusMessage => JsonConvert.DeserializeObject(json, type, JsonNetSettings.ApiMessageSerialiserSettings),
                 _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
             };
 
             return obj;
         }
-        
+
         
         
         public static string ToCamelCase(this string source)

@@ -24,7 +24,10 @@ let _logger = {
             [{toAzure}, types.boolean, optional]
         );
 
-        const appInsightsKey = process.env.APPINSIGHTS_KEY;
+        let appInsightsKey;
+        if (process) {
+            appInsightsKey = process.env.APPINSIGHTS_KEY;    
+        }
         appInsightsKey || console.log("process.env.APPINSIGHTS_KEY not defined check .env file.")
 
         _appInsights = _appInsights || new ApplicationInsights({
@@ -78,7 +81,7 @@ let _sender = (msg) => {
             await sender.sendMessages({
                 body: message,
                 messageId: getHeader(message, headerKeys.messageId),
-                subject: getHeader(message, headerKeys.schema),
+                subject: message.$type,
                 sessionId: _sessionDetails.browserSessionId
             });
 

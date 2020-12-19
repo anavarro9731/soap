@@ -1,4 +1,4 @@
-namespace Soap.Api.Sample.Messages.Commands.UI
+namespace Soap.Interfaces.Messages
 {
     using System;
 

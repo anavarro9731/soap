@@ -4,6 +4,7 @@ import bus from '../bus';
 import postal from 'postal';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, getRegisteredMessageType, registerMessageTypes } from "../messages";
 
+
 test('event schema created without error', () => {
     registerMessageTypes(messageDefinitions);
     const anonymousEvent = {e200_results: [{e200_id: 10}, {e200_id: 20}], $type:'Soap.Api.Sample.Messages.Events.TestEvent_e200v1, Soap.Api.Sample.Messages', headers : []};

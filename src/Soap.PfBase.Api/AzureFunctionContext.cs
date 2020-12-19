@@ -29,7 +29,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
-    using Soap.Pf.MessageContractsBase;
+    using Soap.PfBase.Messages;
     using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
@@ -234,6 +234,9 @@
 
             static void EnsureEnvironmentVars()
             {
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.FunctionAppHostUrl),
+                    $"{nameof(EnvVars.FunctionAppHostUrl)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureDevopsOrganisation),
                     $"{nameof(EnvVars.AzureDevopsOrganisation)} environment variable not set");

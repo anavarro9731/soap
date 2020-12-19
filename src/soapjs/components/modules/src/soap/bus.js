@@ -12,7 +12,7 @@ export default {
     );
 
     let topic = schema;
-    if (!!conversationId) topic += `.${conversationId}`;
+    topic += `.${conversationId ?? "00000000-0000-0000-0000-000000000000"}`;
 
     config.logger.log(
       `PUBLISHING ${JSON.stringify(
@@ -36,7 +36,7 @@ export default {
     );
 
     let topic = schema;
-    if (!!conversationId) topic += `.${conversationId}`;
+    topic += `.${conversationId ?? "#"}`;
 
     const sub = postal.subscribe({
       channel: channel,

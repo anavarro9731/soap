@@ -1,18 +1,18 @@
-﻿namespace Soap.Pf.MessageContractsBase
+﻿namespace Soap.Interfaces.Messages
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using CircuitBoard;
-    using Soap.Api.Sample.Messages.Commands.UI;
-    using Soap.Interfaces.Messages;
 
     public abstract class UIFormDataEvent : ApiEvent
     {
         public string E000_CommandName { get; set; }
 
         public Guid? E000_CommandBlobId { get; set; }
+        
+        public string E000_ValidationEndpoint { get; set; }
         
         public string E000_SasStorageTokenForCommand { get; set; }
         
@@ -58,19 +58,17 @@
            of value types.
                                 
             */
-
         
-        
-        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, dynamic bag = null)
+        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, string httpApiEndpoint)
         {
             {
-                E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues(bag).GetType());
+                E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues().GetType());
                 
                 var fieldData = new List<FieldMeta>();
 
                 BuildFieldAndObjectStructureData(
-                    UserDefinedValues(bag).GetType(),
-                    UserDefinedValues(bag),
+                    UserDefinedValues().GetType(),
+                    UserDefinedValues(),
                     string.Empty,
                     fieldData,
                     E000_CommandName);
@@ -78,6 +76,7 @@
                 E000_FieldData = fieldData;
                 E000_SasStorageTokenForCommand = sasTokenForCommand;
                 E000_CommandBlobId = idOfCommand;
+                E000_ValidationEndpoint = $"{httpApiEndpoint}ValidateMessage?type={Uri.EscapeUriString(ToShortAssemblyTypeName(UserDefinedValues().GetType()))}";
             }
             
             static string ToShortAssemblyTypeName(Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
@@ -215,6 +214,6 @@
             }
         }
 
-        protected abstract ApiCommand UserDefinedValues(dynamic bag);
+        protected abstract ApiCommand UserDefinedValues();
     }
 }

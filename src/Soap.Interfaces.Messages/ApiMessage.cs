@@ -55,7 +55,7 @@
                 messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name); //* send to owners queue
             }
 
-            messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
+            messageHeaders.SetSchema(message.GetType().FullName);
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -84,7 +84,7 @@
             messageHeaders.SetTimeOfCreationAtOrigin();
             messageHeaders.SetMessageId(Guid.NewGuid());
             messageHeaders.SetTopic(message.GetType().FullName);
-            messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
+            messageHeaders.SetSchema(message.GetType().FullName);
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -147,7 +147,7 @@
 
             if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
             {
-                messageHeaders.SetSchema(message.GetType().ToShortAssemblyTypeName());
+                messageHeaders.SetSchema(message.GetType().FullName);
             }
 
             /* NOT SET

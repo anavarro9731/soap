@@ -18,7 +18,7 @@
             Environment = environment;
             AppId = azureAppName;
         }
-
+        
         public string AppFriendlyName { get; set; }
 
         public string AppId { get; set; }
@@ -30,6 +30,8 @@
         public IDatabaseSettings DatabaseSettings { get; set; }
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
+
+        public string HttpApiEndpoint { get; set; } = $"http://{EnvVars.FunctionAppHostUrl}/api/";  //TODO move to soap.config http in dev otherwise https
 
         public SoapEnvironments Environment { get; set; }
 

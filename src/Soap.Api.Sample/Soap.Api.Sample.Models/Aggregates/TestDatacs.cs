@@ -3,7 +3,7 @@ namespace Soap.Api.Sample.Models.Aggregates
     using System;
     using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
-    using Soap.Api.Sample.Messages.Commands.UI;
+    using Soap.Interfaces.Messages;
 
     public class TestData : Aggregate
     {

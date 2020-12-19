@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>Soap.Pf.MessageContractsBase</RootNamespace>
     <Version>4.9.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
@@ -9,5 +8,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces.Messages\Soap.Interfaces.Messages.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="soap.jpg" />
+    <EmbeddedResource Include="soap.zip" />
   </ItemGroup>
 </Project>

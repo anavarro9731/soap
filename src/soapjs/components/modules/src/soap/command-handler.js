@@ -20,7 +20,7 @@ export function mockEvent(command, correspondingEvents) {
         addHeaders(command, event);
 
         //* save to queue
-        const commandSchema = command.$type;  //* gets constructor name
+        const commandSchema = parseDotNetShortAssemblyQualifiedName(command.$type).className;
         if (!mockEvents[commandSchema]) {
             mockEvents[commandSchema] = [];
         }
@@ -33,7 +33,8 @@ function addHeaders(command, event) {
 
     //* would normally be set with publisher which is out of our control (e.g. server)
     setHeader(event, headerKeys.commandConversationId, "we won't know till later, so we'll replace it later");
-    setHeader(event, headerKeys.schema, event.$type);
+    const { className } = parseDotNetShortAssemblyQualifiedName(event.$type);
+    setHeader(event, headerKeys.schema, className);
     const {headers, ...payload} = command;
     setHeader(event, headerKeys.commandHash, md5Hash(payload));
 
@@ -110,9 +111,9 @@ export default {
             const {headers, ...payload} = command;
             setHeader(command, headerKeys.commandHash,  md5Hash(payload));
             setHeader(command, headerKeys.identityToken, "TBD");
-            const {assemblyName} = parseDotNetShortAssemblyQualifiedName(command.$type);
+            const {className, assemblyName} = parseDotNetShortAssemblyQualifiedName(command.$type);
             setHeader(command, headerKeys.queueName, assemblyName);
-            setHeader(command, headerKeys.schema, command.$type);
+            setHeader(command, headerKeys.schema, className);
             //* headerKeys.statefulProcessId not used by client side code right now
             //* headersKeys.topic only used by events
             const commandBlob = new Blob( [JSON.stringify(command)] );

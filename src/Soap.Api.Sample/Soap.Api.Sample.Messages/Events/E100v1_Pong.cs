@@ -1,6 +1,6 @@
 ﻿namespace Soap.Api.Sample.Messages.Events
 {
-    using Soap.Pf.MessageContractsBase;
+    using Soap.PfBase.Messages;
 
     public class E100v1_Pong : AbstractPongEvent
     {

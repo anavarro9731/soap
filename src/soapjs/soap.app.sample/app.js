@@ -10,6 +10,7 @@ import DataViewControl from "./DataViewControl";
 import {Cell, Grid} from 'baseui/layout-grid';
 import {H1} from "baseui/typography";
 
+
 const localeOverride = {
     fileuploader: {
         dropFilesToUpload: "Drop a file here, or ",
@@ -28,9 +29,8 @@ function App() {
     const [testDataCreated, setTestDataCreated] = useState(false);
     
     useEvent({ 
-        eventName: "#", 
+        eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataAdded", 
         onEventReceived(event, envelope) {
-            console.log("z",event, envelope);
             if (event.e104_TestDataId === testDataId) {
                 setTestDataCreated(true);    
             }

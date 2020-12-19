@@ -9,7 +9,7 @@
         public Guid? C110_TestDataId { get; set; }
 
         public override void Validate()
-        {
+        { 
             new Validator().ValidateAndThrow(this);
         }
 

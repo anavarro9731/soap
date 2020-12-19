@@ -3,7 +3,6 @@
     using System;
     using CircuitBoard;
     using FluentValidation;
-    using Soap.Api.Sample.Messages.Commands.UI;
     using Soap.Interfaces.Messages;
 
     public class C107v1_CreateOrUpdateTestDataTypes : ApiCommand
@@ -89,6 +88,7 @@
             public Validator()
             {
                 RuleFor(x => x.C107_Guid).NotEmpty();
+                RuleFor(x => x.C107_DecimalOptional).NotEmpty();
             }
         }
     }

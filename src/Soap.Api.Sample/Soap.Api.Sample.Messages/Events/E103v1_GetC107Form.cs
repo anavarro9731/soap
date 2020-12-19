@@ -6,7 +6,7 @@
     using CircuitBoard;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces.Messages;
-    using Soap.Pf.MessageContractsBase;
+    using Soap.PfBase.Messages;
 
     public class E103v1_GetC107Form : UIFormDataEvent
     {
@@ -21,12 +21,13 @@
         {
         }
 
-        protected override ApiCommand UserDefinedValues(dynamic bag)
+        protected override ApiCommand UserDefinedValues()
         {
             var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: this.postCodes);
             c107PostCodesMultiOptional.AddFlag(this.postCodes.First());
             c107PostCodesMultiOptional.AddFlag(this.postCodes.Last());
-
+            
+            
             return new C107v1_CreateOrUpdateTestDataTypes
             {
                 C107_Decimal = 0,
@@ -42,8 +43,8 @@
                 {
                     C107_Town = "Pontrilas"
                 },
-                C107_File = bag.File,
-                C107_Image = bag.Image
+                C107_File = SampleBlobs.File1,
+                C107_Image = SampleBlobs.Image1
             };
         }
     }
