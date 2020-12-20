@@ -91,9 +91,9 @@ function SoapFormControl(props) {
         }
 
         function mutateFormValuesIntoAnonymousCommandObject(obj, formDataEvent) {
-            console.log("x",obj);
+            
             cleanProperties(obj);
-
+            
             const {
                 e000_CommandName: commandAssemblyTypeName,
                 e000_SasStorageTokenForCommand: sasToken,
@@ -110,28 +110,13 @@ function SoapFormControl(props) {
             function cleanProperties(obj) {
 
                 for (const key in obj) {
-
                     const value = obj[key];
                     if (typeof value === "object" && value !== null) {
-
-                        if (Array.isArray(value)) {
-                            if (value.length > 0 && value[0].active !== undefined && value[0].value !== undefined && value[0].key !== undefined) {
-                                //* its an array of enumerations, you need to convert it to EnumerationAndFlags for the round trip
-                                obj[key] = {
-                                    allEnumerations: [],
-                                    selectedKeys: value.map(x => x.key),
-                                    allowMultipleSelections: null
-                                };
-                            } else {
-                                cleanProperties(value);
-                            }
-                        } else {
-                            if (value.isImage !== undefined && value.objectUrl !== undefined) {
-                                //* it's a fileInfo object you need to convert to send just the id of the already uploaded blob which is what the backend expects
-                                obj[key] = {id: value.id, name: value.name};
-                            }
-                            cleanProperties(value);
-                        }
+                        //* can be an array
+                        if (value.isImage !== undefined && value.objectUrl !== undefined) {
+                            //* it's a fileInfo object you need to convert to send just the id of the already uploaded blob which is what the backend expects
+                            obj[key] = {id: value.id, name: value.name};
+                        } else cleanProperties(value);
                     } else if (value === "") {
                         obj[key] = null; //* convert empty string used as default by react-hook-form back to null
                     }
@@ -149,23 +134,6 @@ function SoapFormControl(props) {
         therefore we set empty string, even on booleans [which are nulleable] a way to determine this. we then parse it and change
         back to null later if the user never set the value 
          */
-        function standardiseDateInputs(input) {
-            let formattedDate;
-            if (input === null) {
-                formattedDate = input
-            } else if (typeof input === 'string') {
-                formattedDate = new Date(input)
-            } else if (typeof input === 'object') {
-                if (input.date === null) {
-                    formattedDate = null
-                } else {
-                    formattedDate = new Date(input.date)
-                }
-            } else {
-                throw 'Unexpected Date format';
-            }
-            return formattedDate;
-        }
 
         function convertObjectKeysToPascalCase(obj) {
             for (const key in obj) {
@@ -185,6 +153,22 @@ function SoapFormControl(props) {
                 }
 
             }
+        }
+        
+        function fieldHasErrored(fieldName) {
+            let fullPath = "errors";
+            if (fieldName.includes('.')) {
+                const parts = fieldName.split('.');
+                for (const part of parts) {
+                    fullPath += '?.' + part;
+                }    
+            } else {
+                fullPath += '.' + fieldName;
+            }
+            
+            let error = eval(fullPath);
+            error = typeof error === 'object' ? 'required' : undefined;
+            return error;
         }
 
         switch (fieldMeta.dataType) {
@@ -210,7 +194,7 @@ function SoapFormControl(props) {
                         render={({onChange, onBlur, value, name}) => {
                             return (
                                 <FormControl
-                                    label={fieldMeta.label} caption={fieldMeta.caption}
+                                    label={fieldMeta.label}
                                     disabled={isSubmitted}
                                 >
                                     <Checkbox
@@ -233,14 +217,13 @@ function SoapFormControl(props) {
                         defaultValue={fieldMeta.initialValue ?? ''}
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
-                            
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <Input
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
                                         name={name}
                                         value={value}
@@ -262,9 +245,9 @@ function SoapFormControl(props) {
                                 <FormControl
                                     disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <Textarea
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
                                         name={name}
                                         value={value}
@@ -274,7 +257,7 @@ function SoapFormControl(props) {
                             );
                         }}
                     />);
-            case "number":
+            case "number": //* longs will be rounded to ints if the user enters a float
                 return (
                     <Controller
                         control={control}
@@ -283,23 +266,23 @@ function SoapFormControl(props) {
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
                             const transform = {
-                                input: (value) =>
-                                    isNaN(value) || value === 0 ? "" : value.toString(), // incoming input value
-                                    output: (e) => {
-                                    const output = parseFloat(e.target.value, 10);
-                                    return isNaN(output) ? 0 : output; // what's going to the final submit and store
+                                input: (value) => {
+                                    return isNaN(value) ? '' : value.toString(); 
+                                }, // incoming input value
+                                output: (e) => {
+                                    const output = parseFloat(e.target.value);
+                                    return isNaN(output) ? '' : output; // what's going to the final submit and store
                                 } 
                             };
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <Input
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
                                         name={name}
-                                        valueAsNumber
                                         type="number"
                                         value={transform.input(value)}
                                         onChange={(v) => onChange(transform.output(v))}
@@ -315,17 +298,38 @@ function SoapFormControl(props) {
                         name={fieldMeta.name}
                         defaultValue={fieldMeta.initialValue}
                         rules={{required: fieldMeta.required}}
-                        render={({onChange, value, name}) => {
+                        render={({onChange, value}) => {
+                            const transform = {
+                                input: (value) => {
+                                    if (value === null) {
+                                        return value;
+                                    } else if (typeof value === 'string') {
+                                        return new Date(value)
+                                    } else {
+                                        throw 'Unexpected Date format';
+                                    }
+                                }, // incoming input value
+                                output: (e) => {
+                                    if (typeof e === 'object') {
+                                        if (e.date === null) return null;
+                                        else return e.date.toISOString();
+                                    } else if (typeof e === 'string') {
+                                        return e;
+                                    } else {
+                                        throw 'Unexpected Date format';
+                                    }
+                                }
+                            };
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <DatePicker
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         clearable
-                                        value={standardiseDateInputs(value)}
-                                        onChange={onChange}
+                                        value={transform.input(value)}
+                                        onChange={v => onChange(transform.output(v))}
                                     />
                                 </FormControl>);
                         }}
@@ -334,32 +338,58 @@ function SoapFormControl(props) {
                 //* Note keys are UPPER CASE here since JSON.NET does not serialise objects (Enumeration) to pascal-case;
                 convertObjectKeysToPascalCase(fieldMeta.initialValue);
                 const allowMultiple = fieldMeta.initialValue.allowMultipleSelections;
-                const defaultValue = fieldMeta.initialValue.selectedKeys.length > 0 ? fieldMeta.initialValue.selectedKeys.map(v => ({
-                    key: v,
-                    active: null,
-                    value: fieldMeta.initialValue.allEnumerations.find(e => e.key === v).value
-                })) : [];
                 return (
                     <Controller
                         control={control}
                         name={fieldMeta.name}
-                        defaultValue={defaultValue}
-                        rules={fieldMeta.required ? {validate: value => value.length > 0} : {}}
-                        render={({onChange, onBlur, value, name}) => {
+                        defaultValue={{
+                            allEnumerations: [],
+                            selectedKeys: fieldMeta.initialValue.selectedKeys.map(x => x),
+                            allowMultipleSelections: null
+                        }}
+                        rules={fieldMeta.required ? {validate: value => value.selectedKeys.length > 0} : {}}
+                        render={({onChange, onBlur, value}) => {
+                            const transform = {
+                                input: (value) => {
+                                    if (Array.isArray(value)) {
+                                        return value;
+                                    } else if (typeof value === 'object') {
+                                        const result = value.selectedKeys.length > 0 ? value.selectedKeys.map(v => ({
+                                            key: v,
+                                            active: null,
+                                            value: fieldMeta.initialValue.allEnumerations.find(e => e.key === v).value
+                                        })) : [];
+                                        return result;
+                                    } else {
+                                        throw 'Unexpected Enumeration format';
+                                    }
+                                }, // incoming input value
+                                output: (value) => {
+                                    if (Array.isArray(value)) {
+                                        return {
+                                            allEnumerations: [],
+                                            selectedKeys: value.map(x => x.key),
+                                            allowMultipleSelections: null
+                                        }
+                                    } else {
+                                        throw 'Unexpected Enumeration format';
+                                    }
+                                }
+                            };
                             return (
                                 <FormControl
                                     disabled={isSubmitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <Select
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         options={fieldMeta.initialValue.allEnumerations}
-                                        value={value}
+                                        value={transform.input(value)}
                                         labelKey="value"
                                         multi={allowMultiple}
                                         valueKey="key"
                                         onChange={params => {
-                                            onChange(params.value)
+                                            onChange(transform.output(params.value))
                                         }}
                                         onBlur={onBlur}
                                     />
@@ -377,14 +407,17 @@ function SoapFormControl(props) {
                         name={fieldMeta.name}
                         defaultValue={defaultValue}
                         rules={{required: fieldMeta.required}}
-                        render={({onChange, onBlur, value, name}) => {
+                        render={({onChange, onBlur, value}) => {
+                            /* don't transform inputs here, but only in clean function to allow browser to cache blob data during form usage
+                            and then only transform back to blobmeta at the end which saves having to redownload the blob every render
+                             */
                             return (
                                 <FormControl
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <FileUpload
                                         disabled={isSubmitted}
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         value={value}
                                         onBlur={onBlur}
                                         onChange={onChange}
@@ -403,17 +436,20 @@ function SoapFormControl(props) {
                         name={fieldMeta.name}
                         defaultValue={defaultValue}
                         rules={{required: fieldMeta.required}}
-                        render={({onChange, onBlur, value, name}) => {
+                        render={({onChange, onBlur, value}) => {
+                            /* don't transform inputs here, but only in clean function to allow browser to cache blob data during form usage
+                            and then only transform back to blobmeta at the end which saves having to redownload the blob every render
+                             */
                             return (
                                 <FormControl
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={Object.keys(errors).includes(name) ? "required" : undefined}>
+                                    error={fieldHasErrored(fieldMeta.name)}>
                                     <FileUpload
                                         disabled={isSubmitted}
                                         acceptedTypes=".jpg,.jpeg,.jfif,.png"
                                         onBlur={onBlur}
                                         //dimensions={{maxWidth:640,maxHeight:480}}
-                                        error={Object.keys(errors).includes(name) ? "required" : undefined}
+                                        error={fieldHasErrored(fieldMeta.name)}
                                         value={value}
                                         onChange={onChange}
                                     />

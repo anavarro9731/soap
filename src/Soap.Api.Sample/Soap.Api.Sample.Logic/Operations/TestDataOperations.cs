@@ -44,7 +44,14 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    Image = newState.C107_Image,
                                                    ImageOptional = newState.C107_ImageOptional,
                                                    File = newState.C107_File,
-                                                   FileOptional = newState.C107_FileOptional
+                                                   FileOptional = newState.C107_FileOptional,
+                                                   StringOptionalMultiline = newState.C107_StringOptionalMultiline,
+                                                   StringOptional = newState.C107_StringOptional,
+                                                   String = newState.C107_String,
+                                                   PostCodesMulti = newState.C107_PostCodesMulti,
+                                                   PostCodesSingle = newState.C107_PostCodesSingle,
+                                                   PostCodesMultiOptional = newState.C107_PostCodesMultiOptional,
+                                                   PostCodesSingleOptional = newState.C107_PostCodesSingleOptional
                                                });
                     }
 
@@ -73,6 +80,13 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.ImageOptional = newState.C107_ImageOptional;
                                                data.File = newState.C107_File;
                                                data.FileOptional = newState.C107_FileOptional;
+                                               data.StringOptionalMultiline = newState.C107_StringOptionalMultiline;
+                                               data.StringOptional = newState.C107_StringOptional;
+                                               data.String = newState.C107_String;
+                                               data.PostCodesMulti = newState.C107_PostCodesMulti;
+                                               data.PostCodesSingle = newState.C107_PostCodesSingle;
+                                               data.PostCodesMultiOptional = newState.C107_PostCodesMultiOptional;
+                                               data.PostCodesSingleOptional = newState.C107_PostCodesSingleOptional;
                                                });
                 }
                 };

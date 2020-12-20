@@ -61,7 +61,7 @@ export default (props) => {
                     blob: blob
                 };
                 const enrichedBlob = await enrichBlobInfo(blobInfo);
-                onChange(enrichedBlob);  //* forces react hook form to record value
+                onChange(enrichedBlob);  //* forces react hook form to save value in controller
                 setIsLoading(false);
             }
         })();
@@ -223,7 +223,6 @@ export default (props) => {
                     setIsLoading(true);
                     const blob = await getBlobFromDisk(acceptedFiles[0]);
                     const enrichedBlob = await enrichBlobInfo(blob);
-                    console.log(enrichedBlob);
                     const blobToUpload = objectUrlToBlob(enrichedBlob.objectUrl);
                     await uploadBlobToBackend(blobToUpload);
                     onChange(enrichedBlob);
