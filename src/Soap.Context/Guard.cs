@@ -3,6 +3,7 @@
     using System;
     using Soap.Utility.Enums;
 
+    //* dont try to interweave methods in this class, or you will uglify the stacktrace
     public static class Guard
     {
         public static void Against(
@@ -41,6 +42,8 @@
 
         public static void Against(Func<bool> unacceptable, ErrorCode error)
         {
+            //* allowing this to be null would throw an error when handling the error, i considered it better to throw it like this 
+            if (error == null) throw new ApplicationException("Guard was trigger, but Error Code was null");  
             if (unacceptable())
             {
                 throw new DomainExceptionWithErrorCode(error);
@@ -49,6 +52,8 @@
 
         public static void Against(bool unacceptable, ErrorCode error)
         {
+            //* allowing this to be null would throw an error when handling the error, i considered it better to throw it like this
+            if (error == null) throw new ApplicationException("Guard was trigger, but Error Code was null");
             if (unacceptable)
             {
                 throw new DomainExceptionWithErrorCode(error);

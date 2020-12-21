@@ -9,7 +9,8 @@ import SoapFormControl from "./FormControl";
 import DataViewControl from "./DataViewControl";
 import {Cell, Grid} from 'baseui/layout-grid';
 import {H1} from "baseui/typography";
-
+import {PLACEMENT, toaster, ToasterContainer} from 'baseui/toast';
+import {SnackbarProvider, DURATION,} from 'baseui/snackbar';
 
 const localeOverride = {
     fileuploader: {
@@ -31,9 +32,19 @@ function App() {
     useEvent({ 
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataAdded", 
         onEventReceived(event, envelope) {
-            if (event.e104_TestDataId === testDataId) {
-                setTestDataCreated(true);    
+            if (event.e104_TestDataId === testDataId) {;
+            const y = event.asdasdasda;
+            event.e104_TestDataId = "dfsdfsd";
+            event.asdasdasd= "dsdsdasd";
+            setTestDataCreated(true);    
             }
+        }
+    });
+
+    useEvent({
+        eventName: "Soap.Interfaces.Messages.E001v1_MessageFailed",
+        onEventReceived(event, envelope) {
+                toaster.negative(event.e001_ErrorMessage);
         }
     });
     
@@ -49,6 +60,8 @@ function App() {
         <LocaleProvider locale={localeOverride}>
             <StyletronProvider value={engine}>
                 <BaseProvider theme={LightTheme}>
+                    <ToasterContainer  autoHideDuration={4000} placement={PLACEMENT.topRight}>
+                        <SnackbarProvider defaultDuration={DURATION.medium} >
                     <Grid>
                         <Cell span={6}>
                             <H1>Form</H1>
@@ -59,6 +72,8 @@ function App() {
                             {renderDataView(testDataId)}
                         </Cell>
                     </Grid>
+                        </SnackbarProvider>
+                    </ToasterContainer>
                 </BaseProvider>
             </StyletronProvider>
         </LocaleProvider>);

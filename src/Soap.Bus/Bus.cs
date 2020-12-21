@@ -52,29 +52,14 @@
         {
             eventVisibility ??= GetDefaultVisibility(eventToPublish, contextMessage);
 
-            static EnumerationFlags GetDefaultVisibility(ApiEvent eventToPublish, ApiMessage contextMessage)
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.WebSocketSender))
             {
-                var eventVisibility = new EnumerationFlags();
-
-                if (!string.IsNullOrWhiteSpace(contextMessage.Headers.GetSessionId()))
-                {
-                    if (!(contextMessage is ApiCommand))
-                    {
-                        throw new ApplicationException("Incoming Messages with a Session/ClientId are always expected to be commands");
-                    }
-
-                    eventVisibility.AddFlag(IBusClient.EventVisibility.WebSocketSender);
-                    //* transfer from incoming command to outgoing event for websocket clients
-                    eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
-                    eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
-                    eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);
-                }
-
-                eventVisibility.AddFlag(IBusClient.EventVisibility.AllBusSubscriptions);
-
-                return eventVisibility;
+                //* transfer from incoming command to outgoing event for websocket clients
+                eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
+                eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
+                eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);
             }
-
+            
             eventToPublish.Validate();
             eventToPublish = eventToPublish.Clone();
             eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
@@ -94,6 +79,25 @@
                     EventToPublish = eventToPublish,
                     CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility)
                 });
+            
+            static EnumerationFlags GetDefaultVisibility(ApiEvent eventToPublish, ApiMessage contextMessage)
+            {
+                var eventVisibility = new EnumerationFlags();
+
+                if (!string.IsNullOrWhiteSpace(contextMessage.Headers.GetSessionId()))
+                {
+                    if (!(contextMessage is ApiCommand))
+                    {
+                        throw new ApplicationException("Incoming Messages with a Session/ClientId are always expected to be commands");
+                    }
+
+                    eventVisibility.AddFlag(IBusClient.EventVisibility.WebSocketSender);
+                }
+
+                eventVisibility.AddFlag(IBusClient.EventVisibility.AllBusSubscriptions);
+
+                return eventVisibility;
+            }
         }
 
         public async Task Send<T>(T commandToSend) where T : ApiCommand

@@ -8,27 +8,44 @@ export default {
 
         //* expects headers to be set properly in API
         
-        const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(event);
+        const schema = getHeader(event, headerKeys.schema);
         
-        cacheSoTheSameQueriesAreNotRepeated(typedEventWrappedInProxy);
+        if (schema === "Soap.Interfaces.Messages.E001v1_MessageFailed") {
+            
+            bus.publish(
+                bus.channels.events,
+                getHeader(event, headerKeys.schema),
+                event,
+                getHeader(event, headerKeys.commandConversationId)
+            );
+            
+        } else {
+            
+            const typedEventWrappedInProxy = createRegisteredTypedMessageInstanceFromAnonymousObject(event);
 
-        bus.publish(
-            bus.channels.events,
-            getHeader(event, headerKeys.schema),
-            typedEventWrappedInProxy,
-            getHeader(event, headerKeys.commandConversationId)
-        );
-        
-        function cacheSoTheSameQueriesAreNotRepeated() {
-            const commandHash = getHeader(event, headerKeys.commandHash);
-            if (!!commandHash) { //* not all events derive from commands so many will not have a commandHash
-                queryCache.addOrReplace(
-                    commandHash,
-                    typedEventWrappedInProxy,
-                );
-            } else {
-                //* then nothing will be cached so you will ask again every time (e.g. testing) 
+            cacheSoTheSameQueriesAreNotRepeated(typedEventWrappedInProxy);
+
+            bus.publish(
+                bus.channels.events,
+                getHeader(event, headerKeys.schema),
+                typedEventWrappedInProxy,
+                getHeader(event, headerKeys.commandConversationId)
+            );
+
+
+            function cacheSoTheSameQueriesAreNotRepeated() {
+                const commandHash = getHeader(event, headerKeys.commandHash);
+                if (!!commandHash) { //* not all events derive from commands so many will not have a commandHash
+                    queryCache.addOrReplace(
+                        commandHash,
+                        typedEventWrappedInProxy,
+                    );
+                } else {
+                    //* then nothing will be cached so you will ask again every time (e.g. testing) 
+                }
             }
+
         }
+
     }
 };

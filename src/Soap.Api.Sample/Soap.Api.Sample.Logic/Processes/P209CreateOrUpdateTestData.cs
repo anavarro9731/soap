@@ -5,8 +5,10 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility.Enums;
 
     public class P209CreateOrUpdateTestData : Process, IBeginProcess<C107v1_CreateOrUpdateTestDataTypes>
     {

@@ -15,38 +15,29 @@
             {
                 foreach (var validationExceptionError in validationException.Errors)
                 {
+                    string internalMessage = $"{validationExceptionError.PropertyName} : {validationExceptionError.ErrorMessage}";
                     if (Guid.TryParse(validationExceptionError.ErrorCode, out var errorCodeGuid))
                     {
-                        AllErrors.Add(
-                            (CodePrefixes.INVALID, errorCodeGuid, validationExceptionError.ErrorMessage,
-                                validationExceptionError.ErrorMessage));
+                        AllErrors.Add((ErrorSourceType.INVALID, errorCodeGuid, validationExceptionError.ErrorMessage, internalMessage));
                     }
                     else
                     {
-                        AllErrors.Add(
-                            (CodePrefixes.INVALID, null, validationExceptionError.ErrorMessage,
-                                validationExceptionError.ErrorMessage));
+                        AllErrors.Add((ErrorSourceType.INVALID, null, validationExceptionError.ErrorMessage, internalMessage));
                     }
                 }
             }
-            else if (exception is DomainException || exception is ApplicationException)
+            else if (exception is DomainException)
             {
-                //* we may have a message crafted as safe for external clients otherwise use default
-                var externalErrorMessage = exception.Message == "#default-message#"
-                                               ? context.AppConfig.DefaultExceptionMessage
-                                               : exception.Message;
-
-                //*FRAGILE* based on .NET exception syntax
-                var internalErrorMessage = exception.InnerException?.ToString().SubstringBefore("--- ");
-
-                var prefix = exception switch
+                if (exception.Message == "#default-message#")
                 {
-                    ApplicationException _ => CodePrefixes.RAW,
-                    DomainException _ => CodePrefixes.GUARD,
-                    _ => string.Empty
-                };
-
-                AllErrors.Add((prefix, null, externalErrorMessage, internalErrorMessage));
+                    AllErrors.Add(
+                        (ErrorSourceType.GUARD, null, context.AppConfig.DefaultExceptionMessage,
+                            exception.InnerException.ToString()));
+                }
+                else
+                {
+                    AllErrors.Add((ErrorSourceType.GUARD, null, exception.Message, exception.ToString()));
+                }
             }
             else if (exception is DomainExceptionWithErrorCode domainExceptionWithErrorCode)
             {
@@ -54,46 +45,29 @@
                     $"{domainExceptionWithErrorCode.Error.Key} [{domainExceptionWithErrorCode.Error.Value}]"
                     + domainExceptionWithErrorCode.StackTrace;
 
-                if (GlobalErrorCodes.GetAllInstances().Contains(domainExceptionWithErrorCode.Error))
-                {
-                    AllErrors.Add(
-                        (CodePrefixes.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
+                AllErrors.Add(
+                        (ErrorSourceType.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key), 
                             context.AppConfig
                                    .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
                             internalErrorMessage));
-                }
-                else
-                {
-                    AllErrors.Add(
-                        (CodePrefixes.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error?.Key),
-                            context.AppConfig
-                                   .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
-                            internalErrorMessage));
-
-                    ;
-                }
+                
             }
-            else if (exception is ExceptionHandlingException)
+            else if (exception is ApplicationException)
             {
-                AllErrors.Add((CodePrefixes.EXWHEX, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+                AllErrors.Add((ErrorSourceType.RAW, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+            }
+            else if (exception is ExceptionHandlingException)  //* won't be sent to clients (see MessagePipeline.Execute catch block)
+            {
+                AllErrors.Add((ErrorSourceType.EXWHEX, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
             }
             else
             {
-                AllErrors.Add((CodePrefixes.CLR, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+                AllErrors.Add((ErrorSourceType.CLR, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
             }
 
-            var count = 0;
             SummaryOfExternalErrorMessages = AllErrors
-                                             .Select(
-                                                 x =>
-                                                     $"Type:{x.Prefix}---Code:{(x.Code.HasValue ? x.Code.ToString() : "N/A")}---ErrorMessage:{x.ExternalMessage}")
-                                             .Aggregate(
-                                                 (aggregated, next) =>
-                                                     {
-                                                     var currentCount = ++count;
-                                                     return aggregated + Environment.NewLine
-                                                                       + $"Error {currentCount} of {AllErrors.Count}" + next;
-                                                     });
+                                             .Select(x => x.ExternalMessage)
+                                             .Aggregate((aggregated, next) => aggregated + Environment.NewLine + next);
 
             ApplicationName = context.AppConfig.AppId;
             EnvironmentName = context.AppConfig.Environment.Value;
@@ -116,13 +90,13 @@
         /* think this is really only used in terms of testing against specific error codes.
          Either in testing, or by frontend clients for very exceptional circumstances.
          Ideally a generic error toaster is fine on the front-end. */
-        public Exception ExceptionThrownToContext()
+        public PipelineException ExceptionThrownToContext()
         {
             return new PipelineException(SummaryOfExternalErrorMessages).Op(
                 e => e.KnownErrorCodes = AllErrors.Where(e => e.Code.HasValue).Select(e => e.Code.Value).ToList());
         }
 
-        public class CodePrefixes
+        public class ErrorSourceType
         {
             public const string CLR = nameof(CLR);
 

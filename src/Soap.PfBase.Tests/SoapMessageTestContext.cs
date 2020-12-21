@@ -153,6 +153,14 @@
                     }
                     catch (Exception e)
                     {
+                        /* included these 3 lines later, not sure why I didn't at first
+                         maybe it was to keep parallel structure with the output in azurefunctioncontext
+                         but there these might be null if there is an error, while here they shoudl always
+                         be set, which is of course ideal for testing */
+                        x.MessageBus = bus;
+                        x.DataStore = dataStore;
+                        x.NotificationServer = notificationServer;
+                        
                         x.UnhandledError = e;
                     }
 

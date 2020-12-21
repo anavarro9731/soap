@@ -128,17 +128,17 @@
 
             async Task HandleFailure(ContextWithMessageLogEntry context, Exception exception)
             {
-                Exception exceptionThrownBackToFunctionRuntime;
+                Exception exceptionThrownToContext;
 
                 try //- log the message failure
                 {
                     var exceptionMessages = new FormattedExceptionInfo(exception, context);
 
-                    exceptionThrownBackToFunctionRuntime = exceptionMessages.ExceptionThrownToContext();
-
                     await context.TakeFailureActions(exceptionMessages);
 
                     context.SerilogFailure(exceptionMessages);
+                    
+                    exceptionThrownToContext = exceptionMessages.ExceptionThrownToContext();
                     
                 }
                 catch (Exception exceptionHandlingException)
@@ -150,9 +150,9 @@
 
                         var exceptionMessages = new FormattedExceptionInfo(originalExceptionPlusHandlingException, context);
 
-                        exceptionThrownBackToFunctionRuntime = exceptionMessages.ExceptionThrownToContext();
-
                         context.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
+                        
+                        exceptionThrownToContext = exceptionMessages.ExceptionThrownToContext();
                     }
                     catch (Exception lastChanceException) //- log a minimal error message of last resort
                     {
@@ -169,13 +169,13 @@
                             lastChanceException);
 
                         var lastChanceExceptionMessageForCaller =
-                            $"Type:{FormattedExceptionInfo.CodePrefixes.EXWHEX}---Code:000---Could not log error to db message log or seq using standard code.";
+                            $"Type:{FormattedExceptionInfo.ErrorSourceType.EXWHEX}---Code:000---Could not log error to db message log or seq using standard code.";
 
-                        exceptionThrownBackToFunctionRuntime = new Exception(lastChanceExceptionMessageForCaller);
+                        exceptionThrownToContext = new Exception(lastChanceExceptionMessageForCaller);
                     }
                 }
 
-                throw exceptionThrownBackToFunctionRuntime;
+                throw exceptionThrownToContext;
             }
         }
     }

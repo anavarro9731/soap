@@ -11,7 +11,7 @@
         {
             var hasUnderlyingType = !string.IsNullOrEmpty(actualSerialisedTypeWhenDifferentFromT);
 
-            var actualType = Type.GetType(actualSerialisedTypeWhenDifferentFromT);
+            var actualType = hasUnderlyingType ? Type.GetType(actualSerialisedTypeWhenDifferentFromT) : null;
 
             var result = (T) (hasUnderlyingType ? json.FromJson(actualType, serialiserId) : json.FromJson(typeof(T), serialiserId));
 

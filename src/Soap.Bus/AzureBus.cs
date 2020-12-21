@@ -71,7 +71,7 @@
             {
                 var sender = serviceBusClient.CreateSender("allevents");
 
-                var broadCastMessage =
+                var toClient =
                     new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                     {
                         MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
@@ -79,7 +79,7 @@
                         SessionId = publishEvent.Headers.GetSessionId()
                     };
                 
-                await sender.SendMessageAsync(broadCastMessage);
+                await sender.SendMessageAsync(toClient);
             }
 
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)

@@ -30,18 +30,20 @@ let _logger = {
         }
         appInsightsKey || console.log("process.env.APPINSIGHTS_KEY not defined check .env file.")
 
-        _appInsights = _appInsights || new ApplicationInsights({
-            config: {
-                instrumentationKey: appInsightsKey
-            }
-        });
-
-        logMsg += targetObject.stack;
-        if (logObject === undefined) console.log(logMsg)
-        else console.log(logMsg, logObject);
-
-        if (toAzure) {
+        if (!_appInsights) {
+            _appInsights = new ApplicationInsights({
+                config: {
+                    instrumentationKey: appInsightsKey
+                }
+            });
             _appInsights.loadAppInsights();
+        }
+        
+        logMsg += targetObject.stack;
+        if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
+        else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
+    
+        if (toAzure) {
             _appInsights.trackTrace({message: logMsg});
         }
     }

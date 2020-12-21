@@ -1,6 +1,7 @@
 ﻿//*     ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
@@ -36,6 +37,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, (BeforeRunHook,default));
 
             //assert
+            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();
             Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
         }
 

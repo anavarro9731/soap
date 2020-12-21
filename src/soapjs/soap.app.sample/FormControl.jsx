@@ -7,7 +7,7 @@ import {DatePicker} from 'baseui/datepicker';
 import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
 import {Controller, useForm} from "react-hook-form";
 import {FormControl} from "baseui/form-control";
-import {H1} from 'baseui/typography';
+import {H1, Label3} from 'baseui/typography';
 import {ReactErrorBoundary} from "./ReactErrorBoundary";
 import wordKeys from './translations/word-keys';
 import {Select} from "baseui/select";
@@ -15,7 +15,7 @@ import {Textarea} from "baseui/textarea";
 import {createRegisteredTypedMessageInstanceFromAnonymousObject} from '@soap/modules/lib/soap/messages';
 import {SnackbarProvider, useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
-import {toaster, ToasterContainer} from 'baseui/toast';
+import {toaster} from 'baseui/toast';
 
 function SoapFormControl(props) {
 
@@ -69,7 +69,8 @@ function SoapFormControl(props) {
             const msg = await response.text();
 
             if (msg) {
-                toaster.warning(msg);
+                const messages = msg.split('\r\n');
+                toaster.negative(messages.map(m => (<Label3 color="primaryB" key={m}>{m}</Label3>)));
             } else {
                 try {
                     useCommand(command);
@@ -468,7 +469,7 @@ function SoapFormControl(props) {
     }
 
     return (
-        <ToasterContainer  autoHideDuration={3000}>
+
             <div>
                 <H1> {translate(wordKeys.testFormHeader)} </H1>
                 <form onSubmit={handleSubmit(onSubmit, onError)}>
@@ -486,16 +487,16 @@ function SoapFormControl(props) {
                 </form>
                 {renderDebug()}
             </div>
-        </ToasterContainer>
+
     );
 }
 
 
 export default function SoapForm(props) {
     return (
-        <SnackbarProvider>
+        
             <SoapFormControl {...props} />
-        </SnackbarProvider>
+        
     );
 }
 

@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using CircuitBoard.Messages;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -352,7 +353,7 @@
                 {
                     /* send a message to the bus which tells us this has occured
                  allowing us to handle these cases with compensating logic */
-                    SendFinalFailureMessage();
+                    SendFinalFailureMessages();
                 }
 
                 await AddThisFailureToTheMessageLog();
@@ -392,7 +393,7 @@
                 //- remember that total attempts is initial message + retries
                 context.MessageLogEntry.Attempts.Count == context.Bus.MaximumNumberOfRetries;
 
-            void SendFinalFailureMessage()
+            void SendFinalFailureMessages()
             {
                 var json = context.Message.ToJson(SerialiserIds.ApiBusMessage);
                 
@@ -404,6 +405,17 @@
                 };
 
                 context.Bus.Send(instanceOfMessageFailedAllRetries);
+
+                var exception = exceptionInfo.ExceptionThrownToContext();
+                    var toWsClients = new E001v1_MessageFailed()
+                {
+                    E001_ErrorMessage = exception.Message,
+                    E001_ErrorCodes = exception.KnownErrorCodes,
+                    E001_MessageId = context.Message.Headers.GetMessageId(),
+                    E001_MessageTypeName = context.Message.GetType().ToShortAssemblyTypeName(),
+                    E001_StatefulProcessId = context.Message.Headers.GetStatefulProcessId()
+                };
+                context.Bus.Publish(toWsClients, context.Message, new EnumerationFlags(IBusClient.EventVisibility.WebSocketSender));
             }
         }
 

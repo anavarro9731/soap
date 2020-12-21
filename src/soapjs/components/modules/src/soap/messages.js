@@ -78,27 +78,40 @@ export function createRegisteredTypedMessageInstanceFromAnonymousObject(anonymou
      this is an easy way of type-checking and finding errors in code without the bloat of typescript */
     function wrapInProxy(data) {
         return new Proxy(data, {
-            set: function (target, property, value) {
-                // First give the target a chance to handle it
+            set(target, property, value) {
+                // first give the target a chance to handle it
                 if (Object.keys(target).indexOf(property) !== -1) {
-                    return target[property];
+                    config.logger.log(
+                        `SET PROPERTY EXCEPTION : Attempted to write to property "${property.toString()}" on object of type ${target.constructor.name} but this is not allowed. Proxied objects are immutable`,
+                        undefined,
+                        true
+                    );    
+                    //target[property] = value; don't allow properties to be set manually on proxied classes, essentially make them immutable
+                    return true;
+                } else {
+                    config.logger.log(
+                        `MISSING PROPERTY EXCEPTION : Attempted to write to property "${property.toString()}" on object of type ${target.constructor.name} but it does not exist`,
+                        undefined,
+                        true
+                    );
+                    return true;
                 }
-                config.logger.log(
-                    `MISSING PROPERTY EXCEPTION: Attempted to write to ${typeof target}.${property.toString()} but it does not exist`,
-                );
             },
-            get: function (target, property) {
-                // First give the target a chance to handle it
+            get(target, property) {
+                // first give the target a chance to handle it
                 if (
-                    Object.keys(target).indexOf(property) !== -1 &&
-                    property !== 'toJSON'
+                    (Object.keys(target).indexOf(property) !== -1 &&
+                        property !== "toJSON") || // stop recursion
+                    property === "constructor"
                 ) {
                     return target[property];
-                } else if (property !== 'toJSON')
+                } else if (property !== "toJSON")
                     config.logger.log(
-                        `MISSING PROPERTY EXCEPTION: Attempted to read from ${typeof target}.${property.toString()} but it does not exist`,
+                        `MISSING PROPERTY EXCEPTION : Attempted to read from property "${property.toString()}" on object of type ${target.constructor.name} but it does not exist`,
+                        undefined,
+                        true
                     );
-            },
+            }
         });
     }
 }
@@ -200,7 +213,7 @@ ${setterLines}
 ${typeLine}
                     }                 
                 };
-                Object.defineProperty (messageTypesSingleton["${className}"], 'name', {value: "${className}"});
+                Object.defineProperty (messageTypesSingleton["${className}"], 'name', {value: "${className}"});  //add the name property to object definition as is done automatically in ES5+
                 `;
         if (config.logClassDeclarations)config.logger.log(createClass);
         eval(createClass);

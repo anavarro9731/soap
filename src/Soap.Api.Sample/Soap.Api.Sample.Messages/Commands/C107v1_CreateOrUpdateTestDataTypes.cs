@@ -88,7 +88,7 @@
             public Validator()
             {
                 RuleFor(x => x.C107_Guid).NotEmpty();
-                RuleFor(x => x.C107_DecimalOptional).NotEmpty();
+                RuleFor(x => x.C107_CustomObject.C107_PostCode).Matches(@"^([A-Z][A-HJ-Y]?\d[A-Z\d]? ?\d[A-Z]{2}|GIR ?0A{2})$").WithMessage("Postcode format is invalid.");
             }
         }
     }
