@@ -1192,19 +1192,26 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
-"@soap/modules@^1.120.0":
-  version "1.120.0"
-  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.120.0.tgz#c1cc859cac2b3f456c899ab90e53d9faa11b810b"
-  integrity sha1-wcyFnKwrP0VsiZq5DlPZ+qEbgQs=
+"@soap/modules@^1.128.0":
+  version "1.128.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.128.0.tgz#9145fe1926cfe0022f9b2598607c39a452d1a4fc"
+  integrity sha1-kUX+GSbP4AIvmyWYYHw5pFLRpPw=
   dependencies:
     "@azure/service-bus" "^7.0.0"
     "@azure/storage-blob" "^12.3.0"
     "@babel/runtime" "^7.12.1"
     "@microsoft/applicationinsights-web" "^2.5.10"
+    baseui "^9.106.0"
+    compressorjs "^1.0.7"
     i18next "^17.0.7"
     i18next-xhr-backend "^3.0.0"
     lodash "^4.17.20"
     postal "^2.0.5"
+    react "^16.14.0"
+    react-dom "^16.14.0"
+    react-hook-form "^6.12.2"
+    styletron-engine-atomic "^1.4.6"
+    styletron-react "^5.2.7"
 
 "@types/async-lock@^1.1.0":
   version "1.1.2"
@@ -4819,9 +4826,9 @@ react-focus-lock@^2.2.1:
     use-sidecar "^1.0.1"
 
 react-hook-form@^6.12.2:
-  version "6.13.0"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-6.13.0.tgz#91e6da52cd3a636724b38ad8bc3704d7bd8a2626"
-  integrity sha512-AADO0EtAGEggII3DNhBCwm7MSwkBWCVo72K32NY6YzhSTBL5bJsBfWJ4/PVGBer31js5ppt+I6/qUyLo8o8AvA==
+  version "6.13.1"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-6.13.1.tgz#b9c0aa61f746db8169ed5e1050de21cacb1947d6"
+  integrity sha512-Q0N7MYcbA8SigYufb02h9z97ZKCpIbe62rywOTPsK4Ntvh6fRTGDXSuzWuRhLHhArLoWbGrWYSNSS4tlb+OFXg==
 
 react-input-mask@^2.0.4:
   version "2.0.4"

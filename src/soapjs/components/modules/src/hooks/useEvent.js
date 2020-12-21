@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import postal from 'postal';
-import { bus } from '../soap';
+import bus from '../soap/bus';
 
 export function useEvent(
     args,

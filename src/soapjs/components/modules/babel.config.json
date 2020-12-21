@@ -1,4 +1,4 @@
 {
-  "presets": [["@babel/preset-env", { "targets": "defaults" }]], 
+  "presets": [["@babel/preset-env", { "targets": "defaults" }], "@babel/preset-react"], 
   "plugins": ["@babel/plugin-proposal-export-default-from", "@babel/plugin-transform-runtime"]
 }

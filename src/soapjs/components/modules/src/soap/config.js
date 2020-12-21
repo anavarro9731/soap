@@ -2,7 +2,7 @@ import {ServiceBusClient} from '@azure/service-bus';
 import {ApplicationInsights} from '@microsoft/applicationinsights-web'
 import eventHandler from "./event-handler";
 import {getHeader, optional, setHeader, types, uuidv4, validateArgs} from './util';
-import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from "./messages";
+import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from './messages';
 import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
 

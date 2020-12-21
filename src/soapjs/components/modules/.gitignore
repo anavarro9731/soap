@@ -1,6 +1,8 @@
 /node_modules/
+/dist/
 /lib/
+/.parcel-cache/
+/index.html
 /package-lock.json
 
 .DS_Store
-

@@ -1,6 +1,7 @@
-import {bus, queryCache} from './index';
+import bus from './bus';
+import queryCache from './query-cache';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from './messages';
-import {getHeader} from "./util";
+import {getHeader} from './util';
 
 export default {
 

@@ -1,10 +1,11 @@
 import {useEffect, useState} from 'react';
-import {bus, commandHandler, validateArgs} from '../soap';
+import bus from '../soap/bus';
+import commandHandler from '../soap/command-handler';
 
-export function useQuery(query, acceptableStalenessFactorInSeconds = 0) {
+export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSeconds = 0}) {
     
         const [queryResult, setQueryResult] = useState();
-
+        
         const onResponse = data => {
             setQueryResult(data);
         };
@@ -12,7 +13,7 @@ export function useQuery(query, acceptableStalenessFactorInSeconds = 0) {
         useEffect(() => {
             let conversationId = undefined;
 
-            if (!!query) {
+            if (!!sendQuery) {
                 conversationId = commandHandler.handle(
                     query,
                     onResponse,
@@ -26,7 +27,7 @@ export function useQuery(query, acceptableStalenessFactorInSeconds = 0) {
                     bus.closeConversation(conversationId);
                 }
             };
-        }, [query]);
+        }, [sendQuery]);
 
         return queryResult;
 }

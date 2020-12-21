@@ -1,5 +1,7 @@
 import {parseDotNetShortAssemblyQualifiedName, md5Hash, types, uuidv4, validateArgs, getHeader, setHeader} from './util';
-import {bus, eventHandler, queryCache} from './index';
+import bus from './bus';
+import eventHandler from './event-handler'
+import queryCache from './query-cache';
 import config from './config';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from './messages.js';
 
