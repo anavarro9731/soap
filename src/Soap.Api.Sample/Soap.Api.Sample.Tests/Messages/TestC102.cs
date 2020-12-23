@@ -18,8 +18,8 @@
         [Fact]
         public void ItShouldSendAGotMessageEvent()
         {
-            Result.MessageBus.EventsPublished.Should().ContainSingle();
-            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E101v1_GotServiceState>();
+            Result.MessageBus.BusEventsPublished.Should().ContainSingle();
+            Result.MessageBus.BusEventsPublished.Single().Should().BeOfType<E101v1_GotServiceState>();
         }
     }
 }

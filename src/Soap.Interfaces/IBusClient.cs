@@ -8,28 +8,49 @@
 
     public interface IBusClient
     {
-        public class EventVisibility : TypedEnumeration<EventVisibility>
-        {
-            public static EventVisibility WebSocketSender = Create(
-                nameof(WebSocketSender),
-                "Web Socket Sender (via ConversationId");
-
-            public static EventVisibility AllWebSocketClientsNoConversationId = Create(
-                nameof(AllWebSocketClientsNoConversationId),
-                "All Web Socket Clients (no ConversationId");
-
-            public static EventVisibility AllBusSubscriptions = Create(
-                nameof(AllBusSubscriptions),
-                "All Bus Subscriptions (could have StatefulProcessId)");
-        }
-        
         List<ApiCommand> CommandsSent { get; }
 
-        List<ApiEvent> EventsPublished { get; }
-
+        List<ApiEvent> BusEventsPublished { get; }
         
-        Task Publish(ApiEvent publishEvent, EnumerationFlags eventVisibility);
+        List<ApiEvent> WsEventsPublished { get; }
+
+        Task Publish(ApiEvent publishEvent, EventVisibilityFlags eventVisibility);
 
         Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null);
+
+        public class EventVisibility : TypedEnumeration<EventVisibility>
+        {
+            public static EventVisibility BroadcastToAllBusSubscriptions = Create(
+                nameof(BroadcastToAllBusSubscriptions),
+                "All Bus Subscriptions (could have StatefulProcessId)");
+
+            public static EventVisibility BroadcastToAllWebSocketClientsWithNoConversationId = Create(
+                nameof(BroadcastToAllWebSocketClientsWithNoConversationId),
+                "All Web Socket Clients (no ConversationId");
+
+            public static EventVisibility ReplyToWebSocketSender = Create(
+                nameof(ReplyToWebSocketSender),
+                "Web Socket Sender (via ConversationId");
+        }
+
+        public class EventVisibilityFlags : EnumerationFlags
+        {
+            public EventVisibilityFlags(EventVisibility initialState = null) : base(initialState)
+            {
+            } 
+
+            public void AddFlag(EventVisibility eventVisibility)
+            {
+                if ((this.HasFlag(EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId)
+                    && eventVisibility == EventVisibility.ReplyToWebSocketSender) ||
+                    (this.HasFlag(EventVisibility.ReplyToWebSocketSender) && 
+                    eventVisibility == EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId))
+                {
+                    throw new ApplicationException(
+                        "Cannot send to all web socket clients and the message sender at the same time. These options are mutually exclusive, please choose one or the other.");
+                }
+                EnumerationFlagsMethods.AddFlag(this, eventVisibility);
+            }
+        }
     }
 }

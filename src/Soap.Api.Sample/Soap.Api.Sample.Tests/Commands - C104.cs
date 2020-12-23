@@ -1,5 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
-
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests
 {
     using System;
@@ -17,6 +16,9 @@ namespace Soap.Api.Sample.Tests
             new C104v1_TestUnitOfWork
             {
                 C104_HansSoloNewName = "Hairy-son Ford"
-            }.Op(x => x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully));
+            }.Op(x =>
+                {
+                    x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully);
+                });
     }
 }

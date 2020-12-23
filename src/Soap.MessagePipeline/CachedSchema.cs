@@ -75,9 +75,9 @@
                     PrintPlainTextHeader(plainTextBuilder);
 
                     jsonSchemaBuilder.AppendLine("[");
-                    /* FRAGILE ordered by name which puts commands before events. This is important because some events initialise commands in their constructors.
+                    /* Puts commands before events. This is important because some events initialise commands in their constructors.
                     if the command is supposed to be invalid, the checks won't have been done on that yet and you'll get unexpected/strange errors */
-                    foreach (var type in messageTypes.OrderBy(x => x.Name).ToList())
+                    foreach (var type in messageTypes.OrderBy(type => type.InheritsOrImplements(typeof(ApiCommand))).ThenBy(type => type.InheritsOrImplements(typeof(ApiEvent))).ToList())
                     {
                         BuildJsonSchemaForMessageType(type, plainTextBuilder, out var message);
 

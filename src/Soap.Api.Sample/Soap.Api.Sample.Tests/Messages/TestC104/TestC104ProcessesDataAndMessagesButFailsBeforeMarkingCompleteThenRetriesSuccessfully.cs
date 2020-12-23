@@ -1,4 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Threading.Tasks;
@@ -66,11 +66,11 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                   .Headers.GetMessageId()
                   .Should()
                   .Be(Result.MessageBus.CommandsSent[1].Headers.GetMessageId());
-            Result.MessageBus.EventsPublished.Count.Should().Be(2); //* duplicates sent
-            Result.MessageBus.EventsPublished[0]
+            Result.MessageBus.BusEventsPublished.Count.Should().Be(2); //* duplicates sent
+            Result.MessageBus.BusEventsPublished[0]
                   .Headers.GetMessageId()
                   .Should()
-                  .Be(Result.MessageBus.EventsPublished[1].Headers.GetMessageId()); //* duplicates sent
+                  .Be(Result.MessageBus.BusEventsPublished[1].Headers.GetMessageId()); //* duplicates sent
         }
     }
 }

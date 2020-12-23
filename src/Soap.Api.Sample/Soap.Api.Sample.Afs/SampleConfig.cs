@@ -1,10 +1,14 @@
-﻿namespace Soap.Api.Sample.Afs
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Afs
 {
     using DataStore.Providers.CosmosDb;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Interfaces;
 
+    /// <summary>
+    /// This is used to as a template to make a new config repo
+    /// </summary>
     public class AppConfig : ApplicationConfig
     {
         public AppConfig() : base(SoapEnvironments.Development, EnvVars.AppId)

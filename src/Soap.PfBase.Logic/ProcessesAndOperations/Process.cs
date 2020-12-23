@@ -25,7 +25,7 @@
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        protected Task Publish(ApiEvent e, EnumerationFlags eventVisibility = null)
+        protected Task Publish(ApiEvent e, IBusClient.EventVisibilityFlags eventVisibility = null)
         {
             return this.context.Bus.Publish(e, this.context.Message, eventVisibility);
         }

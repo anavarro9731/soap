@@ -26,7 +26,7 @@
             {
                 var messageLogEntry = context.MessageLogEntry;
 
-                message.Headers.ValidateIncomingMessageHeaders();
+                message.ValidateIncomingMessageHeaders();
 
                 Guard.Against(
                     IsADifferentMessageButWithTheSameId(messageLogEntry, message),

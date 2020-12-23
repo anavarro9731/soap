@@ -10,8 +10,8 @@
 
         public Exception UnhandledError { get; set; }
 
-        public List<ApiCommand> CommandsSent { get; set; }
+        public List<ApiCommand> CommandsSent { get; set; } = new List<ApiCommand>();
 
-        public List<ApiEvent> PublishedMessages { get; set; }
+        public List<ApiEvent> PublishedMessages { get; set; } = new List<ApiEvent>();
     }
 }

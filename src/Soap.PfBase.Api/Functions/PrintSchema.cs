@@ -1,31 +1,22 @@
-﻿namespace Soap.Api.Sample.Afs
+namespace Soap.PfBase.Api.Functions
 {
     using System;
-    using System.Reflection.Metadata;
-    using Microsoft.AspNetCore.Http;
+    using System.Reflection;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
-    using Soap.Api.Sample.Messages.Commands;
-    using Soap.PfBase.Api;
-
-    public static class PrintSchema
+    
+    public static partial class PlatformFunctions
     {
-        [FunctionName("PrintSchema")]
-        public static IActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequest req,
-            ILogger log)
+        public static IActionResult PrintSchema(ILogger log,  Assembly messagesAssembly)
         {
             Serilog.ILogger logger = null;
             try
             {
                 AzureFunctionContext.CreateLogger(out logger);
-                
+
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                dynamic result = DiagnosticFunctions.GetSchema(appConfig, typeof(C100v1_Ping).Assembly).PlainTextSchema;
+                dynamic result = DiagnosticFunctions.GetSchema(appConfig, messagesAssembly).PlainTextSchema;
 
                 return new OkObjectResult(result);
             }

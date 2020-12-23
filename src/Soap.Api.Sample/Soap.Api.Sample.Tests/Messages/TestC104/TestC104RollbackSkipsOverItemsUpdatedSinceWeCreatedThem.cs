@@ -1,4 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Linq;
@@ -12,6 +12,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
+    using Soap.PfBase.Tests;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -42,7 +43,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, (BeforeRunHook,default));
 
             //assert
-            Result.UnhandledError.Message.Should().Contain(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack.ToString());
+            Result.ExceptionContainsErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 
         private async Task BeforeRunHook(DataStore store, int run)

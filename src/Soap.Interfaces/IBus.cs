@@ -13,11 +13,13 @@
         
         List<ApiCommand> CommandsSent { get; }
 
-        List<ApiEvent> EventsPublished { get; }
+        List<ApiEvent> BusEventsPublished { get; }
+        
+        List<ApiEvent> WsEventsPublished { get; }
         
         Task CommitChanges();
 
-        Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, EnumerationFlags eventVisibility = null)
+        Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, IBusClient.EventVisibilityFlags eventVisibility = null)
             where T : ApiEvent where Tm : ApiMessage;
 
         Task Send<T>(T commandToSend) where T : ApiCommand;

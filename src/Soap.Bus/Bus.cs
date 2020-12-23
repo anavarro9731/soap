@@ -30,7 +30,9 @@
 
         public List<ApiCommand> CommandsSent => BusClient.CommandsSent;
 
-        public List<ApiEvent> EventsPublished => BusClient.EventsPublished;
+        public List<ApiEvent> BusEventsPublished => BusClient.BusEventsPublished;
+        
+        public List<ApiEvent> WsEventsPublished => BusClient.WsEventsPublished;
 
         public byte MaximumNumberOfRetries { get; }
 
@@ -47,13 +49,18 @@
             }
         }
 
-        public async Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, EnumerationFlags eventVisibility = null)
+        public async Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, IBusClient.EventVisibilityFlags eventVisibility = null)
             where T : ApiEvent where Tm : ApiMessage
         {
-            eventVisibility ??= GetDefaultVisibility(eventToPublish, contextMessage);
+            eventVisibility ??= GetDefaultVisibility(contextMessage);
 
-            if (eventVisibility.HasFlag(IBusClient.EventVisibility.WebSocketSender))
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
             {
+                if (string.IsNullOrEmpty(contextMessage.Headers.GetSessionId()))
+                {
+                    throw new ApplicationException(
+                        "Outgoing message is set to reply to web socket sender, but the sender has not set a sessionId");
+                }
                 //* transfer from incoming command to outgoing event for websocket clients
                 eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
                 eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
@@ -80,21 +87,16 @@
                     CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility)
                 });
             
-            static EnumerationFlags GetDefaultVisibility(ApiEvent eventToPublish, ApiMessage contextMessage)
+            static IBusClient.EventVisibilityFlags GetDefaultVisibility(ApiMessage contextMessage)
             {
-                var eventVisibility = new EnumerationFlags();
+                var eventVisibility = new IBusClient.EventVisibilityFlags();
 
                 if (!string.IsNullOrWhiteSpace(contextMessage.Headers.GetSessionId()))
                 {
-                    if (!(contextMessage is ApiCommand))
-                    {
-                        throw new ApplicationException("Incoming Messages with a Session/ClientId are always expected to be commands");
-                    }
-
-                    eventVisibility.AddFlag(IBusClient.EventVisibility.WebSocketSender);
+                    eventVisibility.AddFlag(IBusClient.EventVisibility.ReplyToWebSocketSender);
                 }
 
-                eventVisibility.AddFlag(IBusClient.EventVisibility.AllBusSubscriptions);
+                eventVisibility.AddFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions);
 
                 return eventVisibility;
             }

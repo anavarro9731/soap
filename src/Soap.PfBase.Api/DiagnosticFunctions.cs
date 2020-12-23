@@ -180,7 +180,7 @@
             await writeLine("Running Message Test...");
 
             var message = new TPing();
-            message.Headers.SetDefaultHeadersForIncomingTestMessages(message);
+            message.SetDefaultHeadersForIncomingTestMessages();
 
             await writeLine($"Sending {typeof(TPing).Name} ...");
 

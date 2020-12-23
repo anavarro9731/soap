@@ -1,4 +1,4 @@
-namespace Soap.Api.Sample.Afs
+namespace Soap.PfBase.Api.Functions
 {
     using System;
     using System.IO;
@@ -6,22 +6,15 @@ namespace Soap.Api.Sample.Afs
     using FluentValidation;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Extensions.Logging;
+    using Serilog;
     using Soap.Interfaces.Messages;
-    using Soap.PfBase.Api;
     using Soap.Utility.Functions.Extensions;
 
-    public static class ValidateMessage
+    public partial class PlatformFunctions
     {
-        [FunctionName("ValidateMessage")]
-        public static async Task<IActionResult> RunAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
-            HttpRequest req,
-            ILogger log)
+        public static async Task<IActionResult> ValidateMessage(HttpRequest req)
         {
-            Serilog.ILogger logger = null;
+            ILogger logger = null;
             try
             {
                 AzureFunctionContext.CreateLogger(out logger);

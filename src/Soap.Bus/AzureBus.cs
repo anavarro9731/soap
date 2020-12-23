@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
     using Azure.Messaging.ServiceBus;
@@ -27,8 +28,10 @@
 
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
-        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
-
+        public List<ApiEvent> BusEventsPublished { get; } = new List<ApiEvent>();
+        
+        public List<ApiEvent> WsEventsPublished { get; } = new List<ApiEvent>();
+        
         private List<IQueuedBusOperation> QueuedChanges
         {
             get
@@ -40,48 +43,42 @@
             }
         }
 
-        public async Task Publish(ApiEvent publishEvent, EnumerationFlags eventVisibility)
+        public async Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility)
         {
             await using var serviceBusClient = new ServiceBusClient(this.settings.BusConnectionString);
-            
-            if (eventVisibility.HasFlag(IBusClient.EventVisibility.WebSocketSender))
+
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
             {
-                await SendReplyToWsClient(serviceBusClient);    
+                await SendWsReply(publishEvent);
+                WsEventsPublished.Add(publishEvent);
+            } 
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId))
+            {
+                await SendWsReply(publishEvent);
+                WsEventsPublished.Add(publishEvent);
             }
 
-            if (eventVisibility.HasFlag(IBusClient.EventVisibility.AllBusSubscriptions))
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions))
             {
                 await BusBroadcastToAllSubscribers(serviceBusClient);
+                BusEventsPublished.Add(publishEvent.Clone());
             }
 
-            if (eventVisibility.HasFlag(IBusClient.EventVisibility.AllWebSocketClientsNoConversationId))
+            async Task SendWsReply(ApiEvent apiEvent)
             {
-                await WsBroadCastToAllSubscribers();
-            }
+                using var client = new HttpClient();
+                //TODO config and secure sendsignalrmessage
+                var sendWsMessageEnpoint = !string.IsNullOrWhiteSpace(publishEvent.Headers.GetSessionId())
+                                               ? $"http://localhost:7071/api/SendSignalRMessage?clientId={Uri.EscapeUriString(apiEvent.Headers.GetSessionId())}&type={Uri.EscapeUriString(ToShortAssemblyTypeName(apiEvent.GetType()))}"
+                                               : $"http://localhost:7071/api/SendSignalRMessage?type={Uri.EscapeUriString(ToShortAssemblyTypeName(apiEvent.GetType()))}";
 
-            EventsPublished.Add(publishEvent.Clone());
-
-            async Task WsBroadCastToAllSubscribers()
-            {
-                //TODO
-                await Task.CompletedTask;
-            }
-
-            async Task SendReplyToWsClient(ServiceBusClient serviceBusClient)
-            {
-                var sender = serviceBusClient.CreateSender("allevents");
-
-                var toClient =
-                    new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
-                    {
-                        MessageId = publishEvent.Headers.GetMessageId().ToString(), //* required for bus envelope but out code uses the matching header  
-                        Subject = publishEvent.GetType().ToShortAssemblyTypeName(), //* required by .net clients for quick deserialisation rather than parsing JSON $type
-                        SessionId = publishEvent.Headers.GetSessionId()
-                    };
+                HttpResponseMessage result = await client.PostAsync(
+                                                 sendWsMessageEnpoint,
+                                                 new StringContent(apiEvent.ToJson(SerialiserIds.ApiBusMessage)));
                 
-                await sender.SendMessageAsync(toClient);
+                static string ToShortAssemblyTypeName(Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
             }
-
+            
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
                 var topic = publishEvent.Headers.GetTopic().ToLower();
@@ -98,8 +95,6 @@
             }
             
         }
-
-        public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibility sendTo) => throw new NotImplementedException();
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {

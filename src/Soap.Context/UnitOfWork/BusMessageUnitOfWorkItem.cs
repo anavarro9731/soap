@@ -7,12 +7,13 @@
     using DataStore.Interfaces;
     using Newtonsoft.Json;
     using Soap.Context.Logging;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Models;
 
     public class BusMessageUnitOfWorkItem : SerialisableObject
     {
-        public BusMessageUnitOfWorkItem(ApiMessage x, EnumerationFlags eventVisibility)
+        public BusMessageUnitOfWorkItem(ApiMessage x, IBusClient.EventVisibilityFlags eventVisibility)
             : base(x)
         {
             MessageId = x.Headers.GetMessageId();
@@ -28,7 +29,7 @@
         public Guid MessageId { get; internal set; }
         
         [JsonProperty]
-        public EnumerationFlags EventVisibility { get; internal set; }
+        public IBusClient.EventVisibilityFlags EventVisibility { get; internal set; }
     }
 
     public static class BusMessageUnitOfWorkItemExtensions

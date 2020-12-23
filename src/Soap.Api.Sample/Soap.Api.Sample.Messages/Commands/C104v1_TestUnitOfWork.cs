@@ -1,5 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
-
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Messages.Commands
 {
     using FluentValidation;

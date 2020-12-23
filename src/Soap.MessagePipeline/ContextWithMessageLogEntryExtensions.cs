@@ -353,7 +353,7 @@
                 {
                     /* send a message to the bus which tells us this has occured
                  allowing us to handle these cases with compensating logic */
-                    SendFinalFailureMessages();
+                    await SendFinalFailureMessages();
                 }
 
                 await AddThisFailureToTheMessageLog();
@@ -393,7 +393,7 @@
                 //- remember that total attempts is initial message + retries
                 context.MessageLogEntry.Attempts.Count == context.Bus.MaximumNumberOfRetries;
 
-            void SendFinalFailureMessages()
+            async Task SendFinalFailureMessages()
             {
                 var json = context.Message.ToJson(SerialiserIds.ApiBusMessage);
                 
@@ -404,10 +404,11 @@
                     SerialisedMessage = json
                 };
 
-                context.Bus.Send(instanceOfMessageFailedAllRetries);
+                await context.Bus.Send(instanceOfMessageFailedAllRetries);
 
                 var exception = exceptionInfo.ExceptionThrownToContext();
-                    var toWsClients = new E001v1_MessageFailed()
+                
+                var toWsClients = new E001v1_MessageFailed()
                 {
                     E001_ErrorMessage = exception.Message,
                     E001_ErrorCodes = exception.KnownErrorCodes,
@@ -415,7 +416,8 @@
                     E001_MessageTypeName = context.Message.GetType().ToShortAssemblyTypeName(),
                     E001_StatefulProcessId = context.Message.Headers.GetStatefulProcessId()
                 };
-                context.Bus.Publish(toWsClients, context.Message, new EnumerationFlags(IBusClient.EventVisibility.WebSocketSender));
+                    
+                await context.Bus.Publish(toWsClients, context.Message, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
             }
         }
 
@@ -612,7 +614,7 @@
                             break;
 
                         case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedEventToPublish)):
-                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish,((QueuedEventToPublish)b1).EventVisibility));
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish, ((QueuedEventToPublish)b1).EventVisibility));
                             break;
 
                         case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)):

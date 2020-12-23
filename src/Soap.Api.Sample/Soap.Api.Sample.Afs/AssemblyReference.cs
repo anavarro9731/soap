@@ -4,6 +4,6 @@
 
     public static class SoapApiSampleAfs
     {
-        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(ReceiveMessage));
+        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(BuiltIn));
     }
 }

@@ -94,8 +94,17 @@
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
+            
+            if (messageHeaders.GetSessionId() != null)
+            {
+                Ensure(
+                    messageHeaders.GetCommandHash() != null,
+                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandHash} set");
 
-            CheckWebSocketClientHeaders(messageHeaders);
+                Ensure(
+                    messageHeaders.GetCommandConversationId() != null,
+                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
+            }
 
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api events must have a {nameof(Keys.Schema)} header set");
 
@@ -108,8 +117,10 @@
             */
         }
 
-        public static void SetDefaultHeadersForIncomingTestMessages(this MessageHeaders messageHeaders, ApiMessage message)
+        public static void SetDefaultHeadersForIncomingTestMessages(this ApiMessage message)
         {
+            var messageHeaders = message.Headers;
+            
             if (messageHeaders.GetMessageId() == Guid.Empty)
             {
                 messageHeaders.SetMessageId(Guid.NewGuid());
@@ -134,13 +145,18 @@
             {
                 messageHeaders.SetTopic("topic");
             }
+            
+            if (messageHeaders.GetSessionId() == null && message is ApiCommand)
+            {
+                messageHeaders.SetSessionId(Guid.NewGuid().ToString());
+            }
 
-            if (messageHeaders.GetCommandConversationId() == null)
+            if (messageHeaders.GetCommandConversationId() == null && message is ApiCommand)
             {
                 messageHeaders.SetCommandConversationId(Guid.NewGuid());
             }
 
-            if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()))
+            if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()) && message is ApiCommand)
             {
                 messageHeaders.SetCommandHash("command hash");
             }
@@ -158,9 +174,9 @@
              */
         }
 
-        private static string ToShortAssemblyTypeName(this Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
-        public static void ValidateIncomingMessageHeaders(this MessageHeaders messageHeaders)
+        public static void ValidateIncomingMessageHeaders(this ApiMessage msg)
         {
+            var messageHeaders = msg.Headers;
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All incoming Api messages must have a valid {nameof(Keys.MessageId)} header");
@@ -168,7 +184,19 @@
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
-            CheckWebSocketClientHeaders(messageHeaders);
+            if (messageHeaders.GetSessionId() != null)
+            {
+                Ensure(msg is ApiCommand, $"All incoming Api messages with {Keys.SessionId} header can only be commands");
+                
+                Ensure(
+                    messageHeaders.GetCommandHash() != null,
+                    $"All incoming Api messages with {Keys.SessionId} header set must also have {Keys.CommandHash} set");
+
+                Ensure(
+                    messageHeaders.GetCommandConversationId() != null,
+                    $"All incoming Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
+            }
+            
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
 
             //* not validated
@@ -181,20 +209,10 @@
             //* sasstoragetoken only present on outgoing UIFormEvents or large incoming commands
         }
 
-        private static void CheckWebSocketClientHeaders(MessageHeaders messageHeaders)
-        {
-            //*command hash optionally present on commands coming from or events going to the client
-            if (messageHeaders.GetSessionId() != null)
-            {
-                Ensure(
-                    messageHeaders.GetCommandHash() != null,
-                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandHash} set");
-
-                Ensure(
-                    messageHeaders.GetCommandConversationId() != null,
-                    $"All Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
-            }
-        }
+        // private static void CheckWebSocketClientHeaders(MessageHeaders messageHeaders)
+        // {
+        //
+        // }
 
         private static void Ensure(bool acceptable, string errorMessage)
         {

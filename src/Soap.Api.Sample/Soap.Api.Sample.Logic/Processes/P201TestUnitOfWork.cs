@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Logic.Processes
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
@@ -12,7 +13,6 @@
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     /// <summary>
-    ///     ##REMOVE-IN-COPY##
     ///     This is not a normal process and uses a number of undocumented features
     /// </summary>
     public class P201TestUnitOfWork : Process, IBeginProcess<C104v1_TestUnitOfWork>

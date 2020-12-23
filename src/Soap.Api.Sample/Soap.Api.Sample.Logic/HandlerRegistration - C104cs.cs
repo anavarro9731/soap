@@ -1,4 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Logic
 {
     using Soap.Api.Sample.Logic.Mappings;
@@ -6,10 +6,9 @@ namespace Soap.Api.Sample.Logic
 
     public partial class HandlerRegistration : MapMessagesToFunctions
     {
-        public override void AddSpecial()
+        protected override void RegisterOnlyForSampleApi()
         {
             Register(new C104v1Functions());
-            base.AddSpecial();
         }
     }
 }

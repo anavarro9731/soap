@@ -5,7 +5,7 @@ namespace Soap.PfBase.Api.Functions
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
-    public static class Functions
+    public static partial class PlatformFunctions
     {
         public static IActionResult GetJsonSchema(ILogger log, Assembly messagesAssembly)
         {

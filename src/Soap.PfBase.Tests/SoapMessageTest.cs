@@ -72,7 +72,7 @@ namespace Soap.PfBase.Tests
             Action<MessageAggregatorForTesting>? setup = null) where T : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
-            msg.Headers.SetDefaultHeadersForIncomingTestMessages(msg);
+            msg.SetDefaultHeadersForIncomingTestMessages();
 
             this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository();
 

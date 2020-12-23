@@ -97,12 +97,14 @@
                     var currentRun = 1;
                     do
                     {
+                        if (currentRun > 1) remainingRuns -= 1;
                         try
                         {
                             await MessagePipeline.Execute(message, context);
                             x.Success = true;
-                            x.PublishedMessages = bus.EventsPublished;
-                            x.CommandsSent = bus.CommandsSent;
+                            x.PublishedMessages.AddRange(bus.BusEventsPublished);
+                            x.CommandsSent.AddRange(bus.CommandsSent);
+                            
                             return x;
                         }
                         catch (Exception e)
@@ -110,7 +112,7 @@
                             x.UnhandledError = e;
                         }
 
-                        if (currentRun++ > 1) remainingRuns -= 1;
+                        currentRun++;
                     }
                     while (remainingRuns > 0);
                 }

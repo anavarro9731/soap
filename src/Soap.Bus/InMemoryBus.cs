@@ -7,6 +7,7 @@
     using CircuitBoard.MessageAggregator;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
     public class InMemoryBus : IBusClient
     {
@@ -19,11 +20,26 @@
 
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
-        public List<ApiEvent> EventsPublished { get; } = new List<ApiEvent>();
+        public List<ApiEvent> BusEventsPublished { get; } = new List<ApiEvent>();
 
-        public Task Publish(ApiEvent publishEvent, EnumerationFlags enumerationFlags)
+        public List<ApiEvent> WsEventsPublished { get; } = new List<ApiEvent>(); //TODO write a test
+
+        public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility)
         {
-            EventsPublished.Add(publishEvent);
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
+            {
+                WsEventsPublished.Add(publishEvent.Clone());
+            } 
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId))
+            {
+                WsEventsPublished.Add(publishEvent.Clone());
+            }
+
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions))
+            {
+                BusEventsPublished.Add(publishEvent.Clone());
+            }
+
             return Task.CompletedTask;
         }
 

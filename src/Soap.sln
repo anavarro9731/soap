@@ -11,13 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		readme.md = readme.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Api", "Sample Api", "{77043A66-EA76-40E2-8AD2-0ABD2A1AC592}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Soap.Infrastructure", "Soap.Infrastructure", "{1876CD2C-FF33-46A8-9AD3-8A19CBDEF5CB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces", "Soap.Interfaces\Soap.Interfaces.csproj", "{2DC299E9-04A1-4911-AB92-9989E23C4D53}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Utility", "Soap.Utility\Soap.Utility.csproj", "{1B294BC5-AAA5-41ED-BC8A-8965A5A434FC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Soap.Api.Sample", "Soap.Api.Sample", "{77043A66-EA76-40E2-8AD2-0ABD2A1AC592}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample.Logic", "Soap.Api.Sample\Soap.Api.Sample.Logic\Soap.Api.Sample.Logic.csproj", "{5099627C-E995-4903-8826-265A29E1D253}"
 EndProject

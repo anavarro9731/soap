@@ -23,24 +23,25 @@
             : base(outputHelper)
         {
 
-            void Set(C106v1_LargeCommand c)
+            void SetHeaders(C106v1_LargeCommand c)
             {
                 c.Headers.SetMessageId(id);
                 c.Headers.SetBlobId(id);
             }
 
-            var c106FromBlobStorage = new C106v1_LargeCommand().Op(Set).Op(c => c.Headers.SetDefaultHeadersForIncomingTestMessages(c));
+            var c106FromBlobStorage = new C106v1_LargeCommand().Op(SetHeaders);
             
             var c106In = new C106v1_LargeCommand().Op(
                 c =>
                     {
-                    Set(c);
+                    SetHeaders(c);
                     c.C106_Large256KbString = null;
                     });
 
-             SetupTestByProcessingAMessage(
+             TestMessage(
                 c106In, 
                 Identities.UserOne,
+                0,
                 setup: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobDownloadEvent>()
                                                                                  .Return(Task.FromResult(c106FromBlobStorage.ToBlob())));
         }

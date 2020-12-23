@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Logic.Operations
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
     using System.Linq;
@@ -12,7 +13,6 @@
     using Guard = Soap.Context.Guard;
 
     /// <summary>
-    ///     ##REMOVE-IN-COPY##
     ///     Not really representative of user operations, too specific, uses undocumented features for testing UOW
     /// </summary>
     public class UserOperations : Operations<User>

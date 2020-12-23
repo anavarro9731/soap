@@ -1,4 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Threading.Tasks;
@@ -64,7 +64,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         private void CountMessagesSent()
         {
             Result.MessageBus.CommandsSent.Count.Should().Be(1);
-            Result.MessageBus.EventsPublished.Count.Should().Be(1);
+            Result.MessageBus.BusEventsPublished.Count.Should().Be(1);
         }
     }
 }

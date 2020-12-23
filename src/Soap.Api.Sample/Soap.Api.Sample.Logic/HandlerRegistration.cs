@@ -18,7 +18,6 @@
             Register(new C107v1Functions());
             Register(new C109v1Functions());
             Register(new C110v1Functions());
-            AddSpecial();
         }
     }
 }

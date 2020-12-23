@@ -1,4 +1,4 @@
-﻿//*     ##REMOVE-IN-COPY##
+﻿//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Linq;
@@ -26,7 +26,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork), Identities.UserOne, 2);
 
             //assert
-            Result.MessageBus.EventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();
+            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();
             Result.UnhandledError.Message.Should().Contain(SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
         }
     }

@@ -73,10 +73,12 @@
 
                 do
                 {
+                    if (currentRun > 1) remainingRuns -= 1;
                     logger.Information(
-                        $@"\/\/\/\/\/\/\/\/\/\/\/\/ RUN {currentRun} STARTED {remainingRuns} run(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/"
+                        $@"\/\/\/\/\/\/\/\/\/\/\/\/ RUN {currentRun} STARTED {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/"
                         + Environment.NewLine);
-
+                    
+                    
                     if (beforeRunHook != default)
                     {
                         try
@@ -99,7 +101,7 @@
 
                             logger.Information(
                                 Environment.NewLine
-                                + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns - 1} run(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                                + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
                             x.UnhandledError = e;
                             return x;
                         }
@@ -148,11 +150,15 @@
 
                         logger.Information(
                             Environment.NewLine
-                            + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns - 1} run(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                            + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
                         return x;
                     }
                     catch (Exception e)
                     {
+                        logger.Information(
+                            Environment.NewLine
+                            + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                        
                         /* included these 3 lines later, not sure why I didn't at first
                          maybe it was to keep parallel structure with the output in azurefunctioncontext
                          but there these might be null if there is an error, while here they shoudl always
@@ -163,8 +169,9 @@
                         
                         x.UnhandledError = e;
                     }
-
-                    if (currentRun++ > 1) remainingRuns -= 1;
+                    
+                    currentRun++;
+                        
                 }
                 while (remainingRuns > 0);
 

@@ -136,7 +136,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                 this.contextMessage = contextMessage;
             }
 
-            public Task Publish(ApiEvent publishEvent, EnumerationFlags eventVisibility = null)
+            public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility = null)
             {
                 publishEvent.Headers.SetStatefulProcessId(this.id);
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);

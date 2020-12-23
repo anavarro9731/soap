@@ -51,7 +51,9 @@ let _logger = {
 
 let _sessionDetails;
 
-let _sender = (msg) => {
+let _setupReceiver;
+
+const _sender = (msg) => {
 
     (async function (typedMessage, logger) {
 
@@ -128,10 +130,10 @@ let _sender = (msg) => {
 
         async function processMessage(message) {
 
-            let anonymousEvent = message.body;
+            let anonymousEvent = message;
 
             try {
-                logger.log(`Received message ${message.messageId} on bus for session: ${message.sessionId}`, anonymousEvent);
+                logger.log(`Received message ${getHeader(message, headerKeys.messageId)}`, anonymousEvent);
 
                 if (_.find(message.headers, h => h.key == headerKeys.blobId)) {
                     //* make the swap
@@ -192,11 +194,11 @@ let _sender = (msg) => {
         async function setupSession() {
 
             await registerMessageTypesFromApi();
-
-            return await createEventListener();
+            
+            return await createBusSession();
         }
 
-        async function createEventListener() {
+        async function createBusSession() {
 
             const browserSessionId = uuidv4();
             const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
@@ -207,20 +209,11 @@ let _sender = (msg) => {
             //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
             // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
 
-            const receiver = await serviceBusClient.acceptSession("allevents", "browserclients", browserSessionId, {receiveMode: "receiveAndDelete"});
-
-            const processError = async (args) => {
-                logger.log(`>>>>> Error receiving message from source ${args.errorSource}`, args.error);
-            };
-
-            receiver.subscribe({
-                processMessage,
-                processError
-            });
-
+            _setupReceiver(processMessage);
+            
             return {
                 browserSessionId,
-                serviceBusClient
+                serviceBusClient,
             };
         }
 
@@ -235,11 +228,10 @@ export default {
     get logger() {
         return _logger;
     },
-    set sender(s) {
-        _sender = s;
+    set receiver(r) {
+        _setupReceiver = r;
     },
     send(message) {
-        if (_sender === undefined) throw 'sender not defined please set config.sender = (msg) => {};';
         _sender(message);
     },
     logFormDetail: false,
