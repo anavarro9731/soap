@@ -200,7 +200,7 @@ const _sender = (msg) => {
 
         async function createBusSession() {
 
-            const browserSessionId = uuidv4();
+            
             const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
             serviceBusConnectionString || logger.log("process.env.SERVICEBUS_CONN not defined check .env file.")
 
@@ -209,7 +209,7 @@ const _sender = (msg) => {
             //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
             // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
 
-            _setupReceiver(processMessage);
+            const browserSessionId = await _setupReceiver(processMessage);
             
             return {
                 browserSessionId,

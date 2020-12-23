@@ -85,7 +85,7 @@
             IAsyncCollector<SignalRMessage> signalRMessages,
             ILogger logger)
         {
-            string userId = req.Query["userId"];
+            string connectionId = req.Query["connectionId"];
             string type = req.Query["type"];
             var t = Type.GetType(type);
             var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -94,7 +94,7 @@
             await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
-                    UserId = userId, // the message will only be sent to this user id, leave this off for broadcast
+                    ConnectionId = connectionId,// the message will only be sent to this user id, leave this off for broadcast
                     Target = "eventReceived", //client side function name
                     Arguments = new[] { "^^^" + msg.ToJson(SerialiserIds.ApiBusMessage) } 
                     /* don't let signalr do the serialising or it will use the wrong JSON settings, it's smart and it will recognise a JSON string, fool it with ^^^ */

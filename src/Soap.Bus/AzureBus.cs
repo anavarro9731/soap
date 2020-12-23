@@ -69,7 +69,7 @@
                 using var client = new HttpClient();
                 //TODO config and secure sendsignalrmessage
                 var sendWsMessageEnpoint = !string.IsNullOrWhiteSpace(publishEvent.Headers.GetSessionId())
-                                               ? $"http://localhost:7071/api/SendSignalRMessage?clientId={Uri.EscapeUriString(apiEvent.Headers.GetSessionId())}&type={Uri.EscapeUriString(ToShortAssemblyTypeName(apiEvent.GetType()))}"
+                                               ? $"http://localhost:7071/api/SendSignalRMessage?connectionId={Uri.EscapeUriString(apiEvent.Headers.GetSessionId())}&type={Uri.EscapeUriString(ToShortAssemblyTypeName(apiEvent.GetType()))}"
                                                : $"http://localhost:7071/api/SendSignalRMessage?type={Uri.EscapeUriString(ToShortAssemblyTypeName(apiEvent.GetType()))}";
 
                 HttpResponseMessage result = await client.PostAsync(

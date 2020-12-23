@@ -26,18 +26,11 @@ config.receiver = async (processor) => {
         await processor(messageObj);
     });
 
-    hubConnection
-        .start()
-        .then(function () {
-            onConnected();
-        })
-        .catch(function (error) {
-            console.error("Error getting signalr message************:" +error.message);
-        });
+    await hubConnection.start();
+    console.warn("Connected:", hubConnection);
     
-    function onConnected() {
-        console.warn("onConnected called");
-    }
+    return hubConnection.connectionId;
+    
 }
 function Index() {
 
