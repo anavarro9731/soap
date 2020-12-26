@@ -99,3 +99,4 @@ COULD
 - Add DataStore "Document Size Limit" on write error. It will still fail with a less friendly native error from CosmosDB as-is. Also, hitting the 2MB limit should not happen really without bad design.
 - Cleanup i18next module in soapjs
 - Add AssemblyReferences files for all assemblies
+- CheckHealth to Test SignalR
