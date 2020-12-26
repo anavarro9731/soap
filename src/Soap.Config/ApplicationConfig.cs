@@ -7,9 +7,13 @@
     using Soap.Interfaces;
     using Soap.NotificationServer;
 
-    /* if you add anything to this config you need to add guards for it and possibly
-     also add it to the localsettings.json file and envvars class depending on how it is used. if added to envars probably also needs to be added to soap.config files and sampleconfig.cs 
-     for create-new-service to work right and it may also need to be added to testconfig base class if you are testing it*/
+    /* If you add anything to this config you need to add validators for it and
+     if it relies on env variables also add it to the localsettings.json file and envvars class.
+        with the exception of things (e.g. logger) which are read before the config is loaded or in an effort to load the config. 
+     if it relies on env vars then you will need to also add it to sampleconfig.cs used by create-new-service.ps1 to setup new config repos 
+            and to edit existing config.cs files in the soap demo config repo
+        This is ensures that the config remains the sole point of contact for config information and the envvars the sole point of obtaining infrastructure config  
+     It may also need to be added to testconfig base class if it is required in TestRuns not to be null */
 
     public class ApplicationConfig : IBootstrapVariables
     {

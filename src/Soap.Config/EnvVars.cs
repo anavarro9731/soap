@@ -2,6 +2,7 @@
 {
     using System;
 
+    //* see notes at top of applicationconfig.cs for more info about how these are used
     public static class EnvVars
     {
         public static string AppId => Environment.GetEnvironmentVariable(nameof(AppId));
@@ -21,8 +22,10 @@
 
         public static string AzureStorageConnectionString =>
             Environment.GetEnvironmentVariable(nameof(AzureStorageConnectionString));
-
+        
         public static string AzureWebJobsServiceBus => Environment.GetEnvironmentVariable(nameof(AzureWebJobsServiceBus));
+        
+        public static string AzureSignalRConnectionString => Environment.GetEnvironmentVariable(nameof(AzureSignalRConnectionString));
 
         public static string CosmosDbAccountName => Environment.GetEnvironmentVariable(nameof(CosmosDbAccountName));
 

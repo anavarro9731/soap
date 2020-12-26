@@ -11,6 +11,8 @@
     using DataStore.Options;
     using Destructurama;
     using Microsoft.ApplicationInsights.Extensibility;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
     using Serilog;
@@ -51,6 +53,7 @@
             string messageTypeShortAssemblyQualifiedName,
             ILogger logger,
             ApplicationConfig appConfig,
+            IAsyncCollector<SignalRMessage> signalRBinding,
             DataStoreOptions dataStoreOptions = null) where TApiIdentity : class, IApiIdentity, new()
         
         {
@@ -78,7 +81,7 @@
 
                     CreateBlobStorage(appConfig, messageAggregator, out BlobStorage blobStorage);
                     
-                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, out var bus);
+                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
 
                     var context = new BoostrappedContext(
                         new Auth0Authenticator(() => new TApiIdentity()),
@@ -172,9 +175,14 @@
                 messageAggregator = new MessageAggregator();
             }
 
-            void CreateBusContext(IMessageAggregator messageAggregator, IBusSettings busSettings, IBlobStorage blobStorage, out IBus busContext)
+            static void CreateBusContext(
+                IMessageAggregator messageAggregator,
+                IBusSettings busSettings,
+                IBlobStorage blobStorage,
+                IAsyncCollector<SignalRMessage> signalRBinding,
+                out IBus busContext)
             {
-                busContext = busSettings.CreateBus(messageAggregator, blobStorage);
+                busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding);
             }
             
             void CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator, out BlobStorage blobStorage)
@@ -236,6 +244,7 @@
 
             static void EnsureEnvironmentVars()
             {
+                //* I also ensure items not directly accessed in code, but required through other means (e.g. function bindings)
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.FunctionAppHostUrl),
                     $"{nameof(EnvVars.FunctionAppHostUrl)} environment variable not set");
@@ -254,6 +263,9 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureWebJobsServiceBus),
                     $"{nameof(EnvVars.AzureWebJobsServiceBus)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.AzureSignalRConnectionString),
+                    $"{nameof(EnvVars.AzureSignalRConnectionString)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.CosmosDbDatabaseName),
                     $"{nameof(EnvVars.CosmosDbDatabaseName)} environment variable not set");

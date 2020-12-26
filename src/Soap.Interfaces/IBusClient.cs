@@ -13,7 +13,8 @@
         List<ApiEvent> BusEventsPublished { get; }
         
         List<ApiEvent> WsEventsPublished { get; }
-
+        
+        
         Task Publish(ApiEvent publishEvent, EventVisibilityFlags eventVisibility);
 
         Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null);

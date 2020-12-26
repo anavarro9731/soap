@@ -5,13 +5,20 @@ namespace Soap.PfBase.Api.Functions
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.Extensions.Logging;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
 
     public static partial class PlatformFunctions
     {
-        public static async Task HandleMessage<TApiIdentity>(Message myQueueItem, string messageId, MapMessagesToFunctions handlerRegistration, ILogger log) where TApiIdentity : class, IApiIdentity, new()
+        public static async Task HandleMessage<TApiIdentity>(
+            Message myQueueItem,
+            string messageId,
+            MapMessagesToFunctions handlerRegistration,
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            ILogger log) where TApiIdentity : class, IApiIdentity, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -21,15 +28,18 @@ namespace Soap.PfBase.Api.Functions
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
                 var result = await AzureFunctionContext.Execute<TApiIdentity>(
-                                 messageAsJson: Encoding.UTF8.GetString(myQueueItem.Body),
+                                 Encoding.UTF8.GetString(myQueueItem.Body),
                                  handlerRegistration,
-                                 messageIdAsString: messageId,
-                                 messageTypeShortAssemblyQualifiedName: myQueueItem.Label,
-                                 logger: logger,
-                                 appConfig);
+                                 messageId,
+                                 myQueueItem.Label,
+                                 logger,
+                                 appConfig,
+                                 signalRBinding);
 
                 if (result.Success == false)
+                {
                     ExceptionDispatchInfo.Capture(result.UnhandledError).Throw();
+                }
             }
             catch (Exception e)
             {

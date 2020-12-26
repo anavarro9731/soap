@@ -6,6 +6,8 @@ namespace Soap.PfBase.Api.Functions
     using System.Net.Http.Headers;
     using System.Text;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.Extensions.Logging;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
@@ -17,6 +19,7 @@ namespace Soap.PfBase.Api.Functions
             CheckHealth<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
                 HttpRequest req,
                 MapMessagesToFunctions handlerRegistration,
+                IAsyncCollector<SignalRMessage> signalRBinding,
                 ILogger log)
             where TInboundMessage : ApiCommand, new()
             where TIdentity : class, IApiIdentity, new()
@@ -40,6 +43,7 @@ namespace Soap.PfBase.Api.Functions
                                 typeof(TInboundMessage).Assembly,
                                 $"{req.Scheme}://{req.Host.ToUriComponent()}",
                                 handlerRegistration,
+                                signalRBinding,
                                 logger),
                     new MediaTypeHeaderValue("text/plain"));
 

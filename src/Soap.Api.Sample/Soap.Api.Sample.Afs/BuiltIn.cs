@@ -40,10 +40,13 @@
         public static HttpResponseMessage CheckHealth(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
             HttpRequest req,
+            [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
+            IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log) =>
             Functions.CheckHealth<C100v1_Ping, E100v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, User>(
                 req,
                 new HandlerRegistration(),
+                signalRBinding,
                 log);
 
         [FunctionName("GetBlob")]
@@ -72,33 +75,11 @@
             [ServiceBusTrigger("Soap.Api.Sample.Messages", Connection = "AzureWebJobsServiceBus")] //* this uses peeklockmode
             Message myQueueItem,
             string messageId,
+            [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
+            IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log)
         {
-            await PlatformFunctions.HandleMessage<User>(myQueueItem, messageId, new HandlerRegistration(), log);
-        }
-
-        [FunctionName("SendSignalRMessage")]
-        public static async Task SendSignalRMessage(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
-            HttpRequest req,
-            [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
-            IAsyncCollector<SignalRMessage> signalRMessages,
-            ILogger logger)
-        {
-            string connectionId = req.Query["connectionId"];
-            string type = req.Query["type"];
-            var t = Type.GetType(type);
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var msg = (ApiMessage)requestBody.FromJson(t, SerialiserIds.ApiBusMessage);
-        
-            await signalRMessages.AddAsync(
-                new SignalRMessage
-                {
-                    ConnectionId = connectionId,// the message will only be sent to this user id, leave this off for broadcast
-                    Target = "eventReceived", //client side function name
-                    Arguments = new[] { "^^^" + msg.ToJson(SerialiserIds.ApiBusMessage) } 
-                    /* don't let signalr do the serialising or it will use the wrong JSON settings, it's smart and it will recognise a JSON string, fool it with ^^^ */
-                });
+            await PlatformFunctions.HandleMessage<User>(myQueueItem, messageId, new HandlerRegistration(), signalRBinding, log);
         }
 
         [FunctionName("ValidateMessage")]

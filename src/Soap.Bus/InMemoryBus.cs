@@ -5,6 +5,8 @@
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -53,7 +55,7 @@
         {
             public byte NumberOfApiMessageRetries { get; set; }
 
-            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage) =>
+            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding) =>
                 new Bus(new InMemoryBus(this), this, messageAggregator, blobStorage);
         }
     }

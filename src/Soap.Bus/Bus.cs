@@ -8,6 +8,8 @@
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -18,7 +20,11 @@
 
         private readonly IMessageAggregator messageAggregator;
 
-        public Bus(IBusClient busClient, IBusSettings settings, IMessageAggregator messageAggregator, IBlobStorage blobStorage)
+        public Bus(
+            IBusClient busClient,
+            IBusSettings settings,
+            IMessageAggregator messageAggregator,
+            IBlobStorage blobStorage)
         {
             BusClient = busClient;
             this.messageAggregator = messageAggregator;

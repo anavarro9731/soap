@@ -8,6 +8,8 @@
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Serilog;
     using Serilog.Exceptions;
     using Soap.Bus;
@@ -225,7 +227,7 @@
                 IBlobStorage blobStorage,
                 out IBus busContext)
             {
-                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage);
+                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage, null);
             }
 
             static void CreateDataStore(
