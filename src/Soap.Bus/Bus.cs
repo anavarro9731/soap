@@ -97,7 +97,7 @@
             {
                 var eventVisibility = new IBusClient.EventVisibilityFlags();
 
-                if (!string.IsNullOrWhiteSpace(contextMessage.Headers.GetSessionId()))
+                if (!string.IsNullOrEmpty(contextMessage.Headers.GetSessionId()))
                 {
                     eventVisibility.AddFlag(IBusClient.EventVisibility.ReplyToWebSocketSender);
                 }

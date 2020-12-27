@@ -89,7 +89,7 @@ namespace Soap.MessagePipeline
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Could not read message {message.Headers.GetMessageId()} from store", e);
+                    throw new ApplicationException($"Could not read message {message.Headers.GetMessageId()} from store at {ctx.DataStore.DocumentRepository.ConnectionSettings.ToString()}", e);
                 }
             }
         }

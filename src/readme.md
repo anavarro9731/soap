@@ -1,7 +1,16 @@
 # DEV ENVIRONMENT 
 ~ setup time 10-20 mins
 
-##Steps 
+##Steps
+###Install Powershell
+Some tools still require the x86 version so while you can install x64 SxS with x86, 
+be sure to install and use x86 with the commands in this guide. 
+
+You can get the latest version of powershell [here](https://github.com/PowerShell/PowerShell)
+
+Then run the following commands from a PWSH x86 *Elevated* command prompt
+`Set-ExecutionPolicy Unrestricted` to allow all scripts to run.
+
 ###Install Chocolatey
 ```
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command " [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
@@ -23,19 +32,23 @@ choco install git
 ```
 choco install nodejs
 npm install -g yarn
-npm install -g azurite
 ```
 ###Install Local Dev tools
 ```
 choco install azure-cosmosdb-emulator
-
+lodctr /R (corrupted perf counters will cause emulator errors, run this command twice in succession)
+npm install -g azurite
 ```
 ### Verify Installations
 ```
 choco list --local-only
 node -v
-npm -v 
+yarn -v
 ```
+### Restart your machine
+
+Cosmos Emulator in particular throws errors about multiple instances without a restart but it's good practice anyway with so many critical installs.
+
 # CREATING A NEW SERVICE AND PIPELINE
 ~ setup time 15-30 mins
 
@@ -62,7 +75,7 @@ Once logged into shell.azure.com as global admin run:
 ```
  az ad sp create-for-rbac --name ServicePrincipalName
 ```
-See here for details (https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) 
+See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
 #### Devops key
 The ado-pat and nuget-key values you will need to create a Personal Access Token(s) with proper permissions.
 For ado-pat the PAT must be able to read from the source repo for the ```.version``` file and the config repo for the ```Config.cs``` file.
@@ -71,7 +84,7 @@ Both variables can use the same PAT.
 
 ### Infrastructure
 Push the new initial commit which should be waiting locally to build the Azure infrastructure.
-From a POSH prompt in the repo root run:
+From a PWSH prompt in the repo root run:
 ```
 git push
 ```
@@ -79,35 +92,54 @@ Now wait for the resource group you defined in ```.\create-new-service.psm1```
 
 ###Running Locally
 
+Install the following Rider plugins:
+- https://plugins.jetbrains.com/plugin/9525--env-files-support
+- https://plugins.jetbrains.com/plugin/11220-azure-toolkit-for-rider (This will install Azurite support)
+- https://plugins.jetbrains.com/plugin/10249-powershell
 
-
-Open the new Solution in Jetbrains Rider. 
+Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
+and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
 
 The following are the cloud services that need to be considered in regards to local development.
-Each service has a unique way of creating developer-specific instance based on the DSK [Developer Specific Key]
-entered when creating a new service and stored in the local.settings.json file as an environment variable.
+Each service has a unique way of creating a developer-specific experience.
+Some are based on the DSK [Developer Specific Key] entered when creating a new service and 
+stored in the local.settings.json file as an environment variable while others run a local emulator.
 
 Service|Environment Separation Method|Config Variable
 ---|---|---
-Azure ServiceBus|ServiceBus Filter on VNext instance|AzureWebJobsServiceBus
-Azure SignalR Service|ConnectionId-based |AzureSignalRConnectionString
+Azure ServiceBus|Session-Enabled Queue on VNext instance (SessionId=DSK)|AzureWebJobsServiceBus
+Azure SignalR Service|Group-Enabled Messages on VNext instance (Group=DSK)|AzureSignalRConnectionString
 Azure Storage (Blob)|Azurite Local Instance|AzureWebJobsStorage
-Azure CosmosDb|Emulator Local Instance|CosmosDbDatabasename
+Azure CosmosDb|CosmosDb Emulator Local Instance|CosmosDbDatabasename
 
+Assuming you have following the steps in order, pushing the data in the final step of the
+[link](#creating-a-new-service-and-pipeline) section. 
 
-Edit the local.settings.json file and update with the settings from the new cloud resources
+Then edit the local.settings.json file and update the following settings with values from the new cloud resources:
 
+Variable Name|How to get Value
+---|---|---
+AzureWebJobsServiceBus|Copy Connection String from Portal
+AzureSignalRConnectionString|Copy Connection String form Portal
 
+Next start the emulators:
 
+Run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
+before starting azurite, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json
+
+Emulator|Startup|Debug
+---|---|---
+CosmosDb|PWSH `&"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe"`|Debug from https://localhost:8081/_explorer/index.html or systray
+Azurite|From the Rider Top Nav, Tools > Azure > Start Azurite|Debug from View > Tools > Services
 
 Now you are ready for local development and can run the Azure Function Project ```YourProject.Afs```
 
-When running locally you don't get messages in the trace logs. 
+Finally check the service health using `http://localhost:7071/api/CheckHealth` endpoint
 
 ### NOTES
-
+ 
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops
-- Azure SDK releases found here: https://azure.github.io/azure-sdk/releases/latest/dotnet.html
+- Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
 - When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. You need to invalidate caches/restart for it to properly display pickup the implicit imports
 
 ### BackLog

@@ -212,7 +212,7 @@
             var loggerConfiguration = new LoggerConfiguration()
                      .Enrich.WithExceptionDetails()
                      .Destructure.UsingAttributes();
-            if (EnvVars.AppInsightsInstrumentationKey == null)
+            if (string.IsNullOrEmpty(EnvVars.AppInsightsInstrumentationKey))
             {
                 loggerConfiguration.WriteTo.ColoredConsole();
             }
@@ -273,23 +273,15 @@
                     string.IsNullOrWhiteSpace(EnvVars.CosmosDbKey),
                     $"{nameof(EnvVars.CosmosDbKey)} environment variable not set");
                 Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbAccountName),
-                    $"{nameof(EnvVars.CosmosDbAccountName)} environment variable not set");
+                    (EnvVars.SoapEnvironmentKey != SoapEnvironments.Development.Key) &&
+                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbEndpointUri),
+                    $"{nameof(EnvVars.CosmosDbEndpointUri)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureBusNamespace),
                     $"{nameof(EnvVars.AzureBusNamespace)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureResourceGroup),
                     $"{nameof(EnvVars.AzureResourceGroup)} environment variable not set");
-                // Guard.Against(
-                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientId),
-                //     $"{nameof(EnvVars.ServicePrincipal.ClientId)} environment variable not set");
-                // Guard.Against(
-                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientSecret),
-                //     $"{nameof(EnvVars.ServicePrincipal.ClientSecret)} environment variable not set");
-                // Guard.Against(
-                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.TenantId),
-                //     $"{nameof(EnvVars.ServicePrincipal.TenantId)} environment variable not set");
             }
 
 

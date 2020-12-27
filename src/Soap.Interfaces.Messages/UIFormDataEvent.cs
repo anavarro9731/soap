@@ -183,7 +183,7 @@
 
 
                     static string GetPropertyPath(PropertyInfo validProperty, string typePath) =>
-                        !string.IsNullOrWhiteSpace(typePath) ? typePath + '.' + CamelCase(validProperty.Name) : CamelCase(validProperty.Name);
+                        !string.IsNullOrEmpty(typePath) ? typePath + '.' + CamelCase(validProperty.Name) : CamelCase(validProperty.Name);
 
                     static string CamelCase(string s) => char.ToLower(s[0]) + s.Substring(1);
                     

@@ -11,8 +11,10 @@
         public static string AppInsightsInstrumentationKey =>
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
+        public static string DeveloperSpecificKey => Environment.GetEnvironmentVariable("DeveloperSpecificKey");
+        
         //* Set by functions runtime
-        public static string FunctionAppHostUrl = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
+        public static string FunctionAppHostUrl = $"http://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/" ;
         
         public static string AzureBusNamespace => Environment.GetEnvironmentVariable(nameof(AzureBusNamespace));
 
@@ -28,7 +30,7 @@
         
         public static string AzureSignalRConnectionString => Environment.GetEnvironmentVariable(nameof(AzureSignalRConnectionString));
 
-        public static string CosmosDbAccountName => Environment.GetEnvironmentVariable(nameof(CosmosDbAccountName));
+        public static string CosmosDbEndpointUri => Environment.GetEnvironmentVariable(nameof(CosmosDbEndpointUri));
 
         public static string CosmosDbDatabaseName => Environment.GetEnvironmentVariable(nameof(CosmosDbDatabaseName));
 
