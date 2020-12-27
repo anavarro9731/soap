@@ -22,7 +22,13 @@ choco install git
 ###Install Client-side tools
 ```
 choco install nodejs
-npm install -g npm 
+npm install -g yarn
+npm install -g azurite
+```
+###Install Local Dev tools
+```
+choco install azure-cosmosdb-emulator
+
 ```
 ### Verify Installations
 ```
@@ -72,8 +78,27 @@ git push
 Now wait for the resource group you defined in ```.\create-new-service.psm1```
 
 ###Running Locally
+
+
+
 Open the new Solution in Jetbrains Rider. 
+
+The following are the cloud services that need to be considered in regards to local development.
+Each service has a unique way of creating developer-specific instance based on the DSK [Developer Specific Key]
+entered when creating a new service and stored in the local.settings.json file as an environment variable.
+
+Service|Environment Separation Method|Config Variable
+---|---|---
+Azure ServiceBus|ServiceBus Filter on VNext instance|AzureWebJobsServiceBus
+Azure SignalR Service|ConnectionId-based |AzureSignalRConnectionString
+Azure Storage (Blob)|Azurite Local Instance|AzureWebJobsStorage
+Azure CosmosDb|Emulator Local Instance|CosmosDbDatabasename
+
+
 Edit the local.settings.json file and update with the settings from the new cloud resources
+
+
+
 
 Now you are ready for local development and can run the Azure Function Project ```YourProject.Afs```
 

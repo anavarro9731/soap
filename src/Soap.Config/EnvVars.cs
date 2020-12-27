@@ -7,9 +7,11 @@
     {
         public static string AppId => Environment.GetEnvironmentVariable(nameof(AppId));
 
+        //* If present will log to azure otherwise won't
         public static string AppInsightsInstrumentationKey =>
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
+        //* Set by functions runtime
         public static string FunctionAppHostUrl = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
         
         public static string AzureBusNamespace => Environment.GetEnvironmentVariable(nameof(AzureBusNamespace));
@@ -20,10 +22,9 @@
 
         public static string AzureResourceGroup => Environment.GetEnvironmentVariable(nameof(AzureResourceGroup));
 
-        public static string AzureStorageConnectionString =>
-            Environment.GetEnvironmentVariable(nameof(AzureStorageConnectionString));
-        
         public static string AzureWebJobsServiceBus => Environment.GetEnvironmentVariable(nameof(AzureWebJobsServiceBus));
+        
+        public static string AzureWebJobsStorage => Environment.GetEnvironmentVariable(nameof(AzureWebJobsStorage));
         
         public static string AzureSignalRConnectionString => Environment.GetEnvironmentVariable(nameof(AzureSignalRConnectionString));
 
@@ -35,15 +36,15 @@
 
         public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
 
-        public static class ServicePrincipal
-        {
-            //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
-            public static string ClientId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientId)}");
-
-            public static string ClientSecret =>
-                Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientSecret)}");
-
-            public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(TenantId)}");
-        }
+        // public static class ServicePrincipal
+        // {
+        //     //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
+        //     public static string ClientId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientId)}");
+        //
+        //     public static string ClientSecret =>
+        //         Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientSecret)}");
+        //
+        //     public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(TenantId)}");
+        // }
     }
 }

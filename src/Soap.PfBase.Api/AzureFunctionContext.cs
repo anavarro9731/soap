@@ -281,18 +281,15 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureResourceGroup),
                     $"{nameof(EnvVars.AzureResourceGroup)} environment variable not set");
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientId),
-                    $"{nameof(EnvVars.ServicePrincipal.ClientId)} environment variable not set");
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientSecret),
-                    $"{nameof(EnvVars.ServicePrincipal.ClientSecret)} environment variable not set");
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.TenantId),
-                    $"{nameof(EnvVars.ServicePrincipal.TenantId)} environment variable not set");
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.AzureStorageConnectionString),
-                    $"{nameof(EnvVars.AzureStorageConnectionString)} environment variable not set");
+                // Guard.Against(
+                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientId),
+                //     $"{nameof(EnvVars.ServicePrincipal.ClientId)} environment variable not set");
+                // Guard.Against(
+                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.ClientSecret),
+                //     $"{nameof(EnvVars.ServicePrincipal.ClientSecret)} environment variable not set");
+                // Guard.Against(
+                //     string.IsNullOrWhiteSpace(EnvVars.ServicePrincipal.TenantId),
+                //     $"{nameof(EnvVars.ServicePrincipal.TenantId)} environment variable not set");
             }
 
 

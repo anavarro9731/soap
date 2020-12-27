@@ -13,7 +13,5 @@
         string ApplicationVersion { get; }
 
         string DefaultExceptionMessage { get; set; }
-
-        bool ReturnExplicitErrorMessages { get; set; }
     }
 }

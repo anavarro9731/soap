@@ -5,6 +5,7 @@ namespace Soap.Api.Sample.Afs
     using Soap.Bus;
     using Soap.Config;
     using Soap.Interfaces;
+    using Soap.NotificationServer;
 
     /// <summary>
     /// This is used to as a template to make a new config repo
@@ -17,7 +18,9 @@ namespace Soap.Api.Sample.Afs
             BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace);
             DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.CosmosDbDatabaseName,
                 $"https://{EnvVars.CosmosDbAccountName}.documents.azure.com:443/");
-            StorageConnectionString = EnvVars.AzureStorageConnectionString;
+            StorageConnectionString = EnvVars.AzureWebJobsStorage;
+            HttpApiEndpoint = $"http://{EnvVars.FunctionAppHostUrl}/api/";
+            NotificationSettings = new NotificationServer.Settings();
         }
     }
 }

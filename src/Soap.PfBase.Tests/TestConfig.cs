@@ -42,7 +42,5 @@ namespace Soap.PfBase.Tests
                 new InMemoryChannel.Settings()
             }
         };
-
-        public bool ReturnExplicitErrorMessages { get; set; } = true;
     }
 }

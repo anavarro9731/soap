@@ -35,13 +35,11 @@
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
 
-        public string HttpApiEndpoint { get; set; } = $"http://{EnvVars.FunctionAppHostUrl}/api/";  //TODO move to soap.config http in dev otherwise https
+        public string HttpApiEndpoint { get; set; }
 
         public SoapEnvironments Environment { get; set; }
 
-        public NotificationServer.Settings NotificationSettings { get; set; } = new NotificationServer.Settings();
-
-        public bool ReturnExplicitErrorMessages { get; set; }
+        public NotificationServer.Settings NotificationSettings { get; set; }
 
         public string StorageConnectionString { get; set; }
 
