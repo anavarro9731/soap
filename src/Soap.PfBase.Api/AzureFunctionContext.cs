@@ -9,6 +9,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Options;
+    using DataStore.Providers.CosmosDb;
     using Destructurama;
     using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.WebJobs;
@@ -163,6 +164,7 @@
                 lifetimeRepositoryClient ??= databaseSettings.CreateRepository();
 
                 dataStore = new DataStore(lifetimeRepositoryClient, messageAggregator, dataStoreOptions);
+                
             }
 
             static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)

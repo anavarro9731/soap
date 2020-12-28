@@ -72,10 +72,12 @@
             async Task SendWsReply(ApiEvent apiEvent)
             {
                 await this.signalRBinding.AddAsync(
-                    CreateNewSignalRMessage(apiEvent).Op(s => s.ConnectionId = apiEvent.Headers.GetSessionId()));
+                    CreateNewSignalRMessage(apiEvent, this.settings.GroupKey)
+                        .Op(s => s.ConnectionId = apiEvent.Headers.GetSessionId()));
             }
 
-            async Task SendWsBroadcast(ApiEvent apiEvent) => await this.signalRBinding.AddAsync(CreateNewSignalRMessage(apiEvent));
+            async Task SendWsBroadcast(ApiEvent apiEvent) =>
+                await this.signalRBinding.AddAsync(CreateNewSignalRMessage(apiEvent, this.settings.GroupKey));
 
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
@@ -85,7 +87,8 @@
                 var topicMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
                     MessageId = publishEvent.Headers.GetMessageId()
-                                            .ToString(), //* required for bus envelope but out code uses the matching header  
+                                            .ToString(), //* required for bus envelope but out code uses the matching header
+
                     Subject = publishEvent.GetType()
                                           .ToShortAssemblyTypeName() //* required by clients for quick deserialisation rather than parsing JSON $type
                 };
@@ -93,10 +96,11 @@
                 await sender.SendMessageAsync(topicMessage);
             }
 
-            static SignalRMessage CreateNewSignalRMessage(ApiEvent apiEvent)
+            static SignalRMessage CreateNewSignalRMessage(ApiEvent apiEvent, string groupKey)
             {
                 return new SignalRMessage
                 {
+                    GroupName = groupKey,
                     Target = "eventReceived", //client side function name
                     Arguments = new[] { "^^^" + apiEvent.ToJson(SerialiserIds.ApiBusMessage) }
                     /* don't let signalr do the serialising or it will use the wrong JSON settings, it's smart and it will recognise a JSON string, fool it with ^^^ */
@@ -132,17 +136,25 @@
 
         public class Settings : IBusSettings
         {
-            public Settings(byte numberOfApiMessageRetries, string busConnectionString, string resourceGroup, string busNamespace)
+            public Settings(
+                byte numberOfApiMessageRetries,
+                string busConnectionString,
+                string resourceGroup,
+                string busNamespace,
+                string groupKey)
             {
                 NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 BusConnectionString = busConnectionString;
                 ResourceGroup = resourceGroup;
                 BusNamespace = busNamespace;
+                GroupKey = groupKey;
             }
 
             public string BusConnectionString { get; set; }
 
             public string BusNamespace { get; set; }
+
+            public string GroupKey { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
 
@@ -152,11 +164,7 @@
                 IMessageAggregator messageAggregator,
                 IBlobStorage blobStorage,
                 IAsyncCollector<SignalRMessage> signalRBinding) =>
-                new Bus(
-                    new AzureBus(messageAggregator, this, signalRBinding),
-                    this,
-                    messageAggregator,
-                    blobStorage);
+                new Bus(new AzureBus(messageAggregator, this, signalRBinding), this, messageAggregator, blobStorage);
 
             public class Validator : AbstractValidator<Settings>
             {

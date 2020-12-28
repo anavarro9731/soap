@@ -12,6 +12,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Providers.CosmosDb;
     using Mainwave.MimeTypes;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
@@ -73,6 +74,8 @@
 
                 await WriteLine(GetConfigDetails(appConfig));
 
+                await CheckDatabaseExists(appConfig, WriteLine);
+
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
@@ -104,6 +107,12 @@
 
                 await outputStream.DisposeAsync();
             }
+        }
+
+        private static async Task CheckDatabaseExists(ApplicationConfig applicationConfig, Func<string, ValueTask> writeLine)
+        {
+            await writeLine("Creating Database If Not Exists...");
+            await new CosmosDbUtilities().CreateDatabaseIfNotExists(applicationConfig.DatabaseSettings);
         }
 
         private static async Task CheckBlobStorage(

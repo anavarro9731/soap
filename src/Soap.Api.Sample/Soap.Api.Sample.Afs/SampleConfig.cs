@@ -15,7 +15,7 @@ namespace Soap.Api.Sample.Afs
         public AppConfig() : base(SoapEnvironments.Development, EnvVars.AppId)
         {
             AppFriendlyName = "Soap Api";
-            BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace);
+            BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace, EnvVars.GroupKey);
             DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.CosmosDbDatabaseName, EnvVars.CosmosDbEndpointUri);
             StorageConnectionString = EnvVars.AzureWebJobsStorage;
             HttpApiEndpoint = EnvVars.FunctionAppHostUrl;

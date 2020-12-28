@@ -29,6 +29,8 @@ config.receiver = async (processor) => {
     await hubConnection.start();
     console.warn("Connected:", hubConnection);
     
+    await hubConnection.invoke("AddToGroups");
+    
     return hubConnection.connectionId;
     
 }
