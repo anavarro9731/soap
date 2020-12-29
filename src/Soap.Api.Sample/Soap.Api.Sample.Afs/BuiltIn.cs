@@ -1,5 +1,6 @@
 ﻿namespace Soap.Api.Sample.Afs
 {
+    using System;
     using System.Net.Http;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
@@ -24,27 +25,6 @@
             HttpRequest req,
             ILogger log) =>
             await PlatformFunctions.AddBlob(req, log);
-
-        [FunctionName("AddToGroups")]
-        public static async Task AddToGroup(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get")]
-            HttpRequest req,
-            [SignalRTrigger("SoapApiSampleHub", "connections", "Connected")]
-            InvocationContext invocationContext,
-            ILogger logger,
-            [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
-            IAsyncCollector<SignalRGroupAction> signalRGroupActions)
-        {
-            var connectionId = invocationContext.ConnectionId;
-
-            await signalRGroupActions.AddAsync(
-                new SignalRGroupAction
-                {
-                    GroupName = EnvVars.GroupKey,
-                    ConnectionId = connectionId,
-                    Action = GroupAction.Add
-                });
-        }
 
         [FunctionName("CheckHealth")]
         public static HttpResponseMessage CheckHealth(
@@ -90,10 +70,8 @@
 
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
-            [ServiceBusTrigger(
-                "Soap.Api.Sample.Messages",
-                Connection = "AzureWebJobsServiceBus")]
-            //* this uses peeklockmode
+            [ServiceBusTrigger("Soap.Api.Sample.Messages", Connection = "AzureWebJobsServiceBus")]
+            //* this uses PeekLockMode
             Message myQueueItem,
             string messageId,
             [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
@@ -101,6 +79,29 @@
             ILogger log)
         {
             await PlatformFunctions.HandleMessage<User>(myQueueItem, messageId, new HandlerRegistration(), signalRBinding, log);
+        }
+
+        [FunctionName("AddToGroup")]
+        public static Task SendMessage(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get")]
+            HttpRequest req,
+            [SignalR(HubName = "SoapApiSampleHub")] IAsyncCollector<SignalRGroupAction> groups,
+            ILogger logger)
+        {
+            var connectionId = req.Query["connectionId"];
+            if (string.IsNullOrEmpty(connectionId))
+            {
+                logger.LogCritical("Missing Connection ID Parameter");
+                throw new ArgumentException("Missing Connection ID Parameter");
+            }
+
+            return groups.AddAsync(
+                new SignalRGroupAction
+                {
+                    Action = GroupAction.Add,
+                    ConnectionId = connectionId,
+                    GroupName = EnvVars.GroupKey
+                });
         }
 
         [FunctionName("ValidateMessage")]

@@ -35,8 +35,7 @@ npm install -g yarn
 ```
 ###Install Local Dev tools
 ```
-choco install azure-cosmosdb-emulator
-lodctr /R (corrupted perf counters will cause emulator errors, run this command twice in succession)
+lodctr /R (corrupted perf counters will cause azurite emulator errors, run this command twice in succession)
 npm install -g azurite
 ```
 ### Verify Installations
@@ -92,45 +91,44 @@ Now wait for the resource group you defined in ```.\create-new-service.psm1```
 
 ###Running Locally
 
-Install the following Rider plugins:
+1. Install the following Rider plugins:
 - https://plugins.jetbrains.com/plugin/9525--env-files-support
 - https://plugins.jetbrains.com/plugin/11220-azure-toolkit-for-rider (This will install Azurite support)
 - https://plugins.jetbrains.com/plugin/10249-powershell
 
-Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
+2. Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
 and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
 
-The following are the cloud services that need to be considered in regards to local development.
-Each service has a unique way of creating a developer-specific experience.
-Some are based on the DSK [Developer Specific Key] entered when creating a new service and 
-stored in the local.settings.json file as an environment variable while others run a local emulator.
 
-Service|Environment Separation Method|Config Variable
----|---|---
-Azure ServiceBus|Session-Enabled Queue on VNext instance (SessionId=DSK)|AzureWebJobsServiceBus
-Azure SignalR Service|Group-Enabled Messages on VNext instance (Group=DSK)|AzureSignalRConnectionString
-Azure Storage (Blob)|Azurite Local Instance|AzureWebJobsStorage
-Azure CosmosDb|CosmosDb Emulator Local Instance|CosmosDbDatabasename
+3. The following are the cloud services that need to be considered in regards to **local development** when the function app is running in the cloud none of the following apply.
 
-Assuming you have following the steps in order, pushing the data in the final step of the
-[link](#creating-a-new-service-and-pipeline) section. 
+Each azure service has a unique way of creating a developer-specific experience.
+Some are based on the EPK [Environment Partition Key] which you entered when creating a new service using the
+pwsh script create-new-service.ps1 which is subsequently then stored in the local.settings.json file as an environment variable.
+While others run a local emulator which is unique to each developers machine. This is only when it is not
+possible to run in the cloud with some sort of partitioning in the VNEXT environment as it requires more setup.
 
-Then edit the local.settings.json file and update the following settings with values from the new cloud resources:
+Service|Setup Required|Environment Separation Method|Config Variable
+---|---|---|---
+Azure ServiceBus|No|**Session-Enabled Queue on VNext instance** (SessionId=EPK)<br />Subscriptions and Queues will be created for each EPK when you run the /CheckHealth function|AzureWebJobsServiceBus
+Azure SignalR Service|No|**Group-Enabled Messages on VNext instance** (Group=EPK)<br />SignalR Groups will be created for your EPK and all connections initiated from your machine will be added to that Group, finally any Websocket Broadcasts will be limited to your the Group for your EPK. These will expire when you kill of your connections.|AzureSignalRConnectionString
+Azure Storage (Blob)|You will need to start the Azurite instance. In rider this is done from the View>Tool Windows>Services window. Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance.|**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
+Azure CosmosDb|No|**CosmosDb Emulator Local Instance or Cosmos containers for each EPK**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
+
+Assuming you have followed the steps in order and have already pushed your initial commit as explained in the final step of the
+[link](#creating-a-new-service-and-pipeline) section then it should already have created all the VNEXT cloud services.
+You know need to edit the local.settings.json file and update the following settings with values from the new cloud resources
+which we cannot possible know at the time you run create-new-service.ps1. In future a script that reads these values could
+be created to update the local.settings file.
 
 Variable Name|How to get Value
----|---|---
-AzureWebJobsServiceBus|Copy Connection String from Portal
-AzureSignalRConnectionString|Copy Connection String form Portal
+---|---
+AzureWebJobsServiceBus|Copy connection String from portal (sb-*yourapiname*-vnext)
+AzureSignalRConnectionString|Copy connection String from portal (signalr-*yourapiname*-vnext)
+CosmosDbKey| Copy from the portal (cdb-*yourapiname*) 
 
-Next start the emulators:
-
-Run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
+A note on the emulators: You may want to run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
 before starting azurite, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json
-
-Emulator|Startup|Debug
----|---|---
-CosmosDb|PWSH `&"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe"`|Debug from https://localhost:8081/_explorer/index.html or systray
-Azurite|From the Rider Top Nav, Tools > Azure > Start Azurite|Debug from View > Tools > Services
 
 Now you are ready for local development and can run the Azure Function Project ```YourProject.Afs```
 
@@ -140,7 +138,8 @@ Finally check the service health using `http://localhost:7071/api/CheckHealth` e
  
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
-- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. You need to invalidate caches/restart for it to properly display pickup the implicit imports
+- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display pickup the implicit imports
+- Changing the .env variables requires restarting parcel
 
 ### BackLog
 MUST

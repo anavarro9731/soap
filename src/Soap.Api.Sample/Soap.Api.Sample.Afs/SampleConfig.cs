@@ -16,7 +16,7 @@ namespace Soap.Api.Sample.Afs
         {
             AppFriendlyName = "Soap Api";
             BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace, EnvVars.GroupKey);
-            DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.CosmosDbDatabaseName, EnvVars.CosmosDbEndpointUri);
+            DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.EnvironmentPartitionKey, EnvVars.CosmosDbDatabaseName, EnvVars.CosmosDbEndpointUri);
             StorageConnectionString = EnvVars.AzureWebJobsStorage;
             HttpApiEndpoint = EnvVars.FunctionAppHostUrl;
             NotificationSettings = new NotificationServer.Settings();

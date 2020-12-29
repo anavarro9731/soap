@@ -7,7 +7,7 @@ import ReactDOM from "react-dom";
 import translations from "./translations/en-soap.app.sample-default";
 import wordKeys from './translations/word-keys';
 import * as signalR from '@microsoft/signalr';
-
+import {JsonHubProtocol} from "@microsoft/signalr";
 
 //config.logClassDeclarations = true;
 //config.logFormDetail = true;
@@ -18,7 +18,7 @@ config.receiver = async (processor) => {
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl('http://localhost:7071/api')
         .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Debug)
+        .configureLogging(signalR.LogLevel.Information)
         .build();
 
     hubConnection.on('eventReceived', async message => {
@@ -27,9 +27,9 @@ config.receiver = async (processor) => {
     });
 
     await hubConnection.start();
-    console.warn("Connected:", hubConnection);
     
-    await hubConnection.invoke("AddToGroups");
+    //* don't wait it will finish before first response
+    fetch('http://localhost:7071/api/AddToGroup?connectionId=' + encodeURIComponent(hubConnection.connectionId));
     
     return hubConnection.connectionId;
     

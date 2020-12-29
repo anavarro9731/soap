@@ -2,9 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Threading.Tasks;
     using Azure;
+    using Azure.Storage;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
     using Azure.Storage.Blobs.Specialized;
@@ -27,6 +29,42 @@
         public BlobStorage(Settings blobStorageSettings)
         {
             this.blobStorageSettings = blobStorageSettings;
+        }
+
+        public async Task DevStorageSetup()
+        {
+            var client = new BlobServiceClient(this.blobStorageSettings.ConnectionString);
+            var properties = await client.GetPropertiesAsync();
+            properties.Value.Cors = new List<BlobCorsRule>()
+            {
+                new BlobCorsRule()
+                {
+                    AllowedMethods = "GET,PUT",
+                    AllowedOrigins = "*",
+                    MaxAgeInSeconds = 1000,
+                    AllowedHeaders = "*",
+                    ExposedHeaders = "*"
+                }
+            };
+            
+            await client.SetPropertiesAsync(properties);
+            
+            // Create a SAS token that's valid for one hour.
+            AccountSasBuilder sasBuilder = new AccountSasBuilder()
+            {
+                Services = AccountSasServices.All,
+                ResourceTypes = AccountSasResourceTypes.All,
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1),
+                Protocol = SasProtocol.HttpsAndHttp
+            };
+            
+            sasBuilder.SetPermissions(AccountSasPermissions.Read |
+                                      AccountSasPermissions.Write);
+            
+            // Use the key to get the SAS token.
+            string sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("devstoreaccount1","Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==")).ToString();
+            Console.WriteLine("Azurite SasToken:" + sasToken);
+
         }
 
         public async Task<ApiMessage> GetApiMessageFromBlob(Guid blobId)
@@ -218,7 +256,7 @@
 
             public IMessageAggregator MessageAggregator { get; }
 
-            private string ConnectionString { get; }
+            public string ConnectionString { get; }
 
             public BlobClient CreateClient(string blobName, string containerName = "content", BlobClientOptions options = null)
             {

@@ -11,9 +11,9 @@
         public static string AppInsightsInstrumentationKey =>
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
-        public static string DeveloperSpecificKey => Environment.GetEnvironmentVariable("DeveloperSpecificKey");
+        public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("DeveloperSpecificKey");
 
-        public static string GroupKey => DeveloperSpecificKey ?? SoapEnvironmentKey;
+        public static string GroupKey => EnvironmentPartitionKey ?? SoapEnvironmentKey;
         
         //* Set by functions runtime
         public static string FunctionAppHostUrl = $"http://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/" ;

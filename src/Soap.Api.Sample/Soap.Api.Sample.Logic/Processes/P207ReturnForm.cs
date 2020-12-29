@@ -30,9 +30,9 @@ namespace Soap.Api.Sample.Logic.Processes
                     !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
                     $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
-                if (message.C109_FormDataEventName == typeof(C107v1_CreateOrUpdateTestDataTypes).ToShortAssemblyTypeName())
+                if (eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName())
                 {
-                    await SaveTestBlobs();
+                   // await SaveTestBlobs();
                 }
 
                 var @event = Activator.CreateInstance(formDataEventType) as ApiEvent;

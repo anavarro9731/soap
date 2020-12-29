@@ -72,12 +72,12 @@
             async Task SendWsReply(ApiEvent apiEvent)
             {
                 await this.signalRBinding.AddAsync(
-                    CreateNewSignalRMessage(apiEvent, this.settings.GroupKey)
-                        .Op(s => s.ConnectionId = apiEvent.Headers.GetSessionId()));
+                    CreateNewSignalRMessage(apiEvent).Op(s => { s.ConnectionId = apiEvent.Headers.GetSessionId(); }));
             }
 
             async Task SendWsBroadcast(ApiEvent apiEvent) =>
-                await this.signalRBinding.AddAsync(CreateNewSignalRMessage(apiEvent, this.settings.GroupKey));
+                await this.signalRBinding.AddAsync(
+                    CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.GroupKey; }));
 
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
@@ -96,11 +96,10 @@
                 await sender.SendMessageAsync(topicMessage);
             }
 
-            static SignalRMessage CreateNewSignalRMessage(ApiEvent apiEvent, string groupKey)
+            static SignalRMessage CreateNewSignalRMessage(ApiEvent apiEvent)
             {
                 return new SignalRMessage
                 {
-                    GroupName = groupKey,
                     Target = "eventReceived", //client side function name
                     Arguments = new[] { "^^^" + apiEvent.ToJson(SerialiserIds.ApiBusMessage) }
                     /* don't let signalr do the serialising or it will use the wrong JSON settings, it's smart and it will recognise a JSON string, fool it with ^^^ */

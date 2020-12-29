@@ -112,11 +112,7 @@ const _sender = (msg) => {
         async function uploadMessageToBlobStorage(message, blob) {
 
             const blobId = getHeader(message, headerKeys.blobId);
-            const account = process.env.BLOBSTORAGE_ACCOUNT;
-            account || logger.log("process.env.BLOBSTORAGE_ACCOUNT not defined check .env file.")
-            const sasToken = getHeader(message, headerKeys.sasStorageToken);
-            const sasUrl = `https://${account}.blob.core.windows.net/${sasToken}`;
-            logger.log("attaching to" + sasUrl);
+            const sasUrl = getSasUrl(message);
             const blobServiceClient = new BlobServiceClient(sasUrl);
             const containerClient = blobServiceClient.getContainerClient("content");
             const blockBlobClient = containerClient.getBlockBlobClient(blobId);
@@ -126,6 +122,16 @@ const _sender = (msg) => {
             const uploadBlobResponse = await blockBlobClient.uploadData(blob, options);
             logger.log(`Upload block blob ${blobId} successfully`, uploadBlobResponse.requestId);
 
+        }
+
+        
+        function getSasUrl(message) {
+            const blobStorageUri = process.env.BLOBSTORAGE_URI;
+            blobStorageUri || logger.log("process.env.BLOBSTORAGE_URI not defined check .env file.")
+            const sasToken = getHeader(message, headerKeys.sasStorageToken);
+            const sasUrl = `${blobStorageUri}${sasToken}`;
+            logger.log("attaching to " + sasUrl);
+            return sasUrl;
         }
 
         async function processMessage(message) {
@@ -148,11 +154,7 @@ const _sender = (msg) => {
         async function downloadMessageBlob(anonymousEvent) {
 
             const blobId = getHeader(anonymousEvent, headerKeys.blobId);
-            const account = process.env.BLOBSTORAGE_ACCOUNT;
-            account || logger.log("process.env.BLOBSTORAGE_ACCOUNT not defined check .env file.")
-            const sasToken = getHeader(anonymousEvent, headerKeys.sasStorageToken);
-            const sasUrl = `https://${account}.blob.core.windows.net/${sasToken}`;
-            logger.log("attaching to" + sasUrl);
+            const sasUrl = getSasUrl(anonymousEvent);
             const blobServiceClient = new BlobServiceClient(sasUrl);
             const containerClient = blobServiceClient.getContainerClient("content");
             const blobClient = containerClient.getBlobClient(blobId);

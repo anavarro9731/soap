@@ -80,7 +80,7 @@
 
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
-                    CreateBlobStorage(appConfig, messageAggregator, out BlobStorage blobStorage);
+                    var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
                     
                     CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
 
@@ -187,9 +187,15 @@
                 busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding);
             }
             
-            void CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator, out BlobStorage blobStorage)
+            async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)
             {
-                blobStorage = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
+                var blobStorage = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
+                if (applicationConfig.Environment == SoapEnvironments.Development && applicationConfig.StorageConnectionString.Contains("devstoreaccount1"))
+                {
+                   await blobStorage.DevStorageSetup();
+                }
+
+                return blobStorage;
             }
 
             static void EnsureMessageType(string typeString, out Type messageType)
