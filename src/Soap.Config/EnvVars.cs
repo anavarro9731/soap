@@ -11,10 +11,10 @@
         public static string AppInsightsInstrumentationKey =>
             Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY");
 
-        public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("DeveloperSpecificKey");
-
-        public static string GroupKey => EnvironmentPartitionKey ?? SoapEnvironmentKey;
+        public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
         
+        public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("EnvironmentPartitionKey") ?? SoapEnvironmentKey;
+
         //* Set by functions runtime
         public static string FunctionAppHostUrl = $"http://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/" ;
         
@@ -37,18 +37,6 @@
         public static string CosmosDbDatabaseName => Environment.GetEnvironmentVariable(nameof(CosmosDbDatabaseName));
 
         public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
-
-        public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
-
-        // public static class ServicePrincipal
-        // {
-        //     //* runtime sets local.settings.json hierarchical object structures as env vars with __ between levels
-        //     public static string ClientId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientId)}");
-        //
-        //     public static string ClientSecret =>
-        //         Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(ClientSecret)}");
-        //
-        //     public static string TenantId => Environment.GetEnvironmentVariable($"{nameof(ServicePrincipal)}:{nameof(TenantId)}");
-        // }
+        
     }
 }

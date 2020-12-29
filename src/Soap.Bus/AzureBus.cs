@@ -77,7 +77,7 @@
 
             async Task SendWsBroadcast(ApiEvent apiEvent) =>
                 await this.signalRBinding.AddAsync(
-                    CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.GroupKey; }));
+                    CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.EnvironmentParitionKey; }));
 
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
@@ -140,20 +140,20 @@
                 string busConnectionString,
                 string resourceGroup,
                 string busNamespace,
-                string groupKey)
+                string environmentParitionKey)
             {
                 NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 BusConnectionString = busConnectionString;
                 ResourceGroup = resourceGroup;
                 BusNamespace = busNamespace;
-                GroupKey = groupKey;
+                EnvironmentParitionKey = environmentParitionKey;
             }
 
             public string BusConnectionString { get; set; }
 
             public string BusNamespace { get; set; }
 
-            public string GroupKey { get; set; }
+            public string EnvironmentParitionKey { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
 

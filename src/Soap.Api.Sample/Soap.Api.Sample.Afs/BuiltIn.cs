@@ -100,7 +100,7 @@
                 {
                     Action = GroupAction.Add,
                     ConnectionId = connectionId,
-                    GroupName = EnvVars.GroupKey
+                    GroupName = EnvVars.EnvironmentPartitionKey
                 });
         }
 
