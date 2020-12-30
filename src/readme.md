@@ -98,7 +98,7 @@ Now wait for the resource group you defined in ```.\create-new-service.psm1```
 
 2. Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
 and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
-
+w
 
 3. The following are the cloud services that need to be considered in regards to **local development** when the function app is running in the cloud none of the following apply.
 
@@ -110,7 +110,7 @@ possible to run in the cloud with some sort of partitioning in the VNEXT environ
 
 Service|Setup Required|Environment Separation Method|Config Variable
 ---|---|---|---
-Azure ServiceBus|No|**Session-Enabled Queue on VNext instance** (SessionId=EPK)<br />Subscriptions and Queues will be created for each EPK when you run the /CheckHealth function|AzureWebJobsServiceBus
+Azure ServiceBus|No|**Session-Enabled Queue on VNext instance** (SessionId=EPK)<br />Subscriptions and Queues will be created with the name of each EPK appended when you run the /CheckHealth function|AzureWebJobsServiceBus
 Azure SignalR Service|No|**Group-Enabled Messages on VNext instance** (Group=EPK)<br />SignalR Groups will be created for your EPK and all connections initiated from your machine will be added to that Group, finally any Websocket Broadcasts will be limited to your the Group for your EPK. These will expire when you kill of your connections.|AzureSignalRConnectionString
 Azure Storage (Blob)|You will need to start the Azurite instance or you will get an error. In rider this is done from the View>Tool Windows>Services window. Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance.|**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
 Azure CosmosDb|No|**CosmosDb Emulator Local Instance or Cosmos containers for each EPK**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
