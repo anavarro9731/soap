@@ -87,7 +87,12 @@ From a PWSH prompt in the repo root run:
 ```
 git push
 ```
-Now wait for the resource group you defined in ```.\create-new-service.psm1```
+Now wait for the resource group you defined when you ran ```.\create-new-service.psm1``` to be populated
+with the required services when the build runs.
+
+Once this is complete you will have to perform a single step manually for which there is not at present a
+direct az cli command. That is to enable "With Credentials" on the function app's CORS settings. You will
+have to do this for the `Release` environment when it is created also.
 
 ###Running Locally
 
@@ -136,6 +141,33 @@ You will also need to start the client-side project from the terminal by running
 Finally check the service health using `http://localhost:7071/api/CheckHealth` endpoint which will also
 - create developer specific database
 - create developer specific subscriptions and queues
+
+### Environments
+
+There are several:
+InMemory - This is the name of the environment we give to running unit tests
+Dev - This is the name of the environment when you run in the IDE locally (uses the local.settings.json) file for config
+Vnext - This is the test environment and correlates to the code on the master branch
+Release - This environment correlates to whatever code was released most recently on a release branch and includes hotfixes. It is a function app slot.
+Live - This environment is for production code. It is the production slot of the same function app used for release. There is no pwsh trigger for this environment, instead it receives updates via slot swaps with the Release slot.
+TODO config for LIVE not sorted yet, should be created when release is created.
+
+### Pushing a new version to VNEXT environment
+
+Run `pwsh-bootstrap.ps1` from the repo root/src folder to load the modules
+Make sure you are on the `master` branch.
+Then run the command `Run -PrepareNewVersion` this will increment the version.
+Choose the type of change [Breaking|Minor]
+Finally, choose whether to push the commit.
+If you push the commit and the version has been incremented a new version will be released to the VNEXT environment
+
+### Creating a new Release and sending to the release environment
+
+Run `pwsh-bootstrap.ps1` from the repo root/src folder to load the modules
+Make sure you are on the `master` branch.
+Then run the command `Run -CreateRelease` this will sort out creating the new branch and adjusting the versions for both the new release branch and master.
+It will push the release to Azure and create the environment if necessary.
+Finally, it will leave you on the master branch afterwards.
 
 ### NOTES
  
