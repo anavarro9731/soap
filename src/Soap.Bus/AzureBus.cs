@@ -51,6 +51,9 @@
         {
             await using var serviceBusClient = new ServiceBusClient(this.settings.BusConnectionString);
 
+            /* ORDER MATTERS, because we clear the session id on the Bus Broadcast, but it needs to be there for the WebSocketReply
+             ideally we'd set the header here, but we need it to come through on the unitofwork item */
+
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
             {
                 await SendWsReply(publishEvent);
@@ -77,20 +80,23 @@
 
             async Task SendWsBroadcast(ApiEvent apiEvent) =>
                 await this.signalRBinding.AddAsync(
-                    CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.EnvironmentParitionKey; }));
+                    CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.EnvironmentPartitionKey; }));
 
             async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
             {
                 var topic = publishEvent.Headers.GetTopic().ToLower();
                 var sender = serviceBusClient.CreateSender(topic);
 
+                publishEvent.Headers.ClearSessionId(); //* bus messages don't use sessionId it's invalid
                 var topicMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
                     MessageId = publishEvent.Headers.GetMessageId()
                                             .ToString(), //* required for bus envelope but out code uses the matching header
 
                     Subject = publishEvent.GetType()
-                                          .ToShortAssemblyTypeName() //* required by clients for quick deserialisation rather than parsing JSON $type
+                                          .ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                    ApplicationProperties =
+                        { { nameof(this.settings.EnvironmentPartitionKey), this.settings.EnvironmentPartitionKey } }
                 };
 
                 await sender.SendMessageAsync(topicMessage);
@@ -140,20 +146,20 @@
                 string busConnectionString,
                 string resourceGroup,
                 string busNamespace,
-                string environmentParitionKey)
+                string environmentPartitionKey)
             {
                 NumberOfApiMessageRetries = numberOfApiMessageRetries;
                 BusConnectionString = busConnectionString;
                 ResourceGroup = resourceGroup;
                 BusNamespace = busNamespace;
-                EnvironmentParitionKey = environmentParitionKey;
+                EnvironmentPartitionKey = environmentPartitionKey;
             }
 
             public string BusConnectionString { get; set; }
 
             public string BusNamespace { get; set; }
 
-            public string EnvironmentParitionKey { get; set; }
+            public string EnvironmentPartitionKey { get; set; }
 
             public byte NumberOfApiMessageRetries { get; set; }
 

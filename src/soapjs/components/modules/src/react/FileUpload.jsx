@@ -29,7 +29,7 @@ function resizeTo(blob, {maxHeight, maxWidth}) {
 
 async function uploadBlobToBackend(blobInfo) {
 
-    const endpoint = `${functionAppRoot}AddBlob`;
+    const endpoint = `${functionAppRoot}/AddBlob`;
     await fetch(`${endpoint}?id=${blobInfo.id}`, {
         method: "post",
         //we don’t set Content-Type header manually, because a Blob object has a built-in type for Blob objects that type becomes the value of Content-Type.
@@ -52,7 +52,7 @@ export default (props) => {
         (async function GetBlobFromBackend() {
             if (value !== null && value.objectUrl === undefined) {
                 setIsLoading(true);
-                const endpoint = `${functionAppRoot}GetBlob`;
+                const endpoint = `${functionAppRoot}/GetBlob`;
                 let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
                 const blob = await response.blob();
                 const blobInfo = {

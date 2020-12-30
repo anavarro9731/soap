@@ -55,6 +55,8 @@
         {
             public byte NumberOfApiMessageRetries { get; set; }
 
+            public string EnvironmentPartitionKey { get; set; }
+
             public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding) =>
                 new Bus(new InMemoryBus(this), this, messageAggregator, blobStorage);
         }

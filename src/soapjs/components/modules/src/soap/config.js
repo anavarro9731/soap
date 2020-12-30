@@ -5,6 +5,7 @@ import {getHeader, optional, setHeader, types, uuidv4, validateArgs} from './uti
 import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from './messages';
 import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
+import * as signalR from '@microsoft/signalr';
 
 
 let _appInsights;
@@ -51,9 +52,33 @@ let _logger = {
 
 let _sessionDetails;
 
-let _setupReceiver;
+let _receiver = async (processor) => {
 
-const _sender = (msg) => {
+    const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+    
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl(functionAppRoot)
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    hubConnection.on('eventReceived', async message => {
+        const messageObj = JSON.parse(message.substring(3)); //don't let signalr do the serialising or it will use the wrong JSON settings
+        await processor(messageObj);
+    });
+
+    await hubConnection.start();
+    
+    const endpoint = `${functionAppRoot}/AddToGroup?connectionId=${encodeURIComponent(hubConnection.connectionId)}`;
+    
+    //* don't wait it will finish before first response
+    fetch(endpoint); //this will get us messages matched to our environment partition key
+    
+    return hubConnection.connectionId;
+
+};
+
+let _sender = (msg) => {
 
     (async function (typedMessage, logger) {
 
@@ -123,7 +148,6 @@ const _sender = (msg) => {
             logger.log(`Upload block blob ${blobId} successfully`, uploadBlobResponse.requestId);
 
         }
-
         
         function getSasUrl(message) {
             const blobStorageUri = process.env.BLOBSTORAGE_URI;
@@ -185,7 +209,7 @@ const _sender = (msg) => {
 
             const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
             functionAppRoot || logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
-            const endpoint = `${functionAppRoot}GetJsonSchema`;
+            const endpoint = `${functionAppRoot}/GetJsonSchema`;
             const jsonArrayOfMessages = await global.fetch(endpoint)
                 .then(response => response.json());
 
@@ -211,7 +235,7 @@ const _sender = (msg) => {
             //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
             // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
 
-            const browserSessionId = await _setupReceiver(processMessage);
+            const browserSessionId = await _receiver(processMessage);
             
             return {
                 browserSessionId,
@@ -231,7 +255,10 @@ export default {
         return _logger;
     },
     set receiver(r) {
-        _setupReceiver = r;
+        _receiver = r;
+    },
+    set sender(s) {
+        _sender = s;
     },
     send(message) {
         _sender(message);

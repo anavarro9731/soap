@@ -33,7 +33,7 @@
 
     public class MessageHeaders : List<Enumeration>
     {
-        /* the purpose for this class (modelling headers as a dictionary) is really to allow for backwards compatability
+        /* the purpose for this class (modelling headers as a dictionary) is really to allow for backwards compatibility
          as the system grows, however, it also causes an issue with dictionary keys changing case and then not matching again 
          since they are modeled as objects. which is why we have the naming strategy set to ignore dictionary keys on
          message serialisation. this could also be checked in the header extensions methods (e.g. toLower()) if need be */
@@ -41,18 +41,18 @@
 
     public static class MessageHeaderExtensionsA
     {
-        public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message)
+        public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message, string envPartitionKey)
         {
             messageHeaders.SetTimeOfCreationAtOrigin();
             messageHeaders.SetMessageId(Guid.NewGuid());
 
             if (message is MessageFailedAllRetries m)
             {
-                messageHeaders.SetQueueName(Type.GetType(m.TypeName).Assembly.GetName().Name); //* send to owners queue
+                messageHeaders.SetQueueName(Type.GetType(m.TypeName).Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
             }
             else
             {
-                messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name); //* send to owners queue
+                messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
             }
 
             messageHeaders.SetSchema(message.GetType().FullName);
@@ -405,6 +405,15 @@
             }
             else throw new ApplicationException($"Cannot set header {Keys.SessionId} because it has already been set");
             
+            return m;
+        }
+        
+        public static MessageHeaders ClearSessionId(this MessageHeaders m)
+        {
+            if (m.Exists(v => v.Key == Keys.SessionId))
+            {
+                m.RemoveAll(h => h.Key == Keys.SessionId);
+            }
             return m;
         }
 

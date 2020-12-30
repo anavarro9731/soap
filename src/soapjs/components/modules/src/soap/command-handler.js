@@ -105,7 +105,10 @@ export default {
         return conversationId;
         
         function setupHeaders(command) {
-
+            
+            const envPartitionKey = process.env.ENVIRONMENT_PARTITION_KEY;
+            envPartitionKey || config.logger.log("process.env.ENVIRONMENT_PARTITION_KEY not defined check .env file.")
+            
             //* set headers on outgoing commands
             setHeader(command, headerKeys.messageId, conversationId);
             setHeader(command, headerKeys.timeOfCreationAtOrigin, new Date().toISOString());
@@ -114,7 +117,7 @@ export default {
             setHeader(command, headerKeys.commandHash,  md5Hash(payload));
             setHeader(command, headerKeys.identityToken, "TBD");
             const {className, assemblyName} = parseDotNetShortAssemblyQualifiedName(command.$type);
-            setHeader(command, headerKeys.queueName, assemblyName);
+            setHeader(command, headerKeys.queueName, assemblyName + "." + envPartitionKey);
             setHeader(command, headerKeys.schema, className);
             //* headerKeys.statefulProcessId not used by client side code right now
             //* headersKeys.topic only used by events

@@ -70,7 +70,7 @@
 
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
-            [ServiceBusTrigger("Soap.Api.Sample.Messages", Connection = "AzureWebJobsServiceBus")]
+            [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus")]
             //* this uses PeekLockMode
             Message myQueueItem,
             string messageId,

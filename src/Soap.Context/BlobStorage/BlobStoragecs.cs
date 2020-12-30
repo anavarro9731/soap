@@ -35,19 +35,22 @@
         {
             var client = new BlobServiceClient(this.blobStorageSettings.ConnectionString);
             var properties = await client.GetPropertiesAsync();
-            properties.Value.Cors = new List<BlobCorsRule>()
+            int sasTokenExpiryInSecondsFromNow = 1000;
+            if (properties.Value.Cors.Count == 0)
             {
-                new BlobCorsRule()
+                properties.Value.Cors = new List<BlobCorsRule>()
                 {
-                    AllowedMethods = "GET,PUT",
-                    AllowedOrigins = "*",
-                    MaxAgeInSeconds = 1000,
-                    AllowedHeaders = "*",
-                    ExposedHeaders = "*"
-                }
-            };
-            
-            await client.SetPropertiesAsync(properties);
+                    new BlobCorsRule()
+                    {
+                        AllowedMethods = "GET,PUT",
+                        AllowedOrigins = "*",
+                        MaxAgeInSeconds = sasTokenExpiryInSecondsFromNow,
+                        AllowedHeaders = "*",
+                        ExposedHeaders = "*"
+                    }
+                };
+                await client.SetPropertiesAsync(properties);
+            }
             
             // Create a SAS token that's valid for one hour.
             AccountSasBuilder sasBuilder = new AccountSasBuilder()
@@ -63,7 +66,8 @@
             
             // Use the key to get the SAS token.
             string sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("devstoreaccount1","Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==")).ToString();
-            Console.WriteLine("Azurite SasToken:" + sasToken);
+            
+            Console.WriteLine($"Azurite Test SasToken Valid For The Timespan [days:hours:minutes:seconds] {new TimeSpan(0,0,0,sasTokenExpiryInSecondsFromNow):g} : {sasToken}");
 
         }
 

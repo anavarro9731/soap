@@ -119,6 +119,10 @@
                             $"Message type {messageType.FullName} does not inherit from ApiMessage");
 
                         Guard.Against(
+                            messageType.FullName.Length > 260,  //azure
+                            $"Message full type name {messageType.FullName} cannot exceed 50 characters");
+                        
+                        Guard.Against(
                             messageType.GetConstructor(Type.EmptyTypes) == null,
                             $"Message type {messageType.Name} does not have a public parameterless constructor");
 

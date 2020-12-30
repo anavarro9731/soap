@@ -20,6 +20,8 @@
 
         private readonly IMessageAggregator messageAggregator;
 
+        private string envPartitionKey;
+        
         public Bus(
             IBusClient busClient,
             IBusSettings settings,
@@ -30,6 +32,8 @@
             this.messageAggregator = messageAggregator;
             this.blobStorage = blobStorage;
             MaximumNumberOfRetries = settings.NumberOfApiMessageRetries;
+            this.envPartitionKey = settings.EnvironmentPartitionKey;
+
         }
 
         public IBusClient BusClient { get; }
@@ -74,7 +78,7 @@
             }
             
             eventToPublish.Validate();
-            eventToPublish = eventToPublish.Clone();
+            eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
             eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
@@ -112,7 +116,7 @@
         {
             commandToSend.Validate();
             commandToSend = commandToSend.Clone();
-            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend);
+            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend, this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 

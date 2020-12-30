@@ -6,34 +6,11 @@ import {H1} from "baseui/typography";
 import ReactDOM from "react-dom";
 import translations from "./translations/en-soap.app.sample-default";
 import wordKeys from './translations/word-keys';
-import * as signalR from '@microsoft/signalr';
-import {JsonHubProtocol} from "@microsoft/signalr";
 
 //config.logClassDeclarations = true;
 //config.logFormDetail = true;
 addTranslations(translations);
 
-config.receiver = async (processor) => {
-
-    const hubConnection = new signalR.HubConnectionBuilder()
-        .withUrl('http://localhost:7071/api')
-        .withAutomaticReconnect()
-        .configureLogging(signalR.LogLevel.Information)
-        .build();
-
-    hubConnection.on('eventReceived', async message => {
-        const messageObj = JSON.parse(message.substring(3)); //don't let signalr do the serialising or it will use the wrong JSON settings
-        await processor(messageObj);
-    });
-
-    await hubConnection.start();
-    
-    //* don't wait it will finish before first response
-    fetch('http://localhost:7071/api/AddToGroup?connectionId=' + encodeURIComponent(hubConnection.connectionId));
-    
-    return hubConnection.connectionId;
-    
-}
 function Index() {
 
     const [testDataId, setTestDataId] = useState();

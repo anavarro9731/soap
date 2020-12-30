@@ -13,7 +13,7 @@
 
         public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));
         
-        public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("EnvironmentPartitionKey") ?? SoapEnvironmentKey;
+        public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("EnvironmentPartitionKey");
 
         //* Set by functions runtime
         public static string FunctionAppHostUrl = $"http://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/" ;

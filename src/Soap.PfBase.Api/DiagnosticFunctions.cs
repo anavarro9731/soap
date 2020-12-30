@@ -111,7 +111,8 @@
 
         private static async Task CheckDatabaseExists(ApplicationConfig applicationConfig, Func<string, ValueTask> writeLine)
         {
-            await writeLine("Creating Database If Not Exists...");
+            //TODO make cosmossettings visible so you can read the values from there in case these diverge in future *FRAGILE* 
+            await writeLine($"Creating Container {EnvVars.EnvironmentPartitionKey} on Database {EnvVars.CosmosDbDatabaseName} if it doesn't exist...");
             await new CosmosDbUtilities().CreateDatabaseIfNotExists(applicationConfig.DatabaseSettings);
         }
 
@@ -154,6 +155,8 @@
                 var busSettings = applicationConfig.BusSettings as AzureBus.Settings;
                 Guard.Against(busSettings == null, "Expected type of AzureBus");
 
+                await ServiceBusManagementFunctions.CreateQueueIfNotExist(messagesAssembly, busSettings, writeLine);
+                
                 await ServiceBusManagementFunctions.CreateTopicsIfNotExist(busSettings, messagesAssembly, writeLine);
 
                 await ServiceBusManagementFunctions.CreateSubscriptionsIfNotExist(
