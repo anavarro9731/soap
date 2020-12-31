@@ -164,7 +164,7 @@ If you push the commit and the version has been incremented a new version will b
 ### Creating a new Release and sending to the release environment
 
 Run `pwsh-bootstrap.ps1` from the repo root/src folder to load the modules
-Make sure you are on the `master` branch.
+Make sure you are on the `master` branch.dotnet 
 Then run the command `Run -CreateRelease` this will sort out creating the new branch and adjusting the versions for both the new release branch and master.
 It will push the release to Azure and create the environment if necessary.
 Finally, it will leave you on the master branch afterwards.
