@@ -44,9 +44,7 @@ export default function AutoForm(props) {
     async function onSubmit(formValues) {
 
         try {
-
-            const {e000_ValidationEndpoint: validationEndpoint} = formDataEvent;
-
+            
             setIsSubmitting(true);
 
             if (config.logFormDetail) config.logger.log("FormValues", JSON.stringify(formValues, null, 2));
@@ -57,6 +55,9 @@ export default function AutoForm(props) {
 
             const command = createRegisteredTypedMessageInstanceFromAnonymousObject(formValues);
 
+            const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+            const validationEndpoint = `${functionAppRoot}/ValidateMessage?type=${encodeURIComponent(command.$type)}`;
+            
             let response = await fetch(validationEndpoint, {
                 method: 'POST',
                 headers: {
