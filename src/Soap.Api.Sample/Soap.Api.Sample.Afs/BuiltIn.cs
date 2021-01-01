@@ -106,7 +106,7 @@
 
         [FunctionName("ValidateMessage")]
         public static async Task<IActionResult> ValidateMessage(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
             HttpRequest req,
             ILogger log) =>
             await PlatformFunctions.ValidateMessage(req);
