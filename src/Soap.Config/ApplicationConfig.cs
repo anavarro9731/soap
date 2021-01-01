@@ -35,8 +35,6 @@
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
 
-        public string HttpApiEndpoint { get; set; }
-
         public SoapEnvironments Environment { get; set; }
 
         public NotificationServer.Settings NotificationSettings { get; set; }

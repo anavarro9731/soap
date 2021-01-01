@@ -59,7 +59,7 @@
                                 
             */
         
-        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, string httpApiEndpoint)
+        public void SetProperties(string sasTokenForCommand, Guid idOfCommand)
         {
             {
                 E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues().GetType());
@@ -76,7 +76,7 @@
                 E000_FieldData = fieldData;
                 E000_SasStorageTokenForCommand = sasTokenForCommand;
                 E000_CommandBlobId = idOfCommand;
-                E000_ValidationEndpoint = $"{httpApiEndpoint}ValidateMessage?type={Uri.EscapeUriString(ToShortAssemblyTypeName(UserDefinedValues().GetType()))}";
+                
             }
             
             static string ToShortAssemblyTypeName(Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";

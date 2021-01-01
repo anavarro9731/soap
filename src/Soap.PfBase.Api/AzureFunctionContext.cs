@@ -252,10 +252,7 @@
 
             static void EnsureEnvironmentVars()
             {
-                //* I also ensure items not directly accessed in code, but required through other means (e.g. function bindings)
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.FunctionAppHostUrl),
-                    $"{nameof(EnvVars.FunctionAppHostUrl)} environment variable not set");
+                //* Also ensure items not directly accessed in code, but required through other means (e.g. function bindings)
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureDevopsOrganisation),
                     $"{nameof(EnvVars.AzureDevopsOrganisation)} environment variable not set");

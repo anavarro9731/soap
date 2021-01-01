@@ -18,7 +18,6 @@ namespace Soap.Api.Sample.Afs
             BusSettings = new AzureBus.Settings(3, EnvVars.AzureWebJobsServiceBus, EnvVars.AzureResourceGroup, EnvVars.AzureBusNamespace, EnvVars.EnvironmentPartitionKey);
             DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.EnvironmentPartitionKey, EnvVars.CosmosDbDatabaseName, EnvVars.CosmosDbEndpointUri);
             StorageConnectionString = EnvVars.AzureWebJobsStorage;
-            HttpApiEndpoint = EnvVars.FunctionAppHostUrl;
             NotificationSettings = new NotificationServer.Settings();
         }
     }

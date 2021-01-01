@@ -2,8 +2,6 @@
 {
     public interface IBootstrapVariables
     {
-        string HttpApiEndpoint { get; set; }
-        
         SoapEnvironments Environment { get; set; }
 
         string AppFriendlyName { get; set; }

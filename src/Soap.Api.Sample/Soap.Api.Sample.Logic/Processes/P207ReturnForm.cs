@@ -44,7 +44,7 @@ namespace Soap.Api.Sample.Logic.Processes
                               var sasToken = ContextWithMessageLogEntry.Current.BlobStorage.GetStorageSasTokenForBlob(
                                   commandId,
                                   new EnumerationFlags(IBlobStorage.BlobSasPermissions.CreateNew));
-                              e.SetProperties(sasToken, commandId, ContextWithMessageLogEntry.Current.AppConfig.HttpApiEndpoint);
+                              e.SetProperties(sasToken, commandId);
                               });
 
                 await Publish(@event);

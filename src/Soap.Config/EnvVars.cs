@@ -15,9 +15,6 @@
         
         public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("EnvironmentPartitionKey");
 
-        //* Set by functions runtime
-        public static string FunctionAppHostUrl = $"http://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/" ;
-        
         public static string AzureBusNamespace => Environment.GetEnvironmentVariable(nameof(AzureBusNamespace));
 
         public static string AzureDevopsOrganisation => Environment.GetEnvironmentVariable(nameof(AzureDevopsOrganisation));
