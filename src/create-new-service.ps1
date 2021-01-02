@@ -1,78 +1,169 @@
+Function Log {
+	Param ([string] $Msg)
+	Write-Host $Msg -foregroundcolor green
+}
+Function Log-Step {
+	Param ([string] $Msg)
+	Write-Host $Msg -foregroundcolor cyan -backgroundcolor black
+}
 Function Test-IsGitInstalled
 {
 	return -Not ((Get-Command git 2>$null) -eq $null)
 }
-
-Function Replace-ConfigLine([string] $old, [string] $new) 
+Function Replace-ConfigLine([string] $old, [string] $new)
 {
 	(Get-Content .\pwsh-bootstrap.ps1) | % { $_.replace($old, $new) } | Set-Content .\pwsh-bootstrap.ps1
 }
-
-
 Function Remove-ConfigLine([string] $old)
 {
 	(Get-Content .\pwsh-bootstrap.ps1) | Where-Object {$_ -notmatch $old } | Set-Content .\pwsh-bootstrap.ps1
 }
-
-if (-Not (Test-IsGitInstalled)) {
-	Write-Host "Git is not installed"
-	return
+Function Test-PreReqs {
+	if (-Not (Test-IsGitInstalled)) {
+		Write-Host "Git is not installed"
+		return
+	}
 }
-
-#* VARIABLES
-$AzureDevopsOrganisationName = Read-Host -Prompt 'Enter The Azure Devops Organisation Name'
-$AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
-$ServiceName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
+Function Get-AzureDevopsOrganisationName {
+	$OrgName = Read-Host -Prompt 'Enter The Azure Devops Organisation Name'
+	if ([String]::IsNullOrWhiteSpace($OrgName)) {
+		Write-Host 'Azure Devops Organisation Name cannot be blank'
+		Exit -1
+	}
+	Return $OrgName
+}
+Function Get-ServiceName {
+	$ServiceName = Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
 	if (-Not ($ServiceName -match '^[A-Za-z\.]+$'))
 	{
-		Write-Host "$ServiceName does not match regex"
-		Return
+		Write-Host "Service Name `"$ServiceName`" does not match regex"
+		Exit -1
 	}
-$AzureName = $ServiceName.Replace(".", "-")
-$AzureDevopsPersonalAccessToken = Read-Host -Prompt 'Enter An Azure Devops Personal Access Token with at least Permissions to read from the new source repo'
-$env:AZURE_DEVOPS_EXT_PAT = $AzureDevopsPersonalAccessToken
-$AzureResourceGroup = Read-Host -Prompt 'Enter The Azure Resource Group the new resources should be created under'
-$AzureLocation = Read-Host -Prompt 'Enter The Azure Location (e.g. uksouth) where the new resources should be created'
-$DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
+	Return $ServiceName
+}
+Function Get-AzPersonalAccessToken {
+	$PAT = Read-Host -Prompt 'Enter An Azure Devops Personal Access Token with Admin permissions'
+	if ([String]::IsNullOrWhiteSpace($PAT)) {
+		Write-Host 'Personal Access Token cannot be blank'
+		Exit -1
+	}
+	Return $PAT
+}
+Function Get-AzResourceGroup {
+	$ResourceGroup = Read-Host -Prompt 'Enter The Azure Resource Group the new resources should be created under'
+	if ([String]::IsNullOrWhiteSpace($ResourceGroup)) {
+		Write-Host 'Resource Group cannot be blank'
+		Exit -1
+	}
+	Return $ResourceGroup
+}
+Function Get-AzLocation {
+	$Location = Read-Host -Prompt 'Enter The Azure Location (e.g. uksouth) where the new resources should be created'
+	if ([String]::IsNullOrWhiteSpace($Location)) {
+		Write-Host 'Azure Location cannot be blank'
+		Exit -1
+	}
+	Return $Location
+}
+Function Get-TenantId {
+	$TenantId = Read-Host -Prompt 'Enter The TenantId of the ServicePrincipal needed to create the infratructure'
+	if ([String]::IsNullOrWhiteSpace($TenantId)) {
+		Write-Host 'ServicePrincipal TenantId cannot be blank'
+		Exit -1
+	}
+	Return $TenantId
+}
+Function Get-ClientId {
+	$ClientId = Read-Host -Prompt 'Enter The Azure ClientId of the ServicePrincipal needed to create the infratructure'
+	if ([String]::IsNullOrWhiteSpace($ClientId)) {
+		Write-Host 'ServicePrincipal ClientId cannot be blank'
+		Exit -1
+	}
+	Return $ClientId
+}
+Function Get-ClientSecret {
+	$ClientSecret = Read-Host -Prompt 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infratructure'
+	if ([String]::IsNullOrWhiteSpace($ClientSecret)) {
+		Write-Host 'ServicePrincipal ClientSecret cannot be blank'
+		Exit -1
+	}
+	Return $ClientSecret
+}
+Function Get-PathOnDisk {
+	$DiskLocation = Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)'
 	if (-Not ($DiskLocation -match '^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+$')) {
 		Write-Host "$DiskLocation is not a valid directory path format"
-		Return
+		Exit -1
 	}
 	if (-Not (Test-Path -PathType Container $DiskLocation)) {
-		#create it
 		New-Item -ItemType Directory -Force -Path $DiskLocation
 	}
 	$DiskLocation = $DiskLocation.trim('\')
-
-Write-Host "Please wait..."
-
-#* Create source folders and copy files
-$serviceRoot = "$DiskLocation\$ServiceName"
-if (Test-Path $serviceRoot) {
-	Remove-Item -Recurse -Force $serviceRoot
+	Return $DiskLocation
 }
-mkdir $serviceRoot
-cp .\Soap.Api.Sample\**.* "$serviceRoot" -Recurse -Force
-cp .\pwsh-bootstrap.ps1 "$serviceRoot" -Force
-cp ..\azure-pipelines.yml "$serviceRoot" -Force
-(Get-Content $serviceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $serviceRoot\azure-pipelines.yml
-(Get-Content $serviceRoot\azure-pipelines.yml) | % { $_.replace('src/', '') } | Set-Content $serviceRoot\azure-pipelines.yml
-
-$configRepoRoot = "$DiskLocation\$ServiceName.config"
-if (Test-Path $configRepoRoot) {
-	Remove-Item -Recurse -Force $configRepoRoot
+Function Get-ServiceRoot ([string] $DiskLocation, [string] $ServiceName) {
+	Return "$DiskLocation\$ServiceName"
 }
-mkdir $configRepoRoot
+Function Get-ClientAppRoot ([string] $DiskLocation) {
+	Return "$DiskLocation\app"
+}
+Function CreateOrClean-Directory ([string] $Directory) {
+	if (Test-Path $Directory) {
+		Remove-Item -Recurse -Force $Directory
+	}
+	mkdir $Directory
+}
 
-cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\DEV_Config.cs" -Recurse -Force
-cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\VNEXT_Config.cs" -Recurse -Force
-cp ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$configRepoRoot\REL_Config.cs" -Recurse -Force
+Test-PreReqs
 
-#* Setup config repo
+Log-Step "Acquiring Variables..."
 
-cd $configRepoRoot
+$AzureDevopsOrganisationName = Get-AzureDevopsOrganisationName
+$AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
+$ServiceName = Get-ServiceName 
+$AzureName = $ServiceName.Replace(".", "-")
+$AzureDevopsPersonalAccessToken = Get-AzPersonalAccessToken
+$env:AZURE_DEVOPS_EXT_PAT = $AzureDevopsPersonalAccessToken
+$AzureResourceGroup = Get-AzResourceGroup
+$AzureLocation = Get-AzLocation
+$DiskLocation = Get-PathOnDisk
+$ServiceRoot = Get-ServiceRoot($DiskLocation, $ServiceName)
+$ClientAppRoot = Get-ClientAppRoot($DiskLocation)
+$ConfigRepoRoot = "$DiskLocation\$ServiceName.config"
+$SoapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
+$AzSpTenantId = Get-TenantId
+$AzSpClientId = Get-ClientId
+$AzSpClientSecret = Get-ClientSecret
+
+$vars = "AzureDevopsOrganisationName:$AzureDevopsOrganisationName\r\n"+
+"AzureDevopsOrganisationUrl:$AzureDevopsOrganisationUrl\r\n"+ 
+"ServiceName:$ServiceName\r\n"+  
+"AzureName:$AzureName\r\n"+ 
+"AzureDevopsPersonalAccessToken:$AzureDevopsPersonalAccessToken\r\n"+ 
+"env:AZURE_DEVOPS_EXT_PAT:$env:AZURE_DEVOPS_EXT_PAT\r\n"+ 
+"AzureResourceGroup:$AzureResourceGroup\r\n"+ 
+"AzureLocation:$AzureLocation\r\n"+
+"DiskLocation:$DiskLocation\r\n"+
+"ServiceRoot:$ServiceRoot\r\n"+
+"ClientAppRoot:$ClientAppRoot\r\n"+
+"ConfigRepoRoot:$ConfigRepoRoot\r\n"+
+"SoapFeedUri:$SoapFeedUri\r\n"+ 
+"PSScriptRoot:$PSScriptRoot\r\n"+
+"AzSpTenantId:$AzSpTenantId\r\n"+
+"AzSpClientId:$AzSpClientId\r\n"+
+"AzSpClientSecret:$AzSpClientSecret\r\n"
+
+Log $vars
+
+Log-Step "Creating Config Repo, Please wait..."
+
+CreateOrClean-Directory $ConfigRepoRoot
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\DEV_Config.cs" -Recurse -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\VNEXT_Config.cs" -Recurse -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\REL_Config.cs" -Recurse -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\LIVE_Config.cs" -Recurse -Force
+Set-Location $ConfigRepoRoot
 git init
-
 dotnet new classlib -f "netcoreapp3.1" -n Config
 mv DEV_Config.cs Config
 mv VNEXT_Config.cs Config
@@ -81,53 +172,69 @@ cd Config
 (Get-Content .\DEV_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.DEV") } | Set-Content .\DEV_Config.cs
 (Get-Content .\VNEXT_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.VNEXT") } | Set-Content .\VNEXT_Config.cs
 (Get-Content .\REL_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.REL") } | Set-Content .\REL_Config.cs
+(Get-Content .\LIVE_Config.cs) | % { $_.replace("namespace Soap.Api.Sample.Afs", "namespace Config.LIVE") } | Set-Content .\LIVE_Config.cs
 mkdir DEV
 mkdir VNEXT
 mkdir REL
+mkdir LIVE
 mv DEV_Config.cs DEV/Config.cs
 mv VNEXT_Config.cs VNEXT/Config.cs
 mv REL_Config.cs REL/Config.cs
+mv LIVE_Config.cs LIVE/Config.cs
 del Class1.cs
-
-$soapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
-dotnet nuget add source $soapFeedUri
-dotnet add package Soap.Config -s $soapFeedUri 
-
-cd $configRepoRoot
+dotnet nuget add source $SoapFeedUri
+dotnet add package Soap.Config -s $SoapFeedUri
+cd $ConfigRepoRoot
 az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureName
 az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
+
+Log "Uploading Config Repo"
+
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
 git push -u origin --all
 
+Log-Step "Creating Service Repo, Please wait..."
 
+Set-Location $PSScriptRoot
+CreateOrClean-Directory $ServiceRoot
 
-#* Setup service repo
+Log "Creating Client App"
 
-cd $serviceRoot
+$Excluded = @('.cache','dist','node_modules','srv.ps1','story.md','yarn**.*')
+Copy-Item .\soapjs\app\* "$ClientAppRoot" -Recurse -Exclude $Excluded 
+$Excluded = @('bin', 'obj', 'published')
+Set-Content -Path "$ClientAppRoot\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
+
+Log "Creating Server App"
+
+Set-Location $PSScriptRoot
+Copy-Item .\Soap.Api.Sample\**.* "$ServiceRoot" -Recurse -Force
+Copy-Item .\pwsh-bootstrap.ps1 "$ServiceRoot" -Force
+Copy-Item .\configure-local-environment.ps1 "$ServiceRoot" -Force
+Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
+#* cull src directory from paths
+(Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
+(Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src/', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
 
 Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
-
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$ServiceName") | Set-Content $_
 }
-
-$removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
-$removals | % { Remove-Item $_.Path }
-
+$Removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
+$Removals | % { Remove-Item $_.Path }
+Set-Content -Path "$ServiceRoot\$ServiceName.Afs\local.settings.json" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
 git init
 dotnet new sln -n $ServiceName
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
 Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
-	
 	dotnet remove $_ reference '..\..\Soap.PfBase.Api\Soap.PfBase.Api.csproj'
 	dotnet remove $_ reference '..\..\Soap.PfBase.Models\Soap.PfBase.Models.csproj'
 	dotnet remove $_ reference '..\..\Soap.PfBase.Logic\Soap.PfBase.Logic.csproj'
 	dotnet remove $_ reference '..\..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj'
 	dotnet remove $_ reference '..\..\Soap.PfBase.Tests\Soap.PfBase.Tests.csproj'
-	
 	if ($_ -like '*.Models.csproj') {
 		dotnet add $_ package Soap.PfBase.Models -s $soapFeedUri
 	}
@@ -145,8 +252,9 @@ Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
 	}
 }
 
-##* Set variables in pwsh-bootstrap
+Log "Configuring Pwsh-Bootstrap Script"
 
+#* remove all library projects (which will now be referenced from the soap feed)
 Remove-ConfigLine '"Soap.Auth0"' ""
 Remove-ConfigLine '"Soap.Bus"' ""
 Remove-ConfigLine '"Soap.Config"' ""
@@ -161,7 +269,9 @@ Remove-ConfigLine '"Soap.PfBase.Tests"' ""
 Remove-ConfigLine '"Soap.PfBase.Models"' ""
 Remove-ConfigLine '"Soap.PfBase.Messages"' ""
 Remove-ConfigLine '"Soap.Utility"' ""
+#* give tests project a new name
 Replace-ConfigLine '"Soap.UnitTests"' "`"$ServiceName.Tests`""
+#* populate correct build script vars
 Replace-ConfigLine "-azureDevopsOrganisation `"anavarro9731`" ``" "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
 Replace-ConfigLine "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureName`" ``"
 Replace-ConfigLine "-azureDevopsPat  `"j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia`" ``" "-azureDevopsPat `"$AzureDevopsPersonalAccessToken`" ``"
@@ -169,17 +279,28 @@ Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureName`" ``"
 Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureName`" ``"
 Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzureResourceGroup`" ``"
 Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzureLocation`" ``"
+#* remove nuget props used only for libraries (and which require a nuget feed which the az cli can't create)
 Remove-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json`" ``"
 Remove-ConfigLine '-nugetApiKey $nugetApiKey'
+#* run it and load the modules
 ./pwsh-bootstrap.ps1 
+
+Log "Uploading Repo"
+
 git add -A
 git commit -m "initial"
-git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName"
+git remote add origin "$AzureDevopsOrganisationUrl$AzureName/_git/$AzureName"
+Run -PrepareNewVersion -forceVersion 0.1.0-alpha -Push SILENT
 
-Run -PrepareNewVersion -forceVersion 0.1.0-alpha -noPush $true
-
-git push -u origin --all
+Log-Step "Creating Pipeline"
 
 az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" --skip-run #* must come after files committed to repo, variables need to be added for this to work
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$AzureDevopsPersonalAccessToken"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$AzSpTenantId"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$AzSpClientId"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$AzSpClientSecret"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "vnext-functionappurl" --value "$"TODO
 
+Log-Step "Triggering Infrastructure Creation"
+Run -PrepareNewVersion -forceVersion 0.2.0-alpha -Push SILENT
 
