@@ -37,7 +37,7 @@ steps:
       $branchName = $Env:BUILD_SOURCEBRANCHNAME
       $envSuffix = $branchName -eq 'master' ? "vnext" : "rel"
       $url = "$(healthcheck-url)"
-      $url2 = url.Replace('##ENVSUFFIX##',$envSuffix)
+      $url2 = $url.Replace('##ENVSUFFIX##',$envSuffix)
       $result = Invoke-WebRequest "$url2" | Select-Object -ExpandProperty Content
       $ok = $result -match '\+\r\n$'
       Write-Host "Status OK:$ok"
