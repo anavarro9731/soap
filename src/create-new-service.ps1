@@ -126,9 +126,9 @@ Function CreateOrClean-Directory ([string] $Directory) {
 	mkdir $Directory
 }
 
-Function Get-FunctionAppUrl([string] $AzureName) {
+Function Get-HealthCheckUrl([string] $AzureName) {
 	
-	return "https://$AzureName-vnext.azurewebsites.net"
+	return "https://$AzureName-##ENVSUFFIX##.azurewebsites.net/CheckHealth"
 }
 
 Test-PreReqs
@@ -150,7 +150,7 @@ $SoapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soa
 $TenantId = Get-TenantId $Arg_TenantId
 $ClientId = Get-ClientId $Arg_ClientId
 $ClientSecret = Get-ClientSecret $Arg_ClientSecret
-$FunctionAppUrl = Get-FunctionAppUrl $AzureName
+$HealthCheckUrl = Get-HealthCheckUrl $AzureName
 
 $vars = "AzureDevopsOrganisationName:$AzureDevopsOrganisationName`r`n"+
 "AzureDevopsOrganisationUrl:$AzureDevopsOrganisationUrl`r`n"+ 
@@ -322,7 +322,7 @@ az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$TenantId"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$ClientSecret"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "vnext-functionappurl" --value "$FunctionAppUrl"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
 
 Log-Step "Triggering Infrastructure Creation"
 Exit

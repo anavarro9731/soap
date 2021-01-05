@@ -33,7 +33,11 @@ steps:
     displayName: 'Pack and Publish'
     
   - pwsh: |
-      $result = Invoke-WebRequest "$(vnext-functionappurl)" | Select-Object -ExpandProperty Content
+      $branchName = $Env:BUILD_SOURCEBRANCHNAME
+      $envSuffix = $branchName -eq 'master' ? "vnext" : "rel"
+      $url = "$(functionapp-url)"
+      $url2 = url.Replace('##ENVSUFFIX##',$envSuffix)
+      $result = Invoke-WebRequest "$url2" | Select-Object -ExpandProperty Content
       $result  -match '\+\r\n$'
       if ($result -eq $false) { throw "Health Check Failed" }
     displayName: 'Health Check'
