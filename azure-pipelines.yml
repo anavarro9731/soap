@@ -32,7 +32,7 @@ steps:
       iex $cmd
     displayName: 'Pack and Publish'
     
-  - checkhealth: |
+  - pwsh: |
       $result = Invoke-WebRequest "$(vnext-functionappurl)" | Select-Object -ExpandProperty Content
       $result  -match '\+\r\n$'
       if ($result -eq $false) { throw "Health Check Failed" }
