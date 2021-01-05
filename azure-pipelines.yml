@@ -19,6 +19,7 @@ steps:
     # az-clientid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
     # az-clientsecret / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
     # az-tenantid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+    # healthcheck-url / a templated url for running the services' health check
 
   - pwsh: |
       & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1 \n
@@ -35,7 +36,7 @@ steps:
   - pwsh: |
       $branchName = $Env:BUILD_SOURCEBRANCHNAME
       $envSuffix = $branchName -eq 'master' ? "vnext" : "rel"
-      $url = "$(functionapp-url)"
+      $url = "$(healthcheck-url)"
       $url2 = url.Replace('##ENVSUFFIX##',$envSuffix)
       $result = Invoke-WebRequest "$url2" | Select-Object -ExpandProperty Content
       $ok = $result -match '\+\r\n$'
