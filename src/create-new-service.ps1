@@ -128,7 +128,7 @@ Function CreateOrClean-Directory ([string] $Directory) {
 
 Function Get-HealthCheckUrl([string] $AzureName) {
 	
-	return "https://$AzureName-##ENVSUFFIX##.azurewebsites.net/CheckHealth"
+	return "https://$AzureName-##ENVSUFFIX##.azurewebsites.net/api/CheckHealth"
 }
 
 Test-PreReqs

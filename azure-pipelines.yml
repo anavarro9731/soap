@@ -13,12 +13,13 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-    # the following variables should be setup in the pipeline UI by an administrator
-    # nuget-key / used to push class library pkgs / optional may not have any class libraries in solution
-    # ado-pat / passed to functionapp to read config from git / optional may not have any functionapps in solution 
-    # az-clientid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
-    # az-clientsecret / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
-    # az-tenantid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+  # the following variables should be setup in the pipeline UI by an administrator
+  # nuget-key / used to push class library pkgs / optional may not have any class libraries in solution
+  # ado-pat / passed to functionapp to read config from git / optional may not have any functionapps in solution 
+  # az-clientid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+  # az-clientsecret / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+  # az-tenantid / used to auth azure infrastructure changes via az CLI when deploying az functionapps / optional may not have any function apps in solution 
+  # healthcheck-url / a templated url for running the services' health check
 
   - pwsh: |
       & $Env:BUILD_SOURCESDIRECTORY\src\pwsh-bootstrap.ps1 \n
@@ -31,13 +32,15 @@ steps:
       Write-Host $cmd
       iex $cmd
     displayName: 'Pack and Publish'
-    
+
   - pwsh: |
       $branchName = $Env:BUILD_SOURCEBRANCHNAME
       $envSuffix = $branchName -eq 'master' ? "vnext" : "rel"
-      $url = "$(functionapp-url)"
-      $url2 = url.Replace('##ENVSUFFIX##',$envSuffix)
+      $url = "$(healthcheck-url)"
+      $url2 = $url.Replace('##ENVSUFFIX##',$envSuffix)
+      Write-Host "Checking $url2"
       $result = Invoke-WebRequest "$url2" | Select-Object -ExpandProperty Content
-      $result  -match '\+\r\n$'
-      if ($result -eq $false) { throw "Health Check Failed" }
+      $ok = $result -match '\+\r\n$'
+      Write-Host "Status OK:$ok"
+      if ($ok -eq $false) { throw "Health Check Failed" }
     displayName: 'Health Check'
