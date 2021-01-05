@@ -118,9 +118,7 @@ Function Get-PathOnDisk([string] $s = $null)  {
 Function Get-ServiceRoot ([string] $DiskLocation, [string] $ServiceName) {
 	Return "$DiskLocation\$ServiceName"
 }
-Function Get-ClientAppRoot ([string] $DiskLocation) {
-	Return "$DiskLocation\app\"
-}
+
 Function CreateOrClean-Directory ([string] $Directory) {
 	if (Test-Path $Directory) {
 		Remove-Item -Recurse -Force $Directory
@@ -147,7 +145,6 @@ $AzResourceGroup = Get-AzResourceGroup $Arg_AzResourceGroup
 $AzLocation = Get-AzLocation $Arg_AzLocation
 $PathOnDisk = Get-PathOnDisk $Arg_PathOnDisk
 $ServiceRoot = Get-ServiceRoot $PathOnDisk $ServiceName
-$ClientAppRoot = Get-ClientAppRoot($PathOnDisk)
 $ConfigRepoRoot = "$PathOnDisk\$ServiceName.config"
 $SoapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json"
 $TenantId = Get-TenantId $Arg_TenantId
@@ -165,7 +162,6 @@ $vars = "AzureDevopsOrganisationName:$AzureDevopsOrganisationName`r`n"+
 "AzLocation:$AzLocation`r`n"+
 "PathOnDisk:$PathOnDisk`r`n"+
 "ServiceRoot:$ServiceRoot`r`n"+
-"ClientAppRoot:$ClientAppRoot`r`n"+
 "ConfigRepoRoot:$ConfigRepoRoot`r`n"+
 "SoapFeedUri:$SoapFeedUri`r`n"+ 
 "PSScriptRoot:$PSScriptRoot`r`n"+
@@ -223,14 +219,20 @@ CreateOrClean-Directory $ServiceRoot
 
 Log "Creating Client App"
 
+Set-Location $PSScriptRoot
 $Excluded = @('.cache','dist','node_modules','srv.ps1','story.md','yarn**.*')
-Copy-Item .\soapjs\app\* "$ClientAppRoot" -Recurse -Exclude $Excluded 
-$Excluded = @('bin', 'obj', 'published')
-Set-Content -Path "$ClientAppRoot\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
+$sourceAppDir = "$PSScriptRoot\soapjs\app"
+$folders = Get-ChildItem -Path $sourceAppDir | Where {($_.PSIsContainer) -and ($Excluded -notcontains $_.Name)}
+foreach ($f in $folders){
+	Copy-Item -Path $sourceAppDir\$($f.Name) -Destination $ServiceRoot\app\$($f.Name) -Recurse -Force
+}
+Copy-Item "$sourceAppDir\*.*" "$ServiceRoot\app\" -Exclude $Excluded
+Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
 
 Log "Creating Server App"
 
 Set-Location $PSScriptRoot
+$Excluded = @('bin', 'obj', 'published')
 Copy-Item .\Soap.Api.Sample\**.* "$ServiceRoot" -Recurse -Force
 Copy-Item .\pwsh-bootstrap.ps1 "$ServiceRoot" -Force
 Copy-Item .\configure-local-environment.ps1 "$ServiceRoot" -Force
@@ -238,7 +240,7 @@ Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
 #* cull src directory from paths
 (Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
 (Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src/', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
-
+Set-Location $ServiceRoot
 Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
@@ -323,5 +325,6 @@ az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "vnext-functionappurl" --value "$FunctionAppUrl"
 
 Log-Step "Triggering Infrastructure Creation"
+Exit
 Run -PrepareNewVersion -forceVersion 0.2.0-alpha -Push SILENT
 

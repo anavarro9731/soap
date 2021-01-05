@@ -19,7 +19,7 @@ function global:Run {
 		[string] $azClientSecret,
 		[string] $azTenantId,
 		[string] $forceVersion,
-		[bool] $noPush 
+		[string] $push 
 	)
 		
 	# an array of the relative paths on disk without the trailing slash to this file of all class library projects which will be published as nuget packages / can be an empty array
@@ -70,7 +70,7 @@ function global:Run {
         -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" `
         -repository "soap" `
 		-forceVersion $forceVersion `
-		-noPush $noPush
+		-push $push
 	}
 
 	# -allProjects (provided by $libraryProjects and $azureFunctionProject, do not modify, can be empty)
