@@ -38,6 +38,7 @@ steps:
       $url = "$(functionapp-url)"
       $url2 = url.Replace('##ENVSUFFIX##',$envSuffix)
       $result = Invoke-WebRequest "$url2" | Select-Object -ExpandProperty Content
-      $result  -match '\+\r\n$'
-      if ($result -eq $false) { throw "Health Check Failed" }
+      $ok = $result -match '\+\r\n$'
+      Write-Host "Status OK:$ok"
+      if ($ok -eq $false) { throw "Health Check Failed" }
     displayName: 'Health Check'
