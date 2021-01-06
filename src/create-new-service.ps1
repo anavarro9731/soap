@@ -323,6 +323,7 @@ az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$ClientSecret"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
+az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$AzPersonalAccessToken"
 
 Log-Step "Triggering Infrastructure Creation"
  
