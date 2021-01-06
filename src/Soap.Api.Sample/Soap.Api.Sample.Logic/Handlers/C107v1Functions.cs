@@ -1,8 +1,7 @@
-﻿namespace Soap.Api.Sample.Logic.Mappings
+﻿
+namespace Soap.Api.Sample.Logic.Handlers
 {
     using System.Threading.Tasks;
-    using FluentValidation;
-    using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;

@@ -1,8 +1,8 @@
-﻿namespace Soap.Api.Sample.Logic.Mappings
+﻿//##REMOVE-IN-COPY##
+
+namespace Soap.Api.Sample.Logic.Handlers
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using FluentValidation;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
@@ -10,7 +10,6 @@
 
     public class C102v1Functions : IMessageFunctionsClientSide<C102v1_GetServiceState>
     {
-
         public IContinueProcess<C102v1_GetServiceState>[] HandleWithTheseStatefulProcesses { get; }
 
         public Task Handle(C102v1_GetServiceState msg) => this.Get<P202GetServiceState>().Call(x => x.BeginProcess)(msg);

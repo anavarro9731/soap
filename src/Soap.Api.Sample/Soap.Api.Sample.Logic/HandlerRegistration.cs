@@ -1,6 +1,6 @@
 ﻿namespace Soap.Api.Sample.Logic
 {
-    using Soap.Api.Sample.Logic.Mappings;
+    using Soap.Api.Sample.Logic.Handlers;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.MessageMapping;
 
@@ -10,7 +10,6 @@
         {
             Register(new C100v1Functions());
             Register(new C101v1Functions());
-            Register(new C102v1Functions());
             Register(new C103v1Functions());
             Register(new C105v1Functions());
             Register(new C106v1Functions());

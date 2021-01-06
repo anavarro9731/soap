@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Logic.Mappings
+﻿namespace Soap.Api.Sample.Logic.Handlers
 {
     using System.Threading.Tasks;
     using Soap.Api.Sample.Logic.Processes;
@@ -10,7 +10,7 @@
     {
         public IContinueProcess<E100v1_Pong>[] HandleWithTheseStatefulProcesses { get; } =
         {
-            new S301PingAndWaitForPong()
+            new P200PingAndWaitForPong()
         };
 
         public Task Handle(E100v1_Pong msg) => Task.CompletedTask;

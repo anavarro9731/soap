@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Logic.Processes
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;

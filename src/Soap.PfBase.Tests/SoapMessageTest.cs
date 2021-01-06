@@ -55,12 +55,12 @@ namespace Soap.PfBase.Tests
         protected async Task TestMessage<T>(
             T msg,
             IApiIdentity identity,
-            byte retries,
+            byte retries = 0,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
-            Action<MessageAggregatorForTesting>? setup = null) where T : ApiMessage
+            Action<MessageAggregatorForTesting>? setupMocks = null) where T : ApiMessage
         {
-            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setup);
+            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks);
         }
 
         private async Task<Result> ExecuteMessage<T>(

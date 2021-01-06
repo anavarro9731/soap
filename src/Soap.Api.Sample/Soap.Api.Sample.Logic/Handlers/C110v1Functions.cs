@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Logic.Mappings
+﻿namespace Soap.Api.Sample.Logic.Handlers
 {
     using System.Threading.Tasks;
     using Soap.Api.Sample.Logic.Processes;

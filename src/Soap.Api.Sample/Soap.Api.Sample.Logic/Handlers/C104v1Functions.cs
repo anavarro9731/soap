@@ -1,9 +1,8 @@
 ﻿//##REMOVE-IN-COPY##
-namespace Soap.Api.Sample.Logic.Mappings
+
+namespace Soap.Api.Sample.Logic.Handlers
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using FluentValidation;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;

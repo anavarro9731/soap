@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
     using FluentAssertions;
@@ -12,7 +13,8 @@
             : base(outputHelper)
         {
             SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
-            SetupTestByProcessingAMessage(Commands.GetServiceState, Identities.UserOne);
+            
+            TestMessage(Commands.GetServiceState, Identities.UserOne);
         }
 
         [Fact]

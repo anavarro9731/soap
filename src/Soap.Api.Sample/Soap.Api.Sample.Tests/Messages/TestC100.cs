@@ -11,7 +11,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC100(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            SetupTestByProcessingAMessage(Commands.Ping, Identities.UserOne);
+            TestMessage(Commands.Ping, Identities.UserOne);
         }
 
         [Fact]

@@ -1,12 +1,4 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="$FILENAME$" company="$COMPANYNAME$">
-// $COPYRIGHT$
-// </copyright>
-// <summary>
-// $SUMMARY$
-// </summary>
-
-
+﻿//passes handler registration down
 namespace Soap.Api.Sample.Tests
 {
     using Soap.Api.Sample.Logic;

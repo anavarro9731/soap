@@ -1,3 +1,4 @@
+//##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
@@ -16,7 +17,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            TestMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
         }
 
         [Fact]

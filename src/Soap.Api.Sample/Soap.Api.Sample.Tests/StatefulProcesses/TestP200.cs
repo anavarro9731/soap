@@ -11,9 +11,9 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class S100Test : Test
+    public class P200Test : Test
     {
-        public S100Test(ITestOutputHelper output)
+        public P200Test(ITestOutputHelper output)
             : base(output)
         {
         }
@@ -23,14 +23,14 @@
         {
             SendC103();
 
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.SentPing).Should().BeTrue();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.SentPing).Should().BeTrue();
             var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
 
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.PongDoesNotMatchPing).Should().BeTrue();
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.ReceivedPong).Should().BeFalse();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.PongDoesNotMatchPing).Should().BeTrue();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.ReceivedPong).Should().BeFalse();
 
             void SendC103()
             {
@@ -54,13 +54,13 @@
         {
             SendC103();
 
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.SentPing).Should().BeTrue();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.SentPing).Should().BeTrue();
             var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 
             SendE150();
 
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.ReceivedPong).Should().BeTrue();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.ReceivedPong).Should().BeTrue();
 
             void SendC103()
             {
@@ -84,7 +84,7 @@
         {
             SendC103();
 
-            Result.ActiveProcessState.EnumFlags.HasFlag(S301PingAndWaitForPong.States.SentPing).Should().BeTrue();
+            Result.ActiveProcessState.EnumFlags.HasFlag(P200PingAndWaitForPong.States.SentPing).Should().BeTrue();
             var ping = Result.MessageBus.CommandsSent.Single(x => x.GetType() == typeof(C100v1_Ping));
             ping.Headers.GetStatefulProcessId().Should().NotBeNull();
 

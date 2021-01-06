@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests
 {
     using Soap.Api.Sample.Models.Aggregates;
 

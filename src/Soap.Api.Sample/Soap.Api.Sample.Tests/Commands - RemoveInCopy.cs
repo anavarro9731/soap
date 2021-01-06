@@ -20,5 +20,11 @@ namespace Soap.Api.Sample.Tests
                 {
                     x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully);
                 });
+        
+        public static C102v1_GetServiceState GetServiceState => new C102v1_GetServiceState();
+
+        
     }
+    
+    
 }

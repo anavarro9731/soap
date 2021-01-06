@@ -1,15 +1,12 @@
-﻿//##REMOVE-IN-COPY##
-namespace Soap.Api.Sample.Logic.Mappings
+﻿
+namespace Soap.Api.Sample.Logic.Handlers
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using FluentValidation;
     using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Operations;
 
     public class C106v1Functions : IMessageFunctionsClientSide<C106v1_LargeCommand>
     {

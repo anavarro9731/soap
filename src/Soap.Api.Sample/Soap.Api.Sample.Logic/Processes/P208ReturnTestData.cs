@@ -49,7 +49,7 @@ namespace Soap.Api.Sample.Logic.Processes
                     }
                 };
 
-                await Publish(response);
+                await Publish(response, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
                 };
     }
 }

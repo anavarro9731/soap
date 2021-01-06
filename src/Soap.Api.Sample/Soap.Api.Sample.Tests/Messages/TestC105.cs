@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿//##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
     using System.Threading.Tasks;
@@ -16,10 +17,10 @@
         {
             
             
-            SetupTestByProcessingAMessage(
+            TestMessage(
                 new C105v1_SendLargeMessage(), 
                 Identities.UserOne,
-                setup: messageAggregatorForTesting =>
+                setupMocks: messageAggregatorForTesting =>
                     {
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>().Return(Task.CompletedTask);

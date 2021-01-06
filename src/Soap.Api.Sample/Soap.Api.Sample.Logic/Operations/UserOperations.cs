@@ -4,7 +4,6 @@ namespace Soap.Api.Sample.Logic.Operations
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataStore.Models.PureFunctions;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
     using Soap.Context.Context;
