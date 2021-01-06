@@ -171,7 +171,7 @@ Finally, it will leave you on the master branch afterwards.
 
 ### NOTES
  
-- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops
+- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
 - When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display pickup the implicit imports
 - Changing the .env variables requires restarting parcel
