@@ -8,7 +8,7 @@ import {Input} from 'baseui/input'
 import FileUpload from './FileUpload';
 import {DatePicker} from 'baseui/datepicker';
 import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
-import {Controller, useForm} from "react-hook-form";
+import {Controller, get, useForm} from "react-hook-form";
 import {FormControl} from "baseui/form-control";
 import {Label3} from 'baseui/typography';
 import ReactErrorBoundary from "./ReactErrorBoundary";
@@ -24,7 +24,7 @@ export default function AutoForm(props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
-    const {formEventName, afterSubmit, sendQuery} = props;
+    const {formEventName, afterSubmit, sendQuery = true} = props;
     const {enqueue} = useSnackbar();
     
     useEffect(() => {
@@ -32,14 +32,12 @@ export default function AutoForm(props) {
             window.scrollTo(0, 0);
         }
     }, [isSubmitted])
-
     
-    const getFormCommandName = toTypeName("C109v1_GetForm");
-    const formDataEvent = useQuery({query:{
-        $type: getFormCommandName,
-        c109_FormDataEventName: formEventName,
-        headers: []
-    }, sendQuery});
+    let formDataEvent = useQuery({query:{
+            $type: "C109v1_GetForm",
+            c109_FormDataEventName: formEventName,
+            headers: []
+        }, sendQuery});
     
     if (!formDataEvent) return null;
 

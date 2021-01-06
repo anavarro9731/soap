@@ -32,7 +32,7 @@ namespace Soap.Api.Sample.Logic.Processes
 
                 if (eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName())
                 {
-                   // await SaveTestBlobs();
+                   await SaveTestBlobs();
                 }
 
                 var @event = Activator.CreateInstance(formDataEventType) as ApiEvent;

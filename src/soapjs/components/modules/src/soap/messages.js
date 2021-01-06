@@ -5,17 +5,26 @@ import _ from 'lodash';
 let messageTypesSingleton = {};
 
 export function toTypeName(name) {
-    const names = getListOfRegisteredMessages();
-    const found = _.filter(names, n => _.endsWith(n, name));
-    if (found.length > 1) {
-        throw "There is more than one message registered whose assemblyTypeName contains the string " + name;
-    } else if (found.length === 0) {
-        throw "Could not find a message registered whose assemblyTypeName contains the string " + name;
-    } else {
-        const key = found[0];
-        const def = messageTypesSingleton[key];
-        const { name, assemblyName } = def;
-        return `${name}, ${assemblyName}`;
+    if (!name) throw "Message $type property not provided, please make sure the message has this property set to the name of the Command or Event e.g. E100v1_Pong, C100v1_Ping";
+    if (name.match(/^.+, .+$/i)) { //already is long form
+        return name;    
+    } else { //convert short name
+        const names = getListOfRegisteredMessages();
+        if (names.length === 0) {
+            console.warn("types not loaded yet");
+            return "types-not-loaded"; //* not yet loaded
+        }
+        const found = _.filter(names, n => _.endsWith(n, name));
+        if (found.length > 1) {
+            throw "There is more than one message registered whose assemblyTypeName contains the string " + name;
+        } else if (found.length === 0) {
+            throw "Could not find a message registered whose assemblyTypeName contains the string " + name;
+        } else {
+            const key = found[0];
+            const def = messageTypesSingleton[key];
+            const { name, assemblyName } = def;
+            return `${name}, ${assemblyName}`;
+        }
     }
 }
 

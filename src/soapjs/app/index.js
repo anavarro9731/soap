@@ -31,7 +31,7 @@ function Index() {
                 <Cell span={6}>
                     <H1>Form</H1>
                     <AutoForm formEventName="E103v1_GetC107Form" testFormHeader={translate(wordKeys.testFormHeader)}
-                                     afterSubmit={(command) => setTestDataId(command.c107_Guid)} sendQuery={true}/>
+                                     afterSubmit={(command) => setTestDataId(command.c107_Guid)} />
                 </Cell>
                 <Cell span={6}>
                     <H1>View</H1>
