@@ -325,6 +325,6 @@ az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName"
 az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
 
 Log-Step "Triggering Infrastructure Creation"
-Exit
+ 
 Run -PrepareNewVersion -forceVersion 0.2.0-alpha -Push SILENT
 
