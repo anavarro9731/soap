@@ -1,6 +1,17 @@
 import messageDefinitions, {TestCommand_c101v1} from './test-messages'; 
-import {createRegisteredTypedMessageInstanceFromAnonymousObject, getRegisteredMessageType, registerMessageTypes } from "../messages";
+import {createRegisteredTypedMessageInstanceFromAnonymousObject, toTypeName, registerMessageTypes } from "../messages";
 
+test("test expanding command name", () => {
+    registerMessageTypes(messageDefinitions);
+   const typeName = toTypeName("TestCommand_c100v1");
+   expect(typeName).toBe('Soap.Api.Sample.Messages.Commands.TestCommand_c100v1, Soap.Messages');
+});
+
+test("test expanding event name", () => {
+    registerMessageTypes(messageDefinitions);
+    const typeName = toTypeName("TestEvent_e200v1");
+    expect(typeName).toBe('Soap.Api.Sample.Messages.Events.TestEvent_e200v1, Soap.Api.Sample.Messages');
+});
 
 test('test deserialisation of data type min values', () => {
     

@@ -126,9 +126,9 @@ Function CreateOrClean-Directory ([string] $Directory) {
 	mkdir $Directory
 }
 
-Function Get-HealthCheckUrl([string] $AzureName) {
-	
-	return "https://$AzureName-##ENVSUFFIX##.azurewebsites.net/api/CheckHealth"
+Function Get-HealthCheckUrl([string] $AzureDevopsName) {
+	$FunctionAppName = $AzureDevopsName.ToLower() -replace '[^a-z0-9]', '' #* FRAGILE must match Pack-And-Publish logic
+	return "https://$FunctionAppName-##ENVSUFFIX##.azurewebsites.net/api/CheckHealth"
 }
 
 Test-PreReqs
@@ -138,7 +138,7 @@ Log-Step "Acquiring Variables..."
 $AzureDevopsOrganisationName = Get-AzureDevopsOrganisationName $Arg_AzureDevopsOrganisationName
 $AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
 $ServiceName = Get-ServiceName $Arg_ServiceName
-$AzureName = $ServiceName.Replace(".", "-")
+$AzureDevopsName = $ServiceName.Replace(".", "-")
 $AzPersonalAccessToken = Get-AzPersonalAccessToken $Arg_AzPersonalAccessToken
 $env:AZURE_DEVOPS_EXT_PAT = $AzPersonalAccessToken
 $AzResourceGroup = Get-AzResourceGroup $Arg_AzResourceGroup
@@ -150,12 +150,12 @@ $SoapFeedUri = "https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soa
 $TenantId = Get-TenantId $Arg_TenantId
 $ClientId = Get-ClientId $Arg_ClientId
 $ClientSecret = Get-ClientSecret $Arg_ClientSecret
-$HealthCheckUrl = Get-HealthCheckUrl $AzureName
+$HealthCheckUrl = Get-HealthCheckUrl $AzureDevopsName
 
 $vars = "AzureDevopsOrganisationName:$AzureDevopsOrganisationName`r`n"+
 "AzureDevopsOrganisationUrl:$AzureDevopsOrganisationUrl`r`n"+ 
 "ServiceName:$ServiceName`r`n"+  
-"AzureName:$AzureName`r`n"+ 
+"AzureDevopsName:$AzureDevopsName`r`n"+ 
 "AzPersonalAccessToken:$AzPersonalAccessToken`r`n"+ 
 "env:AZURE_DEVOPS_EXT_PAT:$env:AZURE_DEVOPS_EXT_PAT`r`n"+ 
 "AzResourceGroup:$AzResourceGroup`r`n"+ 
@@ -202,14 +202,14 @@ del Class1.cs
 dotnet nuget add source $SoapFeedUri
 dotnet add package Soap.Config -s $SoapFeedUri
 cd $ConfigRepoRoot
-az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureName
-az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureName --name "$AzureName.config"
+az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName
+az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureDevopsName --name "$AzureDevopsName.config"
 
 Log "Uploading Config Repo"
 
 git add -A
 git commit -m "initial"
-git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureName/_git/$AzureName.config"
+git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
 git push -u origin --all
 
 Log-Step "Creating Service Repo, Please wait..."
@@ -243,7 +243,7 @@ Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
 Set-Location $ServiceRoot
 Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
-Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1 | ForEach-Object {
+Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$ServiceName") | Set-Content $_
 }
 $Removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
@@ -296,15 +296,12 @@ Remove-ConfigLine '"Soap.Utility"' ""
 Replace-ConfigLine '"Soap.UnitTests"' "`"$ServiceName.Tests`""
 #* populate correct build script vars
 Replace-ConfigLine "-azureDevopsOrganisation `"anavarro9731`" ``" "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
-Replace-ConfigLine "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureName`" ``"
+Replace-ConfigLine "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureDevopsName`" ``"
 Replace-ConfigLine "-azureDevopsPat  `"j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia`" ``" "-azureDevopsPat `"$AzPersonalAccessToken`" ``"
-Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureName`" ``"
-Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureName`" ``"
+Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureDevopsName`" ``"
+Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureDevopsName`" ``"
 Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzResourceGroup`" ``"
 Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzLocation`" ``"
-#* remove nuget props used only for libraries (and which require a nuget feed which the az cli can't create)
-Remove-ConfigLine "-nugetFeedUri `"https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json`" ``"
-Remove-ConfigLine '-nugetApiKey $nugetApiKey'
 #* run it and load the modules
 ./pwsh-bootstrap.ps1 
 
@@ -312,18 +309,18 @@ Log "Uploading Repo"
 
 git add -A
 git commit -m "initial"
-git remote add origin "$AzureDevopsOrganisationUrl$AzureName/_git/$AzureName"
+git remote add origin "$AzureDevopsOrganisationUrl$AzureDevopsName/_git/$AzureDevopsName"
 Run -PrepareNewVersion -forceVersion 0.1.0-alpha -Push SILENT
 
 Log-Step "Creating Pipeline"
 
-az pipelines create --name "$AzureName" --description "Pipeline for $AzureName" --yaml-path "./azure-pipelines.yml" --skip-run #* must come after files committed to repo, variables need to be added for this to work
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$AzPersonalAccessToken"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$TenantId"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$ClientSecret"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
-az pipelines variable create --pipeline-name "$AzureName" --project "$AzureName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$AzPersonalAccessToken"
+az pipelines create --name "$AzureDevopsName" --description "Pipeline for $AzureDevopsName" --yaml-path "./azure-pipelines.yml" --skip-run #* must come after files committed to repo, variables need to be added for this to work
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$AzPersonalAccessToken"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$TenantId"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$ClientSecret"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$AzPersonalAccessToken"
 
 Log-Step "Triggering Infrastructure Creation"
  

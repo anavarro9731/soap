@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useQuery} from '../hooks/useQuery';
 import {useCommand} from '../hooks/useCommand';
 import config from '../soap/config';
-import {headerKeys} from '../soap/messages';
+import {headerKeys, toTypeName} from '../soap/messages';
 import {Button, KIND} from 'baseui/button';
 import {Input} from 'baseui/input'
 import FileUpload from './FileUpload';
@@ -33,8 +33,10 @@ export default function AutoForm(props) {
         }
     }, [isSubmitted])
 
+    
+    const getFormCommandName = toTypeName("C109v1_GetForm");
     const formDataEvent = useQuery({query:{
-        $type: 'Soap.Api.Sample.Messages.Commands.C109v1_GetForm, Soap.Api.Sample.Messages',
+        $type: getFormCommandName,
         c109_FormDataEventName: formEventName,
         headers: []
     }, sendQuery});

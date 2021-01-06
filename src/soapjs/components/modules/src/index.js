@@ -5,7 +5,7 @@ export { translate, addTranslations } from './i18n/index';
 export {default as bus } from './soap/bus';
 export {default as config } from './soap/config';
 export {default as wireErrorHandlerOfLastResort } from './soap/error-handler'; 
-export { headerKeys } from './soap/messages';
+export { headerKeys, toTypeName } from './soap/messages';
 export { validateArgs, types, optional, getHeader, setHeader, uuidv4 } from './soap/util';
 
 /* react */

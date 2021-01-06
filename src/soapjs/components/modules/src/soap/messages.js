@@ -1,7 +1,23 @@
 import {parseDotNetShortAssemblyQualifiedName, types, validateArgs} from './util';
 import config from './config'
+import _ from 'lodash';
 
 let messageTypesSingleton = {};
+
+export function toTypeName(name) {
+    const names = getListOfRegisteredMessages();
+    const found = _.filter(names, n => _.endsWith(n, name));
+    if (found.length > 1) {
+        throw "There is more than one message registered whose assemblyTypeName contains the string " + name;
+    } else if (found.length === 0) {
+        throw "Could not find a message registered whose assemblyTypeName contains the string " + name;
+    } else {
+        const key = found[0];
+        const def = messageTypesSingleton[key];
+        const { name, assemblyName } = def;
+        return `${name}, ${assemblyName}`;
+    }
+}
 
 export function getListOfRegisteredMessages() {
 
@@ -130,7 +146,7 @@ export function registerTypeDefinitionFromAnonymousObject(anonymousInstance) {
     //* class def JSON is basically a JSON.NET serialised message, make sure you have not been passed null or undefined as an anonymous object
     validateArgs([{instance: anonymousInstance}, types.object]);
 
-    const {className} = parseDotNetShortAssemblyQualifiedName(anonymousInstance.$type);
+    const {className, assemblyName} = parseDotNetShortAssemblyQualifiedName(anonymousInstance.$type);
 
     if (messageTypesSingleton[className] === undefined) { //* create definition if not exist (some definitions of shared classes will be created)
 
@@ -214,6 +230,7 @@ ${typeLine}
                     }                 
                 };
                 Object.defineProperty (messageTypesSingleton["${className}"], 'name', {value: "${className}"});  //add the name property to object definition as is done automatically in ES5+
+                Object.defineProperty (messageTypesSingleton["${className}"], 'assemblyName', {value: "${assemblyName}"});  //add a property that we use for custom purposes
                 `;
         if (config.logClassDeclarations)config.logger.log(createClass);
         eval(createClass);
