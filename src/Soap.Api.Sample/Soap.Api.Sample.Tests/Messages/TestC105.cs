@@ -24,7 +24,7 @@ namespace Soap.Api.Sample.Tests.Messages
                     {
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobUploadEvent>().Return(Task.CompletedTask);
-                    });
+                    }).Wait();
         }
 
         [Fact]

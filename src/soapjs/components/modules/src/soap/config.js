@@ -50,7 +50,7 @@ let _receiver;
 (async function() {
      _sessionDetails = await setupSession();
     if (_callbacks.length > 0) {
-        _callbacks.forEach(c => c());
+        _callbacks.forEach(c => c.f());
     }
     _callbacks = null;
 }());

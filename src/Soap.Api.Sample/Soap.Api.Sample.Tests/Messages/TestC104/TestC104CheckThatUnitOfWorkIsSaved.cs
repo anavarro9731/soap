@@ -22,7 +22,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         public async void CheckTheUnitOfWorkIsSavedCorrectly()
         {
             //act
-            TestMessage(Commands.TestUnitOfWork(), Identities.UserOne);
+            await TestMessage(Commands.TestUnitOfWork(), Identities.UserOne);
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(

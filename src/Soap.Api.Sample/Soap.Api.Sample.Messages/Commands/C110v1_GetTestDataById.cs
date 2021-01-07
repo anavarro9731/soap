@@ -4,7 +4,7 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    public sealed class C110v1_GetTestData : ApiCommand
+    public sealed class C110v1_GetTestDataById : ApiCommand
     {
         public Guid? C110_TestDataId { get; set; }
 
@@ -13,7 +13,7 @@
             new Validator().ValidateAndThrow(this);
         }
 
-        public class Validator : AbstractValidator<C110v1_GetTestData>
+        public class Validator : AbstractValidator<C110v1_GetTestDataById>
         {
             public Validator()
             {

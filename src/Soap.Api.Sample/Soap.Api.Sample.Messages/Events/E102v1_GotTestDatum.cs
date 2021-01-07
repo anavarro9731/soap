@@ -4,7 +4,7 @@
     using CircuitBoard;
     using Soap.Interfaces.Messages;
 
-    public class E102v1_GotTestData : ApiEvent
+    public class E102v1_GotTestDatum : ApiEvent
     {
         public TestData E102_TestData { get; set; }
 

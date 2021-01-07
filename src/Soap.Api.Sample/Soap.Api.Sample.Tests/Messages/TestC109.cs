@@ -2,10 +2,12 @@
 {
     using System;
     using System.Linq;
+    using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.BlobStorage;
+    using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
@@ -20,13 +22,14 @@
             TestMessage(
                 new C109v1_GetForm
                 {
-                    C109_FormDataEventName = nameof(E103v1_GetC107Form)
+                    C109_FormDataEventName = typeof(E103v1_GetC107Form).FullName
                 },
                 Identities.UserOne,
                 setupMocks: messageAggregatorForTesting =>
                     {
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
-                    });
+                    
+                    }).Wait();
         }
 
         [Fact]

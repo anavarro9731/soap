@@ -27,11 +27,11 @@
             });
             
             TestMessage(
-                new C110v1_GetTestData()
+                new C110v1_GetTestDataById()
                 {
                     C110_TestDataId = testDataId
                 },
-                Identities.UserOne);
+                Identities.UserOne).Wait();
         }
 
         [Fact]
@@ -44,8 +44,8 @@
         public void ItShouldPublishAResponseToTheWebSocketClient()
         {
             Result.MessageBus.WsEventsPublished.Should().ContainSingle();
-            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E102v1_GotTestData>();
-            (Result.MessageBus.WsEventsPublished.Single() as E102v1_GotTestData).E102_TestData.E102_Guid.Should()
+            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E102v1_GotTestDatum>();
+            (Result.MessageBus.WsEventsPublished.Single() as E102v1_GotTestDatum).E102_TestData.E102_Guid.Should()
                                                                                 .Be(testDataId);
         }
     }

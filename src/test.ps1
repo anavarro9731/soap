@@ -18,12 +18,13 @@
 
     } elseif ($ConfigureLocalEnvironment) {
         
-        .\configure-local-environment.ps1 -AzClientId "fbff5a19-e7a7-49a2-829c-ad415b507577" `
-        -AzClientSecret "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-" `
-        -AzTenantId "f8d686ac-a87f-4d1c-bbcf-d08873871dcd" `
-        -EnvironmentPartitionKey aaronn `
-        -ResourceGroup rg-soap `
-        -FunctionAppName soapapisample-vnext
+        .\configure-local-environment.ps1 `
+        -Arg_ClientId "fbff5a19-e7a7-49a2-829c-ad415b507577" `
+        -Arg_ClientSecret "34ME15tmte0Hm8x6oXuV_deo~bgzJqK~H-" `
+        -Arg_TenantId "f8d686ac-a87f-4d1c-bbcf-d08873871dcd" `
+        -Arg_EnvironmentPartitionKey aaronn `
+        -Arg_ResourceGroup rg-soap `
+        -Arg_VNextFunctionAppName soapapisample-vnext
         
     } elseif ($CreateNewService) {
         

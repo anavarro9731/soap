@@ -20,8 +20,7 @@ namespace Soap.Api.Sample.Logic.Processes
         public Func<C109v1_GetForm, Task> BeginProcess =>
             async message =>
                 {
-                var eventName =
-                    $"{typeof(E100v1_Pong).Namespace}.{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
+                var eventName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
 
                 var formDataEventType = Type.GetType(eventName);
 
@@ -30,7 +29,7 @@ namespace Soap.Api.Sample.Logic.Processes
                     !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
                     $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
-                if (eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName())
+                if (eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName() && ContextWithMessageLogEntry.Current.AppConfig.Environment != SoapEnvironments.InMemory)
                 {
                    await SaveTestBlobs();
                 }

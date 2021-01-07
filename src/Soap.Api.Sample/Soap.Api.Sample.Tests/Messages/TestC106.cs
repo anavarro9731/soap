@@ -41,7 +41,7 @@ namespace Soap.Api.Sample.Tests.Messages
                 setupMocks: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobDownloadEvent>()
                                                                                  .Return(
                                                                                      Task.FromResult(
-                                                                                         c106FromBlobStorage.ToBlob())));
+                                                                                         c106FromBlobStorage.ToBlob()))).Wait();
         }
 
         [Fact]

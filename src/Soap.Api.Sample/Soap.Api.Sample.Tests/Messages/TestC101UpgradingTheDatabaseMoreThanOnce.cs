@@ -15,7 +15,7 @@ namespace Soap.Api.Sample.Tests.Messages
         {
             SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
             
-            TestMessage(Commands.UpgradeTheDatabaseToV2, Identities.UserOne);
+            TestMessage(Commands.UpgradeTheDatabaseToV2, Identities.UserOne).Wait();
         }
 
         [Fact]

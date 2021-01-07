@@ -17,7 +17,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            TestMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne).Wait();
         }
 
         [Fact]

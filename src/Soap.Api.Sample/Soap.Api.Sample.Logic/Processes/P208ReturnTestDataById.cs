@@ -8,16 +8,16 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P208ReturnTestData : Process, IBeginProcess<C110v1_GetTestData>
+    public class P208ReturnTestDataById : Process, IBeginProcess<C110v1_GetTestDataById>
     {
-        public Func<C110v1_GetTestData, Task> BeginProcess =>
+        public Func<C110v1_GetTestDataById, Task> BeginProcess =>
             async msg =>
                 {
                 var testData = await this.Get<TestDataQueries>().Call(x => x.GetTestData)(msg.C110_TestDataId.Value);
 
-                var response = new E102v1_GotTestData
+                var response = new E102v1_GotTestDatum
                 {
-                    E102_TestData = new E102v1_GotTestData.TestData
+                    E102_TestData = new E102v1_GotTestDatum.TestData
                     {
                         E102_Boolean = testData.Boolean,
                         E102_Decimal = testData.Decimal,
@@ -27,7 +27,7 @@ namespace Soap.Api.Sample.Logic.Processes
                         E102_Long = testData.Long,
                         E102_String = testData.String,
                         E102_BooleanOptional = testData.BooleanOptional,
-                        E102_CustomObject = new E102v1_GotTestData.TestData.Address
+                        E102_CustomObject = new E102v1_GotTestDatum.TestData.Address
                         {
                             E102_House = testData.CustomObject.House,
                             E102_Town = testData.CustomObject.Town,
