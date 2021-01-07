@@ -238,6 +238,7 @@ foreach ($f in $folders){
 }
 Copy-Item "$sourceAppDir\*.*" "$ServiceRoot\app\" -Exclude $Excluded
 Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
+Copy-Item "$PSScriptRoot\soapjs\.gitignore" "$ServiceRoot\app\"
 
 Log "Creating Server App"
 
@@ -333,6 +334,6 @@ az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$Azur
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$AzPersonalAccessToken"
 
 Log-Step "Triggering Infrastructure Creation"
- 
+
 Run -PrepareNewVersion -forceVersion 0.2.0-alpha -Push SILENT
 
