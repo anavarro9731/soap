@@ -1,10 +1,10 @@
 Param(
-[string] $AzClientId,
-[string] $AzClientSecret,
-[string] $AzTenantId,
-[string] $EnvironmentPartitionKey,
-[string] $ResourceGroup,
-[string] $FunctionAppName
+    [string] $Arg_ClientId,
+    [string] $Arg_ClientSecret,
+    [string] $Arg_TenantId,
+    [string] $Arg_EnvironmentPartitionKey,
+    [string] $Arg_ResourceGroup,
+    [string] $Arg_VNextFunctionAppName
 )
 
 Function Log {
@@ -18,40 +18,44 @@ Function Log-Step {
 Function IsEmpty([string] $s)  {
     Return [String]::IsNullOrWhiteSpace($s)
 }
+Function EmptyConcat([string] $s, [string] $prompt) {
+    $result = (IsEmpty $s) ? $(Read-Host -Prompt "$prompt") : $s
+    return $result
+}
 Function Get-TenantId([string] $s = $null) {
-    $TenantId = $s ?? (Read-Host -Prompt 'Enter The TenantId of the ServicePrincipal needed to create the infratructure')
-    if ([String]::IsNullOrWhiteSpace($TenantId)) {
+    $TenantId = EmptyConcat $s 'Enter The TenantId of the ServicePrincipal used to create the infratructure'
+    if (IsEmpty $TenantId) {
         Write-Host 'ServicePrincipal TenantId cannot be blank'
         Exit -1
     }
     Return $TenantId
 }
 Function Get-ClientId([string] $s = $null) {
-    $ClientId = $s ?? (Read-Host -Prompt 'Enter The Azure ClientId of the ServicePrincipal needed to create the infratructure')
-    if ([String]::IsNullOrWhiteSpace($ClientId)) {
+    $ClientId = EmptyConcat $s 'Enter The ClientId of the ServicePrincipal used to create the infratructure'
+    if (IsEmpty $ClientId) {
         Write-Host 'ServicePrincipal ClientId cannot be blank'
         Exit -1
     }
     Return $ClientId
 }
 Function Get-ClientSecret([string] $s = $null) {
-    $ClientSecret = $s ?? (Read-Host -Prompt 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infratructure')
-    if ([String]::IsNullOrWhiteSpace($ClientSecret)) {
+    $ClientSecret = EmptyConcat $s 'Enter The ClientSecret of the ServicePrincipal used to create the infratructure'
+    if (IsEmpty $ClientSecret) {
         Write-Host 'ServicePrincipal ClientSecret cannot be blank'
         Exit -1
     }
     Return $ClientSecret
 }
 Function Get-ResourceGroup([string] $s = $null) {
-    $ResourceGroup = $s ?? (Read-Host -Prompt 'Enter The Azure Resource Group Which Hosts Your App')
-    if ([String]::IsNullOrWhiteSpace($ResourceGroup)) {
+    $ResourceGroup = EmptyConcat $s 'Enter The Azure Resource Group Which Hosts Your App'
+    if (IsEmpty $ResourceGroup) {
         Write-Host 'Azure ResourceGroup cannot be blank'
         Exit -1
     }
     Return $ResourceGroup
 }
 Function Get-VNextFunctionAppName([string] $s = $null) {
-    $VNextFunctionAppName = $s ?? (Read-Host -Prompt 'Enter The Name Of The Function App For The VNEXT environment')
+    $VNextFunctionAppName = EmptyConcat $s 'Enter The Name Of The Function App For The VNEXT environment'
     if (-Not ($VNextFunctionAppName -match '-vnext$'))
     {
         Write-Host "Function App Name `"$VNextFunctionAppName`" must end with `"-vnext`""
@@ -60,17 +64,17 @@ Function Get-VNextFunctionAppName([string] $s = $null) {
     Return $VNextFunctionAppName
 }
 Function Get-EnvironmentPartitionKey([string] $s = $null) {
-    $EnvPartitionKey = $s ?? (Read-Host -Prompt 'Enter An Environment Partition Key, This should be [a-z], 6-10 characters in length and be unique among all developers')
-    if (-Not ($EnvPartitionKey -match '^[a-z]{6,10}$'))
+    $EnvironmentPartitionKey = EmptyConcat $s 'Enter An Environment Partition Key, This should be [a-z], 6-10 characters in length and be unique among all developers'
+    if (-Not ($EnvironmentPartitionKey -match '^[a-z]{6,10}$'))
     {
-        Write-Host "Environment Partition Key `"$EnvPartitionKey`" does not match regex ^[a-z]{6,10}$"
+        Write-Host "Environment Partition Key `"$EnvironmentPartitionKey`" does not match regex ^[a-z]{6,10}$"
         Exit -1
     }
-    if ($EnvPartitionKey.toLower() -match '\b(?:vnext|dev|rel|live)\b') {
+    if ($EnvironmentPartitionKey.toLower() -match '\b(?:vnext|dev|rel|live)\b') {
         Write-Host "Environment Partition Key cannot be vnext,dev,rel,live"
         Exit -1
     }
-    Return $EnvPartitionKey
+    Return $EnvironmentPartitionKey
 }
 Function LoginToAzure {
     Param(
@@ -89,39 +93,40 @@ Function LoginToAzure {
 
 Log-Step "Authenticate"
 
-$AzSpTenantId = Get-TenantId $AzTenantId
-$AzSpClientId = Get-ClientId $AzClientId
-$AzSpClientSecret = Get-ClientSecret $AzClientSecret
-$EnvironmentPartitionKey = Get-EnvironmentPartitionKey $EnvironmentPartitionKey
-$ResourceGroup = Get-ResourceGroup $ResourceGroup
-$FunctionAppName = Get-VNextFunctionAppName $FunctionAppName
+$TenantId = Get-TenantId $Arg_TenantId
+$ClientId = Get-ClientId $Arg_ClientId
+$ClientSecret = Get-ClientSecret $Arg_ClientSecret
+$EnvironmentPartitionKey = Get-EnvironmentPartitionKey $Arg_EnvironmentPartitionKey
+$ResourceGroup = Get-ResourceGroup $Arg_ResourceGroup
+$VNextFunctionAppName = Get-VNextFunctionAppName $Arg_VNextFunctionAppName
 
-$vars = "AzSpTenantId:$AzSpTenantId\r\n"+
-        "AzSpClientId:$AzSpClientId\r\n"+
-        "AzSpClientSecret:$AzSpClientSecret\r\n"+
-        "EnvPartitionKey:$EnvironmentPartitionKey\r\n"+
-        "ResourceGroup:$ResourceGroup\r\n"+
-        "FunctionAppName:$FunctionAppName\r\n"+
-        "PSScriptRoot:$PSScriptRoot\r\n"        
+$vars = "AzSpTenantId:$TenantId`r`n"+
+        "AzSpClientId:$ClientId`r`n"+
+        "AzSpClientSecret:$ClientSecret`r`n"+
+        "EnvPartitionKey:$EnvironmentPartitionKey`r`n"+
+        "ResourceGroup:$ResourceGroup`r`n"+
+        "FunctionAppName:$VNextFunctionAppName`r`n"+
+        "PSScriptRoot:$PSScriptRoot`r`n"
 Log $vars
 
-LoginToAzure $AzSpClientId $AzSpClientSecret $AzSpTenantId
+LoginToAzure $ClientId $ClientSecret $TenantId
 
 Log-Step "Downloading Function App Settings"
-$cmd = "az functionapp config appsettings list -g $ResourceGroup -n $FunctionAppName | ConvertFrom-Json"
+$cmd = "az functionapp config appsettings list -g `"$ResourceGroup`" -n `"$VNextFunctionAppName`" | ConvertFrom-Json"
 Write-Host $cmd
 $VARS = iex $cmd
-$var_AppId = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AppId" | select -ExpandProperty value)
-$var_AzureDevopsOrganisation = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureDevopsOrganisation" | select -ExpandProperty value)
-$var_AzureDevopsPat = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureDevopsPat" | select -ExpandProperty value)
-$var_AzureResourceGroup = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureResourceGroup" | select -ExpandProperty value)
-$var_AzureWebJobsServiceBus = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureWebJobsServiceBus" | select -ExpandProperty value)
-$var_AzureBusNamespace = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureBusNamespace" | select -ExpandProperty value)
-$var_AzureSignalRConnectionString = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "AzureSignalRConnectionString" | select -ExpandProperty value)
-$var_CosmosDbEndpointUri = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "CosmosDbEndpointUri" | select -ExpandProperty value)
-$var_CosmosDbKey = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "CosmosDbKey" | select -ExpandProperty value)
-$var_CosmosDbDatabasename = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "CosmosDbDatabasename" | select -ExpandProperty value)
-$var_APPINSIGHTS_INSTRUMENTATIONKEY = (az functionapp config appsettings list -g rg-soap -n soapapisample-vnext | ConvertFrom-Json | where name -eq "APPINSIGHTS_INSTRUMENTATIONKEY" | select -ExpandProperty value)
+
+$var_AppId = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AppId" | select -ExpandProperty value)
+$var_AzureDevopsOrganisation = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureDevopsOrganisation" | select -ExpandProperty value)
+$var_AzureDevopsPat = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureDevopsPat" | select -ExpandProperty value)
+$var_AzureResourceGroup = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureResourceGroup" | select -ExpandProperty value)
+$var_AzureWebJobsServiceBus = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureWebJobsServiceBus" | select -ExpandProperty value)
+$var_AzureBusNamespace = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureBusNamespace" | select -ExpandProperty value)
+$var_AzureSignalRConnectionString = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "AzureSignalRConnectionString" | select -ExpandProperty value)
+$var_CosmosDbEndpointUri = (az functionapp config appsettings list -g "$ResourceGroup"-n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "CosmosDbEndpointUri" | select -ExpandProperty value)
+$var_CosmosDbKey = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "CosmosDbKey" | select -ExpandProperty value)
+$var_CosmosDbDatabasename = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "CosmosDbDatabasename" | select -ExpandProperty value)
+$var_APPINSIGHTS_INSTRUMENTATIONKEY = (az functionapp config appsettings list -g "$ResourceGroup" -n "$VNextFunctionAppName" | ConvertFrom-Json | where name -eq "APPINSIGHTS_INSTRUMENTATIONKEY" | select -ExpandProperty value)
 
 if ($null -eq $VARS) { throw "Could not retrieve app settings from VNEXT" }
 if (IsEmpty($var_AppId)) { throw "Property `"AppId`" could not be found in App Settings" }
@@ -137,7 +142,7 @@ if (IsEmpty($var_CosmosDbDatabasename)) { throw "Property `"CosmosDbDatabasename
 if (IsEmpty($var_APPINSIGHTS_INSTRUMENTATIONKEY)) { throw "Property `"APPINSIGHTS_INSTRUMENTATIONKEY`" could not be found in App Settings" }
 
 Log-Step "Downloading ServiceBus Connection String"
-$cmd = "az servicebus namespace authorization-rule keys list --resource-group $ResourceGroup --namespace-name sb-$FunctionAppName --name SenderAccessKey --query primaryConnectionString --output tsv"
+$cmd = "az servicebus namespace authorization-rule keys list --resource-group $ResourceGroup --namespace-name sb-$VNextFunctionAppName --name SenderAccessKey --query primaryConnectionString --output tsv"
 Write-Host $cmd
 $SenderConnString = iex $cmd
 if (IsEmpty($SenderConnString)) { throw "Cannot obtain service bus sender key" }

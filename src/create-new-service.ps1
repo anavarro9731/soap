@@ -37,16 +37,23 @@ Function Test-PreReqs {
 		return
 	}
 }
+Function IsEmpty([string] $s)  {
+	Return [String]::IsNullOrWhiteSpace($s)
+}
+Function EmptyConcat([string] $s, [string] $prompt) {
+	$result = (IsEmpty $s) ? $(Read-Host -Prompt "$prompt") : $s
+	return $result
+}
 Function Get-AzureDevopsOrganisationName([string] $s = $null) {
-	$OrgName = $s ?? (Read-Host -Prompt 'Enter The Azure Devops Organisation Name')
-	if ([String]::IsNullOrWhiteSpace($OrgName)) {
+	$OrgName = EmptyConcat $s 'Enter The Azure Devops Organisation Name'
+	if (IsEmpty $OrgName) {
 		Write-Host 'Azure Devops Organisation Name cannot be blank'
 		Exit -1
 	}
 	Return $OrgName
 }
 Function Get-ServiceName([string] $s = $null)  {
-	$ServiceName = $s ?? (Read-Host -Prompt 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")')
+	$ServiceName = EmptyConcat $s 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
 	if (-Not ($ServiceName -match '^[A-Za-z\.]+$'))
 	{
 		Write-Host "Service Name `"$ServiceName`" does not match regex"
@@ -55,55 +62,55 @@ Function Get-ServiceName([string] $s = $null)  {
 	Return $ServiceName
 }
 Function Get-AzPersonalAccessToken([string] $s = $null)  {
-	$PAT = $s ?? (Read-Host -Prompt 'Enter An Azure Devops Personal Access Token with Admin permissions')
-	if ([String]::IsNullOrWhiteSpace($PAT)) {
+	$PAT = EmptyConcat $s 'Enter An Azure Devops Personal Access Token with Admin permissions'
+	if (IsEmpty $PAT) {
 		Write-Host 'Personal Access Token cannot be blank'
 		Exit -1
 	}
 	Return $PAT
 }
 Function Get-AzResourceGroup([string] $s = $null)  {
-	$ResourceGroup = $s ?? (Read-Host -Prompt 'Enter The Azure Resource Group the new resources should be created under')
-	if ([String]::IsNullOrWhiteSpace($ResourceGroup)) {
+	$ResourceGroup = EmptyConcat $s 'Enter The Azure Resource Group the new resources should be created under'
+	if (IsEmpty $ResourceGroup) {
 		Write-Host 'Resource Group cannot be blank'
 		Exit -1
 	}
 	Return $ResourceGroup
 }
 Function Get-AzLocation([string] $s = $null)  {
-	$Location = $s ?? (Read-Host -Prompt 'Enter The Azure Location (e.g. uksouth) where the new resources should be created')
-	if ([String]::IsNullOrWhiteSpace($Location)) {
+	$Location = EmptyConcat $s 'Enter The Azure Location (e.g. uksouth) where the new resources should be created'
+	if (IsEmpty $Location) {
 		Write-Host 'Azure Location cannot be blank'
 		Exit -1
 	}
 	Return $Location
 }
 Function Get-TenantId([string] $s = $null)  {
-	$TenantId = $s ?? (Read-Host -Prompt 'Enter The TenantId of the ServicePrincipal needed to create the infratructure')
-	if ([String]::IsNullOrWhiteSpace($TenantId)) {
+	$TenantId = EmptyConcat $s 'Enter The TenantId of the ServicePrincipal needed to create the infratructure'
+	if (IsEmpty $TenantId) {
 		Write-Host 'ServicePrincipal TenantId cannot be blank'
 		Exit -1
 	}
 	Return $TenantId
 }
 Function Get-ClientId([string] $s = $null)  {
-	$ClientId = $s ?? (Read-Host -Prompt 'Enter The Azure ClientId of the ServicePrincipal needed to create the infratructure')
-	if ([String]::IsNullOrWhiteSpace($ClientId)) {
+	$ClientId = EmptyConcat $s 'Enter The Azure ClientId of the ServicePrincipal needed to create the infratructure'
+	if (IsEmpty $ClientId) {
 		Write-Host 'ServicePrincipal ClientId cannot be blank'
 		Exit -1
 	}
 	Return $ClientId
 }
 Function Get-ClientSecret([string] $s = $null)  {
-	$ClientSecret = $s ?? (Read-Host -Prompt 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infratructure')
-	if ([String]::IsNullOrWhiteSpace($ClientSecret)) {
+	$ClientSecret = EmptyConcat $s 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infratructure'
+	if (IsEmpty $ClientSecret) {
 		Write-Host 'ServicePrincipal ClientSecret cannot be blank'
 		Exit -1
 	}
 	Return $ClientSecret
 }
 Function Get-PathOnDisk([string] $s = $null)  {
-	$DiskLocation = $s ?? (Read-Host -Prompt 'Enter The Target Directory (e.g. c:\code)')
+	$DiskLocation = EmptyConcat $s 'Enter The Target Directory (e.g. c:\code)'
 	if (-Not ($DiskLocation -match '^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+$')) {
 		Write-Host "$DiskLocation is not a valid directory path format"
 		Exit -1

@@ -57,16 +57,6 @@ Cosmos Emulator in particular throws errors about multiple instances without a r
 - Make sure you have an Azure account (portal.azure.com)
 - make sure you have an Azure devops organisation (dev.azure.com or goto All Resource -> Azure Devops Organisation from the Azure Portal)
 
-### Source code 
-Use the create-new-service.ps1 script from the soap project to create a new project
-```
-.\create-new-service.psm1
-```
-
-### Add Authorisation Variables
-Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
-Next you must edit the pipeline variables for the new build. 
-These are listed in the ```azure-pipelines.yml``` file in the root of the new project.
 #### Creating an Azure Service Principal
 To obtain  az-clientid, az-tenantid, az-clientsecret values you will need to create a service principal login.
 You will need to do this from the Azure CloudShell as global admin for the right permissions.
@@ -75,20 +65,21 @@ Once logged into shell.azure.com as global admin run:
  az ad sp create-for-rbac --name ServicePrincipalName
 ```
 See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
-#### Devops key
-The ado-pat and nuget-key values you will need to create a Personal Access Token(s) with proper permissions.
-For ado-pat the PAT must be able to read from the source repo for the ```.version``` file and the config repo for the ```Config.cs``` file.
-For nuget-key the PAT must be able to read/write from the package feed.
-Both variables can use the same PAT.  
 
-### Infrastructure
-Push the new initial commit which should be waiting locally to build the Azure infrastructure.
-From a PWSH prompt in the repo root run:
-```
-git push
-```
+#### Devops key
+You will need to create a Personal Access Token(s) with proper permissions to satisfy to variables
+For the ado-pat variable you need a PAT which must be able to read from the source repo for the ```.version``` file and the config repo for the ```Config.cs``` file.
+For the nuget-key variable the PAT must be able to read/write from the package feed.
+Both variables can use the same PAT.
+
+### Create Source Code and Infrastructure
+Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
+Next you must edit the pipeline variables for the new build.
+These are listed in the ```azure-pipelines.yml``` file in the root of the new project.
+
 Now wait for the resource group you defined when you ran ```.\create-new-service.psm1``` to be populated
-with the required services when the build runs.
+with the required services which will occur after the script finishes and the azure devops build runs this can take 
+10-20 mins.
 
 Once this is complete you will have to perform a single step manually for which there is not at present a
 direct az cli command. That is to enable "With Credentials" on the function app's CORS settings. You will
@@ -120,27 +111,27 @@ Azure SignalR Service|No|**Group-Enabled Messages on VNext instance** (Group=EPK
 Azure Storage (Blob)|You will need to start the Azurite instance or you will get an error. In rider this is done from the View>Tool Windows>Services window. Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance.|**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
 Azure CosmosDb|No|**CosmosDb Emulator Local Instance or Cosmos containers for each EPK**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
 
-Assuming you have followed the steps in order and have already pushed your initial commit as explained in the final step of the
-[link](#creating-a-new-service-and-pipeline) section then it should already have created all the VNEXT cloud services.
-You know need to edit the local.settings.json file and update the following settings with values from the new cloud resources
-which we cannot possible know at the time you run create-new-service.ps1. In future a script that reads these values could
-be created to update the local.settings file.
+*A note on the emulators: You may want to run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
+before starting azurite, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json*
 
-Variable Name|How to get Value
----|---
-AzureWebJobsServiceBus|Copy connection String from portal (sb-*yourapiname*-vnext)
-AzureSignalRConnectionString|Copy connection String from portal (signalr-*yourapiname*-vnext)
-CosmosDbKey| Copy from the portal (cdb-*yourapiname*) 
+Assuming you have followed the steps in order from the [link](#creating-a-new-service-and-pipeline) section then it should already have created all the VNEXT cloud services.
+You know need to update the local.settings.json and .env files and with values from the new cloud resources
+which we cannot possible know at the time you run create-new-service.ps1, to do this run the configure-local-environment.ps1 script
 
-A note on the emulators: You may want to run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
-before starting azurite, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json
+Now you need to start the Function App, you will get error at first since the queue does not exit,
+ignore these and navigate in a browser to http://localhost:7071/api/checkhealth once this script which will
+- create developer specific database
+- create developer specific subscriptions and queues
+
+is complete the errors should stop.
+
+Last you need to build and run the client app, in a terminal goto the /app folder in your project and run
+`yarn install`
+`yarn run serve`
+then navigate to http://localhost:1234/
 
 Now you are ready for local development and can run the Azure Function Project ```YourProjectName.Afs```
 You will also need to start the client-side project from the terminal by running the following command `.\srv.ps1` from the `root\src\js\yourprojectname\` folder
-
-Finally check the service health using `http://localhost:7071/api/CheckHealth` endpoint which will also
-- create developer specific database
-- create developer specific subscriptions and queues
 
 ### Environments
 
