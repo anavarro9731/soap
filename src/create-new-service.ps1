@@ -202,11 +202,14 @@ del Class1.cs
 dotnet nuget add source $SoapFeedUri
 dotnet add package Soap.Config -s $SoapFeedUri
 cd $ConfigRepoRoot
+
+Log "Creating Azure Devops Config Project"
 az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName
+
+Log "Creating Azure Devops Project Repo"
 az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureDevopsName --name "$AzureDevopsName.config"
 
 Log "Uploading Config Repo"
-
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
