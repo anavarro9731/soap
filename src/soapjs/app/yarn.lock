@@ -1203,10 +1203,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
-"@soap/modules@^1.168.0":
-  version "1.168.0"
-  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.168.0.tgz#cb2bea1bb150b9c6efa0ada03e58ec661d974d09"
-  integrity sha1-yyvqG7FQucbvoK2gPljsZh2XTQk=
+"@soap/modules@^1.170.0":
+  version "1.170.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.170.0.tgz#dafb0981a25834373ce6a898fea8ae2f8c23b493"
+  integrity sha1-2vsJgaJYNDc85qiY/qiuL4wjtJM=
   dependencies:
     "@azure/service-bus" "^7.0.0"
     "@azure/storage-blob" "^12.3.0"
@@ -5723,6 +5723,11 @@ terser@^4.8.0:
     commander "^2.20.0"
     source-map "~0.6.1"
     source-map-support "~0.5.12"
+
+test-data@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/test-data/-/test-data-1.0.2.tgz#1e65b097a592c4475554f4e3df95a9f6a875adcf"
+  integrity sha1-HmWwl6WSxEdVVPTj35Wp9qh1rc8=
 
 through2@^2.0.0, through2@~2.0.3:
   version "2.0.5"

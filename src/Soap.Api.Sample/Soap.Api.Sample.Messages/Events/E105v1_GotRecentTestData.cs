@@ -13,13 +13,15 @@
         {
         }
 
-        public class TestData
+        public class TestData 
         {
             public Guid? E105_Id { get; set; }
 
             public Guid? E105_Guid { get; set; }
+            
+            public DateTime? E105_CreatedAt { get; set; }
 
-            public string E105_String { get; set; }
+            public string E105_Label { get; set; }
 
         }
     }

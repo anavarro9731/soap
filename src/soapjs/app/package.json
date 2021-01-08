@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "dependencies": {
     "@microsoft/signalr": "^5.0.1",
-    "@soap/modules": "^1.168.0",
+    "@soap/modules": "^1.170.0",
     "baseui": "^9.106.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
     "styletron-engine-atomic": "^1.4.6",
-    "styletron-react": "^5.2.7"
+    "styletron-react": "^5.2.7",
+    "test-data": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

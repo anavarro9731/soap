@@ -6,6 +6,7 @@
     using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
     public class MessageFunctionsBridge<T> : IMessageFunctionsServerSide where T : ApiMessage
     {
@@ -36,7 +37,7 @@
             }
 
             bool IsOfCorrectType(IContinueStatefulProcess process) =>
-                process.Is(Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
+                process.GetType().InheritsOrImplements(Type.GetType(msg.Headers.GetStatefulProcessId().Value.TypeId));
         }
 
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>

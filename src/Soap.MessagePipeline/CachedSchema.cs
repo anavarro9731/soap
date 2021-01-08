@@ -204,7 +204,7 @@
                                 var propertyType = property.PropertyType;
                                 var errorMessagePrefix = $"Error in message property {parentName}.{property.Name} : ";
 
-                                var propertyNameRegex = @"^[EC]\d{3}_[A-Z]+[a-zA-Z0-9]{2,50}$";
+                                var propertyNameRegex = @"^[EC]\d{3}_[A-Z]+[a-zA-Z0-9]{1,50}$";
                                 Guard.Against(
                                     !Regex.IsMatch(propertyName, propertyNameRegex) && 
                                     !TypeIsExceptional(property),

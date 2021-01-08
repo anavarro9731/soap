@@ -164,7 +164,7 @@ Finally, it will leave you on the master branch afterwards.
  
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
-- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display pickup the implicit imports
+- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
 
 ### BackLog
@@ -172,13 +172,13 @@ MUST
 - Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
 SHOULD
 - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))
-- Hide Datastore extension methods from Soap (https://www.meziantou.net/declaring-internalsvisibleto-in-the-csproj.htm)
+- Extend Missing Property Proxy to cover properties on child objects of a message
 COULD
 - Adding a Special Flag or Tag to Denote builds that were sent to production (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
+- Inter-service queries from a UI service via REST with a new Function (ServiceQuery) which doesn't load pipeline just does a DB read, in non-durable, non-recoverable fashion but is quick.
+- CheckHealth to Test SignalR
 - Fixing DateTime fragility by abstracting all date/time functionality and/or using NodaTime rather than DateTime. (NodaTime will not pass IsSystemType checks may need to adjust those functions (there are private versions))
-- Request/Reply Queries for data between services (i.e. sending and waiting in-process as a way to query another service rather than a series of bus messages and a statefulprocess) implement using MessageSessions in Azure ServiceBus
 - Client-Side Batching using native Azure ServiceBus feature
 - Add DataStore "Document Size Limit" on write error. It will still fail with a less friendly native error from CosmosDB as-is. Also, hitting the 2MB limit should not happen really without bad design.
 - Cleanup i18next module in soapjs
 - Add AssemblyReferences files for all assemblies
-- CheckHealth to Test SignalR

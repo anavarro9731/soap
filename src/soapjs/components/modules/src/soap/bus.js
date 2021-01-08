@@ -15,9 +15,7 @@ export default {
     topic += `.${conversationId ?? "00000000-0000-0000-0000-000000000000"}`;
 
     config.logger.log(
-      `PUBLISHING ${JSON.stringify(
-        data,
-      )} to channel: ${channel} topic: ${topic}`,
+      `PUBLISHING ${JSON.stringify(data,null,2)} to channel: ${channel} topic: ${topic}`,
     );
 
     postal.publish({

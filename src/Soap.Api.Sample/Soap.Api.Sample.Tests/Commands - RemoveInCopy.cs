@@ -2,9 +2,9 @@
 namespace Soap.Api.Sample.Tests
 {
     using System;
-    using DataStore.Models.PureFunctions.Extensions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
 
     /* all variables in here must remain constant for tests to be correct,
         HOWEVER they must ALWAYS use arrows and not equal on the property assignment because
@@ -18,7 +18,7 @@ namespace Soap.Api.Sample.Tests
                 C104_HansSoloNewName = "Hairy-son Ford"
             }.Op(x =>
                 {
-                    x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully);
+                x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully);
                 });
         
         public static C102v1_GetServiceState GetServiceState => new C102v1_GetServiceState();

@@ -11,8 +11,6 @@
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Models;
-    using Guard = DataStore.Models.PureFunctions.Guard;
 
     public static class MessagePipeline
     {
