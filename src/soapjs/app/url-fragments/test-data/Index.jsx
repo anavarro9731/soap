@@ -21,7 +21,6 @@ export default function() {
                 <Route path="/test-data/">
                     <RecentlyAddedTestItems />
                     <div className={css({
-                        color: theme.colors.accent,
                         'text-align':'right',
                         'padding': '10px'
                     })}>
@@ -31,7 +30,6 @@ export default function() {
                     </div>
                 </Route>
             </Switch>
-            
         </Fragment>
     )
 }

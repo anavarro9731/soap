@@ -19,7 +19,8 @@ export function RecentlyAddedTestItems() {
             <ListItem key={x.e105_Id}>
                 <Paragraph1>{x.e105_Label} created: {x.e105_CreatedAt}</Paragraph1>
                 <StyledLink href={"#/test-data/view/" + x.e105_Id}>View</StyledLink>
-            </ListItem>));
+            </ListItem>
+        ));
     } else {
         listitems = <StyledSpinnerNext/>;
     }
