@@ -254,7 +254,7 @@ Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
 Set-Location $ServiceRoot
 Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
-Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js | ForEach-Object {
+Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js,*.jsx | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$ServiceName") | Set-Content $_
 }
 $Removals = ls -r . -filter *.cs | select-string "##REMOVE-IN-COPY##" | select path
