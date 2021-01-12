@@ -14,7 +14,7 @@ namespace Soap.Api.Sample.Logic.Processes
         public Func<C102v1_GetServiceState, Task> BeginProcess =>
             async message =>
                 {
-                var serviceState = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();
+                var serviceState = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceStateById)();
 
                 var gotServiceState = new E101v1_GotServiceState
                 {
@@ -24,7 +24,7 @@ namespace Soap.Api.Sample.Logic.Processes
                     }
                 };
 
-                await Publish(gotServiceState);
+                await Bus.Publish(gotServiceState);
                 };
     }
 }

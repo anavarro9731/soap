@@ -24,6 +24,7 @@
         public Func<C103v1_StartPingPong, Task> BeginProcess =>
             async message =>
                 {
+
                 var pingCommand = new C100v1_Ping
                 {
                     C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(P200PingAndWaitForPong)

@@ -6,9 +6,9 @@ namespace Soap.Api.Sample.Tests.Messages
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC100 : Test
+    public class TestC100v1 : Test
     {
-        public TestC100(ITestOutputHelper outputHelper)
+        public TestC100v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             TestMessage(Commands.Ping, Identities.UserOne).Wait();

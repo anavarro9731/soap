@@ -4,9 +4,6 @@
     <Version>0.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Queries\Predicates\" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Soap.PfBase.Logic\Soap.PfBase.Logic.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Constants\Soap.Api.Sample.Constants.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Messages\Soap.Api.Sample.Messages.csproj" />

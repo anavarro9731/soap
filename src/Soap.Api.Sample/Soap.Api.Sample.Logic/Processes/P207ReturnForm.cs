@@ -46,7 +46,7 @@ namespace Soap.Api.Sample.Logic.Processes
                               e.SetProperties(sasToken, commandId);
                               });
 
-                await Publish(@event, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                await Bus.Publish(@event, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
                 };
 
         private async Task SaveTestBlobs()

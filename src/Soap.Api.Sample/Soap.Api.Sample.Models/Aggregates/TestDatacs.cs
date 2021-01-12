@@ -3,6 +3,7 @@ namespace Soap.Api.Sample.Models.Aggregates
     using System;
     using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
+    using Soap.Api.Sample.Models.ValueTypes;
     using Soap.Interfaces.Messages;
 
     public class TestData : Aggregate
@@ -50,14 +51,5 @@ namespace Soap.Api.Sample.Models.Aggregates
         public string StringOptional { get; set; }
 
         public string StringOptionalMultiline { get; set; }
-
-        public class Address
-        {
-            public string House { get; set; }
-
-            public string PostCode { get; set; }
-
-            public string Town { get; set; }
-        }
     }
 }

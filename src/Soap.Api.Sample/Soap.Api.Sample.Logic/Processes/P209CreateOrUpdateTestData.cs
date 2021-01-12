@@ -17,7 +17,7 @@ namespace Soap.Api.Sample.Logic.Processes
                 {
                 await this.Get<TestDataOperations>().Call(x => x.SetTestData)(msg);
 
-                await Publish(new E104v1_TestDataAdded(msg.C107_Guid.Value));
+                await Bus.Publish(new E104v1_TestDataAdded(msg.C107_Guid.Value));
                 };
     }
 }

@@ -13,7 +13,7 @@ namespace Soap.Api.Sample.Logic.Processes
         public Func<C110v1_GetTestDataById, Task> BeginProcess =>
             async msg =>
                 {
-                var testData = await this.Get<TestDataQueries>().Call(x => x.GetTestData)(msg.C110_TestDataId.Value);
+                var testData = await this.Get<TestDataQueries>().Call(x => x.GetTestDataById)(msg.C110_TestDataId.Value);
 
                 var response = new E102v1_GotTestDatum
                 {
@@ -49,7 +49,7 @@ namespace Soap.Api.Sample.Logic.Processes
                     }
                 };
 
-                await Publish(response, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                await Bus.Publish(response, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
                 };
     }
 }

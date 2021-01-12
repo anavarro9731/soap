@@ -13,7 +13,7 @@
             async message =>
                 {
                 
-                await Publish(
+                await Bus.Publish(
                     new E100v1_Pong
                     {
                         E000_PingedAt = message.C000_PingedAt,

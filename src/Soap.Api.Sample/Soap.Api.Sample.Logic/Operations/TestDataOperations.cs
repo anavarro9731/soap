@@ -4,6 +4,7 @@ namespace Soap.Api.Sample.Logic.Operations
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.ValueTypes;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class TestDataOperations : Operations<TestData>
@@ -35,7 +36,7 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    LongOptional = newState.C107_LongOptional,
                                                    DateTime = newState.C107_DateTime,
                                                    DateTimeOptional = newState.C107_DateTimeOptional,
-                                                   CustomObject = new TestData.Address
+                                                   CustomObject = new Address
                                                    {
                                                        House = newState.C107_CustomObject.C107_House,
                                                        Town = newState.C107_CustomObject.C107_Town,
@@ -70,7 +71,7 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.LongOptional = newState.C107_LongOptional;
                                                data.DateTime = newState.C107_DateTime;
                                                data.DateTimeOptional = newState.C107_DateTimeOptional;
-                                               data.CustomObject = new TestData.Address
+                                               data.CustomObject = new Address
                                                {
                                                    House = newState.C107_CustomObject.C107_House,
                                                    Town = newState.C107_CustomObject.C107_Town,

@@ -6,24 +6,25 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.ValueTypes;
     using Soap.Context.BlobStorage;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC110 : Test
+    public class TestC110v1 : Test
     {
         private static readonly Guid testDataId = Guid.NewGuid();
 
-        public TestC110(ITestOutputHelper outputHelper)
+        public TestC110v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             SetupTestByAddingADatabaseEntry(new TestData()
             {
                 Guid = testDataId,
                 id = testDataId,
-                CustomObject = new TestData.Address()
+                CustomObject = new Address()
             });
             
             TestMessage(

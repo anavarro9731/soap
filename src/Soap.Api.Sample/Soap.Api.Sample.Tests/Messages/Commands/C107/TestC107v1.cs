@@ -12,11 +12,11 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC107 : Test
+    public class TestC107v1 : Test
     {
         private static readonly Guid testDataId = Guid.NewGuid();
 
-        public TestC107(ITestOutputHelper outputHelper)
+        public TestC107v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             var postCodes = new List<Enumeration>
@@ -33,6 +33,7 @@
             TestMessage(
                 new C107v1_CreateOrUpdateTestDataTypes
                 {
+                    C107_Boolean = false,
                     C107_Decimal = 0,
                     C107_Guid = testDataId,
                     C107_DateTime = DateTime.UtcNow,
@@ -44,7 +45,7 @@
                     C107_PostCodesMultiOptional = c107PostCodesMultiOptional,
                     C107_CustomObject = new C107v1_CreateOrUpdateTestDataTypes.Address
                     {
-                        C107_Town = "Pontrilas"
+                        C107_Town = "pontrilas"
                     },
                     C107_File = SampleBlobs.File1,
                     C107_Image = SampleBlobs.Image1

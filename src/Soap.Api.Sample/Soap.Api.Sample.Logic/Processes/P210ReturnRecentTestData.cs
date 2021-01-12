@@ -4,26 +4,24 @@ namespace Soap.Api.Sample.Logic.Processes
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
-    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
-    using Soap.Utility.Functions.Extensions;
 
-    public class P210ReturnRecentTestData : Process, IBeginProcess<C111v1_GetRecentTestData>
+    public class P210ReturnRecentTestData : Process, IBeginProcess<C111v2_GetRecentTestData>
     {
-        public Func<C111v1_GetRecentTestData, Task> BeginProcess =>
+        public Func<C111v2_GetRecentTestData, Task> BeginProcess =>
             async msg =>
                 {
-                var lastFiveDaysOfEntries = await DataReader.ReadActive<TestData>();
-                                                //t => t.CreatedAsMillisecondsEpochTime > DateTime.UtcNow.ConvertToMillisecondsEpochTime() - 86400000 * 5);
-                lastFiveDaysOfEntries = lastFiveDaysOfEntries.OrderByDescending(x => x.CreatedAsMillisecondsEpochTime);
+                var recentTestData = await this.Get<TestDataQueries>()
+                                               .Call(x => x.GetRecentTestData(msg.MaxAgeInDays ?? 5, msg.MaxRecords ?? 10))();
 
                 var response = new E105v1_GotRecentTestData
                 {
                     E105_TestData = new List<E105v1_GotRecentTestData.TestData>(
-                        lastFiveDaysOfEntries.Select(
+                        recentTestData.Select(
                             e => new E105v1_GotRecentTestData.TestData
                             {
                                 E105_Guid = e.Guid,
@@ -33,7 +31,9 @@ namespace Soap.Api.Sample.Logic.Processes
                             }))
                 };
 
-                await Publish(response, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                await Bus.Publish(
+                    response,
+                    new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
                 };
     }
 }

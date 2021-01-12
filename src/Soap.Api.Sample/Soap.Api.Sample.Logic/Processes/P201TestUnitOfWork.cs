@@ -53,7 +53,7 @@ namespace Soap.Api.Sample.Logic.Processes
                 async Task PublishE150()
                 {
                     
-                    await Publish(
+                    await Bus.Publish(
                         new E100v1_Pong
                         {
                             E000_PongedBy = nameof(P201TestUnitOfWork)
@@ -62,7 +62,7 @@ namespace Soap.Api.Sample.Logic.Processes
 
                 async Task SendC100()
                 {
-                    await Send(
+                    await Bus.Send(
                         new C100v1_Ping
                         {
                             C000_PingedBy = nameof(P201TestUnitOfWork)

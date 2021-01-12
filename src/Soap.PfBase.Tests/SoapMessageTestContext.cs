@@ -169,6 +169,7 @@
                         x.DataStore = dataStore;
                         x.NotificationServer = notificationServer;
                         
+                        logger.Error(e, "Unhandled Error");
                         x.UnhandledError = e;
                     }
                     

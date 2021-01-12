@@ -1,7 +1,12 @@
 ﻿namespace Soap.MessagePipeline
 {
     using System;
-    using Newtonsoft.Json;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Reflection;
+    using System.Text;
+    using CircuitBoard;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
@@ -9,10 +14,11 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
 
     public static class ApiMessageExtensions
     {
+
+
         internal static void Authenticate(this ApiMessage message, ContextWithMessage ctx, Action<IApiIdentity> outIdentity)
         {
             var identity = message.Headers.GetIdentityToken() != null ? ctx.Authenticator.Authenticate(message) : null;
@@ -40,6 +46,7 @@
                     HasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogEntry),
                     GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
 
+                message.RequiredNotNullOrThrow();
                 context.Validate(message);
             }
 

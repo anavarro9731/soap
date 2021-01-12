@@ -12,11 +12,11 @@ namespace Soap.Api.Sample.Tests.Messages
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC106 : Test
+    public class TestC106v1 : Test
     {
         private readonly Guid id = Guid.NewGuid();
 
-        public TestC106(ITestOutputHelper outputHelper)
+        public TestC106v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             void SetHeaders(C106v1_LargeCommand c)

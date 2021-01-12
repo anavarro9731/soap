@@ -12,11 +12,11 @@
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC109 : Test
+    public class TestC109v1 : Test
     {
         private static readonly Guid testDataId = Guid.NewGuid();
 
-        public TestC109(ITestOutputHelper outputHelper)
+        public TestC109v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             TestMessage(

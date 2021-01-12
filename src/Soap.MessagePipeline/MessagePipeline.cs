@@ -1,7 +1,9 @@
 ﻿namespace Soap.MessagePipeline
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
+    using FluentValidation;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
@@ -76,7 +78,7 @@
                     message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
                 }
             }
-
+            
             async Task ProcessMessage(ContextWithMessageLogEntry context)
             {
                 var msg = context.Message;
@@ -105,6 +107,7 @@
                                  because it would try to case it to the type of the message that failed since you use the MessageFunctions for the failed
                                  message type when you have MessageFailedAllRetries (see MapMessagesToFunctions.MapMessage for details */
                                 msg.ValidateOrThrow(context);   
+                                
                                 await context.Handle(c);
                                 break;
                             case ApiEvent e:

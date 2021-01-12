@@ -6,11 +6,12 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.ValueTypes;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC111 : Test
+    public class TestC111v1 : Test
     {
         private static readonly Guid testDataId1 = Guid.NewGuid();
 
@@ -18,7 +19,7 @@
         
         private static readonly Guid testDataId3 = Guid.NewGuid();
 
-        public TestC111(ITestOutputHelper outputHelper)
+        public TestC111v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             SetupTestByAddingADatabaseEntry(
@@ -28,7 +29,7 @@
                     id = testDataId1,
                     Created = DateTime.UtcNow,
                     CreatedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToMillisecondsEpochTime(),
-                    CustomObject = new TestData.Address()
+                    CustomObject = new Address()
                 });
 
             SetupTestByAddingADatabaseEntry(
@@ -38,7 +39,7 @@
                     id = testDataId2,
                     Created = DateTime.UtcNow,
                     CreatedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToMillisecondsEpochTime(),
-                    CustomObject = new TestData.Address()
+                    CustomObject = new Address()
                 });
             
             SetupTestByAddingADatabaseEntry(
@@ -48,7 +49,7 @@
                     id = testDataId3,
                     Created = DateTime.UtcNow,
                     CreatedAsMillisecondsEpochTime = DateTime.UtcNow.ConvertToMillisecondsEpochTime(),
-                    CustomObject = new TestData.Address()
+                    CustomObject = new Address()
                 });
 
             TestMessage(new C111v1_GetRecentTestData(), Identities.UserOne).Wait();

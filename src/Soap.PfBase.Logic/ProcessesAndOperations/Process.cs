@@ -1,5 +1,6 @@
 ﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
+    using System;
     using System.Threading.Tasks;
     using CircuitBoard;
     using DataStore;
@@ -12,6 +13,7 @@
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages;
+    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
     /// <summary>
@@ -25,16 +27,33 @@
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        protected Task Publish(ApiEvent e, IBusClient.EventVisibilityFlags eventVisibility = null)
+        protected BusWrapper Bus => new BusWrapper(context.Bus, context.Message);
+        
+        protected class BusWrapper
         {
-            return this.context.Bus.Publish(e, this.context.Message, eventVisibility);
+            private readonly IBus bus;
+
+            private readonly ApiMessage contextMessage;
+
+            public BusWrapper(IBus bus, ApiMessage contextMessage)
+            {
+                this.bus = bus;
+                this.contextMessage = contextMessage;
+            }
+
+            public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility = null)
+            {
+                return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
+            }
+
+            public Task Send(ApiCommand sendCommand, DateTimeOffset scheduledAt = default)
+            {
+                return this.bus.Send(sendCommand, scheduledAt);
+            }
         }
 
-        protected Task Send(ApiCommand c)
-        {
-            return this.context.Bus.Send(c);
-        }
-
+        protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.As<T>(); 
+        
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
         protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;

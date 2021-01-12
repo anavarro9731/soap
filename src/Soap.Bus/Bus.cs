@@ -78,6 +78,7 @@
             }
             
             eventToPublish.Validate();
+            eventToPublish.RequiredNotNullOrThrow();
             eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
             eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
             //* make all checks first
@@ -112,9 +113,10 @@
             }
         }
 
-        public async Task Send<T>(T commandToSend) where T : ApiCommand
+        public async Task Send<T>(T commandToSend, DateTimeOffset scheduledAt = default) where T : ApiCommand
         {
             commandToSend.Validate();
+            commandToSend.RequiredNotNullOrThrow();
             commandToSend = commandToSend.Clone();
             commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend, this.envPartitionKey);
             //* make all checks first
@@ -130,7 +132,7 @@
                 new QueuedCommandToSend
                 {
                     CommandToSend = commandToSend,
-                    CommitClosure = async () => await BusClient.Send(commandToSend)
+                    CommitClosure = async () => await BusClient.Send(commandToSend, scheduledAt)
                 });
         }
 

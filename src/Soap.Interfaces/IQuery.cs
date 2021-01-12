@@ -1,6 +1,6 @@
 ﻿namespace Soap.Interfaces
 {
-    public interface IQuery
+    public  interface IQuery
     {
         /* was a call whether to share these between ApiCommands and also ApiQuery handlers
          in the end I opted to do so because to keep them separate inevitably means duplication 

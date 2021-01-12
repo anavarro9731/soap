@@ -48,7 +48,7 @@
 
                 async Task Validate()
                 {
-                    var s = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceState)();
+                    var s = await this.Get<ServiceStateQueries>().Call(x => x.GetServiceStateById)();
 
                     Guard.Against(s.DatabaseState.HasFlag(newState), ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion);
                 }

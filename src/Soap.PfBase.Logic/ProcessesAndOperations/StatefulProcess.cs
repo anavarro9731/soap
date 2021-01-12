@@ -36,8 +36,6 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected DataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
 
-        protected IWithoutEventReplay DirectDataReader => context.DataStore.WithoutEventReplay;
-
         protected ILogger Logger => context.Logger;
 
         protected NotificationServer NotificationServer => context.NotificationServer;
@@ -121,7 +119,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                     message.Headers.GetMessageId()));
         }
 
-        public class BusWrapper
+        protected class BusWrapper
         {
             private readonly IBus bus;
 
@@ -141,11 +139,10 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                 publishEvent.Headers.SetStatefulProcessId(this.id);
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
-
-            public Task Send(ApiCommand sendCommand)
+            public Task Send(ApiCommand sendCommand, DateTimeOffset scheduledAt = default)
             {
                 sendCommand.Headers.SetStatefulProcessId(this.id);
-                return this.bus.Send(sendCommand);
+                return this.bus.Send(sendCommand, scheduledAt);
             }
         }
 

@@ -7,9 +7,9 @@ namespace Soap.Api.Sample.Tests.Messages
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC102 : Test
+    public class TestC102v1 : Test
     {
-        public TestC102(ITestOutputHelper outputHelper)
+        public TestC102v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);

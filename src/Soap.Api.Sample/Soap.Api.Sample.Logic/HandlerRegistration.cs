@@ -18,6 +18,7 @@
             Register(new C109v1Functions());
             Register(new C110v1Functions());
             Register(new C111v1Functions());
+            Register(new C111v2Functions());
         }
     }
 }
