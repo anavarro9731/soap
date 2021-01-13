@@ -12,29 +12,56 @@
     using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
-    using Soap.Utility.Functions.Operations;
 
     public class P204UpgradeTheDatabase : Process, IBeginProcess<C101v1_UpgradeTheDatabase>
     {
         public Func<C101v1_UpgradeTheDatabase, Task> BeginProcess =>
             async message =>
                 {
-                if (message.C101_ReSeed.GetValueOrDefault())
                 {
-                    await ExecuteOutsideTransactionUsingCurrentContext();
+                    await ReseedDatabaseIfRequested();
+
+                    switch (message.C101_ReleaseVersion)
+                    {
+                        case var v when v.HasFlag(ReleaseVersions.V1):
+                            await V1();
+                            break;
+                        case var v when v.HasFlag(ReleaseVersions.V2):
+                            await V2();
+                            break;
+                        default:
+                            Guard.Against(true, ErrorCodes.NoUpgradeScriptExistsForThisVersion);
+                            break;
+                    }
                 }
 
-                switch (message.C101_ReleaseVersion)
+                async Task ReseedDatabaseIfRequested()
                 {
-                    case var v when v.HasFlag(ReleaseVersions.V1):
-                        await V1();
-                        break;
-                    case var v when v.HasFlag(ReleaseVersions.V2):
-                        await V2();
-                        break;
-                    default:
-                        Guard.Against(true, ErrorCodes.NoUpgradeScriptExistsForThisVersion);
-                        break;
+                    if (message.C101_ReSeed.GetValueOrDefault())
+                    {
+                        await ExecuteOutsideTransactionUsingCurrentContext();
+                    }
+                }
+                
+                
+                async Task V1()
+                {
+                    await SetInitialServiceState();
+
+                    Task SetInitialServiceState()
+                    {
+                        return this.Get<ServiceStateOperations>().Call(x => x.CreateServiceState)();
+                    }
+                }
+
+                async Task V2()
+                {
+                    await SetDbVersion();
+
+                    Task SetDbVersion()
+                    {
+                        return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
+                    }
                 }
                 };
 
@@ -59,25 +86,6 @@
             await newSession.CommitChanges();
         }
 
-        private async Task V1()
-        {
-            await SetInitialServiceState();
-
-            Task SetInitialServiceState()
-            {
-                return this.Get<ServiceStateOperations>().Call(x => x.CreateServiceState)();
-            }
-        }
-
-        private async Task V2()
-        {
-            await SetDbVersion();
-
-            Task SetDbVersion()
-            {
-                return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
-            }
-        }
 
         public class ErrorCodes : ErrorCode
         {

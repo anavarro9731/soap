@@ -18,6 +18,7 @@
     public static class ApiMessageExtensions
     {
 
+        
 
         internal static void Authenticate(this ApiMessage message, ContextWithMessage ctx, Action<IApiIdentity> outIdentity)
         {
@@ -36,15 +37,15 @@
 
                 Guard.Against(
                     IsADifferentMessageButWithTheSameId(messageLogEntry, message),
-                    GlobalErrorCodes.ItemIsADifferentMessageWithTheSameId);
+                    ApiMessageValidationErrorCodes.ItemIsADifferentMessageWithTheSameId);
 
                 Guard.Against(
                     HasAlreadyBeenProcessedSuccessfully(messageLogEntry),
-                    GlobalErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
+                    ApiMessageValidationErrorCodes.MessageHasAlreadyBeenProcessedSuccessfully);
 
                 Guard.Against(
                     HasAlreadyFailedTheMaximumNumberOfTimesAllowed(messageLogEntry),
-                    GlobalErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
+                    ApiMessageValidationErrorCodes.MessageAlreadyFailedMaximumNumberOfTimes);
 
                 message.RequiredNotNullOrThrow();
                 context.Validate(message);

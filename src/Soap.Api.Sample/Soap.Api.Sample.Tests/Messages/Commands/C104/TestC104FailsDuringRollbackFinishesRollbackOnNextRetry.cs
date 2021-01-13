@@ -1,4 +1,4 @@
-﻿//##REMOVE-IN-COPY##
+﻿//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Threading.Tasks;
@@ -39,7 +39,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(c104TestUnitOfWork, Identities.UserOne, 3, (BeforeRunHook,default));
 
             //assert
-            Result.ExceptionContainsErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
+            Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 
         private async Task BeforeRunHook(DataStore store, int run)

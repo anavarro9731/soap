@@ -12,15 +12,19 @@
         public Func<C100v1_Ping, Task> BeginProcess =>
             async message =>
                 {
-                
-                await Bus.Publish(
-                    new E100v1_Pong
-                    {
-                        E000_PingedAt = message.C000_PingedAt,
-                        E000_PingedBy = message.C000_PingedBy,
-                        E000_PongedAt = DateTime.UtcNow,
-                        E000_PongedBy = nameof(P205PingPong)
-                    });
+                await PublishPong();
+
+                async Task PublishPong()
+                {
+                    await Bus.Publish(
+                        new E100v1_Pong
+                        {
+                            E000_PingedAt = message.C000_PingedAt,
+                            E000_PingedBy = message.C000_PingedBy,
+                            E000_PongedAt = DateTime.UtcNow,
+                            E000_PongedBy = nameof(P205PingPong)
+                        });
+                }
                 };
     }
 }

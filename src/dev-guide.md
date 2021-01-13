@@ -137,8 +137,7 @@ that the Soap.PfMessageBase assembly is very basic.
 
 Messages are a contract and **must** not be changed after they are are released to production.
 They have to be versioned instead. (i.e. the message must be copied and changed so
-C100v1_PlaceSaleCommand becomes C100v2_PlaceSaleCommand. Once version the earlier versions should be 
-marked with a [Obsolete] flag to notify developers.
+C100v1_PlaceSaleCommand becomes C100v2_PlaceSaleCommand. 
 
 #### Commands 
 
@@ -230,7 +229,7 @@ If you want to ask questions about an aggregates state you can create a correspo
 extension methods in the same file for that purpose. This is also a design principle used heavily throughout the 
 framework itself and a move towards a more functional programming style.
 e.g.
-```
+```c#
 class Car : Agggregate {
   public string Make { get; set; }
   public int? Year { get; set; } 
@@ -374,7 +373,92 @@ Though in simple cases, the Guard statements in the operation methods are enough
 
 * If the public functions of Operations need to share common logic they can do so via private methods.
 
-#### Processes
+##### Using Blob Storage In Operations
+
+Processes have available to them the BlobStorage provider which allows you to save or retrieve
+any object from blob storage. The Id of the object provided should then be saved with the 
+corresponding aggregate. Aggregates have a size limit of 2MB and will throw an error if you
+exceed this, so blob storage can be important to avoid exceeding this limit when BLOB data is involved.
+
+Be aware that images uploaded through the UI Autoform control are automatically saved to blob storage
+client side, which has dual benefits of abstracting that away for the developer, but also in reducing
+the memory footprint used server-side.
+
+### Processes
+
+Processes are probably the most complex logic piece as they perform serve several disparate functions but
+their overall aim remains to encapsulate and preserve some form of business process.
+
+Their capabilities include:
+1. They can call successive Operations.
+   Before doing so they may in some cases need to obtain the Id(s) of the aggregate which needs modifying.
+3. They can send messages
+4. They can send notifications
+5. They can be chained, ie. Process1 can call Process2 etc
+   As the application grows the "process layer" will get deeper through process calling other processes.
+   As this happens some careful refactoring will be needed and it is important in particular to consider
+   where validation should sit in the chain and whether at times it requires relocation. They key thought there
+   is whether a particular validation is applicable for multiple callers and if so it should be positioned
+   at the lowest layer that reaches all potential callers.
+6. They have readonly access to the database for the purposes of obtaining the information necessary to
+   effectively carry out the previous steps.
+
+Ideally each step in the Process will be modeled as a separate function so that the entry function will expose
+only the raw "process" being performed making it easy for someone unfamiliar with the logic to navigate the
+call stack quickly. [Here](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P207ReturnForm.cs) is an example
+
+### StatefulProcesses
+
+StatefulProcesses technically share the definitive aspect of a vanilla `Process` which is
+they represent a multi-step business process. The difference is that they do this over time,
+utilizing two or more messages to do so.
+
+StatefulProcesses will have very little business logic of their own, choosing to defer
+most of it to vanilla Processes or to Operations both of which can be called directly
+from a `StatefulProcess`.
+
+StatefulProcesses also have a few special properties.
+
+One is called `References`. This is effectively a Dictionary which allows you to save
+data which needs to be retained between steps, or to tie steps together.
+It is called `References` because it is most commonly used to store Guids obtained
+during the processing of one message in a later message. Date/Times, Counts, other
+simple types can also be stored in the References collection, but anything more
+complicated than that should be stored in a new `Aggregate` which is modified
+by the `StatefulProcess`.
+
+Another is called `Id`. This is just the Id of the instance of the
+`StatefulProcess` which is created by the framework at runtime. Simple, but very
+important if you are going to send a message to another service and you need a reply.
+In order for the other service to know how to connect it's message back to your
+`StatefulProcess` in order to continue it, you will need to provide it with this Id
+when you send it a message.
+
+Finally, StatefulProcesses have a series of methods designed to help you manage
+it's internal private state. These are:
+
+* `GetState()`
+* `HasState()`
+* `AddState()`
+* `RemoveState()`
+
+Each of these methods take an enum (which you must define inside the `StatefulProcess`).
+
+The types of logic a `StatefulProcess` is allowed to have are:
+
+* Logic that validates the current state of the StatefulProcess or a proposed transition.
+* Logic that determines how to transition to the next state
+* Any logic required to call a certain process or operation
+
+Finally at any point in the logic where the state-machine is determined to have reached its
+final state, you should call the `CompleteProcess()` method which lets the system know
+that this process is now finished.
+
+StatefulProcess [Example](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P200PingAndWaitForPong.cs)
+
+
+#### Using Notifications (including Emails) In Processes
+
 TODO
 
 #### Queries
@@ -453,31 +537,26 @@ It is important that each message have it's own set of error codes in order
 to maintain independence of each message contract. And these should be
 created
 
+Here is the simplest example of defining an error code. The Error code class
+is actually a derivative of the `Enumeration` class and follow a similar pattern
+of definition
+```c#
+  public class ErrorCodes : ErrorCode
+  {
+      public static readonly ErrorCode AttemptingToUpgradeDatabaseToOutdatedVersion = Create(
+          Guid.Parse("b866824e-ccc2-4f84-8399-15877bf735e9"),
+          "Attempting To Upgrade Database To Outdated Version");
+  }
+```
+
 Specific errors with error codes can be raised through the use of the `code` parameter of `Guard.Against() `.
+```c#
+Guard.Against({condition}, ErrorCodes.AttemptingToUpgradeDatabaseToOutdatedVersion);
+```
 
-#### Message Validation Error Codes
-
-
-### Shared Domain Logic Error Codes
-
-In the situation where a specific error is raised in shared domain logic
-(e.g. in a process called by two separate messages) the platform provides the ability to define an error code
-
-mapper for a given message handler. An error code mapper will swap a shared domain logic error code for a message specific error code, if an error with the domain error code is raised during execution.
-
-This is key to keeping each message contract free of ties to internal objects which can change independently of message contracts.
-
-This is done by implementing the `MessageHandler.IMapErrorCodesFromDomainToMessageErrorCodes` interface in the message handler for the message that wants to use a domain error code.
-
-IMapErrorCodesFromDomainToMessageErrorCodes is basically a list of pairs of Guids, one for the local code and one for the shared code.
-
-If a shared domain logic error code is not mapped then it will not be returned as part of the response to a message.
-
-Shared domain logic error codes are still defined by implementing `IHaveApiErrors<TErrorCodeEnum>` on the process or operation rather than the message.
-
-In this case `TErrorCodeEnum` is a nested enum within that process or operation.
-TODO cleanup
-
+Error code definitions can be is any accessible class to the callsite. There is no formal definition
+of where to implement them. As a nested class is an option when they are used only in one place.
+ 
 
 #### Authentication and Authorisation
 
@@ -588,74 +667,6 @@ For the above scenarios we have different approaches to asserting the changes.
 There is also a boolean `Success` property which says whether the test succeeded and an
 `UnhandledError` which can be used in conjunction with each other to test specific
 [error scenarios](Soap.Api.Sample/Soap.Api.Sample.Tests/Messages/Commands/C104/TestC104MessageDiesWhileSavingUnitOfWork.cs)
-
-
-
-
-
-
-### Processes
-
-Processes are classes which tie multiple aggregate operations together. They encapsulate some form of business process. 
-All the steps in the process usually share one primary responsibility:
-
-Obtain the Id of an Aggregate which needs modification and pass it to an Operation class to make the modification.
-
-As the application grows the "process layer" will get deeper. At first processes are added which call operations, then later processes which call other processes. As this happens some careful refactoring will be needed. Considerations include:
-
-* How validation is split between processes and operations
-
-* Whether processes receive commands as input or their own DTOs. If the process is used by more than one other process then it cannot take a command, in this case the process will need to expose it's own nested model, or use an aggregate , and translate between command models in a similar way to how messages have private models.
-
-#### Other important considerations:
-
-* Processes should always have at least 2 steps, and call more than one operation
-
-* Except for the dependencies received in the constructor, process objects should not have any class level variables
-
-* Processes cannot modify aggregates but they are allowed to send messages, save files, or any other IO-bound operations that the platform may allow which are not an Aggregate data structure. In these cases each of these non-Aggregate operations should be a step in the operation.
-
-### StatefulProcesses
-
-StatefulProcesses technically share the definitive aspect of a vanilla `Process` which is *they perform multiple operations*. The difference is that they do this over time, utilizing two or more messages to do so.
-
-StatefulProcesses will have very little business logic of their own, choosing to defer most of it to vanilla Processes or to Operations both of which can be called directly from a `StatefulProcess`.
-
-StatefulProcesses also have a few special properties.
-
-One is called `References`. This is effectively a Dictionary which allows you to save data which needs to be retained between steps, or to tie steps together. It is called `References` because it is most commonly used to store Guids obtained during the processing of one message in a later message. Date/Times, Counts, other simple types can also be stored in the References collection, but anything more complicated than that should be stored in a new `Aggregate` which is modified by the `StatefulProcess`.
-
-Another is called `ProcessId`. This is just the Id of the instance of the `StatefulProcess` which is created by the framework at runtime. Simple, but very important if you are going to send a message to another framework and you need a reply. In order for the other service to know how to connect it's message back to your `StatefulProcess` in order to continue it, you will need to provide it with this Id when you send it a message.
-
-Finally, StatefulProcesses have a series of methods designed to help you manage it's *state*. These are:
-
-* `GetState()`
-
-* `HasState()`
-
-* `AddState()`
-
-Each of these methods take an enum (which you must define inside the `StatefulProcess`).
-
-The types of logic a `StatefulProcess` is allowed to have are:
-
-* Logic that validates the current state of the StatefulProcess or a proposed transition.
-
-* Logic that determines how to transation to the next state
-
-* Any logic required to call a certain process or operation from incoming message
-
-#### Using Blob Storage
-
-#### Using Emails and Notification
-
-Emails sent through `EmailSender` are gated through the use of the `MessageAggregator` which allows for them to be wedge tested as part of domain tests:
-
-```c#
-
-this._endpoint.MessageAggregator.When<EmailSender.SendingEmail>().Return(Task.CompletedTask);
-
-```
 
 ## Instrumentation
 

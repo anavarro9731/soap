@@ -6,7 +6,7 @@ namespace Soap.Api.Sample.Logic.Queries.Predicates
 
     internal static class TestData
     {
-        public static Expression<Func<Models.Aggregates.TestData, bool>> RecentTestData(int daysBack) =>
+        public static Expression<Func<Models.Aggregates.TestData, bool>> RecentTestData(long daysBack) =>
             data => data.CreatedAsMillisecondsEpochTime > DateTime.UtcNow.ConvertToMillisecondsEpochTime() - 86400000 * daysBack;
     }
 }

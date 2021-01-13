@@ -154,7 +154,7 @@
 
                 var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(
                     blobId,
-                    new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete));
+                    new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete), "large-messages");
                 message.Headers.SetSasStorageToken(sasStorageToken);
             }
 

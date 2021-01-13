@@ -1,4 +1,4 @@
-﻿//##REMOVE-IN-COPY##
+﻿//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System;
@@ -40,7 +40,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
 
             //assert
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();
-            Result.ExceptionContainsErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
+            Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 
         private async Task BeforeRunHook(DataStore store, int run)

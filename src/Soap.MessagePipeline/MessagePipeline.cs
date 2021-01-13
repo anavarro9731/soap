@@ -92,7 +92,7 @@
                         return;
                     case UnitOfWork.State.AllRolledBack:
                         //* don't try again after a rollback as you may be out of retries to rollback again
-                        throw new DomainExceptionWithErrorCode(GlobalErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
+                        throw new DomainExceptionWithErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
 
                     case UnitOfWork.State.New:
 

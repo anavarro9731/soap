@@ -1,4 +1,5 @@
-﻿//##REMOVE-IN-COPY##
+﻿//* ##REMOVE-IN-COPY##
+
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
     using System.Threading.Tasks;
@@ -7,7 +8,6 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
     using Soap.Context;
     using Soap.Context.Logging;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -28,19 +28,13 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully);
 
-            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 1, (BeforeRunHook,default)); 
+            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 1, (BeforeRunHook, default));
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
             CountDataStoreOperationsSaved(log);
             CountMessagesSaved(log);
             CountMessagesSent();
-        }
-
-        private void CountMessagesSent()
-        {
-            Result.MessageBus.CommandsSent.Count.Should().Be(1);
-            Result.MessageBus.BusEventsPublished.Count.Should().Be(1);
         }
 
         private async Task BeforeRunHook(DataStore store, int run)
@@ -60,6 +54,12 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                        .Be(SpecialIds.FailsToProcessAnyButThenRetriesSuccessfully.ToString());
                 }
             }
+        }
+
+        private void CountMessagesSent()
+        {
+            Result.MessageBus.CommandsSent.Count.Should().Be(1);
+            Result.MessageBus.BusEventsPublished.Count.Should().Be(1);
         }
     }
 }

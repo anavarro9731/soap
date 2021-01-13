@@ -20,52 +20,71 @@ namespace Soap.Api.Sample.Logic.Processes
         public Func<C109v1_GetForm, Task> BeginProcess =>
             async message =>
                 {
-                var eventName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
-
-                var formDataEventType = Type.GetType(eventName);
-
-                Guard.Against(formDataEventType == null, "Cannot find command of type: " + message.C109_FormDataEventName);
-                Guard.Against(
-                    !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
-                    $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
-
-                if (eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName() && ContextWithMessageLogEntry.Current.AppConfig.Environment != SoapEnvironments.InMemory)
                 {
-                   await SaveTestBlobs();
+                    GetNames(message, out var eventName, out var formDataEventType);
+
+                    Guard.Against(formDataEventType == null, "Cannot find command of type: " + message.C109_FormDataEventName);
+
+                    Guard.Against(
+                        !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
+                        $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
+
+                    if (BlobsNeedToBeSaved(eventName))
+                    {
+                        await SaveTestBlobs();
+                    }
+
+                    await PublishFormDataEvent(Bus, formDataEventType);
                 }
 
-                var @event = Activator.CreateInstance(formDataEventType) as ApiEvent;
-                @event.As<UIFormDataEvent>()
-                      .Op(
-                          e =>
-                              {
-                              var commandId = Guid.NewGuid();
-                              var sasToken = ContextWithMessageLogEntry.Current.BlobStorage.GetStorageSasTokenForBlob(
-                                  commandId,
-                                  new EnumerationFlags(IBlobStorage.BlobSasPermissions.CreateNew));
-                              e.SetProperties(sasToken, commandId);
-                              });
+                static async Task PublishFormDataEvent(BusWrapper bus, Type formDataEventType)
+                {
+                    var @event = Activator.CreateInstance(formDataEventType) as ApiEvent;
+                    @event.As<UIFormDataEvent>()
+                          .Op(
+                              e =>
+                                  {
+                                  var commandId = Guid.NewGuid();
+                                  var sasToken = ContextWithMessageLogEntry.Current.BlobStorage.GetStorageSasTokenForBlob(
+                                      commandId,
+                                      new EnumerationFlags(IBlobStorage.BlobSasPermissions.CreateNew),
+                                      "large-messages");
+                                  e.SetProperties(sasToken, commandId);
+                                  });
 
-                await Bus.Publish(@event, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                    await bus.Publish(
+                        @event,
+                        new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                }
+
+                static void GetNames(C109v1_GetForm message, out string eventName, out Type formDataEventType)
+                {
+                    eventName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
+                    formDataEventType = Type.GetType(eventName);
+                }
+
+                static bool BlobsNeedToBeSaved(string eventName) =>
+                    eventName == typeof(E103v1_GetC107Form).ToShortAssemblyTypeName()
+                    && ContextWithMessageLogEntry.Current.AppConfig.Environment != SoapEnvironments.InMemory;
+
+                static async Task SaveTestBlobs()
+                {
+                    var blobStorage = ContextWithMessageLogEntry.Current.BlobStorage;
+
+                    var imageBytes = Resources.ExtractResource("soap.jpg", SoapPfBaseMessages.GetAssembly);
+
+                    if (!await blobStorage.Exists(SampleBlobs.Image1.Id.Value))
+                    {
+                        await blobStorage.SaveByteArrayAsBlob(imageBytes, SampleBlobs.Image1.Id.Value, MimeType.Image.Jpeg);
+                    }
+
+                    var fileBytes = Resources.ExtractResource("soap.zip", SoapPfBaseMessages.GetAssembly);
+
+                    if (!await blobStorage.Exists(SampleBlobs.File1.Id.Value))
+                    {
+                        await blobStorage.SaveByteArrayAsBlob(fileBytes, SampleBlobs.File1.Id.Value, MimeType.Application.Zip);
+                    }
+                }
                 };
-
-        private async Task SaveTestBlobs()
-        {
-            var blobStorage = ContextWithMessageLogEntry.Current.BlobStorage;
-
-            var imageBytes = Resources.ExtractResource("soap.jpg", SoapPfBaseMessages.GetAssembly);
-            
-            if (!await blobStorage.Exists(SampleBlobs.Image1.Id.Value))
-            {
-                await blobStorage.SaveByteArrayAsBlob(imageBytes, SampleBlobs.Image1.Id.Value, MimeType.Image.Jpeg);
-            }
-
-            var fileBytes = Resources.ExtractResource("soap.zip", SoapPfBaseMessages.GetAssembly);
-
-            if (!await blobStorage.Exists(SampleBlobs.File1.Id.Value))
-            {
-                await blobStorage.SaveByteArrayAsBlob(fileBytes, SampleBlobs.File1.Id.Value, MimeType.Application.Zip);
-            }
-        }
     }
 }

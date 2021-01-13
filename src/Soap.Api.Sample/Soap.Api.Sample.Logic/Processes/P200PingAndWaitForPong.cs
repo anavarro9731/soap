@@ -24,17 +24,25 @@
         public Func<C103v1_StartPingPong, Task> BeginProcess =>
             async message =>
                 {
-
-                var pingCommand = new C100v1_Ping
                 {
-                    C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(P200PingAndWaitForPong)
-                };
-                pingCommand.Headers.SetMessageId(Guid.NewGuid());
+                    var pingCommand = await SendC100V1Ping();
 
-                await Bus.Send(pingCommand);
+                    await State.AddState(States.SentPing);
 
-                await State.AddState(States.SentPing);
-                References.PingId = pingCommand.Headers.GetMessageId();
+                    References.PingId = pingCommand.Headers.GetMessageId();
+                }
+
+                async Task<C100v1_Ping> SendC100V1Ping()
+                {
+                    var pingCommand = new C100v1_Ping
+                    {
+                        C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(P200PingAndWaitForPong)
+                    };
+                    pingCommand.Headers.SetMessageId(Guid.NewGuid());
+
+                    await Bus.Send(pingCommand);
+                    return pingCommand;
+                }
                 };
 
         public Func<E100v1_Pong, Task> ContinueProcess =>

@@ -139,7 +139,7 @@ async function createBusSession() {
         const blobId = getHeader(anonymousEvent, headerKeys.blobId);
         const sasUrl = getSasUrl(anonymousEvent);
         const blobServiceClient = new BlobServiceClient(sasUrl);
-        const containerClient = blobServiceClient.getContainerClient("content");
+        const containerClient = blobServiceClient.getContainerClient("large-messages");
         const blobClient = containerClient.getBlobClient(blobId);
         // Get blob content from position 0 to the end
         // In browsers, get downloaded data by accessing downloadBlockBlobResponse.blobBody
@@ -215,7 +215,7 @@ let _sender = (msg) => {
                 const blobId = getHeader(message, headerKeys.blobId);
                 const sasUrl = getSasUrl(message);
                 const blobServiceClient = new BlobServiceClient(sasUrl);
-                const containerClient = blobServiceClient.getContainerClient("content");
+                const containerClient = blobServiceClient.getContainerClient("large-messages");
                 const blockBlobClient = containerClient.getBlockBlobClient(blobId);
                 const typeClass = "AssemblyQualifiedName";
                 const typeString = message.$type;

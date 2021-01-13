@@ -5,8 +5,8 @@
 
     public sealed class C111v2_GetRecentTestData : ApiCommand
     {
-        public int? MaxAgeInDays { get; set; }
-        public int? MaxRecords { get; set; }
+        public long? C111_MaxAgeInDays { get; set; }
+        public long? C111_MaxRecords { get; set; }
         
         public override void Validate()
         {

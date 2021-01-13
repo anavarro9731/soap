@@ -12,13 +12,13 @@
     {
         public Func<Guid, Task<TestData>> GetTestDataById => async id => await DataReader.ReadById<TestData>(id);
 
-        public Func<Task<List<TestData>>> GetRecentTestData(int maxAgeInDays, int maxRecords) =>
+        public Func<Task<List<TestData>>> GetRecentTestData(long maxAgeInDays, long maxRecords) =>
             async () =>
                 {
                 var continueAt = new ContinuationToken();
                 return (await DataReaderWithoutEventReplay.ReadActive(
                             Predicates.TestData.RecentTestData(maxAgeInDays),
-                            o => o.Take(maxRecords, ref continueAt))).OrderByDescending(x => x.CreatedAsMillisecondsEpochTime)
+                            o => o.Take((int)maxRecords, ref continueAt))).OrderByDescending(x => x.CreatedAsMillisecondsEpochTime)
                                                                       .ToList();
                 };
     }

@@ -26,7 +26,7 @@
         {
             return new C111v2_GetRecentTestData()
             {
-                MaxRecords = c111v1.MaxRecords
+                C111_MaxRecords = c111v1.C111_MaxRecords
             };
         }
     }

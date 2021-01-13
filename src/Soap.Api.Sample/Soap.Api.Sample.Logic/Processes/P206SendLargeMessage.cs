@@ -14,7 +14,7 @@
             {
                 return async message =>
                     {
-                    await Bus.Send(new C106v1_LargeCommand());
+                        await Bus.Send(new C106v1_LargeCommand());
                     };
             }
         }

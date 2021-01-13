@@ -1,4 +1,4 @@
-﻿//##REMOVE-IN-COPY##
+﻿//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Afs
 {
     using DataStore.Providers.CosmosDb;

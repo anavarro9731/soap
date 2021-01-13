@@ -28,7 +28,7 @@
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         protected BusWrapper Bus => new BusWrapper(context.Bus, context.Message);
-        
+
         protected class BusWrapper
         {
             private readonly IBus bus;

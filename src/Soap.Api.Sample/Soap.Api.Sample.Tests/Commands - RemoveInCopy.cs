@@ -1,4 +1,4 @@
-﻿//##REMOVE-IN-COPY##
+﻿//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests
 {
     using System;
