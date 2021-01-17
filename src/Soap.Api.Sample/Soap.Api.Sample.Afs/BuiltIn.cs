@@ -37,6 +37,7 @@
                 req,
                 new HandlerRegistration(),
                 signalRBinding,
+                new SecurityInfo(),
                 log);
 
         [FunctionName("GetBlob")]

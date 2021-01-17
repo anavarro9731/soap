@@ -5,8 +5,10 @@
 
     public class ApiPermissionGroup
     {
-        public List<ApiPermission> ApiPermissions;
+        public List<string> ApiPermissions;
 
+        public string Description;
+        
         public string Name;
     }
 }

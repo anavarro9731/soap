@@ -11,5 +11,6 @@
         string ApplicationVersion { get; }
 
         string DefaultExceptionMessage { get; set; }
+        
     }
 }

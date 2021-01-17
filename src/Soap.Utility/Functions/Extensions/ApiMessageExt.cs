@@ -9,6 +9,7 @@
 
     public static class ApiMessageExt
     {
+
         public static ApiMessage ToApiMessage(this MessageFailedAllRetries message)
         {
             return message.Map(

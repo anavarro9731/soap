@@ -20,6 +20,7 @@ namespace Soap.PfBase.Api.Functions
                 HttpRequest req,
                 MapMessagesToFunctions handlerRegistration,
                 IAsyncCollector<SignalRMessage> signalRBinding,
+                ISecurityInfo securityInfo,
                 ILogger log)
             where TInboundMessage : ApiCommand, new()
             where TIdentity : class, IApiIdentity, new()
@@ -44,6 +45,7 @@ namespace Soap.PfBase.Api.Functions
                                 $"{req.Scheme}://{req.Host.ToUriComponent()}",
                                 handlerRegistration,
                                 signalRBinding,
+                                securityInfo,
                                 logger),
                     new MediaTypeHeaderValue("text/plain"));
 
