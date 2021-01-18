@@ -20,6 +20,8 @@ namespace Soap.Api.Sample.Afs
             StorageConnectionString = EnvVars.AzureWebJobsStorage;
             NotificationSettings = new NotificationServer.Settings();
             CorsOrigin = EnvVars.CorsOrigin;
+            FunctionAppHostName = EnvVars.FunctionAppHostName;
+            FunctionAppHostUrlWithTrailingSlash = EnvVars.FunctionAppHostUrlWithTrailingSlash;
         }
     }
 }

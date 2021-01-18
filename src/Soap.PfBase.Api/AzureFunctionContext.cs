@@ -152,7 +152,7 @@
                 var validationParameters = new TokenValidationParameters
                 {
                     RequireSignedTokens = true,
-                    ValidAudience = EnvVars.FunctionAppHostUrl,
+                    ValidAudience = EnvVars.FunctionAppHostUrlWithTrailingSlash,
                     ValidateAudience = true,
                     ValidateIssuer = true,
                     ValidateIssuerSigningKey = true,
@@ -327,6 +327,9 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureResourceGroup),
                     $"{nameof(EnvVars.AzureResourceGroup)} environment variable not set");
+                Guard.Against(
+                    string.IsNullOrWhiteSpace(EnvVars.CorsOrigin),
+                    $"{nameof(EnvVars.CorsOrigin)} environment variable not set");
             }
         }
     }

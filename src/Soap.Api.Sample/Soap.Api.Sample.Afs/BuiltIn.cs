@@ -47,6 +47,14 @@
             ILogger log) =>
             await PlatformFunctions.GetBlob(req, log);
 
+        [FunctionName("GetLogo")]
+        public static IActionResult GetLogo(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
+            HttpRequest req,
+            ILogger log) =>
+            PlatformFunctions.GetLogo(req, log);
+        
+        
         [FunctionName("GetJsonSchema")]
         public static IActionResult GetJsonSchema(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]

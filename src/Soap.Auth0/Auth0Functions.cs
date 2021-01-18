@@ -36,7 +36,7 @@ namespace Soap.Auth0
 
                     GetApiName(messagesAssembly, out var apiName);
 
-                    GetApiId(out var apiId);
+                    GetApiId(applicationConfig, out var apiId);
 
                     if (await ApiIsRegisteredWithAuth0(client, apiId))
                     {
@@ -63,9 +63,9 @@ namespace Soap.Auth0
                 apiName = messagesAssembly.GetName().Name.ToLower().SubstringBefore(".messages");
             }
 
-            static void GetApiId(out string apiId)
+            static void GetApiId(ApplicationConfig applicationConfig, out string apiId)
             {
-                apiId = EnvVars.FunctionAppHostUrl;
+                apiId = applicationConfig.FunctionAppHostUrlWithTrailingSlash;
             }
 
             static async Task<bool> ApiIsRegisteredWithAuth0(ManagementApiClient client, string apiId)
@@ -178,7 +178,8 @@ namespace Soap.Auth0
                         ApplicationType = ClientApplicationType.Spa,
                         IsFirstParty = true,
                         Callbacks = new []{applicationConfig.CorsOrigin},
-                        AllowedLogoutUrls = new []{applicationConfig.CorsOrigin}
+                        AllowedLogoutUrls = new []{applicationConfig.CorsOrigin},
+                        LogoUri = $"{applicationConfig.FunctionAppHostUrlWithTrailingSlash}GetLogo"
                     });
                 
             }

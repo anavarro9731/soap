@@ -165,8 +165,9 @@ $LocalSettingsJson = @"
         `"AzureSignalRConnectionString`": `"$var_AzureSignalRConnectionString`",
         `"AzureSignalRServiceTransportType`": `"Transient`",
         `"CosmosDbEndpointUri`": `"$var_CosmosDbEndpointUri`",
+        `"CosmosDbDatabasename`": `"$var_CosmosDbDatabasename`",
         `"CosmosDbKey`": `"$var_CosmosDbKey`",
-        `"CosmosDbDatabasename`": `"$var_CosmosDbDatabasename`"                             	  
+        `"CorsOrigin`": `"http://localhost:1234`"                                  	 
     },
     `"Host`": {
         `"CORS`": `"http://localhost:1234`",

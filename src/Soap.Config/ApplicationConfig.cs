@@ -8,13 +8,17 @@
     using Soap.NotificationServer;
 
     /* If you add anything to this config you need to add validators for it and
-     if it relies on env variables also add it to the localsettings.json file, envvars class.
+     if it relies on env variables also add it to the localsettings.json file and envvars class.
         with the exception of things (e.g. logger) which are read before the config is loaded or in an effort to load the config. 
      if it relies on env vars then you will need to also add it to sampleconfig.cs used by create-new-service.ps1 to setup new config repos 
-            and to edit existing config.cs files in the soap demo config repo which requires republishing the Config nuget pkg first
-     unless its hardcoded for dev, then it also need to go into the configure-local-environment.ps1, the part which sets local.settings.json and/or .env
-        This is ensures that the config remains the sole point of contact for config information and the envvars the sole point of obtaining infrastructure config  
-     It may also need to be added to testconfig base class if it is required in TestRuns not to be null i.e. its part of the IBoostrapVariables interface  */
+        and to edit existing config.cs files in the soap demo config repo which requires republishing the Config nuget pkg first
+     if it relies on an envvar which is not there by default then it also needs to go into the configure-local-environment.ps1 the part which sets local.settings.json and/or .env based on custom vnext envvars
+         in some cases it can be hardcoded for dev and not downloaded but it still needs to be added   
+     It may also need to be added to testconfig base class if it is required in TestRuns not to be null i.e. its part of the IBoostrapVariables interface  
+     
+    This all is ensures that the config remains the sole point of contact for config information, 
+    and where it derives from envvars it provides an opportunity for an override, e.g. for a custom domain in live env 
+    */
 
     public class ApplicationConfig : IBootstrapVariables, IConnectWithAuth0
     {
@@ -23,6 +27,10 @@
             Environment = environment;
             AppId = azureAppName;
         }
+        
+        public string FunctionAppHostName { get; set; }
+        
+        public string FunctionAppHostUrlWithTrailingSlash { get; set; }
         
         public string CorsOrigin { get; set; }
 
@@ -58,6 +66,8 @@
         {
             public Validator()
             {
+                RuleFor(x => x.FunctionAppHostUrlWithTrailingSlash).NotEmpty();
+                RuleFor(x => x.FunctionAppHostName).NotEmpty();
                 RuleFor(x => x.Environment).NotNull();
                 RuleFor(x => x.AppId).NotNull();
                 RuleFor(x => x.AppFriendlyName).NotEmpty();
