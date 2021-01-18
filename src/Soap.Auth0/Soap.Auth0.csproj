@@ -4,6 +4,13 @@
     <Version>5.8.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Soap.Config\Soap.Config.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Auth0.ManagementApi" Version="7.4.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols" Version="6.8.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />
+    <PackageReference Include="RestSharp" Version="106.11.2" />
   </ItemGroup>
 </Project>

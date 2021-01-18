@@ -5,7 +5,7 @@
 
     public class MessageMeta
     {
-        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, IApiIdentity requestedBy, string schema)
+        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, IApiIdentity requestedBy)
         {
             ReceivedAt = receivedAt;
             RequestedBy = requestedBy;

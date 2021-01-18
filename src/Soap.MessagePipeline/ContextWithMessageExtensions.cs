@@ -34,7 +34,7 @@ namespace Soap.MessagePipeline
 
                 if (entry == null)
                 {
-                    var meta = new MessageMeta(ctx.TimeStamp, identity, ctx.Message.GetSchema());
+                    var meta = new MessageMeta(ctx.TimeStamp, identity);
 
                     await CreateNewLogEntry(meta, ctx, v => entry = v);
                 }

@@ -9,7 +9,7 @@ public class SecurityInfo : ISecurityInfo
     {
         new ApiPermissionGroup
         {
-            Name = "PingPong",
+            Name =   "Ping Pong",
             ApiPermissions = new List<string>
             {
                 nameof(C100v1_Ping),

@@ -16,11 +16,15 @@
     using DataStore.Providers.CosmosDb;
     using global::Auth0.ManagementApi;
     using global::Auth0.ManagementApi.Models;
+    using global::Auth0.ManagementApi.Paging;
     using Mainwave.MimeTypes;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
+    using Microsoft.CSharp.RuntimeBinder;
+    using Newtonsoft.Json;
     using RestSharp;
     using Serilog;
+    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
@@ -81,7 +85,7 @@
 
                 await CheckDatabaseExists(appConfig, WriteLine);
 
-                await CheckAuth0Setup(messagesAssembly, securityInfo, appConfig, WriteLine);
+                await Auth0Functions.CheckAuth0Setup(messagesAssembly, securityInfo, appConfig, WriteLine);
 
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
@@ -113,119 +117,6 @@
                 await outputStream.FlushAsync();
 
                 await outputStream.DisposeAsync();
-            }
-        }
-
-        private static async Task CheckAuth0Setup(
-            Assembly messagesAssembly,
-            ISecurityInfo securityInfo,
-            ApplicationConfig applicationConfig,
-            Func<string, ValueTask> writeLine)
-        {
-            {
-                string managementApiToken = null;
-                ManagementApiClient client = null;
-
-                if (ConfigIsEnabledForAuth0Integration(applicationConfig))
-                {
-                    GetManagementApiToken(applicationConfig, v => managementApiToken = v);
-
-                    GetManagementApiClient(managementApiToken, v => client = v);
-
-                    GetApiId(messagesAssembly, out var apiId);
-
-                    if (await ApiIsNotRegisteredWithAuth0(client))
-                    {
-                        await RegisterApiWithAuth0(client, apiId, securityInfo, writeLine, applicationConfig);
-                    }
-                    else
-                    {
-                        await UpdateAuth0Registration(client, apiId, securityInfo, writeLine, applicationConfig);
-                    }
-                }
-
-                static bool ConfigIsEnabledForAuth0Integration(ApplicationConfig applicationConfig) =>
-                    !string.IsNullOrEmpty(applicationConfig.Auth0ManagementApiUri);
-
-                void GetManagementApiClient(string mgmtToken, Action<ManagementApiClient> setClient)
-                {
-                    var client = new ManagementApiClient(mgmtToken, new Uri(applicationConfig.Auth0ManagementApiUri));
-                    setClient(client);
-                }
-            }
-
-            static void GetApiId(Assembly messagesAssembly, out string apiId)
-            {
-                apiId = messagesAssembly.GetName().Name.ToLower().SubstringBefore(".messages");
-            }
-
-            static async Task<bool> ApiIsNotRegisteredWithAuth0(ManagementApiClient client) =>
-                await client.ResourceServers.GetAsync("id") == null;
-
-            static void GetManagementApiToken(ApplicationConfig applicationConfig, Action<string> setMgmtToken)
-            {
-                var client = new RestClient(applicationConfig.Auth0TokenEndpointUri);
-                var request = new RestRequest(Method.POST);
-                request.AddHeader("content-type", "application/json");
-                request.AddParameter(
-                    "application/json",
-                    $"{{\"client_id\":\"{applicationConfig.Auth0HealthCheckClientId}\",\"client_secret\":\"{applicationConfig.Auth0HealthCheckClientSecret}\",\"audience\":\"{applicationConfig.Auth0ManagementApiUri}\",\"grant_type\":\"client_credentials\"}}",
-                    ParameterType.RequestBody);
-                var response = client.Execute(request);
-                setMgmtToken(response.Content);
-            }
-
-            static async Task UpdateAuth0Registration(
-                ManagementApiClient client,
-                string apiId,
-                ISecurityInfo securityInfo,
-                Func<string, ValueTask> writeLine,
-                ApplicationConfig applicationConfig)
-            {
-                await writeLine(
-                    $"Auth0 Api for this service in environment {applicationConfig.Environment.Value} does not exist. Creating it now.");
-
-                var r = new ResourceServerUpdateRequest
-                {
-                    Scopes = GetScopesFromMessages(securityInfo)
-                };
-
-                await client.ResourceServers.UpdateAsync(apiId, r);
-            }
-
-            static async Task RegisterApiWithAuth0(
-                ManagementApiClient client,
-                string apiId,
-                ISecurityInfo securityInfo,
-                Func<string, ValueTask> writeLine,
-                ApplicationConfig applicationConfig)
-            {
-               await writeLine(
-                    $"Updating Auth0 Api for this service in environment {applicationConfig.Environment.Value} with the latest permissions.");
-
-                var r = new ResourceServerCreateRequest
-                {
-                    Identifier = apiId,
-                    Scopes = GetScopesFromMessages(securityInfo),
-                    TokenDialect = TokenDialect.AccessTokenAuthZ,
-                    AllowOfflineAccess = true,
-                    SkipConsentForVerifiableFirstPartyClients = true
-                };
-
-                await client.ResourceServers.CreateAsync(r);
-            }
-
-            static List<ResourceServerScope> GetScopesFromMessages(ISecurityInfo securityInfo)
-            {
-                var scopes = securityInfo.PermissionGroups.Select(
-                                             x => new ResourceServerScope
-                                             {
-                                                 Description = x.Description ?? x.Name,
-                                                 Value = Regex.Replace(x.Name.ToLower(), "[^a-zA-z0-9.]", "")
-                                             })
-                                         .ToList();
-
-                return scopes;
             }
         }
 

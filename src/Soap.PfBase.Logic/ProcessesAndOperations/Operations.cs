@@ -11,13 +11,13 @@
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
 
-    public class Operations<T> : IOperation where T : class, IAggregate, new()
+    public class Operations<TAggregate> : IOperation where TAggregate : class, IAggregate, new()
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         public DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
-        public DataStoreWriteOnly<T> DataWriter => this.context.DataStore.AsWriteOnlyScoped<T>();
+        public DataStoreWriteOnly<TAggregate> DataWriter => this.context.DataStore.AsWriteOnlyScoped<TAggregate>();
 
         public IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
 
@@ -25,7 +25,7 @@
 
         protected BlobStorageWrapper BlobOperations => new BlobStorageWrapper(this.context);
 
-        protected T GetConfig<T>() where T : class, IBootstrapVariables => this.context.AppConfig.As<T>();
+        protected TDerivedConfig GetConfig<TDerivedConfig>() where TDerivedConfig : class, IBootstrapVariables => this.context.AppConfig.As<TDerivedConfig>();
 
         protected class BlobStorageWrapper
         {
@@ -36,23 +36,23 @@
                 this.context = context;
             }
 
-            public async Task<T> DownloadAs<T>(Guid id, string containerName = "content") where T : class, new()
+            public async Task<TBlobType> DownloadAs<TBlobType>(Guid id, string containerName = "content") where TBlobType : class, new()
             {
                 var blob = await this.context.BlobStorage.GetBlob(id, containerName);
                 try
                 {
-                    return blob.ToObject<T>(SerialiserIds.JsonDotNetDefault);
+                    return blob.ToObject<TBlobType>(SerialiserIds.JsonDotNetDefault);
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Could not deserialise blob to type " + typeof(T).FullName, e);
+                    throw new ApplicationException("Could not deserialise blob to type " + typeof(TBlobType).FullName, e);
                 }
             }
 
             public Task<bool> Exists(Guid id, string containerName = "content") =>
                 this.context.BlobStorage.Exists(id, containerName);
 
-            public Task Upload<T>(T @object, Func<T, Guid> getId, SerialiserIds serialiserId, string containerName = "content") =>
+            public Task Upload<TBlobType>(TBlobType @object, Func<TBlobType, Guid> getId, SerialiserIds serialiserId, string containerName = "content") =>
                 this.context.BlobStorage.SaveObjectAsBlob(@object, getId, SerialiserIds.JsonDotNetDefault, containerName);
         }
     }

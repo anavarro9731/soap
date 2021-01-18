@@ -174,6 +174,7 @@ SHOULD
 - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))
 - Extend Missing Property Proxy to cover properties on child objects of a message
 COULD
+- Cache relatively static I/O things obtained with IO bound ops in pipeline, e.g. openid endpointconfig
 - Adding a Special Flag or Tag to Denote builds that were sent to production (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
 - Inter-service queries from a UI service via REST with a new Function (ServiceQuery) which doesn't load pipeline just does a DB read, in non-durable, non-recoverable fashion but is quick.
 - CheckHealth to Test SignalR

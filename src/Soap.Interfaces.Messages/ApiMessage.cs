@@ -135,6 +135,11 @@
             {
                 messageHeaders.SetIdentityToken("identity token");
             }
+            
+            if (string.IsNullOrEmpty(messageHeaders.GetAccessToken()))
+            {
+                messageHeaders.SetIdentityToken("access token");
+            }
 
             if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
             {
@@ -247,6 +252,12 @@
             m.TryGetValue(Keys.IdentityToken, out var x);
             return x;
         }
+        
+        public static string GetAccessToken(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.AccessToken, out var x);
+            return x;
+        }
 
         public static Guid GetMessageId(this MessageHeaders m)
         {
@@ -350,6 +361,17 @@
                 m.Add(new Enumeration(Keys.IdentityToken, identityToken));
             }
             else throw new ApplicationException($"Cannot set header {Keys.IdentityToken} because it has already been set");
+            
+            return m;
+        }
+        
+        public static MessageHeaders SetAccessToken(this MessageHeaders m, string identityToken)
+        {
+            if (!m.Exists(v => v.Key == Keys.AccessToken))
+            {
+                m.Add(new Enumeration(Keys.AccessToken, identityToken));
+            }
+            else throw new ApplicationException($"Cannot set header {Keys.AccessToken} because it has already been set");
             
             return m;
         }
@@ -475,8 +497,9 @@
         //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
         internal const string CommandHash = nameof(CommandHash);
 
-        //* auth token
+        //* auth tokens
         internal const string IdentityToken = nameof(IdentityToken);
+        internal const string AccessToken = nameof(AccessToken);
 
         //* dest queue when its a command
         internal const string QueueName = nameof(QueueName);

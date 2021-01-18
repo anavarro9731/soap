@@ -4,19 +4,26 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
 
-    public class Auth0Authenticator : IAuthenticate
+    public class Auth0Authenticator<TApiIdentity> : IAuthenticate where TApiIdentity : IApiIdentity, new()
     {
-        private readonly Func<IApiIdentity> createIdentity;
+        private readonly string identityToken;
 
-        public Auth0Authenticator(Func<IApiIdentity> createIdentity)
+        private readonly string accessToken;
+
+        public Auth0Authenticator(string identityToken, string accessToken)
         {
-            this.createIdentity = createIdentity;
+            this.identityToken = identityToken;
+            this.accessToken = accessToken;
         }
 
         public IApiIdentity Authenticate(ApiMessage message)
         {
-            var x = this.createIdentity();
-            x.UserName = "john.doe";
+            //TODO turn tokens into user
+            var x = new TApiIdentity
+            {
+                UserName = ""
+            };
+
             return x;
         }
     }

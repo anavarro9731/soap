@@ -31,13 +31,11 @@
 
         public bool Auth0Enabled { get; set; }
 
-        public string Auth0HealthCheckClientId { get; set; }
+        public string Auth0EnterpriseAdminClientId { get; set; }
 
-        public string Auth0HealthCheckClientSecret { get; set; }
+        public string Auth0EnterpriseAdminClientSecret { get; set; }
 
-        public string Auth0ManagementApiUri { get; set; }
-
-        public string Auth0TokenEndpointUri { get; set; }
+        public string Auth0TenantDomain { get; set; }
 
         public IBusSettings BusSettings { get; set; }
 
@@ -65,10 +63,9 @@
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
                     .Must(
-                        x => x.Auth0Enabled == false || !string.IsNullOrWhiteSpace(x.Auth0ManagementApiUri)
-                             && !string.IsNullOrWhiteSpace(x.Auth0TokenEndpointUri)
-                             && !string.IsNullOrEmpty(x.Auth0HealthCheckClientId)
-                             && !string.IsNullOrEmpty(x.Auth0HealthCheckClientSecret))
+                        x => x.Auth0Enabled == false || !string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
+                             && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
+                             && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret))
                     .WithMessage(
                         $"If {nameof(IConnectWithAuth0.Auth0Enabled)} is set to true, then all Auth0 fields must be populated");
             }

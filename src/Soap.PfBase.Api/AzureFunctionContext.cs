@@ -1,23 +1,21 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Options;
-    using DataStore.Providers.CosmosDb;
     using Destructurama;
-    using Microsoft.ApplicationInsights.Extensibility;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
+    using Microsoft.IdentityModel.Protocols;
+    using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+    using Microsoft.IdentityModel.Tokens;
     using Serilog;
-    using Serilog.Events;
     using Serilog.Exceptions;
     using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
     using Soap.Auth0;
@@ -32,10 +30,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
-    using Soap.PfBase.Messages;
-    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
 
     public static class AzureFunctionContext
     {
@@ -47,6 +42,25 @@
          or locking on the client? */
         private static IDocumentRepository lifetimeRepositoryClient;
 
+        public static void CreateLogger(out ILogger logger)
+        {
+            var loggerConfiguration = new LoggerConfiguration().Enrich.WithExceptionDetails().Destructure.UsingAttributes();
+            if (string.IsNullOrEmpty(EnvVars.AppInsightsInstrumentationKey))
+            {
+                loggerConfiguration.WriteTo.ColoredConsole();
+            }
+            else
+            {
+                loggerConfiguration.WriteTo.ApplicationInsights(
+                    EnvVars.AppInsightsInstrumentationKey,
+                    new TraceTelemetryConverter());
+            }
+
+            logger = loggerConfiguration.CreateLogger();
+
+            Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
+        }
+
         public static async Task<Result> Execute<TApiIdentity>(
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
@@ -56,7 +70,7 @@
             ApplicationConfig appConfig,
             IAsyncCollector<SignalRMessage> signalRBinding,
             DataStoreOptions dataStoreOptions = null) where TApiIdentity : class, IApiIdentity, new()
-        
+
         {
             {
                 var x = new Result();
@@ -69,6 +83,8 @@
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
+                    await AuthoriseCall(appConfig, message.Headers.GetAccessToken());
+                    
                     CreateMessageAggregator(out var messageAggregator);
 
                     CreateDataStore(
@@ -81,11 +97,11 @@
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
                     var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
-                    
+
                     CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
 
                     var context = new BoostrappedContext(
-                        new Auth0Authenticator(() => new TApiIdentity()),
+                        new Auth0Authenticator<TApiIdentity>(message.Headers.GetIdentityToken(), message.Headers.GetAccessToken()),
                         messageMapper: mappingRegistration,
                         appConfig: appConfig,
                         logger: logger,
@@ -108,7 +124,7 @@
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
                             x.CommandsSent.AddRange(bus.CommandsSent);
-                            
+
                             return x;
                         }
                         catch (Exception e)
@@ -127,6 +143,49 @@
                 }
 
                 return x;
+            }
+
+            static async Task AuthoriseCall(ApplicationConfig applicationConfig, string bearerToken)
+            {
+                var openIdConfig = await GetOpenIdConfig($"{applicationConfig.Auth0TenantDomain}");
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    RequireSignedTokens = true,
+                    ValidAudience = EnvVars.FunctionAppHostUrl,
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKeys = openIdConfig.SigningKeys,
+                    ValidIssuer = openIdConfig.Issuer
+                };
+
+                var handler = new JwtSecurityTokenHandler();
+                try
+                {
+                    //* will validate formation and signature by default
+                    var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
+
+                    //* find the scope claims, get its contents and check you have the scope for this message
+                    //Guard.Against(principal.Claims.Single(x => x.), "This access token is not valid for this message"); //TODO filter
+                    
+                }
+                catch (SecurityTokenExpiredException ex)
+                {
+                    throw new ApplicationException("The access token is expired.", ex);
+                }
+
+                // Get the public keys from the jwks endpoint      
+                async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
+                {
+                    var openIdConfigurationEndpoint = $"{tenantDomain}.well-known/openid-configuration";
+                    var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        openIdConfigurationEndpoint,
+                        new OpenIdConnectConfigurationRetriever());
+                    var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+                    return openIdConfig;
+                }
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -164,7 +223,6 @@
                 lifetimeRepositoryClient ??= databaseSettings.CreateRepository();
 
                 dataStore = new DataStore(lifetimeRepositoryClient, messageAggregator, dataStoreOptions);
-                
             }
 
             static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
@@ -186,13 +244,15 @@
             {
                 busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding);
             }
-            
+
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)
             {
-                var blobStorage = new BlobStorage(new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
-                if (applicationConfig.Environment == SoapEnvironments.Development && applicationConfig.StorageConnectionString.Contains("devstoreaccount1"))
+                var blobStorage = new BlobStorage(
+                    new BlobStorage.Settings(applicationConfig.StorageConnectionString, messageAggregator));
+                if (applicationConfig.Environment == SoapEnvironments.Development
+                    && applicationConfig.StorageConnectionString.Contains("devstoreaccount1"))
                 {
-                   await blobStorage.DevStorageSetup();
+                    await blobStorage.DevStorageSetup();
                 }
 
                 return blobStorage;
@@ -205,7 +265,9 @@
                     //* expect assembly qualified name
                     Guard.Against(typeString == null, "'Type' property not provided");
                     var type = Type.GetType(typeString);
-                    Guard.Against(type?.ToShortAssemblyTypeName() != typeString, "Message type does not correspond to internal type");
+                    Guard.Against(
+                        type?.ToShortAssemblyTypeName() != typeString,
+                        "Message type does not correspond to internal type");
                     messageType = type;
                 }
                 catch (Exception e)
@@ -215,26 +277,6 @@
             }
         }
 
-        public static void CreateLogger(out ILogger logger)
-        {
-            var loggerConfiguration = new LoggerConfiguration()
-                     .Enrich.WithExceptionDetails()
-                     .Destructure.UsingAttributes();
-            if (string.IsNullOrEmpty(EnvVars.AppInsightsInstrumentationKey))
-            {
-                loggerConfiguration.WriteTo.ColoredConsole();
-            }
-            else
-            {
-                loggerConfiguration.WriteTo.ApplicationInsights(
-                    EnvVars.AppInsightsInstrumentationKey,
-                    new TraceTelemetryConverter());
-            }
-            logger = loggerConfiguration.CreateLogger();
-
-            Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
-        }
-        
         public static void LoadAppConfig(out ApplicationConfig applicationConfig)
         {
             try
@@ -242,7 +284,7 @@
                 EnsureEnvironmentVars();
 
                 ConfigFunctions.LoadAppConfigFromRemoteRepo(out var applicationConfig1);
-                
+
                 applicationConfig = applicationConfig1;
             }
             catch (Exception e)
@@ -259,9 +301,7 @@
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureDevopsPat),
                     $"{nameof(EnvVars.AzureDevopsPat)} environment variable not set");
-                Guard.Against(
-                    string.IsNullOrWhiteSpace(EnvVars.AppId),
-                    $"{nameof(EnvVars.AppId)} environment variable not set");
+                Guard.Against(string.IsNullOrWhiteSpace(EnvVars.AppId), $"{nameof(EnvVars.AppId)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.SoapEnvironmentKey),
                     $"{nameof(EnvVars.SoapEnvironmentKey)} environment variable not set");
@@ -278,8 +318,8 @@
                     string.IsNullOrWhiteSpace(EnvVars.CosmosDbKey),
                     $"{nameof(EnvVars.CosmosDbKey)} environment variable not set");
                 Guard.Against(
-                    (EnvVars.SoapEnvironmentKey != SoapEnvironments.Development.Key) &&
-                    string.IsNullOrWhiteSpace(EnvVars.CosmosDbEndpointUri),
+                    EnvVars.SoapEnvironmentKey != SoapEnvironments.Development.Key
+                    && string.IsNullOrWhiteSpace(EnvVars.CosmosDbEndpointUri),
                     $"{nameof(EnvVars.CosmosDbEndpointUri)} environment variable not set");
                 Guard.Against(
                     string.IsNullOrWhiteSpace(EnvVars.AzureBusNamespace),
@@ -288,8 +328,6 @@
                     string.IsNullOrWhiteSpace(EnvVars.AzureResourceGroup),
                     $"{nameof(EnvVars.AzureResourceGroup)} environment variable not set");
             }
-
-
         }
     }
 }

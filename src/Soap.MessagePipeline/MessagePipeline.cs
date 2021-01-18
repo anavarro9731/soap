@@ -56,7 +56,7 @@
 
                     var msg = contextAfterMessageObtained.Message;  //* i think the only reason we are getting it from the context is in case it changes during upgrade() but at present it doesn't
 
-                    msg.Authenticate(contextAfterMessageObtained, v => identity = v); // TODO awaitable after finished
+                    msg.Authenticate(contextAfterMessageObtained, v => identity = v);
 
                     await contextAfterMessageObtained.CreateOrFindLogEntry(identity, v => messageLogEntry = v);
                     

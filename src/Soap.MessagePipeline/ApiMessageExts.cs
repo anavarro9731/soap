@@ -17,12 +17,10 @@
 
     public static class ApiMessageExtensions
     {
-
         
-
         internal static void Authenticate(this ApiMessage message, ContextWithMessage ctx, Action<IApiIdentity> outIdentity)
         {
-            var identity = message.Headers.GetIdentityToken() != null ? ctx.Authenticator.Authenticate(message) : null;
+            var identity = ctx.Authenticator.Authenticate(message);
             outIdentity(identity);
         }
 
