@@ -8,10 +8,17 @@ import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} fro
 import {StyledLink} from "baseui/link";
 import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
+import {Auth0Provider} from "@auth0/auth0-react";
+import Login from "./Login";
 addTranslations(translations);
 
 function Index() {
     return (
+        <Auth0Provider
+            domain="soap-dev.eu.auth0.com"
+            clientId="iZ21F1YoXICF0r1Wp66UDTV2aJWp6lqP"
+            redirectUri={window.location.origin}
+        >
         <App theme={LightTheme}>
             <Router>
                 <HeaderNavigation>
@@ -30,6 +37,9 @@ function Index() {
                             </StyledLink>
                         </StyledNavigationItem>
                     </StyledNavigationList>
+                    <StyledNavigationList $align={ALIGN.right}>
+                        <Login/>
+                    </StyledNavigationList>
                 </HeaderNavigation>
                 <Switch>
                     <Route path="/test-data">
@@ -41,6 +51,7 @@ function Index() {
                 </Switch>
             </Router>
         </App>
+        </Auth0Provider>
     );
 }
 

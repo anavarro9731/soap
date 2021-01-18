@@ -12,6 +12,8 @@
                 var x when x == SoapEnvironments.Development.Key => "http", _ => "https" }}://{Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME")}/api/";
 
         public static string AppId => Environment.GetEnvironmentVariable(nameof(AppId));
+        
+        public static string CorsOrigin => Environment.GetEnvironmentVariable(nameof(CorsOrigin));
 
         //* If present will log to azure otherwise won't
         public static string AppInsightsInstrumentationKey =>

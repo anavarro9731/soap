@@ -97,7 +97,7 @@ namespace Soap.Auth0
                 request.AddHeader("content-type", "application/json");
                 request.AddParameter(
                     "application/json",
-                    $"{{\"client_id\":\"{applicationConfig.Auth0EnterpriseAdminClientId}\",\"client_secret\":\"{applicationConfig.Auth0EnterpriseAdminClientSecret}\",\"audience\":\"{applicationConfig.Auth0TenantDomain}\",\"grant_type\":\"client_credentials\"}}",
+                    $"{{\"client_id\":\"{applicationConfig.Auth0EnterpriseAdminClientId}\",\"client_secret\":\"{applicationConfig.Auth0EnterpriseAdminClientSecret}\",\"audience\":\"{applicationConfig.Auth0TenantDomain}/api/v2/\",\"grant_type\":\"client_credentials\"}}",
                     ParameterType.RequestBody);
                 var response = client.Execute(request);
                 var tokenJson = response.Content;
@@ -168,6 +168,19 @@ namespace Soap.Auth0
                         Scope = resourceServerScopes.Select(x => x.Value).ToList(),
                         ClientId = applicationConfig.Auth0EnterpriseAdminClientId //* enterprise admin clientid
                     });
+                
+                //* give frontend access
+                var result = await client.Clients.CreateAsync(
+                    new ClientCreateRequest()
+                    {
+                        Name = $"{apiName}.ui",
+                        Description = $"{apiName} front end",
+                        ApplicationType = ClientApplicationType.Spa,
+                        IsFirstParty = true,
+                        Callbacks = new []{applicationConfig.CorsOrigin},
+                        AllowedLogoutUrls = new []{applicationConfig.CorsOrigin}
+                    });
+                
             }
 
             static List<ResourceServerScope> GetScopesFromMessages(ISecurityInfo securityInfo)

@@ -8,12 +8,13 @@
     using Soap.NotificationServer;
 
     /* If you add anything to this config you need to add validators for it and
-     if it relies on env variables also add it to the localsettings.json file and envvars class.
+     if it relies on env variables also add it to the localsettings.json file, envvars class.
         with the exception of things (e.g. logger) which are read before the config is loaded or in an effort to load the config. 
      if it relies on env vars then you will need to also add it to sampleconfig.cs used by create-new-service.ps1 to setup new config repos 
-            and to edit existing config.cs files in the soap demo config repo
+            and to edit existing config.cs files in the soap demo config repo which requires republishing the Config nuget pkg first
+     unless its hardcoded for dev, then it also need to go into the configure-local-environment.ps1, the part which sets local.settings.json and/or .env
         This is ensures that the config remains the sole point of contact for config information and the envvars the sole point of obtaining infrastructure config  
-     It may also need to be added to testconfig base class if it is required in TestRuns not to be null */
+     It may also need to be added to testconfig base class if it is required in TestRuns not to be null i.e. its part of the IBoostrapVariables interface  */
 
     public class ApplicationConfig : IBootstrapVariables, IConnectWithAuth0
     {
@@ -22,6 +23,8 @@
             Environment = environment;
             AppId = azureAppName;
         }
+        
+        public string CorsOrigin { get; set; }
 
         public string AppFriendlyName { get; set; }
 
@@ -60,6 +63,7 @@
                 RuleFor(x => x.AppFriendlyName).NotEmpty();
                 RuleFor(x => x.BusSettings).NotNull();
                 RuleFor(x => x.DatabaseSettings).NotNull();
+                RuleFor(x => x.CorsOrigin).NotEmpty();
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
                     .Must(

@@ -2,6 +2,7 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
+    "@auth0/auth0-react": "^1.2.0",
     "@microsoft/signalr": "^5.0.1",
     "@soap/modules": "^1.171.0",
     "baseui": "^9.106.0",
@@ -16,8 +17,11 @@
     "@babel/core": "^7.12.10",
     "parcel": "^1.12.4"
   },
+  "alias": {
+    "@auth0/auth0-react": "./node_modules/@auth0/auth0-react/dist/auth0-react.esm.js"
+  },
   "scripts": {
-    "build": "parcel build ./index.html --public-url ./",
-    "serve": "parcel serve ./index.html"
+    "build": "parcel build ./index.html --public-url ./ --no-source-maps",
+    "serve": "parcel serve ./index.html --no-source-maps"
   }
 }

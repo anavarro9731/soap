@@ -138,7 +138,7 @@
             
             if (string.IsNullOrEmpty(messageHeaders.GetAccessToken()))
             {
-                messageHeaders.SetIdentityToken("access token");
+                messageHeaders.SetAccessToken("access token");
             }
 
             if (string.IsNullOrEmpty(messageHeaders.GetQueue()))

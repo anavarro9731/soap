@@ -19,6 +19,7 @@ namespace Soap.Api.Sample.Afs
             DatabaseSettings = new CosmosSettings(EnvVars.CosmosDbKey, EnvVars.EnvironmentPartitionKey, EnvVars.CosmosDbDatabaseName, EnvVars.CosmosDbEndpointUri);
             StorageConnectionString = EnvVars.AzureWebJobsStorage;
             NotificationSettings = new NotificationServer.Settings();
+            CorsOrigin = EnvVars.CorsOrigin;
         }
     }
 }

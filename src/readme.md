@@ -1,7 +1,8 @@
-# DEV ENVIRONMENT 
-~ setup time 10-20 mins
+# DEV ENVIRONMENT SETUP
+~ setup time 45 mins
 
-##Steps
+##Prerequisites
+
 ###Install Powershell
 Some tools still require the x86 version so while you can install x64 SxS with x86, 
 be sure to install and use x86 with the commands in this guide. 
@@ -48,10 +49,7 @@ yarn -v
 
 Cosmos Emulator in particular throws errors about multiple instances without a restart but it's good practice anyway with so many critical installs.
 
-# CREATING A NEW SERVICE AND PIPELINE
-~ setup time 15-30 mins
-
-##Steps 
+## Setting up a new service and associated pipeline
 
 ### Accounts
 - Make sure you have an Azure account (portal.azure.com)
@@ -160,14 +158,49 @@ Then run the command `Run -CreateRelease` this will sort out creating the new br
 It will push the release to Azure and create the environment if necessary.
 Finally, it will leave you on the master branch afterwards.
 
-### NOTES
+# Authentication and Authorisation Options
+
+If you want this to be a protected application with private logins the platform supports easy
+integration with Auth0. It is not enabled by default and is optional. To enable this follow these steps:
+
+1. Create auth0 account (free level is fine)
+1. Create 3 tenant(s) in that account
+   1. yourorganisation-dev 
+   1. yourorganisation-vnext 
+   1. yourorganisation-rel
+In each tenant create a machine-machine application called "Enterprise Admin", if prompted don't create a default application.
+1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
+      for *Getting an access token for your API line*, from the line that begins with "--data" 
+      and set them in the ENV_Config file in the YourApi.Config repo for each environment.
+   1. Auth0TenantDomain = "https://soap-dev.eu.auth0.com"
+   1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
+   1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
+   
+WARNING: This clientSecret must be guarded with utmost protection, together with the clientid
+these are the keys to the castle for the entire service enterprise. The config repo should have azure
+devops security associated with it so that only the few persons with the need to access these variables
+do so. Except in cases of small teams, developers should not have access to the config repo. 
+If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
+
+Open you app's index.js file and wrap the <App> component in with the following component.
+```javascript
+        <Auth0Provider
+            domain="mydomain.eu.auth0.com"
+            clientId="YOUR_CLIENT_ID"
+            redirectUri={window.location.origin}
+        >
+            <App/>
+        </Auth0Provider>
+```
+
+# NOTES
  
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
 - When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
 
-### BackLog
+# BackLog
 MUST
 - Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
 SHOULD
