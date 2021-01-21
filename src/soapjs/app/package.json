@@ -4,11 +4,13 @@
   "dependencies": {
     "@auth0/auth0-react": "^1.2.0",
     "@microsoft/signalr": "^5.0.1",
-    "@soap/modules": "^1.171.0",
+    "@soap/modules": "^1.183.0",
     "baseui": "^9.106.0",
+    "history": "^5.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
+    "soap": "^0.36.0",
     "styletron-engine-atomic": "^1.4.6",
     "styletron-react": "^5.2.7",
     "test-data": "^1.0.2"
@@ -16,9 +18,6 @@
   "devDependencies": {
     "@babel/core": "^7.12.10",
     "parcel": "^1.12.4"
-  },
-  "alias": {
-    "@auth0/auth0-react": "./node_modules/@auth0/auth0-react/dist/auth0-react.esm.js"
   },
   "scripts": {
     "build": "parcel build ./index.html --public-url ./ --no-source-maps",

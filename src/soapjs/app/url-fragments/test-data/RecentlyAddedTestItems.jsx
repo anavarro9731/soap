@@ -13,22 +13,22 @@ export function RecentlyAddedTestItems() {
         }
     });
 
-    let listitems;
+    let listItems;
     if (e105) {
-        listitems = e105.e105_TestData.map(x => (
-            <ListItem key={x.e105_Id}>
-                <Paragraph1>{x.e105_Label} created: {x.e105_CreatedAt}</Paragraph1>
-                <StyledLink href={"#/test-data/view/" + x.e105_Id}>View</StyledLink>
+        listItems = e105.e105_TestData.map(item => (
+            <ListItem key={item.e105_Id}>
+                <Paragraph1>{item.e105_Label} created: {item.e105_CreatedAt}</Paragraph1>
+                <StyledLink href={"#/test-data/view/" + item.e105_Id}>View</StyledLink>
             </ListItem>
         ));
     } else {
-        listitems = <StyledSpinnerNext/>;
+        listItems = <StyledSpinnerNext/>;
     }
 
     return (
         <Fragment>
             <H5>Recently Added Test Items</H5>
-            {listitems}
+            {listItems}
         </Fragment>
     );
 }

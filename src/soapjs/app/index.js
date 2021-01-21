@@ -1,5 +1,5 @@
 import React from 'react';
-import {addTranslations, App} from '@soap/modules';
+import {addTranslations, App, config} from '@soap/modules';
 import {LightTheme} from 'baseui';
 import {H2} from "baseui/typography";
 import ReactDOM from "react-dom";
@@ -8,17 +8,13 @@ import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} fro
 import {StyledLink} from "baseui/link";
 import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
-import {Auth0Provider} from "@auth0/auth0-react";
-import Login from "./Login";
+import {Login, ProtectedRoute } from '@soap/modules/lib/react/Login'
+
 addTranslations(translations);
 
 function Index() {
+    
     return (
-        <Auth0Provider
-            domain="soap-dev.eu.auth0.com"
-            clientId="iZ21F1YoXICF0r1Wp66UDTV2aJWp6lqP"
-            redirectUri={window.location.origin}
-        >
         <App theme={LightTheme}>
             <Router>
                 <HeaderNavigation>
@@ -38,20 +34,17 @@ function Index() {
                         </StyledNavigationItem>
                     </StyledNavigationList>
                     <StyledNavigationList $align={ALIGN.right}>
-                        <Login/>
+                        <Login />
                     </StyledNavigationList>
                 </HeaderNavigation>
                 <Switch>
-                    <Route path="/test-data">
-                        <TestData/>
-                    </Route>
+                    <ProtectedRoute path="/test-data" component={TestData} />
                     <Route path="/">
                         <Home/>
                     </Route>
                 </Switch>
             </Router>
         </App>
-        </Auth0Provider>
     );
 }
 

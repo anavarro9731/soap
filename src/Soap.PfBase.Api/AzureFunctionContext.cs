@@ -2,7 +2,6 @@
 {
     using System;
     using System.IdentityModel.Tokens.Jwt;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
@@ -83,8 +82,8 @@
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
-                    await AuthoriseCall(appConfig, message.Headers.GetAccessToken());
-                    
+                    await Auth0Functions.AuthoriseCall(appConfig, message.Headers.GetAccessToken());
+
                     CreateMessageAggregator(out var messageAggregator);
 
                     CreateDataStore(
@@ -101,7 +100,9 @@
                     CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
 
                     var context = new BoostrappedContext(
-                        new Auth0Authenticator<TApiIdentity>(message.Headers.GetIdentityToken(), message.Headers.GetAccessToken()),
+                        new Auth0Authenticator<TApiIdentity>(
+                            message.Headers.GetIdentityToken(),
+                            message.Headers.GetAccessToken()),
                         messageMapper: mappingRegistration,
                         appConfig: appConfig,
                         logger: logger,
@@ -145,48 +146,7 @@
                 return x;
             }
 
-            static async Task AuthoriseCall(ApplicationConfig applicationConfig, string bearerToken)
-            {
-                var openIdConfig = await GetOpenIdConfig($"{applicationConfig.Auth0TenantDomain}");
-
-                var validationParameters = new TokenValidationParameters
-                {
-                    RequireSignedTokens = true,
-                    ValidAudience = EnvVars.FunctionAppHostUrlWithTrailingSlash,
-                    ValidateAudience = true,
-                    ValidateIssuer = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true,
-                    IssuerSigningKeys = openIdConfig.SigningKeys,
-                    ValidIssuer = openIdConfig.Issuer
-                };
-
-                var handler = new JwtSecurityTokenHandler();
-                try
-                {
-                    //* will validate formation and signature by default
-                    var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
-
-                    //* find the scope claims, get its contents and check you have the scope for this message
-                    //Guard.Against(principal.Claims.Single(x => x.), "This access token is not valid for this message"); //TODO filter
-                    
-                }
-                catch (SecurityTokenExpiredException ex)
-                {
-                    throw new ApplicationException("The access token is expired.", ex);
-                }
-
-                // Get the public keys from the jwks endpoint      
-                async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
-                {
-                    var openIdConfigurationEndpoint = $"{tenantDomain}.well-known/openid-configuration";
-                    var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                        openIdConfigurationEndpoint,
-                        new OpenIdConnectConfigurationRetriever());
-                    var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
-                    return openIdConfig;
-                }
-            }
+          
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
             {

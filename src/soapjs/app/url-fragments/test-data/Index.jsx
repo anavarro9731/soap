@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import {StyledLink} from "baseui/link";
 import {Route, Switch, Link} from "react-router-dom";
 import {ViewTestData} from "./ViewTestData";
@@ -6,11 +6,9 @@ import {CreateTestData} from "./CreateTestData";
 import {RecentlyAddedTestItems} from "./RecentlyAddedTestItems";
 import {useStyletron} from 'baseui';
 
-
 export default function() {
     const [css, theme] = useStyletron();
     return (
-        <Fragment>
             <Switch>
                 <Route path="/test-data/new">
                     <CreateTestData/>
@@ -30,6 +28,5 @@ export default function() {
                     </div>
                 </Route>
             </Switch>
-        </Fragment>
-    )
+    );
 }

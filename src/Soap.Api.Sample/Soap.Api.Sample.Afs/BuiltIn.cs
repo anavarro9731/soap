@@ -47,20 +47,12 @@
             ILogger log) =>
             await PlatformFunctions.GetBlob(req, log);
 
-        [FunctionName("GetLogo")]
-        public static IActionResult GetLogo(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
-            HttpRequest req,
-            ILogger log) =>
-            PlatformFunctions.GetLogo(req, log);
-        
-        
         [FunctionName("GetJsonSchema")]
-        public static IActionResult GetJsonSchema(
+        public static async Task<IActionResult> GetJsonSchema(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
             HttpRequest req,
             ILogger log) =>
-            PlatformFunctions.GetJsonSchema(log, typeof(C100v1_Ping).Assembly);
+            await PlatformFunctions.GetJsonSchema(req, log, typeof(C100v1_Ping).Assembly);
 
         [FunctionName("negotiate")]
         public static SignalRConnectionInfo GetSignalRInfo(

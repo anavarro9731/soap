@@ -44,6 +44,7 @@ export const headerKeys = {
     commandConversationId: "CommandConversationId",
     commandHash: "CommandHash",
     identityToken: "IdentityToken",
+    accessToken: "AccessToken",
     queueName: "QueueName",
     schema: "Schema",
     statefulProcessId: "StatefulProcessId",

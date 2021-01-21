@@ -28,13 +28,12 @@ let _logger = {
         else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
 
         if (toAzure) {
-            const appInsightsKey = process.env.APPINSIGHTS_KEY;
-            appInsightsKey || console.log("process.env.APPINSIGHTS_KEY not defined check .env file.")
+
 
             if (!_appInsights) {
                 _appInsights = new ApplicationInsights({
                     config: {
-                        instrumentationKey: appInsightsKey
+                        instrumentationKey: vars().appInsightsKey
                     }
                 });
                 _appInsights.loadAppInsights();
@@ -47,6 +46,7 @@ let _logger = {
 let _callbacks = [];
 let _sessionDetails;
 let _receiver;
+let _auth0Info;
 (async function() {
      _sessionDetails = await setupSession();
     if (_callbacks.length > 0) {
@@ -55,17 +55,6 @@ let _receiver;
     _callbacks = null;
 }());
 
-async function registerMessageTypesFromApi() {
-
-    const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
-    functionAppRoot || _logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
-    const endpoint = `${functionAppRoot}/GetJsonSchema`;
-    const jsonArrayOfMessages = await global.fetch(endpoint)
-        .then(response => response.json());
-
-    registerMessageTypes(jsonArrayOfMessages);
-    _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
-}
 
 async function setupSession() {
 
@@ -73,7 +62,7 @@ async function setupSession() {
 
     _receiver = async (processor) => {
 
-        const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+        const functionAppRoot = vars().functionAppRoot;
 
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl(functionAppRoot)
@@ -96,16 +85,39 @@ async function setupSession() {
         return hubConnection.connectionId;
 
     };
-    
+
     return await createBusSession();
+}
+
+async function registerMessageTypesFromApi() {
+
+    const endpoint = `${vars().functionAppRoot}/GetJsonSchema`;
+    
+    const jsonArrayOfMessages = await global.fetch(endpoint)
+        .then(response => { 
+            
+            const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
+
+            if  (auth0Enabled) {
+                _auth0Info = {
+                    uiAppId : response.headers.get('Auth0-UI-Application-ClientId'),
+                    tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
+                    isAuthenticated : false,
+                    accessToken : null,
+                    identityToken : null
+                };
+            }
+            
+            return response.json();
+        });
+
+    registerMessageTypes(jsonArrayOfMessages);
+    _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
 }
 
 async function createBusSession() {
     
-    const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
-    serviceBusConnectionString || _logger.log("process.env.SERVICEBUS_CONN not defined check .env file.")
-
-    const serviceBusClient = new ServiceBusClient(serviceBusConnectionString); //* timeout at the default of [5 minutes] of inactivity on the AMQP connection
+        const serviceBusClient = new ServiceBusClient(vars().serviceBusConnectionString); //* timeout at the default of [5 minutes] of inactivity on the AMQP connection
     //* will hold lock on the session for 5 mins. if the user F5's then you will get a new session id and the old one will die off with the servicebusClient 
     //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
     // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
@@ -230,10 +242,9 @@ let _sender = (msg) => {
 };
 
 function getSasUrl(message) {
-    const blobStorageUri = process.env.BLOBSTORAGE_URI;
-    blobStorageUri || _logger.log("process.env.BLOBSTORAGE_URI not defined check .env file.")
+
     const sasToken = getHeader(message, headerKeys.sasStorageToken);
-    const sasUrl = `${blobStorageUri}${sasToken}`;
+    const sasUrl = `${vars().blobStorageUri}${sasToken}`;
     _logger.log("attaching to " + sasUrl);
     return sasUrl;
 }
@@ -251,7 +262,32 @@ async function blobToString(blob) {
     });
 }
 
+function vars() {
+    const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
+    functionAppRoot || _logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.");
+    const appInsightsKey = process.env.APPINSIGHTS_KEY;
+    appInsightsKey || _logger.log("process.env.APPINSIGHTS_KEY not defined check .env file.");
+    const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
+    serviceBusConnectionString || _logger.log("process.env.SERVICEBUS_CONN not defined check .env file.");
+    const blobStorageUri = process.env.BLOBSTORAGE_URI;
+    blobStorageUri || _logger.log("process.env.BLOBSTORAGE_URI not defined check .env file.");
+    const envPartitionKey = process.env.ENVIRONMENT_PARTITION_KEY;
+    envPartitionKey || _logger.log("process.env.ENVIRONMENT_PARTITION_KEY not defined check .env file.")
+    
+    return {
+        functionAppRoot,
+        audience: functionAppRoot + '/',
+        appInsightsKey,
+        serviceBusConnectionString,
+        blobStorageUri,
+        envPartitionKey
+    };
+}
+
 export default {
+    get vars() {
+      return vars();  
+    },
     get startupCallbacks() {
         return _callbacks;
     },
@@ -261,11 +297,8 @@ export default {
     get logger() {
         return _logger;
     },
-    set receiver(r) {
-        _receiver = r;
-    },
-    set sender(s) {
-        _sender = s;
+    get auth0() {
+        return _auth0Info;
     },
     send(message) {
         _sender(message);

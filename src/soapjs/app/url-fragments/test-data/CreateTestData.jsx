@@ -1,9 +1,8 @@
 import {AutoForm, JsonView, translate, useEvent} from "@soap/modules";
 import {H1} from "baseui/typography";
-import React, {Fragment, useState} from "react";
+import React, {useState} from "react";
 import {Cell, Grid} from "baseui/layout-grid";
 import wordKeys from "../../translations/word-keys";
-import {Route} from "react-router-dom";
 
 export function CreateTestData() {
 
@@ -20,7 +19,6 @@ export function CreateTestData() {
     });
 
     return (
-        <Fragment>
             <Grid>
                 <Cell span={6}>
                     <H1>Form</H1>
@@ -36,6 +34,5 @@ export function CreateTestData() {
                     }} sendQuery={testDataCreated}/>
                 </Cell>
             </Grid>
-        </Fragment>
     );
 }

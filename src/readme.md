@@ -164,6 +164,9 @@ If you want this to be a protected application with private logins the platform 
 integration with Auth0. It is not enabled by default and is optional. To enable this follow these steps:
 
 1. Create auth0 account (free level is fine)
+   1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
+      and configure any other specifics that will apply to all services
+   1. Enable MFA again from the left-nav if desired
 1. Create 3 tenant(s) in that account
    1. yourorganisation-dev 
    1. yourorganisation-vnext 
@@ -176,13 +179,15 @@ In each tenant create a machine-machine application called "Enterprise Admin", i
    1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
    1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
    
+
+
 WARNING: This clientSecret must be guarded with utmost protection, together with the clientid
 these are the keys to the castle for the entire service enterprise. The config repo should have azure
 devops security associated with it so that only the few persons with the need to access these variables
 do so. Except in cases of small teams, developers should not have access to the config repo. 
 If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
 
-Open you app's index.js file and wrap the <App> component in with the following component.
+Open you app's index-with-auth.js file and set the following attributes with values from XXX.
 ```javascript
         <Auth0Provider
             domain="mydomain.eu.auth0.com"
@@ -192,6 +197,9 @@ Open you app's index.js file and wrap the <App> component in with the following 
             <App/>
         </Auth0Provider>
 ```
+Point index.html at index-with-auth.js rather than index.js.
+You may want to update other settings in auth0 on the front-end app for a more customised login experience.
+(Does the app update function in checkhealth overwrite these settings, need to check....)
 
 # NOTES
  

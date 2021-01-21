@@ -1,13 +1,18 @@
 namespace Soap.PfBase.Api.Functions
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Soap.Auth0;
+    using Soap.Config;
 
     public static partial class PlatformFunctions
     {
-        public static IActionResult GetJsonSchema(ILogger log, Assembly messagesAssembly)
+        public static async Task<IActionResult> GetJsonSchema(HttpRequest req, ILogger log, Assembly messagesAssembly)
         {
             Serilog.ILogger logger = null;
             try
@@ -16,8 +21,21 @@ namespace Soap.PfBase.Api.Functions
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                dynamic result = DiagnosticFunctions.GetSchema(appConfig, messagesAssembly).AsJson;
+                var tasks = new List<Task>();
 
+                dynamic result = null;
+                tasks.Add(
+                    Task.Run(
+                        () =>
+                            {
+                            result = DiagnosticFunctions.GetSchema(appConfig, messagesAssembly).AsJson;
+                            }));
+                
+                tasks.Add(SetAuth0Headers(appConfig));
+
+                //* these both take a bit of time, and hinder startup; run them in parallel; GetJsonSchema will take longer
+                await Task.WhenAll(tasks);
+                
                 return new OkObjectResult(result);
             }
             catch (Exception e)
@@ -25,6 +43,24 @@ namespace Soap.PfBase.Api.Functions
                 logger?.Fatal(e, $"Could not execute function {nameof(GetJsonSchema)}");
                 log.LogCritical(e.ToString());
                 return new OkObjectResult(e.ToString());
+            }
+
+            async Task SetAuth0Headers(ApplicationConfig appConfig)
+            {
+                AddHeader(req, "Access-Control-Expose-Headers", "*");
+                AddHeader(req, "Auth0-Enabled", appConfig.Auth0Enabled.ToString().ToLower());
+                
+                if (appConfig.Auth0Enabled)
+                {
+                    AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
+                    var applicationClientId = await Auth0Functions.GetUiApplicationClientId(appConfig, messagesAssembly);
+                    AddHeader(req, "Auth0-UI-Application-ClientId", applicationClientId);
+                }
+
+                static void AddHeader(HttpRequest req, string headerName, string headerValue)
+                {
+                    req.HttpContext.Response.Headers.Add(headerName, headerValue);
+                }
             }
         }
     }

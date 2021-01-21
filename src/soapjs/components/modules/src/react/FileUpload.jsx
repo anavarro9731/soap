@@ -11,9 +11,7 @@ import {useStyletron} from "baseui";
 import {uuidv4} from "../soap/util";
 import Compressor from 'compressorjs'
 import {Label3} from "baseui/typography";
-
-const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
-functionAppRoot || config.logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.")
+import config from "../soap/config";
 
 function resizeTo(blob, {maxHeight, maxWidth}) {
     return new Promise((resolve, reject) => {
@@ -29,7 +27,7 @@ function resizeTo(blob, {maxHeight, maxWidth}) {
 
 async function uploadBlobToBackend(blobInfo) {
 
-    const endpoint = `${functionAppRoot}/AddBlob`;
+    const endpoint = `${config.vars.functionAppRoot}/AddBlob`;
     await fetch(`${endpoint}?id=${blobInfo.id}`, {
         method: "post",
         //we don’t set Content-Type header manually, because a Blob object has a built-in type for Blob objects that type becomes the value of Content-Type.

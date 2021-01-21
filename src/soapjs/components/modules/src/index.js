@@ -14,3 +14,5 @@ export { default as JsonView } from './react/JsonView';
 export { default as FileUpload } from './react/FileUpload';
 export { default as AutoForm } from './react/AutoForm';
 export { default as ReactErrorBoundary } from './react/ReactErrorBoundary';
+export { Login, ProtectedRoute } from './react/Login';
+export { default as DebugLayer } from './react/DebugLayer';

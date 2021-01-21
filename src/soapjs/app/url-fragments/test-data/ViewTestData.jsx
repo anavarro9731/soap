@@ -2,7 +2,6 @@ import {JsonView} from "@soap/modules";
 import {H1} from "baseui/typography";
 import React, {Fragment} from "react";
 import {useParams} from "react-router-dom";
-import {StyledLink} from "baseui/link"
 
 export function ViewTestData() {
     

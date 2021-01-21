@@ -55,8 +55,7 @@ export default function AutoForm(props) {
 
             const command = createRegisteredTypedMessageInstanceFromAnonymousObject(formValues);
 
-            const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
-            const validationEndpoint = `${functionAppRoot}/ValidateMessage?type=${encodeURIComponent(command.$type)}`;
+            const validationEndpoint = `${config.vars.functionAppRoot}/ValidateMessage?type=${encodeURIComponent(command.$type)}`;
             
             let response = await fetch(validationEndpoint, {
                 method: 'POST',
