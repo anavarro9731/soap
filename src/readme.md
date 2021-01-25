@@ -14,7 +14,7 @@ Then run the following commands from a PWSH x86 *Elevated* command prompt
 
 ###Install Chocolatey
 ```
-@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command " [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 ```
 ###Install Jetbrains Rider 
 ```
@@ -29,6 +29,14 @@ az extension add --name azure-devops
 ```
 choco install git
 ```
+Then set the git config using
+```powershell
+git config --global user.name "John Doe"
+git config --global user.email johndoe@example.com
+```
+you need to be sure that these props are set globally
+because the projects created/managed by script do not
+set them
 ###Install Client-side tools
 ```
 choco install nodejs
@@ -47,7 +55,7 @@ yarn -v
 ```
 ### Restart your machine
 
-Cosmos Emulator in particular throws errors about multiple instances without a restart but it's good practice anyway with so many critical installs.
+There are several items that don't work right otherwise.
 
 ## Setting up a new service and associated pipeline
 
@@ -64,13 +72,32 @@ Once logged into shell.azure.com as global admin run:
 ```
 See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
 
+you will then get a series of values in the json response which you need to save somewhere
+temporarily that looks like the following:
+You need to obtain three 3 values.
+1. appId , retain as, clientId
+2. password , retain as, clientSecret
+3. tenant , retain as, tenantId
+```javascript
+{
+"appId": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
+"displayName": "DevopsServicePrincipal",
+"name": "http://DevopsServicePrincipal",
+"password": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
+"tenant": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e"
+}
+```
 #### Devops key
+
 You will need to create a Personal Access Token(s) with proper permissions to satisfy to variables
 For the ado-pat variable you need a PAT which must be able to read from the source repo for the ```.version``` file and the config repo for the ```Config.cs``` file.
 For the nuget-key variable the PAT must be able to read/write from the package feed.
 Both variables can use the same PAT.
 
 ### Create Source Code and Infrastructure
+
+Open powershell.
+
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
 Next you must edit the pipeline variables for the new build.
 These are listed in the ```azure-pipelines.yml``` file in the root of the new project.
@@ -91,8 +118,7 @@ have to do this for the `Release` environment when it is created also.
 - https://plugins.jetbrains.com/plugin/10249-powershell
 
 2. Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
-and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
-w
+   and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
 
 3. The following are the cloud services that need to be considered in regards to **local development** when the function app is running in the cloud none of the following apply.
 
@@ -106,11 +132,11 @@ Service|Setup Required|Environment Separation Method|Config Variable
 ---|---|---|---
 Azure ServiceBus|No|**Session-Enabled Queue on VNext instance** (SessionId=EPK)<br />Subscriptions and Queues will be created with the name of each EPK appended when you run the /CheckHealth function|AzureWebJobsServiceBus
 Azure SignalR Service|No|**Group-Enabled Messages on VNext instance** (Group=EPK)<br />SignalR Groups will be created for your EPK and all connections initiated from your machine will be added to that Group, finally any Websocket Broadcasts will be limited to your the Group for your EPK. These will expire when you kill of your connections.|AzureSignalRConnectionString
-Azure Storage (Blob)|You will need to start the Azurite instance or you will get an error. In rider this is done from the View>Tool Windows>Services window. Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance.|**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
-Azure CosmosDb|No|**CosmosDb Emulator Local Instance or Cosmos containers for each EPK**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
+Azure Storage (Blob)|You will need to start the Azurite instance or you will get an error. In rider this is done from the View>Tool Windows>Services window. If attempting to start it pops up a dialog asking you to confirm some settings, you need to choose the system global file path to the azure node module (e.g. `~\AppData\Roaming\npm\node_modules\azurite`). Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance. |**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
+Azure CosmosDb|No|**Cosmos containers for each EPK (or CosmosDb Emulator Local Instance)**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
 
-*A note on the emulators: You may want to run `netstat -ao` to check nothing is using port 8081 before starting the cosmos emulator or ports 10000-10003
-before starting azurite, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json*
+*A note on the emulators: You may want to run `netstat -ao` to check nothing is using ports 10000-10003
+before starting azurite, or port 8081 before starting the cosmos emulator, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json*
 
 Assuming you have followed the steps in order from the [link](#creating-a-new-service-and-pipeline) section then it should already have created all the VNEXT cloud services.
 You know need to update the local.settings.json and .env files and with values from the new cloud resources
@@ -123,7 +149,16 @@ ignore these and navigate in a browser to http://localhost:7071/api/checkhealth 
 
 is complete the errors should stop.
 
-Last you need to build and run the client app, in a terminal goto the /app folder in your project and run
+Last you need to build and run the client app.
+Before you can do that you need to import the files into the solution, 
+you can do that by using the "attach folder" feature.
+
+Press {Alt+1} to make sure the Solution Explorer is in view.
+Then right-click on the solution root node and select Add->Attach Existing Folder
+then choose the "app" folder in the root of the new repo.
+This will add it as a node in the solution file/folder treeview.
+
+Next, open a terminal {Ctrl+Alt+1} goto the /app folder in your project and run
 `yarn install`
 `yarn run serve`
 then navigate to http://localhost:1234/
@@ -163,6 +198,8 @@ Finally, it will leave you on the master branch afterwards.
 If you want this to be a protected application with private logins the platform supports easy
 integration with Auth0. It is not enabled by default and is optional. To enable this follow these steps:
 
+## Setup 
+
 1. Create auth0 account (free level is fine)
    1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
       and configure any other specifics that will apply to all services
@@ -178,28 +215,31 @@ In each tenant create a machine-machine application called "Enterprise Admin", i
    1. Auth0TenantDomain = "https://soap-dev.eu.auth0.com"
    1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
    1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
-   
+   1. Auth0Enabled = true;
 
-
-WARNING: This clientSecret must be guarded with utmost protection, together with the clientid
+**WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
 these are the keys to the castle for the entire service enterprise. The config repo should have azure
 devops security associated with it so that only the few persons with the need to access these variables
 do so. Except in cases of small teams, developers should not have access to the config repo. 
 If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
 
-Open you app's index-with-auth.js file and set the following attributes with values from XXX.
-```javascript
-        <Auth0Provider
-            domain="mydomain.eu.auth0.com"
-            clientId="YOUR_CLIENT_ID"
-            redirectUri={window.location.origin}
-        >
-            <App/>
-        </Auth0Provider>
-```
-Point index.html at index-with-auth.js rather than index.js.
-You may want to update other settings in auth0 on the front-end app for a more customised login experience.
-(Does the app update function in checkhealth overwrite these settings, need to check....)
+If you are using Auth, each message will now be protected by default and require that the
+user have permission to send it. You can give a user permissions directly, or via a role
+using the Auth0 portal. Permissions in the form of "execute:messagename" will be created
+automatically from the list of messages in the system and synced during deployment as a 
+step of the health check. simply assign them using the self-explanatory portal features
+to give users access.
+
+For messages which should not require any auth you can add the "NoAuth" attribute to those
+messages and they will be allowed regardless of Auth0 state.
+
+## Frontend Aspects
+The <Login /> control in index.js will now render the appropriate controls.
+If you are not ever using Auth you can safely remove the control altogether.
+
+
+## Inter-Service Messsages
+
 
 # NOTES
  
