@@ -87,7 +87,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected void CompleteProcess()
         {
-            var username = context.MessageLogEntry.MessageMeta.RequestedBy?.UserName;
+            var username = context.MessageLogEntry.MessageMeta.RequestedBy?.Id;
             RecordCompleted(username);
         }
 
@@ -102,7 +102,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessContinued(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
+                    context.MessageLogEntry.MessageMeta.RequestedBy?.Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -114,7 +114,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.RequestedBy?.UserName,
+                    context.MessageLogEntry.MessageMeta.RequestedBy?.Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }

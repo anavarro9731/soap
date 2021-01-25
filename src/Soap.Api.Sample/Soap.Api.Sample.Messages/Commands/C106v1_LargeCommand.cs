@@ -3,6 +3,7 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
+    [NoAuth]
     public class C106v1_LargeCommand : ApiCommand
     {
         public string C106_Large256KbString { get; set; } = new string('*', 256000);

@@ -32,7 +32,7 @@
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper output,
-            IApiIdentity identity,
+            ApiIdentity identity,
             byte retries,
             IDocumentRepository rollingRepo,
             (Func<DataStore, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
@@ -58,7 +58,6 @@
                 CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, out var bus);
 
                 var context = new BoostrappedContext(
-                    new FakeMessageAuthenticator(identity),
                     messageMapper: messageMapper,
                     appConfig: appConfig,
                     logger: logger,
@@ -114,7 +113,7 @@
 
                     try
                     {
-                        await MessagePipeline.Execute(message, context);
+                        await MessagePipeline.Execute(message, context, identity);
 
                         x.Success = true;
                         /*  What we are primarily trying to achieve is to make sure that each execute sets the activeprocesstate,

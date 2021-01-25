@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Soap.Api.Sample.Messages.Commands;
 using Soap.Api.Sample.Messages.Events;
@@ -9,6 +10,7 @@ public class SecurityInfo : ISecurityInfo
     {
         new ApiPermissionGroup
         {
+            Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
             Name =   "Ping Pong",
             ApiPermissions = new List<string>
             {

@@ -23,7 +23,6 @@ namespace Soap.PfBase.Api.Functions
                 ISecurityInfo securityInfo,
                 ILogger log)
             where TInboundMessage : ApiCommand, new()
-            where TIdentity : class, IApiIdentity, new()
             where TOutboundMessage : ApiEvent
             where TSendLargeMsg : ApiCommand, new()
             where TReceiveLargeMsg : ApiMessage
@@ -36,8 +35,7 @@ namespace Soap.PfBase.Api.Functions
                 var content = new PushStreamContent(
                     async (outputSteam, httpContent, transportContext) =>
                         await DiagnosticFunctions
-                            .OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg,
-                                TIdentity>(
+                            .OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg>(
                                 outputSteam,
                                 httpContent,
                                 transportContext,

@@ -51,7 +51,7 @@
             return schema;
         }
 
-        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
+        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TReceiveLargeMsg>(
             Stream outputStream,
             HttpContent httpContent,
             TransportContext transportContext,
@@ -62,7 +62,6 @@
             ISecurityInfo securityInfo,
             ILogger logger)
             where TPing : ApiCommand, new()
-            where TIdentity : class, IApiIdentity, new()
             where TPong : ApiMessage
             where TSendLargeMsg : ApiCommand, new()
             where TReceiveLargeMsg : ApiMessage
@@ -91,14 +90,14 @@
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
 
-                await GetPingPongMessageTestResults<TPing, TPong, TIdentity>(
+                await GetPingPongMessageTestResults<TPing, TPong>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
                     signalRBinding,
                     WriteLine);
 
-                await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
+                await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
@@ -206,13 +205,13 @@
             return json;
         }
 
-        private static async Task GetPingPongMessageTestResults<TPing, TPong, TIdentity>(
+        private static async Task GetPingPongMessageTestResults<TPing, TPong>(
             ILogger logger,
             ApplicationConfig appConfig,
             MapMessagesToFunctions mappings,
             IAsyncCollector<SignalRMessage> signalRBinding,
             Func<string, ValueTask> writeLine)
-            where TPing : ApiCommand, new() where TIdentity : class, IApiIdentity, new() where TPong : ApiMessage
+            where TPing : ApiCommand, new() where TPong : ApiMessage
 
         {
             await writeLine("Running Message Test...");
@@ -223,11 +222,12 @@
             await writeLine($"Sending {typeof(TPing).Name} ...");
 
             //*  should publish/send pong
-            var r = await AzureFunctionContext.Execute<TIdentity>(
+            var r = await AzureFunctionContext.Execute(
                         message.ToJson(SerialiserIds.ApiBusMessage),
                         mappings,
                         message.Headers.GetMessageId().ToString(),
                         message.GetType().ToShortAssemblyTypeName(),
+                        null,
                         logger,
                         appConfig,
                         signalRBinding);

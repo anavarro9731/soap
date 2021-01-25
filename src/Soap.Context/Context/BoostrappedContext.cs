@@ -14,8 +14,6 @@
     {
         public readonly IBootstrapVariables AppConfig;
 
-        public readonly IAuthenticate Authenticator;
-
         public readonly IBlobStorage BlobStorage;
 
         public readonly IBus Bus;
@@ -31,7 +29,6 @@
         public readonly NotificationServer NotificationServer;
 
         public BoostrappedContext(
-            IAuthenticate authenticator,
             IBootstrapVariables appConfig,
             DataStore dataStore,
             IMessageAggregator messageAggregator,
@@ -42,7 +39,6 @@
             MapMessagesToFunctions messageMapper)
         {
             this.MessageMapper = messageMapper;
-            this.Authenticator = authenticator;
             this.AppConfig = appConfig;
             this.DataStore = dataStore;
             this.MessageAggregator = messageAggregator;
@@ -54,7 +50,6 @@
 
         protected BoostrappedContext(BoostrappedContext c)
         {
-            this.Authenticator = c.Authenticator;
             this.AppConfig = c.AppConfig;
             this.DataStore = c.DataStore;
             this.MessageAggregator = c.MessageAggregator;

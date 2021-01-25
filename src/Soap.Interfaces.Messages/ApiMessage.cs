@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using CircuitBoard;
     using CircuitBoard.Messages;
@@ -56,6 +57,10 @@
             }
 
             messageHeaders.SetSchema(message.GetType().FullName);
+            
+            Ensure(
+                messageHeaders.GetIdentityChain() != null,
+                "All inter-service outgoing commands from a service must have an identity chain header");
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -67,9 +72,12 @@
             Ensure(messageHeaders.GetQueue() != null, $"All outgoing Api commands must have a {Keys.QueueName} header set");
 
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api commands must have a {nameof(Keys.Schema)} header set");
-
+            
+            
             /* NOT SET
-            identity token optionally present, some message are anonymous though most aren't    
+            identity token optionally present, some message are anonymous though most aren't
+            access token optionally present, some messages are anonymous
+            identitychain should always be present on inter-service commands, as there is always at least one identifiable party, the service
             stateful process id optionally present when stateful process is involved   
             topic n/a
             azure sequence number, allows a scheduled message to be a cancelled later, but not sure its useful on the message itself so not setting yet
@@ -109,7 +117,9 @@
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api events must have a {nameof(Keys.Schema)} header set");
 
             /* NOT SET
-            identity token optionally present, some message are anonymous though most aren't    
+            identity token optionally present, some message are anonymous though most aren't
+            identitychain only present on commands
+            access token not present on events            
             stateful process id optionally present when stateful process is involved    
             queue name n/a
             blob id only present on large messages
@@ -144,6 +154,11 @@
             if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
             {
                 messageHeaders.SetQueueName("queue name");
+            }
+            
+            if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityChain()))
+            {
+                messageHeaders.SetIdentityChain("a_user,another_user;");
             }
 
             if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
@@ -201,11 +216,26 @@
                     messageHeaders.GetCommandConversationId() != null,
                     $"All incoming Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
             }
+
+            if (messageHeaders.GetIdentityToken() != null)
+            {
+                Ensure(msg is ApiCommand, $"All incoming Api messages with {Keys.IdentityToken} header can only be commands");
+                
+                Ensure(
+                    messageHeaders.GetAccessToken() != null,
+                    $"All incoming Api messages with {Keys.IdentityToken} header set must also have {Keys.AccessToken} set");
+
+                Ensure(
+                    messageHeaders.GetIdentityChain() != null,
+                    $"All incoming Api messages with {Keys.IdentityToken} header set must also have {Keys.IdentityChain} set");
+            }
             
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
 
             //* not validated
-            //* identity token optionally present, some message are anonymous though most aren't    
+            //* identity token optionally present, some message are anonymous though most aren't
+            //* access token optionally present, some messages are anonymous
+            //* identitychain optionally present, only set on commands with an identity
             //* stateful process id optionally present when stateful process is involved    
             //* queue name not relevant anymore
             //* topic not relevant anymore
@@ -214,10 +244,6 @@
             //* sasstoragetoken only present on outgoing UIFormEvents or large incoming commands
         }
 
-        // private static void CheckWebSocketClientHeaders(MessageHeaders messageHeaders)
-        // {
-        //
-        // }
 
         private static void Ensure(bool acceptable, string errorMessage)
         {
@@ -250,6 +276,12 @@
         public static string GetIdentityToken(this MessageHeaders m)
         {
             m.TryGetValue(Keys.IdentityToken, out var x);
+            return x;
+        }
+        
+        public static string GetIdentityChain(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.IdentityChain, out var x);
             return x;
         }
         
@@ -372,6 +404,17 @@
                 m.Add(new Enumeration(Keys.AccessToken, identityToken));
             }
             else throw new ApplicationException($"Cannot set header {Keys.AccessToken} because it has already been set");
+            
+            return m;
+        }
+        
+        public static MessageHeaders SetIdentityChain(this MessageHeaders m, string identityChain)
+        {
+            if (!m.Exists(v => v.Key == Keys.IdentityChain))
+            {
+                m.Add(new Enumeration(Keys.IdentityChain, identityChain));
+            }
+            else throw new ApplicationException($"Cannot set header {Keys.IdentityChain} because it has already been set");
             
             return m;
         }
@@ -518,5 +561,8 @@
 
         //* dest topic when its an event
         internal const string Topic = nameof(Topic);
+        
+        //* comma separated list of identities that have handled messages in this workflow
+        internal const string IdentityChain = nameof(IdentityChain);
     }
 }

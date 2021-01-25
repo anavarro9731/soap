@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Tests
 {
     using System.Collections.Generic;
+    using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
 
@@ -8,17 +9,9 @@
 
     public static class Identities
     {
-        public static readonly User UserOne = new User
+        public static readonly ApiIdentity UserOne = new ApiIdentity()
         {
-            id = Ids.UserOne,
-            UserName = "User One",
-            ApiPermissionGroups = new List<ApiPermissionGroup>
-            {
-                new ApiPermissionGroup
-                {
-                    Name = "Upgrade Database"
-                }
-            }
+            Id = Ids.ApiIdOne,
         };
     }
 }

@@ -4,6 +4,7 @@ namespace Soap.Api.Sample.Messages.Commands
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
+    [NoAuth]
     public class C104v1_TestUnitOfWork : ApiCommand
     {
         public string C104_HansSoloNewName { get; set; }

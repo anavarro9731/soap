@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using FluentValidation;
+    using Soap.Interfaces;
 
     public class NotificationServer
     {

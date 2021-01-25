@@ -6,6 +6,7 @@ namespace Soap.Api.Sample.Logic.Processes
     using Mainwave.MimeTypes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Interfaces;
@@ -21,20 +22,24 @@ namespace Soap.Api.Sample.Logic.Processes
             async message =>
                 {
                 {
-                    GetNames(message, out var eventName, out var formDataEventType);
+                    GetTypeInfo(message, out string eventShortAssemblyTypeName, out Type eventType, out string commandShortAssemblyTypeName, out Type commandType);
 
-                    Guard.Against(formDataEventType == null, "Cannot find command of type: " + message.C109_FormDataEventName);
+                    Guard.Against(eventType == null, "Cannot find command of type: " + message.C109_FormDataEventName);
 
                     Guard.Against(
-                        !formDataEventType.InheritsOrImplements(typeof(UIFormDataEvent)),
+                        !eventType.InheritsOrImplements(typeof(UIFormDataEvent)),
                         $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
-                    if (BlobsNeedToBeSaved(eventName))
+                    //  TODO test guard
+                    Guard.Against((!eventType.HasAttribute<NoAuthAttribute>()) && !Meta.RequestedBy.ApiPermissions.Contains(commandType.Name),
+                        $"The user does not have permissions to execute the command {commandShortAssemblyTypeName} requested by this command");
+                    
+                    if (BlobsNeedToBeSaved(eventShortAssemblyTypeName))
                     {
                         await SaveTestBlobs();
                     }
 
-                    await PublishFormDataEvent(Bus, formDataEventType);
+                    await PublishFormDataEvent(Bus, eventType);
                 }
 
                 static async Task PublishFormDataEvent(BusWrapper bus, Type formDataEventType)
@@ -57,10 +62,12 @@ namespace Soap.Api.Sample.Logic.Processes
                         new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
                 }
 
-                static void GetNames(C109v1_GetForm message, out string eventName, out Type formDataEventType)
+                static void GetTypeInfo(C109v1_GetForm message, out string eventShortAssemblyTypeName, out Type eventType, out string commandShortAssemblyTypeName, out Type commandType)
                 {
-                    eventName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
-                    formDataEventType = Type.GetType(eventName);
+                    eventShortAssemblyTypeName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
+                    eventType = Type.GetType(eventShortAssemblyTypeName);
+                    commandShortAssemblyTypeName = Activator.CreateInstance(eventType).As<UIFormDataEvent>().E000_CommandName;
+                    commandType = Type.GetType(commandShortAssemblyTypeName);
                 }
 
                 static bool BlobsNeedToBeSaved(string eventName) =>

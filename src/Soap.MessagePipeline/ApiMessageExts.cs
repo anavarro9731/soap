@@ -18,12 +18,6 @@
     public static class ApiMessageExtensions
     {
         
-        internal static void Authenticate(this ApiMessage message, ContextWithMessage ctx, Action<IApiIdentity> outIdentity)
-        {
-            var identity = ctx.Authenticator.Authenticate(message);
-            outIdentity(identity);
-        }
-
         internal static string GetSchema(this ApiMessage m) => m.GetType().ToShortAssemblyTypeName();
 
         internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)

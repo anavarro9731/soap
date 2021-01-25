@@ -13,12 +13,13 @@ namespace Soap.PfBase.Api.Functions
 
     public static partial class PlatformFunctions
     {
-        public static async Task HandleMessage<TApiIdentity>(
+        public static async Task HandleMessage(
             Message myQueueItem,
             string messageId,
             MapMessagesToFunctions handlerRegistration,
+            ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
-            ILogger log) where TApiIdentity : class, IApiIdentity, new()
+            ILogger log) 
         {
             Serilog.ILogger logger = null;
             try
@@ -27,11 +28,12 @@ namespace Soap.PfBase.Api.Functions
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                var result = await AzureFunctionContext.Execute<TApiIdentity>(
+                var result = await AzureFunctionContext.Execute(
                                  Encoding.UTF8.GetString(myQueueItem.Body),
                                  handlerRegistration,
                                  messageId,
                                  myQueueItem.Label,
+                                 securityInfo,
                                  logger,
                                  appConfig,
                                  signalRBinding);

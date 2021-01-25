@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
+    using Soap.Interfaces;
     using Typesafe.Mailgun;
 
     public class EmailChannel : IServerChannelInfo

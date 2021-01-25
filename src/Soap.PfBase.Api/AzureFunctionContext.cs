@@ -1,8 +1,6 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
-    using System.IdentityModel.Tokens.Jwt;
-    using System.Threading;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
@@ -11,9 +9,6 @@
     using Destructurama;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
-    using Microsoft.IdentityModel.Protocols;
-    using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-    using Microsoft.IdentityModel.Tokens;
     using Serilog;
     using Serilog.Exceptions;
     using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
@@ -60,15 +55,16 @@
             Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
         }
 
-        public static async Task<Result> Execute<TApiIdentity>(
+        public static async Task<Result> Execute(
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
             string messageIdAsString,
             string messageTypeShortAssemblyQualifiedName,
+            ISecurityInfo securityInfo,
             ILogger logger,
             ApplicationConfig appConfig,
             IAsyncCollector<SignalRMessage> signalRBinding,
-            DataStoreOptions dataStoreOptions = null) where TApiIdentity : class, IApiIdentity, new()
+            DataStoreOptions dataStoreOptions = null) 
 
         {
             {
@@ -82,7 +78,11 @@
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
-                    await Auth0Functions.AuthoriseCall(appConfig, message.Headers.GetAccessToken());
+                    ApiIdentity apiIdentity = null;
+                    if (IsProtectable(appConfig, messageType)) 
+                    {
+                        await Auth0Functions.AuthoriseCall(appConfig, message.Headers.GetAccessToken(), securityInfo, message, v => apiIdentity = v);
+                    } 
 
                     CreateMessageAggregator(out var messageAggregator);
 
@@ -100,9 +100,6 @@
                     CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
 
                     var context = new BoostrappedContext(
-                        new Auth0Authenticator<TApiIdentity>(
-                            message.Headers.GetIdentityToken(),
-                            message.Headers.GetAccessToken()),
                         messageMapper: mappingRegistration,
                         appConfig: appConfig,
                         logger: logger,
@@ -121,7 +118,7 @@
                         if (currentRun > 1) remainingRuns -= 1;
                         try
                         {
-                            await MessagePipeline.Execute(message, context);
+                            await MessagePipeline.Execute(message, context, apiIdentity);
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
                             x.CommandsSent.AddRange(bus.CommandsSent);
@@ -144,9 +141,10 @@
                 }
 
                 return x;
-            }
 
-          
+                //TODO filter
+                static bool IsProtectable(ApplicationConfig appConfig, Type messageType) => appConfig.Auth0Enabled && !messageType.HasAttribute<NoAuthAttribute>() && messageType.InheritsOrImplements(typeof(ApiCommand));
+            }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
             {

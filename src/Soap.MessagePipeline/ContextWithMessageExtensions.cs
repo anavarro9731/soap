@@ -24,7 +24,7 @@ namespace Soap.MessagePipeline
         
         internal static async Task CreateOrFindLogEntry(
             this ContextWithMessage ctx,
-            IApiIdentity identity,
+            ApiIdentity identity,
             Action<MessageLogEntry> outLogEntry)
         {
             {

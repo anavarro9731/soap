@@ -4,6 +4,6 @@
 
     public static class SoapAuth
     {
-        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(Auth0Authenticator<>));
+        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(Auth0Functions));
     }
 }

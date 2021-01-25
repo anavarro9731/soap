@@ -220,7 +220,9 @@ Log "Uploading Config Repo"
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
-git push -u origin --all
+g$gPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/soap/_git/$AzureDevopsName.config master --set-upstream"
+Write-Host $gPushCmd
+iex $gPushCmd
 
 Log-Step "Creating Service Repo, Please wait..."
 
@@ -252,6 +254,9 @@ Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
 (Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
 (Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src/', '') } | Set-Content $ServiceRoot\azure-pipelines.yml
 Set-Location $ServiceRoot
+
+Log "Customizing Project Files"
+
 Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js,*.jsx | ForEach-Object {

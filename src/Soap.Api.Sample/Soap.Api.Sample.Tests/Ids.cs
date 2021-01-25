@@ -9,6 +9,6 @@
 
     public static partial class Ids
     {
-        public static readonly Guid UserOne = Guid.NewGuid();
+        public static readonly string ApiIdOne = "some-auth0|Id";
     }
 }

@@ -52,6 +52,8 @@
             }
         }
 
+        protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
+
         protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.As<T>(); 
         
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
@@ -68,11 +70,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.UserName));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.Id));
             
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.UserName));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.Id));
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

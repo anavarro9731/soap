@@ -1,7 +1,6 @@
-﻿namespace Soap.NotificationServer
+﻿namespace Soap.Interfaces
 {
     using CircuitBoard;
-    using Soap.Interfaces.Messages;
 
     public class NotificationChannelTypes : TypedEnumeration<NotificationChannelTypes>
     {

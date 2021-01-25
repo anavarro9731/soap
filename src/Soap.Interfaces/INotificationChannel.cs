@@ -1,4 +1,4 @@
-﻿namespace Soap.NotificationServer
+﻿namespace Soap.Interfaces
 {
     public interface INotificationChannel
     {

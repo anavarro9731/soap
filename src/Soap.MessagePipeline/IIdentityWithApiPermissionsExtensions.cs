@@ -10,7 +10,7 @@
     public static class IIdentityWithApiPermissionsExtensions
     {
         public static void NotHavingPermissionToExecute(
-            this IIdentityWithApiPermissionGroups identity,
+            this IIdentityWithApiPermissions identity,
             ApiMessage message,
             string userName)
         {

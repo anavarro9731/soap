@@ -79,7 +79,7 @@
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log)
         {
-            await PlatformFunctions.HandleMessage<User>(myQueueItem, messageId, new HandlerRegistration(), signalRBinding, log);
+            await PlatformFunctions.HandleMessage(myQueueItem, messageId, new HandlerRegistration(), new SecurityInfo(), signalRBinding, log);
         }
 
         [FunctionName("AddToGroup")]

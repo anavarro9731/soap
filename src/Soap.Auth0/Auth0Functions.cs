@@ -5,9 +5,10 @@ namespace Soap.Auth0
     using System.IdentityModel.Tokens.Jwt;
     using System.Linq;
     using System.Reflection;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+    using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.LowLevel.Permissions;
     using global::Auth0.ManagementApi;
     using global::Auth0.ManagementApi.Models;
     using global::Auth0.ManagementApi.Paging;
@@ -19,10 +20,116 @@ namespace Soap.Auth0
     using RestSharp;
     using Soap.Config;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
 
     public static class Auth0Functions
     {
+        public static async Task AuthoriseCall(
+            ApplicationConfig applicationConfig,
+            string bearerToken,
+            ISecurityInfo securityInfo,
+            ApiMessage message,
+            Action<ApiIdentity> setApiIdentity)
+        {
+            {
+                var openIdConfig = await GetOpenIdConfig($"{applicationConfig.Auth0TenantDomain}");
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    RequireSignedTokens = true,
+                    ValidAudience = EnvVars.FunctionAppHostUrlWithTrailingSlash,
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKeys = openIdConfig.SigningKeys,
+                    ValidIssuer = openIdConfig.Issuer
+                };
+
+                var handler = new JwtSecurityTokenHandler();
+                try
+                {
+                    //* will validate formation and signature by default
+                    var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
+
+                    var permissionsString = principal.Claims.Single(x => x.Type == "permissions");
+                    var permissionsArray = permissionsString.Value.Split(' ');
+
+                    //TODO cause this routine to ignore things with bad format
+                    
+                    //* api permission format, execute:pingpong:134446A7-DA29-412F-AA1B-5FF9D1D0086C
+                    var apiPermissionGroupsAsStrings = permissionsArray.Where(x => x.StartsWith("execute"))
+                                                                       .Select(x => x.SubstringAfterLast(':').Trim().ToLower());
+                    var permissionsGroups =
+                        securityInfo.PermissionGroups.Where(pg => apiPermissionGroupsAsStrings.Contains(pg.Id.ToString().ToLower()));
+
+                    if (!permissionsGroups.Any(pg => pg.ApiPermissions.Contains(message.GetType().Name)))
+                    {
+                        throw new ApplicationException("This access token is not valid for this message");
+                    }
+
+                    var apiPermissions = permissionsGroups.SelectMany(x => x.ApiPermissions);
+
+                    var databasePermissionsAsStrings = permissionsArray.Where(IsDbPermission);
+                    var databasePermissions = databasePermissionsAsStrings.Select(
+                        x =>
+                            {
+                            //permission format read:OptionalScopeObjectType:134446A7-DA29-412F-AA1B-5FF9D1D0086C
+                            var databasePermissionString = x.SubstringBefore(':').Trim().ToUpper();
+                            var databasePermissionScopeId = Guid.Parse(x.SubstringAfterLast(':').Trim());
+
+                            var databasePermission = databasePermissionString switch
+                            {
+                                nameof(DatabasePermissions.READ) => DatabasePermissions.READ,
+                                nameof(DatabasePermissions.CREATE) => DatabasePermissions.CREATE,
+                                nameof(DatabasePermissions.UPDATE) => DatabasePermissions.UPDATE,
+                                nameof(DatabasePermissions.DELETE) => DatabasePermissions.DELETE,
+                            };
+                            
+
+                            return new DatabasePermissionInstance(
+                                databasePermission,
+                                new List<DatabaseScopeReference>() { new DatabaseScopeReference(databasePermissionScopeId) });
+                            }); 
+                    
+                    
+                    var apiIdentity = new ApiIdentity()
+                    {
+                        Id = principal.Identity.Name, //TODO check is id
+                        ApiPermissions = apiPermissions.ToList(),
+                        DatabasePermissions = databasePermissions.ToList()
+                    };
+                    setApiIdentity(apiIdentity);
+
+                    static bool IsDbPermission(string s) =>
+                        s.StartsWith(nameof(DatabasePermissions.READ).ToLower())
+                        || s.StartsWith(nameof(DatabasePermissions.UPDATE).ToLower())
+                        || s.StartsWith(nameof(DatabasePermissions.DELETE).ToLower())
+                        || s.StartsWith(nameof(DatabasePermissions.CREATE).ToLower());
+                }
+                catch (SecurityTokenExpiredException ex)
+                {
+                    throw new ApplicationException("The access token is expired.", ex);
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException("The access token is invalid.", e);
+                }
+            }
+
+            // Get the public keys from the jwks endpoint      
+            async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
+            {
+                var openIdConfigurationEndpoint = $"https://{tenantDomain}/.well-known/openid-configuration";
+                var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                    openIdConfigurationEndpoint,
+                    new OpenIdConnectConfigurationRetriever());
+                var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+                return openIdConfig;
+            }
+        }
+
         public static async Task CheckAuth0Setup(
             Assembly messagesAssembly,
             ISecurityInfo securityInfo,
@@ -162,7 +269,7 @@ namespace Soap.Auth0
                                              x => new ResourceServerScope
                                              {
                                                  Description = x.Description ?? x.Name,
-                                                 Value = "execute:" + Regex.Replace(x.Name.ToLower(), "[^a-zA-z0-9.]", "")
+                                                 Value = x.AsClaim()
                                              })
                                          .ToList();
 
@@ -214,57 +321,6 @@ namespace Soap.Auth0
                     true => await ProcessPage(client, ++pageNo, appName),
                     _ => null
                 };
-            }
-        }
-
-        public static async Task AuthoriseCall(ApplicationConfig applicationConfig, string bearerToken)
-        {
-            {
-                if (applicationConfig.Auth0Enabled) //TODO and message is authorisable
-                {
-                    var openIdConfig = await GetOpenIdConfig($"{applicationConfig.Auth0TenantDomain}");
-
-                    var validationParameters = new TokenValidationParameters
-                    {
-                        RequireSignedTokens = true,
-                        ValidAudience = EnvVars.FunctionAppHostUrlWithTrailingSlash,
-                        ValidateAudience = true,
-                        ValidateIssuer = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidateLifetime = true,
-                        IssuerSigningKeys = openIdConfig.SigningKeys,
-                        ValidIssuer = openIdConfig.Issuer
-                    };
-
-                    var handler = new JwtSecurityTokenHandler();
-                    try
-                    {
-                        //* will validate formation and signature by default
-                        var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
-
-                        //* find the scope claims, get its contents and check you have the scope for this message
-                        //Guard.Against(principal.Claims.Single(x => x.), "This access token is not valid for this message"); //TODO filter
-                    }
-                    catch (SecurityTokenExpiredException ex)
-                    {
-                        throw new ApplicationException("The access token is expired.", ex);
-                    }
-                    catch (Exception e)
-                    {
-                        throw new ApplicationException("The access token is invalid.", e);
-                    }
-                }
-            }
-
-            // Get the public keys from the jwks endpoint      
-            async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
-            {
-                var openIdConfigurationEndpoint = $"https://{tenantDomain}/.well-known/openid-configuration";
-                var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                    openIdConfigurationEndpoint,
-                    new OpenIdConnectConfigurationRetriever());
-                var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
-                return openIdConfig;
             }
         }
 

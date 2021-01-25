@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Soap.Interfaces;
 
     public class InMemoryChannel : IServerChannelInfo
     {

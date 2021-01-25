@@ -45,7 +45,7 @@ namespace Soap.PfBase.Tests
             dataStore.CommitChanges().Wait();
         }
 
-        protected void SetupTestByProcessingAMessage<T>(T msg, IApiIdentity identity, Action<MessageAggregatorForTesting>? setup = null)
+        protected void SetupTestByProcessingAMessage<T>(T msg, ApiIdentity identity, Action<MessageAggregatorForTesting>? setup = null)
             where T : ApiMessage
         {
             Result = ExecuteMessage(msg, identity, 0, setup:setup).Result;
@@ -54,7 +54,7 @@ namespace Soap.PfBase.Tests
 
         protected async Task TestMessage<T>(
             T msg,
-            IApiIdentity identity,
+            ApiIdentity identity,
             byte retries = 0,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
@@ -65,7 +65,7 @@ namespace Soap.PfBase.Tests
 
         private async Task<Result> ExecuteMessage<T>(
             T msg,
-            IApiIdentity identity,
+            ApiIdentity identity,
             byte retries,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,

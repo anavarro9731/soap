@@ -18,12 +18,15 @@
         }
 
         //from any class or struct 
-        public static TValue GetAttribute<TAttribute, TValue>(this Type type, Func<TAttribute, TValue> valueSelector)
+        public static TValue GetAttributeValue<TAttribute, TValue>(this Type type, Func<TAttribute, TValue> valueSelector)
             where TAttribute : Attribute
         {
-            var att = type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() as TAttribute;
-            if (att != null) return valueSelector(att);
+            if (type.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() is TAttribute att) return valueSelector(att);
             return default;
+        }
+        
+        public static bool HasAttribute<TAttribute>(this Type typeWithAttribute) where TAttribute : Attribute {
+            return typeWithAttribute.GetCustomAttributes(typeof(TAttribute), true).FirstOrDefault() is TAttribute;
         }
         
         public static bool HasAttribute(this PropertyInfo prop, Type attributeType){
