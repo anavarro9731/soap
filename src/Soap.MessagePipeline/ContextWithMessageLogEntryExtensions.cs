@@ -404,7 +404,7 @@
                     SerialisedMessage = json
                 };
 
-                await context.Bus.Send(instanceOfMessageFailedAllRetries);
+                await context.Bus.Send(instanceOfMessageFailedAllRetries, context.Message);
 
                 var exception = exceptionInfo.ExceptionThrownToContext();
                 
@@ -430,7 +430,7 @@
             {
                 SapiReceivedAt = meta?.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
-                UserName = meta?.RequestedBy?.Id,
+                UserName = meta?.ApiIdentity?.Id,
                 MessageId = message.Headers.GetMessageId(),
                 Schema = message.GetType().FullName,
                 Message = message,
@@ -454,7 +454,7 @@
                 Succeeded = true,
                 SapiReceivedAt = meta.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
-                UserName = meta.RequestedBy?.Id,
+                UserName = meta.ApiIdentity?.Id,
                 MessageId = message.Headers.GetMessageId(),
                 Schema = message.Headers.GetSchema(),
                 Message = message,

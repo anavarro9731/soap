@@ -5,6 +5,9 @@ namespace Soap.Auth0
     using System.IdentityModel.Tokens.Jwt;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Security.Claims;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel;
@@ -25,6 +28,8 @@ namespace Soap.Auth0
 
     public static class Auth0Functions
     {
+        private static OpenIdConnectConfiguration openIdConnectConfiguration;
+        
         public static async Task AuthoriseCall(
             ApplicationConfig applicationConfig,
             string bearerToken,
@@ -48,65 +53,84 @@ namespace Soap.Auth0
                 };
 
                 var handler = new JwtSecurityTokenHandler();
+
                 try
                 {
                     //* will validate formation and signature by default
                     var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
 
-                    var permissionsString = principal.Claims.Single(x => x.Type == "permissions");
-                    var permissionsArray = permissionsString.Value.Split(' ');
+                    ExtractPermissionsFromClaims(principal, out var apiPermissionGroupsAsStrings, out var dbPermissionsAsStrings);
 
-                    //TODO cause this routine to ignore things with bad format
-                    
-                    //* api permission format, execute:pingpong:134446A7-DA29-412F-AA1B-5FF9D1D0086C
-                    var apiPermissionGroupsAsStrings = permissionsArray.Where(x => x.StartsWith("execute"))
-                                                                       .Select(x => x.SubstringAfterLast(':').Trim().ToLower());
-                    var permissionsGroups =
-                        securityInfo.PermissionGroups.Where(pg => apiPermissionGroupsAsStrings.Contains(pg.Id.ToString().ToLower()));
+                    FilterOutBadPermissions(apiPermissionGroupsAsStrings, out var cleanPermissionGroups);
 
-                    if (!permissionsGroups.Any(pg => pg.ApiPermissions.Contains(message.GetType().Name)))
-                    {
-                        throw new ApplicationException("This access token is not valid for this message");
-                    }
+                    GetApiPermissionGroups(cleanPermissionGroups, securityInfo, out var permissionGroups);
 
-                    var apiPermissions = permissionsGroups.SelectMany(x => x.ApiPermissions);
+                    Authorise(message, permissionGroups);
 
-                    var databasePermissionsAsStrings = permissionsArray.Where(IsDbPermission);
-                    var databasePermissions = databasePermissionsAsStrings.Select(
-                        x =>
-                            {
-                            //permission format read:OptionalScopeObjectType:134446A7-DA29-412F-AA1B-5FF9D1D0086C
-                            var databasePermissionString = x.SubstringBefore(':').Trim().ToUpper();
-                            var databasePermissionScopeId = Guid.Parse(x.SubstringAfterLast(':').Trim());
+                    GetDbPermissionsList(dbPermissionsAsStrings, out var dbPermissions);
 
-                            var databasePermission = databasePermissionString switch
-                            {
-                                nameof(DatabasePermissions.READ) => DatabasePermissions.READ,
-                                nameof(DatabasePermissions.CREATE) => DatabasePermissions.CREATE,
-                                nameof(DatabasePermissions.UPDATE) => DatabasePermissions.UPDATE,
-                                nameof(DatabasePermissions.DELETE) => DatabasePermissions.DELETE,
-                            };
-                            
+                    GetApiPermissionsList(permissionGroups, out var permissions);
 
-                            return new DatabasePermissionInstance(
-                                databasePermission,
-                                new List<DatabaseScopeReference>() { new DatabaseScopeReference(databasePermissionScopeId) });
-                            }); 
-                    
-                    
-                    var apiIdentity = new ApiIdentity()
-                    {
-                        Id = principal.Identity.Name, //TODO check is id
-                        ApiPermissions = apiPermissions.ToList(),
-                        DatabasePermissions = databasePermissions.ToList()
-                    };
+                    CreateApiIdentity(principal, permissions, dbPermissions, out var apiIdentity);
+
                     setApiIdentity(apiIdentity);
 
-                    static bool IsDbPermission(string s) =>
-                        s.StartsWith(nameof(DatabasePermissions.READ).ToLower())
-                        || s.StartsWith(nameof(DatabasePermissions.UPDATE).ToLower())
-                        || s.StartsWith(nameof(DatabasePermissions.DELETE).ToLower())
-                        || s.StartsWith(nameof(DatabasePermissions.CREATE).ToLower());
+                    static void CreateApiIdentity(
+                        ClaimsPrincipal principal,
+                        List<string> apiPermissions,
+                        List<DatabasePermissionInstance> dbPermissions,
+                        out ApiIdentity apiIdentity)
+                    {
+                        apiIdentity = new ApiIdentity
+                        {
+                            Id = principal.Identity.Name, //TODO check is id
+                            ApiPermissions = apiPermissions,
+                            DatabasePermissions = dbPermissions
+                        };
+                    }
+
+                    static void GetApiPermissionsList(List<ApiPermissionGroup> permissionGroups, out List<string> permissions)
+                    {
+                        permissions = permissionGroups.SelectMany(x => x.ApiPermissions).ToList();
+                    }
+
+                    static void GetDbPermissionsList(
+                        string[] dbPermissionsAsStrings,
+                        out List<DatabasePermissionInstance> dbPermissions)
+                    {
+                        dbPermissions = dbPermissionsAsStrings.Select(
+                                                                  x =>
+                                                                      {
+                                                                      //permission format read:OptionalScopeObjectType:134446A7-DA29-412F-AA1B-5FF9D1D0086C
+                                                                      var databasePermissionString =
+                                                                          x.SubstringBefore(':').Trim().ToUpper();
+                                                                      var databasePermissionScopeId =
+                                                                          Guid.Parse(x.SubstringAfterLast(':').Trim());
+
+                                                                      var databasePermission = databasePermissionString switch
+                                                                      {
+                                                                          nameof(DatabasePermissions.READ) => DatabasePermissions
+                                                                              .READ,
+                                                                          nameof(DatabasePermissions.CREATE) =>
+                                                                              DatabasePermissions.CREATE,
+                                                                          nameof(DatabasePermissions.UPDATE) =>
+                                                                              DatabasePermissions.UPDATE,
+                                                                          nameof(DatabasePermissions.DELETE) =>
+                                                                              DatabasePermissions.DELETE,
+                                                                          _ => throw new ApplicationException(
+                                                                                   "Database permission type not valid")
+                                                                      };
+
+                                                                      return new DatabasePermissionInstance(
+                                                                          databasePermission,
+                                                                          new List<DatabaseScopeReference>
+                                                                          {
+                                                                              new DatabaseScopeReference(
+                                                                                  databasePermissionScopeId)
+                                                                          });
+                                                                      })
+                                                              .ToList();
+                    }
                 }
                 catch (SecurityTokenExpiredException ex)
                 {
@@ -118,20 +142,71 @@ namespace Soap.Auth0
                 }
             }
 
-            // Get the public keys from the jwks endpoint      
-            async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
+            static void FilterOutBadPermissions(string[] permissionsArray, out List<string> cleanPermissions)
             {
-                var openIdConfigurationEndpoint = $"https://{tenantDomain}/.well-known/openid-configuration";
-                var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                    openIdConfigurationEndpoint,
-                    new OpenIdConnectConfigurationRetriever());
-                var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
-                return openIdConfig;
+                /* if there are bad permissions data in auth0, we dont want to disable all users from logging in,
+                we will just ignore those permissions and log the problem */
+                var permissionRegex =
+                    "^(read|create|update|delete):[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}|(execute:[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12})$";
+                cleanPermissions = permissionsArray.Select(x => x.ToLower().Trim())
+                                                   .Where(x => Regex.IsMatch(x, permissionRegex))
+                                                   .ToList();
+            }
+
+            // Get the public keys from the jwks endpoint      
+            static async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
+            {
+                //cache til static expires in azure functions, as its expensive
+                openIdConnectConfiguration ??= await GetOpenIdConfigInternal(tenantDomain);
+                return openIdConnectConfiguration;
+                
+                static async Task<OpenIdConnectConfiguration> GetOpenIdConfigInternal(string tenantDomain)
+                {
+                    var openIdConfigurationEndpoint = $"https://{tenantDomain}/.well-known/openid-configuration";
+                    var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                        openIdConfigurationEndpoint,
+                        new OpenIdConnectConfigurationRetriever());
+                    var openIdConfig = await configurationManager.GetConfigurationAsync(CancellationToken.None);
+                    return openIdConfig;    
+                }
+            }
+
+            static void ExtractPermissionsFromClaims(
+                ClaimsPrincipal principal,
+                out string[] apiPermissionGroupsArray,
+                out string[] dbPermissionsArray)
+            {
+                var permissionsString = principal.Claims.Single(x => x.Type == "permissions");
+                var permissionsArray = permissionsString.Value.Split(' ');
+                apiPermissionGroupsArray = permissionsArray.Where(x => x.Contains("execute")).ToArray();
+                dbPermissionsArray = permissionsArray.Where(x => !x.Contains("execute")).ToArray();
+            }
+
+            static void GetApiPermissionGroups(
+                List<string> permissionGroupsAsStrings,
+                ISecurityInfo securityInfo,
+                out List<ApiPermissionGroup> permissionGroups)
+            {
+                //* api permission format, execute:pingpong:134446A7-DA29-412F-AA1B-5FF9D1D0086C
+
+                var permissionGroupIdsAsStrings = permissionGroupsAsStrings.Where(x => x.StartsWith("execute"))
+                                                                           .Select(x => x.SubstringAfterLast(':'));
+                permissionGroups = securityInfo.PermissionGroups
+                                               .Where(pg => permissionGroupIdsAsStrings.Contains(pg.Id.ToString().ToLower()))
+                                               .ToList();
+            }
+
+            static void Authorise(ApiMessage message, List<ApiPermissionGroup> permissionGroups)
+            {
+                if (!permissionGroups.Any(pg => pg.ApiPermissions.Contains(message.GetType().Name)))
+                {
+                    throw new ApplicationException("This access token is not valid for this message");
+                }
             }
         }
 
+
         public static async Task CheckAuth0Setup(
-            Assembly messagesAssembly,
             ISecurityInfo securityInfo,
             ApplicationConfig applicationConfig,
             Func<string, ValueTask> writeLine)
@@ -142,11 +217,11 @@ namespace Soap.Auth0
 
                 if (ConfigIsEnabledForAuth0Integration(applicationConfig))
                 {
-                    GetManagementApiToken(applicationConfig, v => managementApiToken = v);
+                    await GetManagementApiToken(applicationConfig, v => managementApiToken = v);
 
                     GetManagementApiClient(managementApiToken, applicationConfig, v => client = v);
 
-                    GetApiName(messagesAssembly, out var apiName);
+                    GetApiName(applicationConfig, out var apiName);
 
                     GetApiId(applicationConfig, out var apiId);
 
@@ -276,6 +351,18 @@ namespace Soap.Auth0
                 return scopes;
             }
         }
+        
+        public static async Task<ServiceLevelAuthority> GetServiceLevelAuthority(ApplicationConfig applicationConfig)
+        {
+            string mgmtToken = null;
+                await GetManagementApiToken(
+                    applicationConfig,
+                    v => mgmtToken = v,
+                    applicationConfig.FunctionAppHostUrlWithTrailingSlash);
+
+                return new ServiceLevelAuthority(applicationConfig.AppId, mgmtToken);
+            
+        }
 
         public static async Task<string> GetUiApplicationClientId(ApplicationConfig applicationConfig, Assembly messagesAssembly)
         {
@@ -283,11 +370,11 @@ namespace Soap.Auth0
                 string mgmtToken = null;
                 ManagementApiClient client = null;
 
-                GetManagementApiToken(applicationConfig, v => mgmtToken = v);
+                await GetManagementApiToken(applicationConfig, v => mgmtToken = v);
 
                 GetManagementApiClient(mgmtToken, applicationConfig, v => client = v);
 
-                GetApiName(messagesAssembly, out var apiName);
+                GetApiName(applicationConfig, out var apiName);
 
                 var appName = GetAppName(apiName);
 
@@ -324,9 +411,9 @@ namespace Soap.Auth0
             }
         }
 
-        private static void GetApiName(Assembly messagesAssembly, out string apiName)
+        private static void GetApiName(ApplicationConfig applicationConfig, out string apiName)
         {
-            apiName = messagesAssembly.GetName().Name.ToLower().SubstringBefore(".messages");
+            apiName = applicationConfig.AppId;
         }
 
         private static string GetAppName(string apiName) => $"{apiName}.ui";
@@ -340,16 +427,20 @@ namespace Soap.Auth0
             setClient(client);
         }
 
-        private static void GetManagementApiToken(ApplicationConfig applicationConfig, Action<string> setMgmtToken)
+        private static async Task GetManagementApiToken(
+            ApplicationConfig applicationConfig,
+            Action<string> setMgmtToken,
+            string audience = null)
         {
+            audience ??= $"https://{applicationConfig.Auth0TenantDomain}/api/v2/"; //mgmt api
             var client = new RestClient($"https://{applicationConfig.Auth0TenantDomain}/oauth/token");
             var request = new RestRequest(Method.POST);
             request.AddHeader("content-type", "application/json");
             request.AddParameter(
                 "application/json",
-                $"{{\"client_id\":\"{applicationConfig.Auth0EnterpriseAdminClientId}\",\"client_secret\":\"{applicationConfig.Auth0EnterpriseAdminClientSecret}\",\"audience\":\"https://{applicationConfig.Auth0TenantDomain}/api/v2/\",\"grant_type\":\"client_credentials\"}}",
+                $"{{\"client_id\":\"{applicationConfig.Auth0EnterpriseAdminClientId}\",\"client_secret\":\"{applicationConfig.Auth0EnterpriseAdminClientSecret}\",\"audience\":\"{audience}\",\"grant_type\":\"client_credentials\"}}",
                 ParameterType.RequestBody);
-            var response = client.Execute(request);
+            var response = await client.ExecuteAsync(request);
             var tokenJson = response.Content;
             dynamic tokenObject = JsonConvert.DeserializeObject(tokenJson);
             string accessToken = null;

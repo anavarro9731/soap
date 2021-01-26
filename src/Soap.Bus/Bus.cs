@@ -8,8 +8,6 @@
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -18,33 +16,43 @@
     {
         private readonly IBlobStorage blobStorage;
 
+        private readonly string envPartitionKey;
+
+        private readonly Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority;
+
         private readonly IMessageAggregator messageAggregator;
 
-        private string envPartitionKey;
-        
+        private ServiceLevelAuthority serviceLevelAuthority;
+
         public Bus(
             IBusClient busClient,
             IBusSettings settings,
             IMessageAggregator messageAggregator,
-            IBlobStorage blobStorage)
+            IBlobStorage blobStorage,
+            Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority)
         {
             BusClient = busClient;
             this.messageAggregator = messageAggregator;
             this.blobStorage = blobStorage;
+            this.getServiceLevelAuthority = async () =>
+                {
+                //only get this once per context, too expensive otherwise
+                this.serviceLevelAuthority ??= await getServiceLevelAuthority();
+                return this.serviceLevelAuthority;
+                };
             MaximumNumberOfRetries = settings.NumberOfApiMessageRetries;
             this.envPartitionKey = settings.EnvironmentPartitionKey;
-
         }
 
         public IBusClient BusClient { get; }
 
+        public List<ApiEvent> BusEventsPublished => BusClient.BusEventsPublished;
+
         public List<ApiCommand> CommandsSent => BusClient.CommandsSent;
 
-        public List<ApiEvent> BusEventsPublished => BusClient.BusEventsPublished;
-        
-        public List<ApiEvent> WsEventsPublished => BusClient.WsEventsPublished;
-
         public byte MaximumNumberOfRetries { get; }
+
+        public List<ApiEvent> WsEventsPublished => BusClient.WsEventsPublished;
 
         public async Task CommitChanges()
         {
@@ -59,8 +67,10 @@
             }
         }
 
-        public async Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, IBusClient.EventVisibilityFlags eventVisibility = null)
-            where T : ApiEvent where Tm : ApiMessage
+        public async Task Publish<TEvent, TContextMessage>(
+            TEvent eventToPublish,
+            TContextMessage contextMessage,
+            IBusClient.EventVisibilityFlags eventVisibility = null) where TEvent : ApiEvent where TContextMessage : ApiMessage
         {
             eventVisibility ??= GetDefaultVisibility(contextMessage);
 
@@ -71,12 +81,13 @@
                     throw new ApplicationException(
                         "Outgoing message is set to reply to web socket sender, but the sender has not set a sessionId");
                 }
+
                 //* transfer from incoming command to outgoing event for websocket clients
                 eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
                 eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
                 eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);
             }
-            
+
             eventToPublish.Validate();
             eventToPublish.RequiredNotNullOrThrow();
             eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
@@ -97,7 +108,7 @@
                     EventToPublish = eventToPublish,
                     CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility)
                 });
-            
+
             static IBusClient.EventVisibilityFlags GetDefaultVisibility(ApiMessage contextMessage)
             {
                 var eventVisibility = new IBusClient.EventVisibilityFlags();
@@ -113,12 +124,36 @@
             }
         }
 
-        public async Task Send<T>(T commandToSend, DateTimeOffset scheduledAt = default) where T : ApiCommand
+        public async Task Send<TCommand, TContextMessage>(
+            TCommand commandToSend,
+            TContextMessage contextMessage,
+            bool useServiceLevelAuthority = false,
+            DateTimeOffset scheduledAt = default) where TCommand : ApiCommand where TContextMessage : ApiMessage
         {
             commandToSend.Validate();
             commandToSend.RequiredNotNullOrThrow();
             commandToSend = commandToSend.Clone();
-            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend, this.envPartitionKey);
+
+            /* getServiceLevelAuthority is expensive and cached, that's why we repeat the call below rather then getting to
+             a variable is to avoid making the call unnecessarily */
+            switch (useServiceLevelAuthority)
+            {
+                case true:
+                    var separator = contextMessage.Headers.GetIdentityChain() == null ? "" : ",";
+                    commandToSend.Headers.SetIdentityChain(
+                        contextMessage.Headers.GetIdentityChain() + separator
+                                                                  + (await this.getServiceLevelAuthority()).SlaIdChainSegment);
+                    commandToSend.Headers.SetAccessToken((await this.getServiceLevelAuthority()).AccessToken);
+                    break;
+                case false:
+                    commandToSend.Headers.SetIdentityChain(
+                        contextMessage.Headers.GetIdentityChain() ?? (await this.getServiceLevelAuthority()).SlaIdChainSegment);
+                    commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken());
+                    commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken());
+                    break;
+            }
+
+            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend, contextMessage, this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 
@@ -154,7 +189,8 @@
 
                 var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(
                     blobId,
-                    new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete), "large-messages");
+                    new EnumerationFlags(IBlobStorage.BlobSasPermissions.ReadAndDelete),
+                    "large-messages");
                 message.Headers.SetSasStorageToken(sasStorageToken);
             }
 

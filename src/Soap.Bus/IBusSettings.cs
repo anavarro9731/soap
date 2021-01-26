@@ -1,5 +1,7 @@
 ﻿namespace Soap.Bus
 {
+    using System;
+    using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
@@ -11,6 +13,6 @@
         
         string EnvironmentPartitionKey { get; set; }
 
-        IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding);
+        IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding, Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority);
     }
 }

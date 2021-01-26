@@ -227,7 +227,7 @@
                 IBlobStorage blobStorage,
                 out IBus busContext)
             {
-                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage, null);
+                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage, null, () => Task.FromResult(new ServiceLevelAuthority("domain-test", "bogus-token")));
             }
 
             static void CreateDataStore(

@@ -36,7 +36,7 @@
 
         public CachedSchema(ApplicationConfig applicationConfig, IEnumerable<ApiMessage> messages)
         {
-            if (!string.IsNullOrEmpty(_schema)) return;
+            if (!string.IsNullOrEmpty(_schema)) return; //* a simple expiring cache based on the life of the static in azure functions
 
             var messageTypes = messages.Select(h => h.GetType()).OrderBy(t => t.Name);
 
@@ -48,7 +48,6 @@
             GetSchemaOutput(applicationConfig, messageTypes, out var plainText, out var json);
 
             _schema = plainText;
-
             _json = json;
         }
 

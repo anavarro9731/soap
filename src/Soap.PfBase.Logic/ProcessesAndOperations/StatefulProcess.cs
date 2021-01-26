@@ -87,7 +87,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected void CompleteProcess()
         {
-            var username = context.MessageLogEntry.MessageMeta.RequestedBy?.Id;
+            var username = context.MessageLogEntry.MessageMeta.ApiIdentity?.Id;
             RecordCompleted(username);
         }
 
@@ -102,7 +102,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessContinued(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.RequestedBy?.Id,
+                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -114,7 +114,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.RequestedBy?.Id,
+                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -139,10 +139,10 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                 publishEvent.Headers.SetStatefulProcessId(this.id);
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
-            public Task Send(ApiCommand sendCommand, DateTimeOffset scheduledAt = default)
+            public Task Send(ApiCommand sendCommand, bool useServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
             {
                 sendCommand.Headers.SetStatefulProcessId(this.id);
-                return this.bus.Send(sendCommand, scheduledAt);
+                return this.bus.Send(sendCommand, this.contextMessage, useServiceLevelAuthority, scheduledAt);
             }
         }
 

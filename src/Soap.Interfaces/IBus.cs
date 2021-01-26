@@ -20,9 +20,14 @@
         
         Task CommitChanges();
 
-        Task Publish<T, Tm>(T eventToPublish, Tm contextMessage, IBusClient.EventVisibilityFlags eventVisibility = null)
-            where T : ApiEvent where Tm : ApiMessage;
+        Task Publish<TEvent, TContextMessage>(TEvent eventToPublish, TContextMessage contextMessage, IBusClient.EventVisibilityFlags eventVisibility = null)
+            where TEvent : ApiEvent where TContextMessage : ApiMessage;
 
-        Task Send<T>(T commandToSend, DateTimeOffset scheduledAt = default) where T : ApiCommand;
+        Task Send<TCommand, TContextMessage>(
+            TCommand commandToSend,
+            TContextMessage contextMessage,
+            bool useServiceLevelAuthority = false,
+            DateTimeOffset scheduledAt = default) where TCommand : ApiCommand where TContextMessage : ApiMessage;
+
     }
 }

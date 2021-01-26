@@ -31,7 +31,7 @@ namespace Soap.Api.Sample.Logic.Processes
                         $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
                     //  TODO test guard
-                    Guard.Against((!eventType.HasAttribute<NoAuthAttribute>()) && !Meta.RequestedBy.ApiPermissions.Contains(commandType.Name),
+                    Guard.Against(!Meta.ApiIdentity.ApiPermissions.Contains(commandType.Name),
                         $"The user does not have permissions to execute the command {commandShortAssemblyTypeName} requested by this command");
                     
                     if (BlobsNeedToBeSaved(eventShortAssemblyTypeName))
@@ -66,8 +66,9 @@ namespace Soap.Api.Sample.Logic.Processes
                 {
                     eventShortAssemblyTypeName = $"{message.C109_FormDataEventName}, {typeof(E100v1_Pong).Assembly.GetName().Name}";
                     eventType = Type.GetType(eventShortAssemblyTypeName);
-                    commandShortAssemblyTypeName = Activator.CreateInstance(eventType).As<UIFormDataEvent>().E000_CommandName;
-                    commandType = Type.GetType(commandShortAssemblyTypeName);
+                    var commandType1 = Activator.CreateInstance(eventType).As<UIFormDataEvent>().CommandType;
+                    commandShortAssemblyTypeName = commandType1.ToShortAssemblyTypeName();
+                    commandType = commandType1;
                 }
 
                 static bool BlobsNeedToBeSaved(string eventName) =>

@@ -16,7 +16,8 @@
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, BoostrappedContext bootstrappedContext, ApiIdentity apiIdentity)
+        public static async Task Execute(ApiMessage message, 
+            BoostrappedContext bootstrappedContext, ApiIdentity apiIdentity)
         {
             {
                 await FillMessageFromStorageIfApplicable();
@@ -54,13 +55,11 @@
 
                     var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
 
-                    var msg = contextAfterMessageObtained.Message;  //* i think the only reason we are getting it from the context is in case it changes during upgrade() but at present it doesn't
-
                     await contextAfterMessageObtained.CreateOrFindLogEntry(apiIdentity, v => messageLogEntry = v);
                     
-                    var context = contextAfterMessageObtained.Upgrade(messageLogEntry);
+                    var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
                     
-                    setContext(context);
+                    setContext(contextWithMessageLogEntry);
                 }
                 catch (Exception e)
                 {

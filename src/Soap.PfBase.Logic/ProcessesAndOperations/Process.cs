@@ -46,9 +46,9 @@
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
 
-            public Task Send(ApiCommand sendCommand, DateTimeOffset scheduledAt = default)
+            public Task Send(ApiCommand sendCommand, bool useServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
             {
-                return this.bus.Send(sendCommand, scheduledAt);
+                return this.bus.Send(sendCommand, this.contextMessage, useServiceLevelAuthority, scheduledAt);
             }
         }
 
@@ -70,11 +70,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.RequestedBy?.Id));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.ApiIdentity?.Id));
             
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.RequestedBy?.Id));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.ApiIdentity?.Id));
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

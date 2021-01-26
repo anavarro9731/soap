@@ -58,7 +58,8 @@
            of value types.
                                 
             */
-        
+
+        public Type CommandType => UserDefinedValues().GetType();
         public void SetProperties(string sasTokenForCommand, Guid idOfCommand)
         {
             {

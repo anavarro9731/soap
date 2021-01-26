@@ -93,11 +93,13 @@
                         dataStoreOptions,
                         out var dataStore);
 
+                    CreateUserIfNotExists(apiIdentity);
+
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
                     var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
 
-                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, out var bus);
+                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, appConfig, out var bus);
 
                     var context = new BoostrappedContext(
                         messageMapper: mappingRegistration,
@@ -118,6 +120,7 @@
                         if (currentRun > 1) remainingRuns -= 1;
                         try
                         {
+                            
                             await MessagePipeline.Execute(message, context, apiIdentity);
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
@@ -198,9 +201,10 @@
                 IBusSettings busSettings,
                 IBlobStorage blobStorage,
                 IAsyncCollector<SignalRMessage> signalRBinding,
+                ApplicationConfig applicationConfig,
                 out IBus busContext)
             {
-                busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding);
+                busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding, () => Auth0Functions.GetServiceLevelAuthority(applicationConfig));
             }
 
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)

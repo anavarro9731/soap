@@ -5,10 +5,10 @@
 
     public class MessageMeta
     {
-        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, ApiIdentity requestedBy)
+        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, ApiIdentity apiIdentity)
         {
             ReceivedAt = receivedAt;
-            RequestedBy = requestedBy;
+            ApiIdentity = apiIdentity;
         }
 
         public MessageMeta() {}
@@ -18,7 +18,7 @@
         public (DateTime DateTime, long Ticks) ReceivedAt { get; internal set; }
 
         [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)]
-        public ApiIdentity RequestedBy { get; internal set; }
+        public ApiIdentity ApiIdentity { get; internal set; }
         
     }
 }

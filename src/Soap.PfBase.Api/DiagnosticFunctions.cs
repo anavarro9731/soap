@@ -84,7 +84,7 @@
 
                 await CheckDatabaseExists(appConfig, WriteLine);
 
-                await Auth0Functions.CheckAuth0Setup(messagesAssembly, securityInfo, appConfig, WriteLine);
+                await Auth0Functions.CheckAuth0Setup(securityInfo, appConfig, WriteLine);
 
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 

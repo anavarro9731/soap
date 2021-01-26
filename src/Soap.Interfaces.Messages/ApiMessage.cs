@@ -6,6 +6,7 @@
     using System.Linq;
     using CircuitBoard;
     using CircuitBoard.Messages;
+    using Microsoft.VisualBasic;
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
@@ -42,7 +43,11 @@
 
     public static class MessageHeaderExtensionsA
     {
-        public static void SetAndCheckHeadersOnOutgoingCommand(this MessageHeaders messageHeaders, ApiMessage message, string envPartitionKey)
+        public static void SetAndCheckHeadersOnOutgoingCommand(
+            this MessageHeaders messageHeaders,
+            ApiMessage message,
+            ApiMessage contextMessage,
+            string envPartitionKey)
         {
             messageHeaders.SetTimeOfCreationAtOrigin();
             messageHeaders.SetMessageId(Guid.NewGuid());
@@ -57,6 +62,8 @@
             }
 
             messageHeaders.SetSchema(message.GetType().FullName);
+
+            
             
             Ensure(
                 messageHeaders.GetIdentityChain() != null,
@@ -141,7 +148,7 @@
                 messageHeaders.SetTimeOfCreationAtOrigin();
             }
 
-            if (string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
+            if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
             {
                 messageHeaders.SetIdentityToken("identity token");
             }
@@ -158,7 +165,7 @@
             
             if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityChain()))
             {
-                messageHeaders.SetIdentityChain("a_user,another_user;");
+                messageHeaders.SetIdentityChain("user://someuser");
             }
 
             if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
