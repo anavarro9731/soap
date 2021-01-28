@@ -44,6 +44,7 @@ export const headerKeys = {
     commandConversationId: "CommandConversationId",
     commandHash: "CommandHash",
     identityToken: "IdentityToken",
+    identityChain: "IdentityChain",
     accessToken: "AccessToken",
     queueName: "QueueName",
     schema: "Schema",

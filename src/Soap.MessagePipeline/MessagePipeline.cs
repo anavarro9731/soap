@@ -17,14 +17,14 @@
     public static class MessagePipeline
     {
         public static async Task Execute(ApiMessage message, 
-            BoostrappedContext bootstrappedContext, ApiIdentity apiIdentity)
+            BoostrappedContext bootstrappedContext)
         {
             {
                 await FillMessageFromStorageIfApplicable();
                 
                 ContextWithMessageLogEntry matureContext = null;
                 
-                await PrepareContext(bootstrappedContext, v => matureContext = v, apiIdentity);
+                await PrepareContext(bootstrappedContext, v => matureContext = v);
                 
                 try
                 {
@@ -44,8 +44,7 @@
 
             async Task PrepareContext(
                 BoostrappedContext boostrappedContext,
-                Action<ContextWithMessageLogEntry> setContext,
-                ApiIdentity apiIdentity)
+                Action<ContextWithMessageLogEntry> setContext)
             {
                 MessageLogEntry messageLogEntry = null;
 
@@ -55,8 +54,8 @@
 
                     var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
 
-                    await contextAfterMessageObtained.CreateOrFindLogEntry(apiIdentity, v => messageLogEntry = v);
-                    
+                    await contextAfterMessageObtained.CreateOrFindLogEntry(v => messageLogEntry = v);
+
                     var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
                     
                     setContext(contextWithMessageLogEntry);

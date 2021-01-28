@@ -4,9 +4,11 @@ namespace Soap.Api.Sample.Logic.Operations
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using DataStore;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
     using Soap.Context.Context;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Guard = Soap.Context.Guard;
@@ -14,8 +16,9 @@ namespace Soap.Api.Sample.Logic.Operations
     /// <summary>
     ///     Not really representative of user operations, too specific, uses undocumented features for testing UOW
     /// </summary>
-    public class UserOperations : Operations<User>
+    public class UserOperations : Operations<UserProfile>
     {
+        
         public Func<Task> AddBobaAndLando =>
             async () =>
                 {
@@ -25,22 +28,22 @@ namespace Soap.Api.Sample.Logic.Operations
                     await Execute(usersToAdd);
                 }
 
-                void DetermineChange(out User[] usersToAdd)
+                void DetermineChange(out UserProfile[] usersToAdd)
                 {
                     usersToAdd = new[]
                     {
-                        new User
+                        new UserProfile
                         {
                             UserName = "boba.fett"
                         },
-                        new User
+                        new UserProfile
                         {
                             UserName = "lando.calrissian"
                         }
                     };
                 }
 
-                async Task Execute(User[] usersToAdd)
+                async Task Execute(UserProfile[] usersToAdd)
                 {
                     foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
@@ -55,22 +58,22 @@ namespace Soap.Api.Sample.Logic.Operations
                     await Execute(usersToAdd);
                 }
 
-                void DetermineChange(out User[] usersToAdd)
+                void DetermineChange(out UserProfile[] usersToAdd)
                 {
                     usersToAdd = new[]
                     {
-                        new User
+                        new UserProfile
                         {
                             UserName = "r2d2"
                         },
-                        new User
+                        new UserProfile
                         {
                             UserName = "c3po"
                         }
                     };
                 }
 
-                async Task Execute(User[] usersToAdd)
+                async Task Execute(UserProfile[] usersToAdd)
                 {
                     foreach (var user in usersToAdd) await DataWriter.Create(user);
                 }
@@ -80,19 +83,19 @@ namespace Soap.Api.Sample.Logic.Operations
             async () =>
                 {
                 {
-                    User leia = null;
+                    UserProfile leia = null;
 
                     await DetermineChange(v => leia = v);
 
                     await Execute(leia);
                 }
 
-                async Task DetermineChange(Action<User> setLeia)
+                async Task DetermineChange(Action<UserProfile> setLeia)
                 {
-                    setLeia((await DataReader.Read<User>(x => x.UserName == "leia.organa")).Single());
+                    setLeia((await DataReader.Read<UserProfile>(x => x.UserName == "leia.organa")).Single());
                 }
 
-                async Task Execute(User leia)
+                async Task Execute(UserProfile leia)
                 {
                     await DataWriter.Delete(leia);
                 }
@@ -102,7 +105,7 @@ namespace Soap.Api.Sample.Logic.Operations
             async newName =>
                 {
                 {
-                    User hanSolo = null;
+                    UserProfile hanSolo = null;
 
                     await Validate(newName, v => hanSolo = v);
 
@@ -111,18 +114,18 @@ namespace Soap.Api.Sample.Logic.Operations
                     await Execute(hanSolo.id, changeName);
                 }
 
-                async Task Validate(string newName, Action<User> setHanSolo)
+                async Task Validate(string newName, Action<UserProfile> setHanSolo)
                 {
                     Guard.Against(newName.Split(' ').Length != 2, "Name must be of format \"First Last\"");
 
-                    var hansSolo = (await DataReader.ReadActive<User>(u => u.UserName == "hans.solo")).Single();
+                    var hansSolo = (await DataReader.ReadActive<UserProfile>(u => u.UserName == "hans.solo")).Single();
 
                     Guard.Against(hansSolo == null, "Hans Solo doesn't exist");
 
                     setHanSolo(hansSolo);
                 }
 
-                void DetermineChange(out Action<User> nameChange)
+                void DetermineChange(out Action<UserProfile> nameChange)
                 {
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
                     var currentMessageLogEntry = ContextWithMessageLogEntry.Current.MessageLogEntry;
@@ -145,7 +148,7 @@ namespace Soap.Api.Sample.Logic.Operations
                         };
                 }
 
-                async Task Execute(Guid id, Action<User> nameChange) => await DataWriter.UpdateById(id, nameChange);
+                async Task Execute(Guid id, Action<UserProfile> nameChange) => await DataWriter.UpdateById(id, nameChange);
                 };
 
         public Func<Task> ChangeLukeSkywalkersName =>
@@ -163,10 +166,10 @@ namespace Soap.Api.Sample.Logic.Operations
 
                 async Task Validate(Action<Guid> setLukeId)
                 {
-                    setLukeId((await DataReader.Read<User>(x => x.UserName == "luke.skywalker")).Single().id);
+                    setLukeId((await DataReader.Read<UserProfile>(x => x.UserName == "luke.skywalker")).Single().id);
                 }
 
-                void DetermineChange(out Action<User> changeLuke)
+                void DetermineChange(out Action<UserProfile> changeLuke)
                 {
                     var currentMessageId = ContextWithMessageLogEntry.Current.Message.Headers.GetMessageId();
 
@@ -198,7 +201,7 @@ namespace Soap.Api.Sample.Logic.Operations
                     }
                 }
 
-                async Task Execute(Guid lukeId, Action<User> changeLuke)
+                async Task Execute(Guid lukeId, Action<UserProfile> changeLuke)
                 {
                     await DataWriter.UpdateById(lukeId, changeLuke);
                 }
@@ -208,19 +211,19 @@ namespace Soap.Api.Sample.Logic.Operations
             async () =>
                 {
                 {
-                    User darth = null;
+                    UserProfile darth = null;
 
                     await DetermineChange(v => darth = v);
 
                     await Execute(darth);
                 }
 
-                async Task DetermineChange(Action<User> setDarth)
+                async Task DetermineChange(Action<UserProfile> setDarth)
                 {
-                    setDarth((await DataReader.Read<User>(x => x.UserName == "darth.vader")).Single());
+                    setDarth((await DataReader.Read<UserProfile>(x => x.UserName == "darth.vader")).Single());
                 }
 
-                async Task Execute(User darth)
+                async Task Execute(UserProfile darth)
                 {
                     await DataWriter.Delete(darth, o => o.Permanently());
                 }

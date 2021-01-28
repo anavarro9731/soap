@@ -10,6 +10,7 @@
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Soap.Auth0\Soap.Auth0.csproj" />
     <ProjectReference Include="..\Soap.Context\Soap.Context.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />

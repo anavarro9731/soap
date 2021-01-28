@@ -33,6 +33,7 @@ namespace Soap.PfBase.Tests
 
         public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
 
+        public bool AuthEnabled { get; set; }
 
         public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
         {

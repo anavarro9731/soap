@@ -57,9 +57,9 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 //the change we now need to reflect that in the underlying data for the next run to calculate correctly
                 if (run == 2)
                 {
-                    await store.UpdateById<User>(
+                    await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Identities.UserOne.Id); //doesn't matter just make any change to create a history item
+                        luke => luke.Auth0Id = Ids.ApiIdOne); //doesn't matter just make any change to create a history item
                     await store.CommitChanges();
                 }
             }
@@ -68,7 +68,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             {
                 if (run == 2)
                 {
-                    await store.DeleteById<User>(Ids.HanSolo, options => options.Permanently());
+                    await store.DeleteById<UserProfile>(Ids.HanSolo, options => options.Permanently());
                     await store.CommitChanges();
                 }
             }
@@ -87,24 +87,24 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 async Task RecordsShouldBeReturnToOriginalStateExceptSolo(DataStore store)
                 {
                     //*creations
-                    var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian")).SingleOrDefault();
+                    var lando = (await store.Read<UserProfile>(x => x.UserName == "lando.calrissian")).SingleOrDefault();
                     lando.Should().BeNull();
 
-                    var boba = (await store.Read<User>(x => x.UserName == "boba.fett")).SingleOrDefault();
+                    var boba = (await store.Read<UserProfile>(x => x.UserName == "boba.fett")).SingleOrDefault();
                     boba.Should().BeNull();
 
                     //* updates
-                    var han = await store.ReadById<User>(Ids.HanSolo); //* the delete to han is not rolled back
+                    var han = await store.ReadById<UserProfile>(Ids.HanSolo); //* the delete to han is not rolled back
                     han.Should().BeNull();
 
-                    var leia = await store.ReadById<User>(Ids.PrincessLeia);
+                    var leia = await store.ReadById<UserProfile>(Ids.PrincessLeia);
                     leia.Active.Should().BeTrue();
 
                     //* deletes
-                    var darth = await store.ReadById<User>(Ids.DarthVader);
+                    var darth = await store.ReadById<UserProfile>(Ids.DarthVader);
                     darth.Should().NotBeNull();
 
-                    var luke = await store.ReadById<User>(Ids.LukeSkywalker);
+                    var luke = await store.ReadById<UserProfile>(Ids.LukeSkywalker);
                     luke.Should().NotBeNull();
                 }
             }

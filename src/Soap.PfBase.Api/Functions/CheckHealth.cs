@@ -5,6 +5,7 @@ namespace Soap.PfBase.Api.Functions
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
+    using DataStore.Interfaces.LowLevel;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
@@ -16,7 +17,7 @@ namespace Soap.PfBase.Api.Functions
     public static class Functions
     {
         public static HttpResponseMessage
-            CheckHealth<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TIdentity>(
+            CheckHealth<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
                 HttpRequest req,
                 MapMessagesToFunctions handlerRegistration,
                 IAsyncCollector<SignalRMessage> signalRBinding,
@@ -26,6 +27,7 @@ namespace Soap.PfBase.Api.Functions
             where TOutboundMessage : ApiEvent
             where TSendLargeMsg : ApiCommand, new()
             where TReceiveLargeMsg : ApiMessage
+            where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -35,7 +37,7 @@ namespace Soap.PfBase.Api.Functions
                 var content = new PushStreamContent(
                     async (outputSteam, httpContent, transportContext) =>
                         await DiagnosticFunctions
-                            .OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg>(
+                            .OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
                                 outputSteam,
                                 httpContent,
                                 transportContext,

@@ -22,13 +22,30 @@ namespace Soap.Auth0
     using Newtonsoft.Json;
     using RestSharp;
     using Soap.Config;
+    using Soap.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
 
-    public static class Auth0Functions
+    public  static partial class Auth0Functions
     {
         private static OpenIdConnectConfiguration openIdConnectConfiguration;
+
+        private static async Task<User> GetUserProfileFromIdentityServer(
+            ApplicationConfig applicationConfig,
+            string auth0Id)
+        {
+            string mgmtToken = null;
+            ManagementApiClient client = null;
+
+            await GetManagementApiToken(applicationConfig, v => mgmtToken = v);
+
+            GetManagementApiClient(mgmtToken, applicationConfig, v => client = v);
+
+            var user = await client.Users.GetAsync(auth0Id);
+
+            return user;
+        }
         
         public static async Task AuthoriseCall(
             ApplicationConfig applicationConfig,
@@ -65,12 +82,12 @@ namespace Soap.Auth0
 
                     GetApiPermissionGroups(cleanPermissionGroups, securityInfo, out var permissionGroups);
 
-                    Authorise(message, permissionGroups);
-
                     GetDbPermissionsList(dbPermissionsAsStrings, out var dbPermissions);
 
                     GetApiPermissionsList(permissionGroups, out var permissions);
 
+                    AuthFunctions.AuthoriseMessageOrThrow(message, permissions);
+                    
                     CreateApiIdentity(principal, permissions, dbPermissions, out var apiIdentity);
 
                     setApiIdentity(apiIdentity);
@@ -83,7 +100,7 @@ namespace Soap.Auth0
                     {
                         apiIdentity = new ApiIdentity
                         {
-                            Id = principal.Identity.Name, //TODO check is id
+                            Auth0Id = principal.Identity.Name, //TODO check is id
                             ApiPermissions = apiPermissions,
                             DatabasePermissions = dbPermissions
                         };
@@ -195,14 +212,7 @@ namespace Soap.Auth0
                                                .Where(pg => permissionGroupIdsAsStrings.Contains(pg.Id.ToString().ToLower()))
                                                .ToList();
             }
-
-            static void Authorise(ApiMessage message, List<ApiPermissionGroup> permissionGroups)
-            {
-                if (!permissionGroups.Any(pg => pg.ApiPermissions.Contains(message.GetType().Name)))
-                {
-                    throw new ApplicationException("This access token is not valid for this message");
-                }
-            }
+            
         }
 
 
@@ -236,7 +246,7 @@ namespace Soap.Auth0
                 }
 
                 static bool ConfigIsEnabledForAuth0Integration(ApplicationConfig applicationConfig) =>
-                    applicationConfig.Auth0Enabled;
+                    applicationConfig.AuthEnabled;
             }
 
             static void GetApiId(ApplicationConfig applicationConfig, out string apiId)

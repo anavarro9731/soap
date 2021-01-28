@@ -55,7 +55,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             {
                 if (run == 2)
                 {
-                    await store.UpdateById<User>(
+                    await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
                         luke => { luke.Etag = "123456"; },
                         side => side.DisableOptimisticConcurrency());

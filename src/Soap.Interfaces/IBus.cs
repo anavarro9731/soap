@@ -26,7 +26,7 @@
         Task Send<TCommand, TContextMessage>(
             TCommand commandToSend,
             TContextMessage contextMessage,
-            bool useServiceLevelAuthority = false,
+            bool forceServiceLevelAuthority = false,
             DateTimeOffset scheduledAt = default) where TCommand : ApiCommand where TContextMessage : ApiMessage;
 
     }

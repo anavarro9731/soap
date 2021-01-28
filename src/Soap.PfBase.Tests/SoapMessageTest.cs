@@ -7,6 +7,7 @@ namespace Soap.PfBase.Tests
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
+    using Soap.Api.Sample.Tests;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -33,46 +34,48 @@ namespace Soap.PfBase.Tests
 
         protected Result? Result { get; private set; }
 
-        protected void SetupTestByAddingADatabaseEntry<T>(T aggregate) where T : Aggregate, new()
+        protected void SetupTestByAddingADatabaseEntry<TAggregate>(TAggregate aggregate) where TAggregate : Aggregate, new()
         {
             var dataStore = new DataStore(
                 this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository(),
                 new MessageAggregatorForTesting());
 
-            this.output.WriteLine($"Created {typeof(T).Name}");
+            this.output.WriteLine($"Created {typeof(TAggregate).Name}");
 
             dataStore.Create(aggregate).Wait();
             dataStore.CommitChanges().Wait();
         }
 
-        protected void SetupTestByProcessingAMessage<T>(T msg, ApiIdentity identity, Action<MessageAggregatorForTesting>? setup = null)
-            where T : ApiMessage
+        protected void SetupTestByProcessingAMessage<TMessage>(TMessage msg, TestIdentity identity, Action<MessageAggregatorForTesting>? setup = null, bool authEnabled = false)
+            where TMessage : ApiMessage
         {
-            Result = ExecuteMessage(msg, identity, 0, setup:setup).Result;
+            Result = ExecuteMessage(msg, identity, 0, setup:setup, authEnabled:authEnabled).Result;
             if (Result.Success == false) throw Result.UnhandledError;
         }
 
-        protected async Task TestMessage<T>(
-            T msg,
-            ApiIdentity identity,
+        protected async Task TestMessage<TMessage>(
+            TMessage msg,
+            TestIdentity identity,
             byte retries = 0,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
-            Action<MessageAggregatorForTesting>? setupMocks = null) where T : ApiMessage
+            Action<MessageAggregatorForTesting>? setupMocks = null,
+            bool authEnabled = true) where TMessage : ApiMessage
         {
-            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks);
+            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks, authEnabled);
         }
 
-        private async Task<Result> ExecuteMessage<T>(
-            T msg,
-            ApiIdentity identity,
+        private async Task<Result> ExecuteMessage<TMessage>(
+            TMessage msg,
+            TestIdentity identity,
             byte retries,
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
-            Action<MessageAggregatorForTesting>? setup = null) where T : ApiMessage
+            Action<MessageAggregatorForTesting>? setup = null,
+            bool authEnabled = true) where TMessage : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
-            msg.SetDefaultHeadersForIncomingTestMessages();
+            msg.SetDefaultHeadersForIncomingTestMessages(authEnabled);
 
             this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository();
 
@@ -82,6 +85,7 @@ namespace Soap.PfBase.Tests
                          this.output,
                          identity,
                          retries,
+                         authEnabled,
                          this.rollingRepo,
                          beforeRunHook,
                          dataStoreOptions,

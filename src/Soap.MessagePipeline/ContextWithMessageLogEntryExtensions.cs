@@ -430,7 +430,7 @@
             {
                 SapiReceivedAt = meta?.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
-                UserName = meta?.ApiIdentity?.Id,
+                UserName = meta?.ApiIdentity?.Auth0Id,
                 MessageId = message.Headers.GetMessageId(),
                 Schema = message.GetType().FullName,
                 Message = message,
@@ -454,7 +454,7 @@
                 Succeeded = true,
                 SapiReceivedAt = meta.ReceivedAt.DateTime,
                 SapiCompletedAt = DateTime.UtcNow,
-                UserName = meta.ApiIdentity?.Id,
+                UserName = meta.ApiIdentity?.Auth0Id,
                 MessageId = message.Headers.GetMessageId(),
                 Schema = message.Headers.GetSchema(),
                 Message = message,

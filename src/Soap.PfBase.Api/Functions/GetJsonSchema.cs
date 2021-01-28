@@ -48,9 +48,9 @@ namespace Soap.PfBase.Api.Functions
             async Task SetAuth0Headers(ApplicationConfig appConfig)
             {
                 AddHeader(req, "Access-Control-Expose-Headers", "*");
-                AddHeader(req, "Auth0-Enabled", appConfig.Auth0Enabled.ToString().ToLower());
+                AddHeader(req, "Auth0-Enabled", appConfig.AuthEnabled.ToString().ToLower());
                 
-                if (appConfig.Auth0Enabled)
+                if (appConfig.AuthEnabled)
                 {
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
                     var applicationClientId = await Auth0Functions.GetUiApplicationClientId(appConfig, messagesAssembly);

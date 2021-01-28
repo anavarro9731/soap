@@ -12,5 +12,7 @@
 
         string DefaultExceptionMessage { get; set; }
         
+        bool AuthEnabled { get; set; }
+        
     }
 }

@@ -33,7 +33,7 @@
             [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log) =>
-            Functions.CheckHealth<C100v1_Ping, E100v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, User>(
+            Functions.CheckHealth<C100v1_Ping, E100v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, UserProfile>(
                 req,
                 new HandlerRegistration(),
                 signalRBinding,
@@ -79,7 +79,7 @@
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log)
         {
-            await PlatformFunctions.HandleMessage(myQueueItem, messageId, new HandlerRegistration(), new SecurityInfo(), signalRBinding, log);
+            await PlatformFunctions.HandleMessage<UserProfile>(myQueueItem, messageId, new HandlerRegistration(), new SecurityInfo(), signalRBinding, log);
         }
 
         [FunctionName("AddToGroup")]

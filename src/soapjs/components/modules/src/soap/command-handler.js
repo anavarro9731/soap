@@ -116,6 +116,7 @@ export default {
             if (config.auth0 && config.auth0.isAuthenticated) {
                 setHeader(command, headerKeys.identityToken, config.auth0.identityToken);
                 setHeader(command, headerKeys.accessToken, config.auth0.accessToken);
+                setHeader(command, headerKeys.identityChain, "user://"+config.auth0.userName)
             }
             
             const {className, assemblyName} = parseDotNetShortAssemblyQualifiedName(command.$type);

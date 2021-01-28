@@ -14,6 +14,8 @@
 
     public class Bus : IBus
     {
+        private readonly bool authEnabled;
+
         private readonly IBlobStorage blobStorage;
 
         private readonly string envPartitionKey;
@@ -29,11 +31,13 @@
             IBusSettings settings,
             IMessageAggregator messageAggregator,
             IBlobStorage blobStorage,
-            Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority)
+            Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority,
+            bool authEnabled)
         {
             BusClient = busClient;
             this.messageAggregator = messageAggregator;
             this.blobStorage = blobStorage;
+            this.authEnabled = authEnabled;
             this.getServiceLevelAuthority = async () =>
                 {
                 //only get this once per context, too expensive otherwise
@@ -72,6 +76,9 @@
             TContextMessage contextMessage,
             IBusClient.EventVisibilityFlags eventVisibility = null) where TEvent : ApiEvent where TContextMessage : ApiMessage
         {
+            eventToPublish.Validate();
+            eventToPublish.RequiredNotNullOrThrow();
+            eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
             eventVisibility ??= GetDefaultVisibility(contextMessage);
 
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
@@ -90,8 +97,12 @@
 
             eventToPublish.Validate();
             eventToPublish.RequiredNotNullOrThrow();
-            eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
-            eventToPublish.Headers.SetAndCheckHeadersOnOutgoingEvent(eventToPublish);
+            eventToPublish.Headers.SetTimeOfCreationAtOrigin();
+            eventToPublish.Headers.SetMessageId(Guid.NewGuid());
+            eventToPublish.Headers.SetTopic(eventToPublish.Headers.GetType().FullName);
+            eventToPublish.Headers.SetSchema(eventToPublish.Headers.GetType().FullName);
+            eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish);
+
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
 
@@ -127,33 +138,49 @@
         public async Task Send<TCommand, TContextMessage>(
             TCommand commandToSend,
             TContextMessage contextMessage,
-            bool useServiceLevelAuthority = false,
+            bool forceServiceLevelAuthority = false,
             DateTimeOffset scheduledAt = default) where TCommand : ApiCommand where TContextMessage : ApiMessage
         {
             commandToSend.Validate();
             commandToSend.RequiredNotNullOrThrow();
             commandToSend = commandToSend.Clone();
-
             /* getServiceLevelAuthority is expensive and cached, that's why we repeat the call below rather then getting to
              a variable is to avoid making the call unnecessarily */
-            switch (useServiceLevelAuthority)
+
+            if (this.authEnabled)
             {
-                case true:
-                    var separator = contextMessage.Headers.GetIdentityChain() == null ? "" : ",";
-                    commandToSend.Headers.SetIdentityChain(
-                        contextMessage.Headers.GetIdentityChain() + separator
-                                                                  + (await this.getServiceLevelAuthority()).SlaIdChainSegment);
-                    commandToSend.Headers.SetAccessToken((await this.getServiceLevelAuthority()).AccessToken);
-                    break;
-                case false:
-                    commandToSend.Headers.SetIdentityChain(
-                        contextMessage.Headers.GetIdentityChain() ?? (await this.getServiceLevelAuthority()).SlaIdChainSegment);
-                    commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken());
-                    commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken());
-                    break;
+                switch (forceServiceLevelAuthority)
+                {
+                    case true:
+                        if (contextMessage.Headers.GetIdentityChain() == null
+                        ) //* context message could be an event, or auth disabled and not have a chain
+                        {
+                            commandToSend.Headers.SetIdentityChain((await this.getServiceLevelAuthority()).SlaIdChainSegment);
+                        }
+                        else
+                        {
+                            commandToSend.Headers.SetIdentityChain(
+                                contextMessage.Headers.GetIdentityChain() + ","
+                                                                          + (await this.getServiceLevelAuthority())
+                                                                          .SlaIdChainSegment);
+                        }
+
+                        commandToSend.Headers.SetAccessToken((await this.getServiceLevelAuthority()).AccessToken);
+                        break;
+                    case false:
+
+                        commandToSend.Headers.SetIdentityChain(
+                            contextMessage.Headers.GetIdentityChain()); //* context message could be an event not have a chain
+                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken());
+                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken());
+
+                        break;
+                }
             }
 
-            commandToSend.Headers.SetAndCheckHeadersOnOutgoingCommand(commandToSend, contextMessage, this.envPartitionKey);
+            commandToSend.Headers.SetTimeOfCreationAtOrigin();
+            commandToSend.Headers.SetMessageId(Guid.NewGuid());
+            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.authEnabled, this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 

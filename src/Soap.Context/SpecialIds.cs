@@ -37,8 +37,9 @@
         public static readonly Guid RollbackSkipsOverItemsUpdatedAfterWeUpdatedThem = Guid.NewGuid();
         
         public static readonly Guid RollbackSkipsOverItemsDeletedSinceWeCreatedThem = Guid.NewGuid();
-        
 
         public static readonly Guid RollbackSkipsOverItemsUpdatedSinceWeCreatedThem = Guid.NewGuid();
+
+        public static readonly Guid ForceServiceLevelAuthorityOnOutgoingMessages = Guid.NewGuid();
     }
 }

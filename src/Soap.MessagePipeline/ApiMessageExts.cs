@@ -1,23 +1,21 @@
 ﻿namespace Soap.MessagePipeline
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Reflection;
-    using System.Text;
-    using CircuitBoard;
     using Soap.Context;
     using Soap.Context.Context;
-    using Soap.Context.Exceptions;
     using Soap.Context.Logging;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
 
     public static class ApiMessageExtensions
     {
         
+        public static bool IsSubjectToAuthorisation(this ApiMessage m, bool authEnabled)
+        {
+            var messageType = m.GetType();
+            return authEnabled && !messageType.HasAttribute<NoAuthAttribute>()
+                               && messageType.InheritsOrImplements(typeof(ApiCommand));
+        }
+
         internal static string GetSchema(this ApiMessage m) => m.GetType().ToShortAssemblyTypeName();
 
         internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)

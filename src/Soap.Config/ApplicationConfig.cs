@@ -40,7 +40,7 @@
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
-        public bool Auth0Enabled { get; set; }
+        public bool AuthEnabled { get; set; }
 
         public string Auth0EnterpriseAdminClientId { get; set; }
 
@@ -77,11 +77,11 @@
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
                     .Must(
-                        x => x.Auth0Enabled == false || !string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
+                        x => x.AuthEnabled == false || !string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
                              && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
                              && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret))
                     .WithMessage(
-                        $"If {nameof(IConnectWithAuth0.Auth0Enabled)} is set to true, then all Auth0 fields must be populated");
+                        $"If {nameof(IConnectWithAuth0.AuthEnabled)} is set to true, then all Auth0 fields must be populated");
             }
         }
     }

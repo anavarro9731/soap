@@ -104,7 +104,8 @@ async function registerMessageTypesFromApi() {
                     tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
                     isAuthenticated : false,
                     accessToken : null,
-                    identityToken : null
+                    identityToken : null,
+                    userName: null
                 };
             }
             

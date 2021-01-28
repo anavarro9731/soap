@@ -43,14 +43,12 @@
 
     public static class MessageHeaderExtensionsA
     {
-        public static void SetAndCheckHeadersOnOutgoingCommand(
+        public static void CheckHeadersOnOutgoingCommand(
             this MessageHeaders messageHeaders,
             ApiMessage message,
-            ApiMessage contextMessage,
+            bool authEnabled,
             string envPartitionKey)
         {
-            messageHeaders.SetTimeOfCreationAtOrigin();
-            messageHeaders.SetMessageId(Guid.NewGuid());
 
             if (message is MessageFailedAllRetries m)
             {
@@ -63,11 +61,12 @@
 
             messageHeaders.SetSchema(message.GetType().FullName);
 
-            
-            
-            Ensure(
-                messageHeaders.GetIdentityChain() != null,
-                "All inter-service outgoing commands from a service must have an identity chain header");
+            if (authEnabled)
+            {
+                Ensure(
+                    messageHeaders.GetIdentityChain() != null,
+                    "All inter-service outgoing commands from a service must have an identity chain header if auth is enabled");
+            }
 
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -94,13 +93,9 @@
             */
         }
 
-        public static void SetAndCheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
+        public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
         {
-            messageHeaders.SetTimeOfCreationAtOrigin();
-            messageHeaders.SetMessageId(Guid.NewGuid());
-            messageHeaders.SetTopic(message.GetType().FullName);
-            messageHeaders.SetSchema(message.GetType().FullName);
-
+            
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All outgoing Api messages must have a valid {nameof(Keys.MessageId)} header");
@@ -134,72 +129,6 @@
             */
         }
 
-        public static void SetDefaultHeadersForIncomingTestMessages(this ApiMessage message)
-        {
-            var messageHeaders = message.Headers;
-            
-            if (messageHeaders.GetMessageId() == Guid.Empty)
-            {
-                messageHeaders.SetMessageId(Guid.NewGuid());
-            }
-
-            if (messageHeaders.GetTimeOfCreationAtOrigin() == null)
-            {
-                messageHeaders.SetTimeOfCreationAtOrigin();
-            }
-
-            if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
-            {
-                messageHeaders.SetIdentityToken("identity token");
-            }
-            
-            if (string.IsNullOrEmpty(messageHeaders.GetAccessToken()))
-            {
-                messageHeaders.SetAccessToken("access token");
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
-            {
-                messageHeaders.SetQueueName("queue name");
-            }
-            
-            if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityChain()))
-            {
-                messageHeaders.SetIdentityChain("user://someuser");
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
-            {
-                messageHeaders.SetTopic("topic");
-            }
-            
-            if (messageHeaders.GetSessionId() == null && message is ApiCommand)
-            {
-                messageHeaders.SetSessionId(Guid.NewGuid().ToString());
-            }
-
-            if (messageHeaders.GetCommandConversationId() == null && message is ApiCommand)
-            {
-                messageHeaders.SetCommandConversationId(Guid.NewGuid());
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()) && message is ApiCommand)
-            {
-                messageHeaders.SetCommandHash("command hash");
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
-            {
-                messageHeaders.SetSchema(message.GetType().FullName);
-            }
-
-            /* NOT SET
-             BLOBID 
-             SASSTORAGETOKEN
-             STATEFULPROCESSID
-             SESSION IDS
-             */
-        }
 
         public static void ValidateIncomingMessageHeaders(this ApiMessage msg)
         {

@@ -19,12 +19,8 @@ namespace Soap.MessagePipeline
 
     internal static class ContextWithMessageExtensions
     {
-        
-
-        
         internal static async Task CreateOrFindLogEntry(
             this ContextWithMessage ctx,
-            ApiIdentity identity,
             Action<MessageLogEntry> outLogEntry)
         {
             {
@@ -34,7 +30,7 @@ namespace Soap.MessagePipeline
 
                 if (entry == null)
                 {
-                    var meta = new MessageMeta(ctx.TimeStamp, identity);
+                    var meta = new MessageMeta(ctx.TimeStamp, ctx.ApiIdentity);
 
                     await CreateNewLogEntry(meta, ctx, v => entry = v);
                 }

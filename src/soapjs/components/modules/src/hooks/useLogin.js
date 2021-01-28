@@ -12,6 +12,7 @@ export const useLogin = () => {
         isAuthenticated,
         getIdTokenClaims,
         getAccessTokenSilently,
+        user,
         getAccessTokenWithPopup
     } = useAuth0();
 
@@ -35,6 +36,7 @@ export const useLogin = () => {
                 config.auth0.isAuthenticated = true;
                 config.auth0.accessToken = access_token;
                 config.auth0.identityToken = id_token;
+                config.auth0.userName = user.sub;
             }
 
         })();

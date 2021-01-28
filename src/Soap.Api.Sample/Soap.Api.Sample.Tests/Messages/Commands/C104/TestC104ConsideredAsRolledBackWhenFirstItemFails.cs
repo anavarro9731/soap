@@ -61,9 +61,9 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 //the change we now need to reflect that in the underlying data for the next run to calculate correctly
                 if (run == 2)
                 {
-                    await store.UpdateById<User>(
+                    await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Identities.UserOne.Id);
+                        luke => luke.Auth0Id = Ids.ApiIdOne);
                     await store.CommitChanges();
                 }
             }

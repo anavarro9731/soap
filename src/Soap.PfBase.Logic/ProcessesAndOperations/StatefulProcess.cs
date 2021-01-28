@@ -87,7 +87,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected void CompleteProcess()
         {
-            var username = context.MessageLogEntry.MessageMeta.ApiIdentity?.Id;
+            var username = context.MessageLogEntry.MessageMeta.ApiIdentity?.Auth0Id;
             RecordCompleted(username);
         }
 
@@ -102,7 +102,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessContinued(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Id,
+                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Auth0Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -114,7 +114,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Id,
+                    context.MessageLogEntry.MessageMeta.ApiIdentity?.Auth0Id,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -139,10 +139,14 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                 publishEvent.Headers.SetStatefulProcessId(this.id);
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
-            public Task Send(ApiCommand sendCommand, bool useServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
+            public Task Send(ApiCommand sendCommand, bool forceServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
             {
+                if (sendCommand.Headers.GetMessageId() == SpecialIds.ForceServiceLevelAuthorityOnOutgoingMessages)
+                {
+                    forceServiceLevelAuthority = true;
+                }
                 sendCommand.Headers.SetStatefulProcessId(this.id);
-                return this.bus.Send(sendCommand, this.contextMessage, useServiceLevelAuthority, scheduledAt);
+                return this.bus.Send(sendCommand, this.contextMessage, forceServiceLevelAuthority, scheduledAt);
             }
         }
 

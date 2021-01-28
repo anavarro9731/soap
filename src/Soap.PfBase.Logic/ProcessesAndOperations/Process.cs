@@ -1,10 +1,12 @@
 ﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
     using DataStore.Models.PureFunctions.Extensions;
     using Serilog;
     using Soap.Context;
@@ -25,6 +27,7 @@
     /// </summary>
     public abstract class Process : IProcess
     {
+        
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         protected BusWrapper Bus => new BusWrapper(context.Bus, context.Message);
@@ -46,9 +49,14 @@
                 return this.bus.Publish(publishEvent, this.contextMessage, eventVisibility);
             }
 
-            public Task Send(ApiCommand sendCommand, bool useServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
+            public Task Send(ApiCommand sendCommand, bool forceServiceLevelAuthority = false, DateTimeOffset scheduledAt = default)
             {
-                return this.bus.Send(sendCommand, this.contextMessage, useServiceLevelAuthority, scheduledAt);
+                if (this.contextMessage.Headers.GetMessageId() == SpecialIds.ForceServiceLevelAuthorityOnOutgoingMessages)
+                {
+                    forceServiceLevelAuthority = true;
+                }
+                    
+                return this.bus.Send(sendCommand, this.contextMessage, forceServiceLevelAuthority, scheduledAt);
             }
         }
 
@@ -70,11 +78,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.ApiIdentity?.Id));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.ApiIdentity?.Auth0Id));
             
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.ApiIdentity?.Id));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.ApiIdentity?.Auth0Id));
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

@@ -1,8 +1,11 @@
 ﻿namespace Soap.Context.Context
 {
     using System;
+    using System.Linq;
+    using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces.LowLevel;
     using Serilog;
     using Soap.Context.BlobStorage;
     using Soap.Context.MessageMapping;
@@ -12,6 +15,8 @@
 
     public class BoostrappedContext
     {
+        public readonly ApiIdentity ApiIdentity;
+
         public readonly IBootstrapVariables AppConfig;
 
         public readonly IBlobStorage BlobStorage;
@@ -28,6 +33,8 @@
 
         public readonly NotificationServer NotificationServer;
 
+        private readonly Func<Task<IUserProfile>> GetUserProfileFromIdentityServer;
+
         public BoostrappedContext(
             IBootstrapVariables appConfig,
             DataStore dataStore,
@@ -36,9 +43,13 @@
             IBus bus,
             NotificationServer notificationServer,
             BlobStorage blobStorage,
-            MapMessagesToFunctions messageMapper)
+            MapMessagesToFunctions messageMapper,
+            ApiIdentity apiIdentity,
+            Func<Task<IUserProfile>> getUserProfileFromIdentityServer)
         {
             this.MessageMapper = messageMapper;
+            this.ApiIdentity = apiIdentity;
+            this.GetUserProfileFromIdentityServer = getUserProfileFromIdentityServer;
             this.AppConfig = appConfig;
             this.DataStore = dataStore;
             this.MessageAggregator = messageAggregator;
@@ -58,6 +69,39 @@
             this.NotificationServer = c.NotificationServer;
             this.MessageMapper = c.MessageMapper;
             this.BlobStorage = c.BlobStorage;
+            this.ApiIdentity = c.ApiIdentity;
+            this.GetUserProfileFromIdentityServer = c.GetUserProfileFromIdentityServer;
+        }
+
+        public async Task<TUserProfile> GetUser<TUserProfile>() where TUserProfile : class, IUserProfile, IAggregate, new()
+        {
+            var userProfile = await this.GetUserProfileFromIdentityServer();
+
+            var user = (await this.DataStore.Read<TUserProfile>(x => x.Auth0Id == userProfile.Auth0Id)).SingleOrDefault();
+
+            if (user == null)
+            {
+                var newUser = new TUserProfile
+                {
+                    Auth0Id = userProfile.Auth0Id,
+                    Email = userProfile.Email,
+                    FirstName = userProfile.FirstName,
+                    LastName = userProfile.LastName
+                };
+
+                return (await this.DataStore.Create(newUser));
+            }
+            else
+            {
+             return (await this.DataStore.UpdateWhere<TUserProfile>(
+                    u => u.Auth0Id == user.Auth0Id,
+                    x =>
+                        {
+                        x.Email = userProfile.Email;
+                        x.FirstName = userProfile.FirstName;
+                        x.LastName = userProfile.LastName;
+                        })).Single();
+            }
         }
     }
 

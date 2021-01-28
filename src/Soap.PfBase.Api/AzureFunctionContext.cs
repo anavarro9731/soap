@@ -1,10 +1,13 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
+    using DataStore.Models;
     using DataStore.Options;
     using Destructurama;
     using Microsoft.Azure.WebJobs;
@@ -55,7 +58,7 @@
             Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
         }
 
-        public static async Task<Result> Execute(
+        public static async Task<Result> Execute<TUserProfile> (
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
             string messageIdAsString,
@@ -64,7 +67,7 @@
             ILogger logger,
             ApplicationConfig appConfig,
             IAsyncCollector<SignalRMessage> signalRBinding,
-            DataStoreOptions dataStoreOptions = null) 
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
             {
@@ -79,10 +82,15 @@
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
                     ApiIdentity apiIdentity = null;
-                    if (IsProtectable(appConfig, messageType)) 
+                    if (message.IsSubjectToAuthorisation(appConfig.AuthEnabled))
                     {
-                        await Auth0Functions.AuthoriseCall(appConfig, message.Headers.GetAccessToken(), securityInfo, message, v => apiIdentity = v);
-                    } 
+                        await Auth0Functions.AuthoriseCall(
+                            appConfig,
+                            message.Headers.GetAccessToken(),
+                            securityInfo,
+                            message,
+                            v => apiIdentity = v);
+                    }
 
                     CreateMessageAggregator(out var messageAggregator);
 
@@ -93,23 +101,35 @@
                         dataStoreOptions,
                         out var dataStore);
 
-                    CreateUserIfNotExists(apiIdentity);
-
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
                     var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
 
-                    CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, signalRBinding, appConfig, out var bus);
+                    async Task<IUserProfile> GetUserProfile()
+                    {
+                        return await Auth0Functions.GetUserProfile<TUserProfile>(appConfig, dataStore, apiIdentity);
+                    }
+                    
+                    CreateBusContext(
+                        messageAggregator,
+                        appConfig.BusSettings,
+                        blobStorage,
+                        signalRBinding,
+                        appConfig,
+                        out var bus);
 
                     var context = new BoostrappedContext(
-                        messageMapper: mappingRegistration,
                         appConfig: appConfig,
+                        dataStore: dataStore,
+                        messageAggregator: messageAggregator,
                         logger: logger,
                         bus: bus,
                         notificationServer: notificationServer,
-                        dataStore: dataStore,
-                        messageAggregator: messageAggregator,
-                        blobStorage: blobStorage);
+                        blobStorage: blobStorage,
+                        messageMapper: mappingRegistration,
+                        apiIdentity: apiIdentity,
+                        getUserProfileFromIdentityServer: GetUserProfile
+                    );
 
                     int retries = appConfig.BusSettings.NumberOfApiMessageRetries;
 
@@ -120,8 +140,7 @@
                         if (currentRun > 1) remainingRuns -= 1;
                         try
                         {
-                            
-                            await MessagePipeline.Execute(message, context, apiIdentity);
+                            await MessagePipeline.Execute(message, context);
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
                             x.CommandsSent.AddRange(bus.CommandsSent);
@@ -145,8 +164,7 @@
 
                 return x;
 
-                //TODO filter
-                static bool IsProtectable(ApplicationConfig appConfig, Type messageType) => appConfig.Auth0Enabled && !messageType.HasAttribute<NoAuthAttribute>() && messageType.InheritsOrImplements(typeof(ApiCommand));
+
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -164,6 +182,8 @@
                     throw new ApplicationException("Cannot deserialise message", e);
                 }
             }
+
+          
 
             static void ParseMessageId(string messageIdAsString, out Guid messageId)
             {
@@ -204,7 +224,11 @@
                 ApplicationConfig applicationConfig,
                 out IBus busContext)
             {
-                busContext = busSettings.CreateBus(messageAggregator, blobStorage, signalRBinding, () => Auth0Functions.GetServiceLevelAuthority(applicationConfig));
+                busContext = busSettings.CreateBus(
+                    messageAggregator,
+                    blobStorage,
+                    signalRBinding,
+                    () => Auth0Functions.GetServiceLevelAuthority(applicationConfig), applicationConfig.AuthEnabled);
             }
 
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)

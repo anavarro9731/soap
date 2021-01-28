@@ -59,9 +59,9 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 //the change we now need to reflect that in the underlying data for the next run to calculate correctly
                 if (run == 2)
                 {
-                    await store.UpdateById<User>(
+                    await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Identities.UserOne.Id); //doesn't matter just make any change to create a history item
+                        luke => luke.Auth0Id = Ids.ApiIdOne); //doesn't matter just make any change to create a history item
                     await store.CommitChanges();
                 }
             }
@@ -70,7 +70,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             {
                 if (run == 2)
                 {
-                    await store.DeleteWhere<User>(u => u.UserName == "lando.calrissian", options => options.Permanently());
+                    await store.DeleteWhere<UserProfile>(u => u.UserName == "lando.calrissian", options => options.Permanently());
                     await store.CommitChanges();
                 }
             }
@@ -89,26 +89,26 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 async Task RecordsShouldBeReturnToOriginalStateExceptLando(DataStore store)
                 {
                     //*creations
-                    var lando = (await store.Read<User>(x => x.UserName == "lando.calrissian"))
+                    var lando = (await store.Read<UserProfile>(x => x.UserName == "lando.calrissian"))
                         .SingleOrDefault(); //* should ignore original state
                     lando.Should().BeNull();
 
-                    var boba = (await store.Read<User>(x => x.UserName == "boba.fett")).SingleOrDefault();
+                    var boba = (await store.Read<UserProfile>(x => x.UserName == "boba.fett")).SingleOrDefault();
                     boba.Should().BeNull();
 
                     //* updates
-                    var han = await store.ReadById<User>(Ids.HanSolo);
+                    var han = await store.ReadById<UserProfile>(Ids.HanSolo);
                     han.FirstName.Should().Be(Aggregates.HanSolo.FirstName);
                     han.LastName.Should().Be(Aggregates.HanSolo.LastName);
 
-                    var leia = await store.ReadById<User>(Ids.PrincessLeia);
+                    var leia = await store.ReadById<UserProfile>(Ids.PrincessLeia);
                     leia.Active.Should().BeTrue();
 
                     //* deletes
-                    var darth = await store.ReadById<User>(Ids.DarthVader);
+                    var darth = await store.ReadById<UserProfile>(Ids.DarthVader);
                     darth.Should().NotBeNull();
 
-                    var luke = await store.ReadById<User>(Ids.LukeSkywalker);
+                    var luke = await store.ReadById<UserProfile>(Ids.LukeSkywalker);
                     luke.Should().NotBeNull();
                 }
             }

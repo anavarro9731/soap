@@ -13,6 +13,7 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces.LowLevel;
     using DataStore.Providers.CosmosDb;
     using global::Auth0.ManagementApi;
     using global::Auth0.ManagementApi.Models;
@@ -35,6 +36,7 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
+    using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
 
     public static class DiagnosticFunctions
@@ -51,7 +53,7 @@
             return schema;
         }
 
-        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TReceiveLargeMsg>(
+        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
             Stream outputStream,
             HttpContent httpContent,
             TransportContext transportContext,
@@ -65,6 +67,7 @@
             where TPong : ApiMessage
             where TSendLargeMsg : ApiCommand, new()
             where TReceiveLargeMsg : ApiMessage
+            where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             async ValueTask WriteLine(string s)
             {
@@ -90,14 +93,14 @@
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
 
-                await GetPingPongMessageTestResults<TPing, TPong>(
+                await GetPingPongMessageTestResults<TPing, TPong, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
                     signalRBinding,
                     WriteLine);
 
-                await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg>(
+                await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
@@ -205,24 +208,25 @@
             return json;
         }
 
-        private static async Task GetPingPongMessageTestResults<TPing, TPong>(
+        private static async Task GetPingPongMessageTestResults<TPing, TPong, TUserProfile>(
             ILogger logger,
             ApplicationConfig appConfig,
             MapMessagesToFunctions mappings,
             IAsyncCollector<SignalRMessage> signalRBinding,
             Func<string, ValueTask> writeLine)
             where TPing : ApiCommand, new() where TPong : ApiMessage
+            where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
             await writeLine("Running Message Test...");
 
             var message = new TPing();
-            message.SetDefaultHeadersForIncomingTestMessages();
+            message.SetDefaultHeadersForIncomingTestMessages(false);
 
             await writeLine($"Sending {typeof(TPing).Name} ...");
 
             //*  should publish/send pong
-            var r = await AzureFunctionContext.Execute(
+            var r = await AzureFunctionContext.Execute<TUserProfile>(
                         message.ToJson(SerialiserIds.ApiBusMessage),
                         mappings,
                         message.Headers.GetMessageId().ToString(),

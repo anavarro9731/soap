@@ -8,16 +8,16 @@ namespace Soap.Api.Sample.Tests
 
     public static class Aggregates
     {
-        public static User DarthVader =>
-            new User { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader };
+        public static UserProfile DarthVader =>
+            new UserProfile { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader };
 
-        public static User HanSolo =>
-            new User { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo };
+        public static UserProfile HanSolo =>
+            new UserProfile { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo };
 
-        public static User LukeSkywalker =>
-            new User { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker };
+        public static UserProfile LukeSkywalker =>
+            new UserProfile { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker };
 
-        public static User PrincessLeia =>
-            new User { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia };
+        public static UserProfile PrincessLeia =>
+            new UserProfile { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia };
     }
 }

@@ -8,11 +8,12 @@
     using DataStore.Interfaces;
     using DataStore.Options;
     using Destructurama;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Serilog;
     using Serilog.Exceptions;
+    using Soap.Api.Sample.Tests;
     using Soap.Bus;
+    using Soap.Config;
+    using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Context.Logging;
@@ -32,8 +33,9 @@
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper output,
-            ApiIdentity identity,
+            TestIdentity identity,
             byte retries,
+            bool authEnabled,
             IDocumentRepository rollingRepo,
             (Func<DataStore, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
             DataStoreOptions dataStoreOptions,
@@ -43,144 +45,156 @@
             {
                 var x = new Result();
 
-                CreateAppConfig(retries, out var appConfig);
+                CreateAppConfig(retries, authEnabled, out var appConfig);
 
                 CreateMessageAggregator(setup, out var messageAggregator);
 
                 CreateLogger(messageAggregator, output, out var logger);
 
-                CreateDataStore(messageAggregator, rollingRepo, dataStoreOptions, message.Headers.GetMessageId(), out var dataStore);
-
-                CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
-
-                CreateBlobStorage(messageAggregator, out BlobStorage blobStorage);
-                
-                CreateBusContext(messageAggregator, appConfig.BusSettings, blobStorage, out var bus);
-
-                var context = new BoostrappedContext(
-                    messageMapper: messageMapper,
-                    appConfig: appConfig,
-                    logger: logger,
-                    bus: bus,
-                    notificationServer: notificationServer,
-                    dataStore: dataStore,
-                    messageAggregator: messageAggregator,
-                    blobStorage:blobStorage);
-
-                byte currentRun = 1;
-                var remainingRuns = retries;
-
-                logger.Information("OUTPUT LOG...");
-
-                do
+                try
                 {
-                    if (currentRun > 1) remainingRuns -= 1;
-                    logger.Information(
-                        $@"\/\/\/\/\/\/\/\/\/\/\/\/ RUN {currentRun} STARTED {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/"
-                        + Environment.NewLine);
-                    
-                    
-                    if (beforeRunHook != default)
+                    if (message.IsSubjectToAuthorisation(appConfig.AuthEnabled))
                     {
+                        AuthFunctions.AuthoriseMessageOrThrow(message, identity.ApiIdentity.ApiPermissions);
+                    }
+
+                    CreateDataStore(
+                        messageAggregator,
+                        rollingRepo,
+                        dataStoreOptions,
+                        message.Headers.GetMessageId(),
+                        out var dataStore);
+
+                    CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
+
+                    CreateBlobStorage(messageAggregator, out var blobStorage);
+
+                    CreateBusContext(messageAggregator, appConfig, blobStorage, out var bus);
+
+                    var context = new BoostrappedContext(
+                        messageMapper: messageMapper,
+                        appConfig: appConfig,
+                        logger: logger,
+                        bus: bus,
+                        notificationServer: notificationServer,
+                        dataStore: dataStore,
+                        messageAggregator: messageAggregator,
+                        blobStorage: blobStorage,
+                        apiIdentity: identity.ApiIdentity,
+                        getUserProfileFromIdentityServer: () => Task.FromResult(identity.UserProfile as IUserProfile));
+
+                    byte currentRun = 1;
+                    var remainingRuns = retries;
+
+                    logger.Information("OUTPUT LOG...");
+
+                    do
+                    {
+                        if (currentRun > 1) remainingRuns -= 1;
+                        logger.Information(
+                            $@"\/\/\/\/\/\/\/\/\/\/\/\/ RUN {currentRun} STARTED {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/"
+                            + Environment.NewLine);
+
+                        if (beforeRunHook != default)
+                        {
+                            try
+                            {
+                                logger.Information(
+                                    @"---------------------- EXECUTING BEFORE RUN HOOK ----------------------"
+                                    + Environment.NewLine);
+
+                                await beforeRunHook.Function.Invoke(
+                                    new DataStore(
+                                        context.DataStore.DocumentRepository,
+                                        dataStoreOptions: beforeRunHook.RunHookUnitOfWorkId.HasValue
+                                                              ? DataStoreOptions.Create()
+                                                                                .SpecifyUnitOfWorkId(
+                                                                                    beforeRunHook.RunHookUnitOfWorkId.Value)
+                                                              : null),
+                                    currentRun);
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Information(Environment.NewLine + e + Environment.NewLine);
+
+                                logger.Information(
+                                    Environment.NewLine
+                                    + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                                x.UnhandledError = e;
+                                return x;
+                            }
+                        }
+
+                        logger.Information(
+                            @"---------------------- EXECUTING MESSAGE HANDLER ----------------------" + Environment.NewLine);
+
                         try
                         {
-                            logger.Information(
-                                @"---------------------- EXECUTING BEFORE RUN HOOK ----------------------" + Environment.NewLine);
+                            await MessagePipeline.Execute(message, context);
 
-                            await beforeRunHook.Function.Invoke(
-                                new DataStore(
-                                    context.DataStore.DocumentRepository,
-                                    dataStoreOptions: beforeRunHook.RunHookUnitOfWorkId.HasValue
-                                                          ? DataStoreOptions.Create()
-                                                                            .SpecifyUnitOfWorkId(beforeRunHook.RunHookUnitOfWorkId.Value)
-                                                          : null),
-                                currentRun);
-                        }
-                        catch (Exception e)
-                        {
-                            logger.Information(Environment.NewLine + e + Environment.NewLine);
+                            x.Success = true;
+                            /*  What we are primarily trying to achieve is to make sure that each execute sets the activeprocesstate,
+                            if there is a statefulprocess handling the message, to the statefulprocess that it affects. 
+                            Not being able to see directly into the pipeline makes this challenging,
+                            and just looking at the list of processstates in play will not help as that will include items from previous
+                            executes. what we will do is look at the debug messages created in the bus for THIS message and find if there 
+                            are any statefulprocessstarted or continued events we can use to determine the id of the processtate to return. */
+
+                            var statefulProcessLaunchedByThisMessage = messageAggregator.AllMessages
+                                .Where(m => m.GetType().InheritsOrImplements(typeof(IAssociateProcessStateWithAMessage)))
+                                .SingleOrDefault(
+                                    m => ((IAssociateProcessStateWithAMessage)m).ByMessage == message.Headers.GetMessageId())
+                                .As<IAssociateProcessStateWithAMessage>();
+
+                            if (statefulProcessLaunchedByThisMessage != null)
+                            {
+                                var processStateId = statefulProcessLaunchedByThisMessage.ProcessStateId;
+                                var activeProcessState = await dataStore.ReadById<ProcessState>(processStateId);
+                                x.ActiveProcessState = activeProcessState;
+                            }
+
+                            x.MessageBus = bus;
+                            x.DataStore = dataStore;
+                            x.NotificationServer = notificationServer;
 
                             logger.Information(
                                 Environment.NewLine
-                                + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
-                            x.UnhandledError = e;
+                                + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
                             return x;
                         }
-                    }
-
-                    logger.Information(
-                        @"---------------------- EXECUTING MESSAGE HANDLER ----------------------" + Environment.NewLine);
-
-                    try
-                    {
-                        await MessagePipeline.Execute(message, context, identity);
-
-                        x.Success = true;
-                        /*  What we are primarily trying to achieve is to make sure that each execute sets the activeprocesstate,
-                        if there is a statefulprocess handling the message, to the statefulprocess that it affects. 
-                        Not being able to see directly into the pipeline makes this challenging,
-                        and just looking at the list of processstates in play will not help as that will include items from previous
-                        executes. what we will do is look at the debug messages created in the bus for THIS message and find if there 
-                        are any statefulprocessstarted or continued events we can use to determine the id of the processtate to return. */
-
-                        var statefulProcessLaunchedByThisMessage = messageAggregator.AllMessages
-                                                                                    .Where(
-                                                                                        m => m.GetType()
-                                                                                            .InheritsOrImplements(
-                                                                                                typeof(
-                                                                                                    IAssociateProcessStateWithAMessage
-                                                                                                )))
-                                                                                    .SingleOrDefault(
-                                                                                        m =>
-                                                                                            ((IAssociateProcessStateWithAMessage)m
-                                                                                            ).ByMessage == message.Headers
-                                                                                                .GetMessageId())
-                                                                                    .As<IAssociateProcessStateWithAMessage>();
-
-                        if (statefulProcessLaunchedByThisMessage != null)
+                        catch (Exception e)
                         {
-                            var processStateId = statefulProcessLaunchedByThisMessage.ProcessStateId;
-                            var activeProcessState = await dataStore.ReadById<ProcessState>(processStateId);
-                            x.ActiveProcessState = activeProcessState;
+                            logger.Information(
+                                Environment.NewLine
+                                + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+
+                            /* included these 3 lines later, not sure why I didn't at first
+                             maybe it was to keep parallel structure with the output in azurefunctioncontext
+                             but there these might be null if there is an error, while here they shoudl always
+                             be set, which is of course ideal for testing */
+                            x.MessageBus = bus;
+                            x.DataStore = dataStore;
+                            x.NotificationServer = notificationServer;
+
+                            logger.Error(e, "Unhandled Error");
+                            x.UnhandledError = e;
                         }
 
-                        x.MessageBus = bus;
-                        x.DataStore = dataStore;
-                        x.NotificationServer = notificationServer;
-
-
-                        logger.Information(
-                            Environment.NewLine
-                            + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
-                        return x;
+                        currentRun++;
                     }
-                    catch (Exception e)
-                    {
-                        logger.Information(
-                            Environment.NewLine
-                            + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
-                        
-                        /* included these 3 lines later, not sure why I didn't at first
-                         maybe it was to keep parallel structure with the output in azurefunctioncontext
-                         but there these might be null if there is an error, while here they shoudl always
-                         be set, which is of course ideal for testing */
-                        x.MessageBus = bus;
-                        x.DataStore = dataStore;
-                        x.NotificationServer = notificationServer;
-                        
-                        logger.Error(e, "Unhandled Error");
-                        x.UnhandledError = e;
-                    }
-                    
-                    currentRun++;
-                        
+                    while (remainingRuns > 0);
                 }
-                while (remainingRuns > 0);
+                catch (Exception e)
+                {
+                    x.Success = false;
+                    x.UnhandledError = e;
+                    logger.Error(e, "Unhandled Error");
+                }
 
                 return x;
             }
 
-            static void CreateAppConfig(byte retries, out TestConfig applicationConfig)
+            static void CreateAppConfig(byte retries, bool authEnabled, out TestConfig applicationConfig)
             {
                 applicationConfig = new TestConfig
                 {
@@ -189,7 +203,8 @@
                     BusSettings =
                     {
                         NumberOfApiMessageRetries = retries
-                    }
+                    },
+                    AuthEnabled = authEnabled
                 };
             }
 
@@ -198,22 +213,22 @@
                 var sink = new SerilogMessageAggregatorSink(messageAggregator);
 
                 logger = new LoggerConfiguration().Enrich.WithProperty("Environment", "DomainTests")
-                                                      .Enrich.WithExceptionDetails()
-                                                      .Destructure.UsingAttributes()
-                                                      .WriteTo.Sink(sink)
-                                                      .WriteTo.TestOutput(testOutputHelper)
-                                                      .CreateLogger();
+                                                  .Enrich.WithExceptionDetails()
+                                                  .Destructure.UsingAttributes()
+                                                  .WriteTo.Sink(sink)
+                                                  .WriteTo.TestOutput(testOutputHelper)
+                                                  .CreateLogger();
 
-                
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateMessageAggregator(Action<MessageAggregatorForTesting> setup, out IMessageAggregator messageAggregator)
+            static void CreateMessageAggregator(
+                Action<MessageAggregatorForTesting> setup,
+                out IMessageAggregator messageAggregator)
             {
                 var messageAggregatorForTesting = new MessageAggregatorForTesting();
                 setup?.Invoke(messageAggregatorForTesting);
                 messageAggregator = messageAggregatorForTesting;
-
             }
 
             static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
@@ -223,11 +238,16 @@
 
             static void CreateBusContext(
                 IMessageAggregator messageAggregator,
-                IBusSettings appConfigBusSettings,
+                TestConfig applicationConfig,
                 IBlobStorage blobStorage,
-                out IBus busContext)
+                out IBus busContext
+                 )
             {
-                busContext = appConfigBusSettings.CreateBus(messageAggregator, blobStorage, null, () => Task.FromResult(new ServiceLevelAuthority("domain-test", "bogus-token")));
+                busContext = applicationConfig.BusSettings.CreateBus(
+                    messageAggregator,
+                    blobStorage,
+                    null,
+                    () => Task.FromResult(new ServiceLevelAuthority(applicationConfig.AppId, TestHeaderConstants.ServiceLevelAccessTokenHeader)), applicationConfig.AuthEnabled);
             }
 
             static void CreateDataStore(
@@ -239,19 +259,14 @@
             {
                 dataStoreOptions = dataStoreOptions?.SpecifyUnitOfWorkId(unitOfWorkId)
                                    ?? DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId);
-                
-                dataStore = new DataStore(
-                    rollingRepo,
-                    messageAggregator,
-                    dataStoreOptions);
+
+                dataStore = new DataStore(rollingRepo, messageAggregator, dataStoreOptions);
             }
-            
-            
+
             static void CreateBlobStorage(IMessageAggregator messageAggregator, out BlobStorage blobStorage)
             {
-                blobStorage = new BlobStorage(new BlobStorage.Settings("fake-conn-string",messageAggregator));
+                blobStorage = new BlobStorage(new BlobStorage.Settings("fake-conn-string", messageAggregator));
             }
         }
-
     }
 }

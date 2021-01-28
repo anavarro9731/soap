@@ -3,7 +3,9 @@
     using System;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class P206SendLargeMessage : Process, IBeginProcess<C105v1_SendLargeMessage>

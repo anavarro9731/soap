@@ -6,7 +6,7 @@ namespace Soap.Interfaces
 
         public string AccessToken;
 
-        public string SlaIdChainSegment => "m2m://" + AppId;
+        public string SlaIdChainSegment => "service://" + AppId;
         
         public ServiceLevelAuthority(string appId, string accessToken)
         {

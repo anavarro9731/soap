@@ -4,6 +4,7 @@ namespace Soap.PfBase.Api.Functions
     using System.Runtime.ExceptionServices;
     using System.Text;
     using System.Threading.Tasks;
+    using DataStore.Interfaces.LowLevel;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
@@ -13,13 +14,13 @@ namespace Soap.PfBase.Api.Functions
 
     public static partial class PlatformFunctions
     {
-        public static async Task HandleMessage(
+        public static async Task HandleMessage<TUserProfile>(
             Message myQueueItem,
             string messageId,
             MapMessagesToFunctions handlerRegistration,
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
-            ILogger log) 
+            ILogger log) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -28,7 +29,7 @@ namespace Soap.PfBase.Api.Functions
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
-                var result = await AzureFunctionContext.Execute(
+                var result = await AzureFunctionContext.Execute<TUserProfile>(
                                  Encoding.UTF8.GetString(myQueueItem.Body),
                                  handlerRegistration,
                                  messageId,

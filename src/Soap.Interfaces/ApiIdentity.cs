@@ -6,11 +6,12 @@
 
     public class ApiIdentity : IIdentityWithApiPermissions, IIdentityWithDatabasePermissions
     {
-        public string Id { get; set; }
+        public string Auth0Id { get; set; }
 
         public List<string> ApiPermissions { get; set; } = new List<string>();
 
         public List<DatabasePermissionInstance> DatabasePermissions { get; set; } = new List<DatabasePermissionInstance>();
 
     }
+    
 }
