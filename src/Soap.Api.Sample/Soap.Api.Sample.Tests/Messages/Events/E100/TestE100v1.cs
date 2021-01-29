@@ -1,3 +1,5 @@
+//* ##REMOVE-IN-COPY##
+
 namespace Soap.Api.Sample.Tests.Messages.Events.E100
 {
     using FluentAssertions;

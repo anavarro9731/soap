@@ -5,10 +5,10 @@ namespace Soap.PfBase.Tests
 
     public static class Extensions
     {
-        public static void SetDefaultHeadersForIncomingTestMessages(this ApiMessage message, bool authEnabled)
+        public static void SetDefaultHeadersForIncomingTestMessages(this ApiMessage message)
         {
             var messageHeaders = message.Headers;
-            
+
             if (messageHeaders.GetMessageId() == Guid.Empty)
             {
                 messageHeaders.SetMessageId(Guid.NewGuid());
@@ -19,47 +19,36 @@ namespace Soap.PfBase.Tests
                 messageHeaders.SetTimeOfCreationAtOrigin();
             }
 
-            if (message is ApiCommand && authEnabled && string.IsNullOrEmpty(messageHeaders.GetIdentityToken()))
-            {
-                messageHeaders.SetIdentityToken(TestHeaderConstants.IdentityTokenHeader);
-            }
-            
-            if (string.IsNullOrEmpty(messageHeaders.GetAccessToken()))
-            {
-                messageHeaders.SetAccessToken(TestHeaderConstants.AccessTokenHeader);
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetQueue()))
+            if (messageHeaders.GetQueue() == null)
             {
                 messageHeaders.SetQueueName("queue name");
             }
-            
-            if (message is ApiCommand && string.IsNullOrEmpty(messageHeaders.GetIdentityChain()))
+
+            if (message is ApiCommand)
             {
-                messageHeaders.SetIdentityChain(TestHeaderConstants.IdentityChainHeader);
+
+                if (messageHeaders.GetSessionId() == null)
+                {
+                    messageHeaders.SetSessionId(Guid.NewGuid().ToString());
+                }
+
+                if (messageHeaders.GetCommandConversationId() == null)
+                {
+                    messageHeaders.SetCommandConversationId(Guid.NewGuid());
+                }
+
+                if (messageHeaders.GetCommandHash() == null)
+                {
+                    messageHeaders.SetCommandHash("command hash");
+                }
             }
 
-            if (string.IsNullOrEmpty(messageHeaders.GetTopic()))
+            if (messageHeaders.GetTopic() == null)
             {
                 messageHeaders.SetTopic("topic");
             }
-            
-            if (messageHeaders.GetSessionId() == null && message is ApiCommand)
-            {
-                messageHeaders.SetSessionId(Guid.NewGuid().ToString());
-            }
 
-            if (messageHeaders.GetCommandConversationId() == null && message is ApiCommand)
-            {
-                messageHeaders.SetCommandConversationId(Guid.NewGuid());
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetCommandHash()) && message is ApiCommand)
-            {
-                messageHeaders.SetCommandHash("command hash");
-            }
-
-            if (string.IsNullOrEmpty(messageHeaders.GetSchema()))
+            if (messageHeaders.GetSchema() == null)
             {
                 messageHeaders.SetSchema(message.GetType().FullName);
             }
@@ -75,9 +64,10 @@ namespace Soap.PfBase.Tests
 
     public static class TestHeaderConstants
     {
-        public const string ServiceLevelAccessTokenHeader = "service level access token";
-        public const string IdentityTokenHeader = "identity token";
         public const string AccessTokenHeader = "access token";
-        public const string IdentityChainHeader = "user://someuser";
+
+        public const string IdentityTokenHeader = "identity token";
+
+        public const string ServiceLevelAccessTokenHeader = "service level access token";
     }
 }

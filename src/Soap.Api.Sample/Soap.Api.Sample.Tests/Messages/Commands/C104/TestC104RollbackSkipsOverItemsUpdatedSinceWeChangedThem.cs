@@ -61,7 +61,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 {
                     await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Ids.ApiIdOne); //doesn't matter just make any change to create a history item
+                        luke => luke.Auth0Id = Ids.UserOneAuth0Id); //doesn't matter just make any change to create a history item
                     await store.CommitChanges();
                 }
             }

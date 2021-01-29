@@ -62,6 +62,8 @@
 
         protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
 
+        protected Task<T> GetUserProfile<T>() where T : class, IUserProfile, IAggregate, new() => this.context.GetUserProfile<T>();
+        
         protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.As<T>(); 
         
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();

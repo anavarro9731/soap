@@ -7,7 +7,7 @@
     using Soap.Interfaces;
     using Soap.NotificationServer;
 
-    /* If you add anything to this config you need to add validators for it and
+    /* If you add anything to this config you need to add validators for it unless its a bool or optional and
      if it relies on env variables also add it to the localsettings.json file and envvars class.
         with the exception of things (e.g. logger) which are read before the config is loaded or in an effort to load the config. 
      if it relies on env vars then you will need to also add it to sampleconfig.cs used by create-new-service.ps1 to setup new config repos 
@@ -54,6 +54,8 @@
 
         public string DefaultExceptionMessage { get; set; } = "An Error Occurred";
 
+        public bool UseServiceLevelAuthorityInTheAbsenceOfASecurityContext { get; set; }
+
         public SoapEnvironments Environment { get; set; }
 
         public NotificationServer.Settings NotificationSettings { get; set; }
@@ -81,7 +83,7 @@
                              && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
                              && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret))
                     .WithMessage(
-                        $"If {nameof(IConnectWithAuth0.AuthEnabled)} is set to true, then all Auth0 fields must be populated");
+                        $"If {nameof(IBootstrapVariables.AuthEnabled)} is set to true, then all Auth0 fields must be populated");
             }
         }
     }

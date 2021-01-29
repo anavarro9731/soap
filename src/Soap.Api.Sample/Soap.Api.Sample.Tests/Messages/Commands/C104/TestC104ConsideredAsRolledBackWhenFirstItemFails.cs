@@ -63,7 +63,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 {
                     await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Ids.ApiIdOne);
+                        luke => luke.Auth0Id = Ids.UserOneAuth0Id);
                     await store.CommitChanges();
                 }
             }

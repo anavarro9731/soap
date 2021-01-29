@@ -93,6 +93,8 @@
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
 
+                appConfig.AuthEnabled = false; //* enable message tests to run without need credentials
+                
                 await GetPingPongMessageTestResults<TPing, TPong, TUserProfile>(
                     logger,
                     appConfig,
@@ -221,7 +223,7 @@
             await writeLine("Running Message Test...");
 
             var message = new TPing();
-            message.SetDefaultHeadersForIncomingTestMessages(false);
+            message.SetDefaultHeadersForIncomingTestMessages();
 
             await writeLine($"Sending {typeof(TPing).Name} ...");
 

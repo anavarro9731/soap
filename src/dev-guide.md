@@ -78,7 +78,7 @@ The other projects are:
 
 We will discuss each of these project types and their associated classes in detail.
 
-### YourApi.Constants
+## YourApi.Constants
 
 Probably the simplest, this library contains only constants. Should any of these constants be used in message contracts
 it is very important that the definition of a constant in that case noy only mean something fixed at compile time 
@@ -106,9 +106,9 @@ One notable exception is the States enum used to record the state of a Stateful 
 methods are designed to work with straight enums, and since this code is always self-contained within the process file itself,
 enum is the right choice here.
 
-### YourApi.Messages
+## YourApi.Messages
 
-#### Quick facts:
+### Quick facts:
 
 - Messages are always one of 2 types: Commands or Events. Each type has base classes used to create messages.
 - Messages are always processed asynchronously, and queries are modeled as a Get*X*Command followed by a Got*X*Event
@@ -139,7 +139,7 @@ Messages are a contract and **must** not be changed after they are are released 
 They have to be versioned instead. (i.e. the message must be copied and changed so
 C100v1_PlaceSaleCommand becomes C100v2_PlaceSaleCommand. 
 
-#### Commands 
+### Commands 
 
 Commands represent the set of write operations you can perform on the data of a service.
 
@@ -156,7 +156,7 @@ method of a Process to do this. Bus.Send has an overload which also allows you t
 Commands can use only the datatypes you see in [C107](Soap.Api.Sample/Soap.Api.Sample.Messages/Commands/C107v1_CreateOrUpdateTestDataTypes.cs)
 and also any custom types which use those types, but only in a 1-1 relationship with the message, not in lists.
 
-#### Events
+### Events
 
 Events notify another party of changes that occured to the data owned by a service. 
 
@@ -166,7 +166,7 @@ They are published by one service and subscribed to by one or more other parties
 Event can use and of the datatypes you see in [C107](Soap.Api.Sample/Soap.Api.Sample.Messages/Commands/C107v1_CreateOrUpdateTestDataTypes.cs)
 and also any custom types which use those types, including in lists. 
 
-##### Publishing
+#### Publishing
 
 In service code you would use the [Bus.Publish](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P205PingPong.cs) 
 method of a Process or StatefulProcess to do this. By default, events will be published on the Bus to any subscribing services, 
@@ -178,12 +178,12 @@ a websocket client, but the events the websocket client is not interested in the
 overload can be used in limited cases to send Broadcast messages, to either all Bus subscriptions or all Websocket clients
 irrespective of how the context message was created. However doing so is an expensive operation and should be considered carefully.
 
-##### Subscribing
+#### Subscribing
 
-Subscribing to an event, is as simple as creating a handler for it, and then [registering that handler](#message-registration)
+Subscribing to an event, is as simple as creating a handler for it, and then [registering that handler](#handler-registration)
 You can subscribe to events you publish as well as those belonging to other services.
 
-#### Other considerations 
+### Other considerations 
 
 - Each service has a messages assembly which is versioned and published separately from the service itself. 
   This makes it possible for two services with a circular dependency to avoid an endless cycle of recompilation in 
@@ -200,7 +200,7 @@ should not sit in one general transformation or place, it is the responsibility 
   A `(msg.property ?? defaultValue)` expression
 should be the default way to handle the initial consumption of such values.
 
-### YourApi.Models
+## YourApi.Models
 
 The models assembly includes the models that are persisted to the database. By default these include the special `ServiceState`
 model which is used to control service upgrades and store service meta data. Also the `User` class which while extendable should
@@ -239,7 +239,7 @@ static class CarFunctions {
 }
 ```
 
-### YourApi.Logic
+## YourApi.Logic
 
 This assembly contains 5 types of objects:
 - *Handlers* which define what the processors for a message are
@@ -255,7 +255,7 @@ This assembly contains 5 types of objects:
 
 We will cover each of these in details.
 
-#### Handlers
+### Handlers
 
 These are small classes which have a fixed interface based on the interface [IMessageFunctionsClientSide<>](Soap.Interfaces/IMessageFunctions.cs)
 
@@ -289,7 +289,7 @@ a message with a different name and not version is a more suitable choice.
 This should be always done by with a local static 
 [Upgrade function in the handler](Soap.Api.Sample/Soap.Api.Sample.Logic/Handlers/C111v1Functions.cs).
 
-#### Handler Registration
+### Handler Registration
 
 Handlers are only operational once they are 'registered' by adding a line to 
 the [HandlerRegistration](Soap.Api.Sample/Soap.Api.Sample.Logic/HandlerRegistration.cs) class.
@@ -342,7 +342,7 @@ models, but it has been found that in many cases multiple callers can suitably s
 and so to reduce the overall model count, the models for logic piece method arguments should be defined
 in the **logic piece that receives them** even when the model is designed for to serve a particular caller.
 
-#### Operations
+### Operations
 
 `Operations<TAggregate>` are classes which are designed to hold the logic for modifying an `Aggregate`.
 Each operation class modifies only one `Aggregate` type. This is reinforced by the fact that the
@@ -373,7 +373,7 @@ Though in simple cases, the Guard statements in the operation methods are enough
 
 * If the public functions of Operations need to share common logic they can do so via private methods.
 
-##### Using Blob Storage In Operations
+#### Using Blob Storage In Operations
 
 Processes have available to them the BlobStorage provider which allows you to save or retrieve
 any object from blob storage. The Id of the object provided should then be saved with the 
@@ -456,12 +456,11 @@ that this process is now finished.
 
 StatefulProcess [Example](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P200PingAndWaitForPong.cs)
 
-
 #### Using Notifications (including Emails) In Processes
 
 TODO
 
-#### Queries
+### Queries
 
 These are static helper functions which abstract common query logic. They can only be used 
 via the this.Get<> method from Processes or Operations, not handlers.
@@ -482,7 +481,7 @@ direct to the database and ignores are actions already taken in the previous ses
 It makes possible extra features like Skip() and Take() with OrderBy() which simply cannot
   be reliably determined any other way.
 
-#### Transactions
+### Transactions
 
 At present each message handler has a commit phase where the unit of work is executed
 (all queued state changes are processed) and this takes place in a logical transaction
@@ -495,7 +494,7 @@ comments and intentionally explicit code in the
 [ContentWithMessageLogEntryExtensions](Soap.MessagePipeline/ContextWithMessageLogEntryExtensions.cs) class
 where the majority of the Unit Of Work code sits which explain each step in detail.
 
-#### Error Handling
+### Error Handling
 
 Errors can be raised in the domain code of a service primarily by utilising `Guard.Against()`
 which takes in a boolean expression or lambda returning a boolean as it's first arguments.
@@ -558,30 +557,73 @@ Error code definitions can be is any accessible class to the callsite. There is 
 of where to implement them. As a nested class is an option when they are used only in one place.
  
 
-#### Authentication and Authorisation
+### Authentication and Authorisation
 
-This feature is still being developed and not available yet in the master branch TODO
+SOAP supports an optional integration with Auth0's IDP server to provide and identity management solution 
 
-#### Authentication 
+You can enable this integration by following the steps in the [readme](readme.md#authentication-and-authorisation-options)
 
-Authentication is achieved technically through the use of attributes.
+Once the Auth0 integration is active in the config, you then need to consider the following
 
-* No attribute on a message means that that it can be called without being logged in or without
-  a service identity. 
+#### Authorisation 
 
-* The AuthenticationRequiredAttribute requires that the identity token contain a valid identity
-  recognisable by any of the authentication schemes supported on the recipient service.
+Each message will now be protected by default and require that the
+user have permission to send it. You can give a user permissions directly, or via a role
+using the Auth0 portal. Permissions in the form of "execute:messagename" will be created
+automatically from the list of messages in the system and synced during deployment as a
+step of the health check. simply assign them using the self-explanatory portal features
+to give users access.
 
-#### Authorisation is achieved technically through the use of attributes.
+For messages which should not require any auth you can add the "NoAuth" attribute to those
+messages and they will be allowed regardless of Auth0 state.
 
-Authentication is achieved technically through the use of attributes.
+#### Frontend Aspects
 
-* The AuthorisationRequiredAttribute takes a Guid parameter and requires identity sending the message 
-  to have that message permission in the token they attach to the message in order for it be processed by the recipient.
-  
-Message permissions are added as claims to the users token when they authenticate successfully.
+The <Login /> control in index.js will now render the appropriate controls for login and logout capability
+If you are not ever using Auth you can safely remove the control altogether.
 
-Included in these claims are also some additional related objects, namely, Roles and Permission Groups.
+#### Authentication
+
+Is performed automatically by the API when a message is received. 
+The Auth0 UserId and permissions are stored in the `Meta` property of any Process.
+
+However in many cases you may be looking for more than just the Id. Auth0 stores some
+basic information about the user as expressed in the `IUserProfile` interface and this
+interface is then implemented in the starter project as the  `UserProfile` class. A class
+implementing IUserProfile and IAggregate must be passed to the HandleMessage function on
+receipt of a message and this is then used to create/update the user profile based on the 
+data in Auth0. This data is stored in the service database alongside any other aggregates
+and in that respect is not different than any other datatype except that it is synced automatically
+with the Auth0's database whenever you call the special `GetUserProfile<T>` method of any
+Process. This method needs to be passed the same class that is used in the 
+[receive function](Soap.Api.Sample/Soap.Api.Sample.Afs/BuiltIn.cs) which by default is the `UserProfile` class
+and it will return an instance of that object with the users details. Feel free to
+add any properties to this class and manage it via an `ProfileOperation : Operations<UserProfile>` 
+class.
+
+#### Inter-Service Messages
+
+When you send a command either from the frontend or the backend it will have 3 auth related headers
+1. IdentityToken, this will be present if the message is sent in the context of a Auth0 user, sometimes it is not.
+2. AccessToken, this is the Oauth bearer token with the permissions
+3. IdentityChain, this is a list of identifiable parties whose security context this message or it's ancestors
+   have passed through, back to the original message that started the chain. The original message will
+   always be one of a few sources:
+   1. An event, which always starts a new chain
+   2. A command from the UI
+   3. A message sent from a third party to an explicit integration endpoint
+   4. A message sent from the health check
+
+These three headers are used to populate the message `Meta` property, and to authorise the message.
+The IdentityChain allows the recipient service to work out if the current security context has changed from
+that of the original message. How could that have happened you might wonder? It can happen when a command is
+sent from a service and the user specifies when they call the Send command and
+they set the forceUseServiceLevelAuthority parameter to true. e.g. `Send(command, forceUseServiceLevelAuthority: true)`
+The other way is if the context in which the message being sent does not have any active identity e.g. an Event
+then the service can be configured in these cases to always choose to send the message in the context of the 
+service rather than without no access token through the config property 'UseServiceLevelAuthorityInTheAbsenceOfASecurityContext'.
+All messages sent with SLA (service level authority) have privileges to execute all messages on the receiving service
+and should therefore be exercised with caution and this property is disabled by default.
 
 ### YourApi.Tests
 

@@ -85,11 +85,11 @@ namespace Soap.Auth0
                     GetDbPermissionsList(dbPermissionsAsStrings, out var dbPermissions);
 
                     GetApiPermissionsList(permissionGroups, out var permissions);
-
-                    AuthFunctions.AuthoriseMessageOrThrow(message, permissions);
                     
                     CreateApiIdentity(principal, permissions, dbPermissions, out var apiIdentity);
 
+                    AuthFunctions.AuthoriseMessageOrThrow(message, apiIdentity);
+                    
                     setApiIdentity(apiIdentity);
 
                     static void CreateApiIdentity(

@@ -16,12 +16,12 @@
         public static TestIdentity UserOne => new TestIdentity(
             new ApiIdentity
             {
-                Auth0Id = Ids.ApiIdOne,
+                Auth0Id = Ids.UserOneAuth0Id,
                 ApiPermissions = typeof(C100v1_Ping).Assembly.GetTypes()
                                                     .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
                                                     .Select(t => t.Name)
                                                     .ToList()
             },
-            new TestProfile(email: "im@mycomputer.com", auth0Id: Ids.ApiIdOne, firstName: "John", lastName: "Doe"));
+            new TestProfile(email: "im@mycomputer.com", auth0Id: Ids.UserOneAuth0Id, firstName: "John", lastName: "Doe"));
     }
 }

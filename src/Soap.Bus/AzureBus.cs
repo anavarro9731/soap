@@ -168,8 +168,8 @@
             public IBus CreateBus(
                 IMessageAggregator messageAggregator,
                 IBlobStorage blobStorage,
-                IAsyncCollector<SignalRMessage> signalRBinding,Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority, bool authEnabled) =>
-                new Bus(new AzureBus(messageAggregator, this, signalRBinding), this, messageAggregator, blobStorage, getServiceLevelAuthority, authEnabled);
+                IAsyncCollector<SignalRMessage> signalRBinding,Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority, IBootstrapVariables bootstrapVariables) =>
+                new Bus(new AzureBus(messageAggregator, this, signalRBinding), this, messageAggregator, blobStorage, getServiceLevelAuthority, bootstrapVariables);
 
             public class Validator : AbstractValidator<Settings>
             {

@@ -1,6 +1,6 @@
 {
   "name": "@soap/modules",
-  "version": "1.183.0",
+  "version": "1.184.0",
   "peerDependencies": {},
   "dependencies": {
     "@auth0/auth0-react": "^1.2.0",

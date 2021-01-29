@@ -46,10 +46,10 @@ namespace Soap.PfBase.Tests
             dataStore.CommitChanges().Wait();
         }
 
-        protected void SetupTestByProcessingAMessage<TMessage>(TMessage msg, TestIdentity identity, Action<MessageAggregatorForTesting>? setup = null, bool authEnabled = false)
+        protected void SetupTestByProcessingAMessage<TMessage>(TMessage msg, TestIdentity identity, Action<MessageAggregatorForTesting>? setup = null, bool authEnabled = false, bool enableSlaWhenSecurityContextIsMissing = true)
             where TMessage : ApiMessage
         {
-            Result = ExecuteMessage(msg, identity, 0, setup:setup, authEnabled:authEnabled).Result;
+            Result = ExecuteMessage(msg, identity, 0, setup:setup, authEnabled:authEnabled, enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsMissing).Result;
             if (Result.Success == false) throw Result.UnhandledError;
         }
 
@@ -60,9 +60,9 @@ namespace Soap.PfBase.Tests
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setupMocks = null,
-            bool authEnabled = true) where TMessage : ApiMessage
+            bool authEnabled = true, bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
         {
-            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks, authEnabled);
+            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks, authEnabled, enableSlaWhenSecurityContextIsMissing);
         }
 
         private async Task<Result> ExecuteMessage<TMessage>(
@@ -72,10 +72,19 @@ namespace Soap.PfBase.Tests
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setup = null,
-            bool authEnabled = true) where TMessage : ApiMessage
+            bool authEnabled = true, bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
-            msg.SetDefaultHeadersForIncomingTestMessages(authEnabled);
+            
+            if (authEnabled && identity?.ApiIdentity != null)
+            {
+                msg.Headers.SetIdentityChain(identity.IdentityChainSegment);
+                msg.Headers.SetIdentityToken(TestHeaderConstants.IdentityTokenHeader);
+                msg.Headers.SetAccessToken(TestHeaderConstants.AccessTokenHeader);
+            }
+            
+            msg.SetDefaultHeadersForIncomingTestMessages();
+            
 
             this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository();
 
@@ -86,6 +95,7 @@ namespace Soap.PfBase.Tests
                          identity,
                          retries,
                          authEnabled,
+                         enableSlaWhenSecurityContextIsMissing,
                          this.rollingRepo,
                          beforeRunHook,
                          dataStoreOptions,

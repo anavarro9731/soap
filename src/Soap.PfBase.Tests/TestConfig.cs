@@ -17,7 +17,7 @@ namespace Soap.PfBase.Tests
 
     public class TestConfig : IBootstrapVariables
     {
-
+        
         public SoapEnvironments Environment { get; set; } = SoapEnvironments.InMemory;
 
         public string AppFriendlyName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";
@@ -35,6 +35,8 @@ namespace Soap.PfBase.Tests
 
         public bool AuthEnabled { get; set; }
 
+        public bool UseServiceLevelAuthorityInTheAbsenceOfASecurityContext { get; set; }
+        
         public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
         {
             ChannelSettings = new List<INotificationChannelSettings>

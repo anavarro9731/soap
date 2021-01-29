@@ -15,7 +15,7 @@
 
     public class BoostrappedContext
     {
-        public readonly ApiIdentity ApiIdentity;
+        public readonly ApiIdentity ApiIdentity; //* allowed to be null, check callers, should only be used to set Meta
 
         public readonly IBootstrapVariables AppConfig;
 
@@ -48,7 +48,7 @@
             Func<Task<IUserProfile>> getUserProfileFromIdentityServer)
         {
             this.MessageMapper = messageMapper;
-            this.ApiIdentity = apiIdentity;
+            this.ApiIdentity = apiIdentity;  //* allowed to be null
             this.GetUserProfileFromIdentityServer = getUserProfileFromIdentityServer;
             this.AppConfig = appConfig;
             this.DataStore = dataStore;
@@ -73,7 +73,7 @@
             this.GetUserProfileFromIdentityServer = c.GetUserProfileFromIdentityServer;
         }
 
-        public async Task<TUserProfile> GetUser<TUserProfile>() where TUserProfile : class, IUserProfile, IAggregate, new()
+        public async Task<TUserProfile> GetUserProfile<TUserProfile>() where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             var userProfile = await this.GetUserProfileFromIdentityServer();
 

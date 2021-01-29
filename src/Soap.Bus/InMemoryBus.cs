@@ -57,8 +57,8 @@
 
             public string EnvironmentPartitionKey { get; set; }
 
-            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding, Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority, bool authEnabled) =>
-                new Bus(new InMemoryBus(this), this, messageAggregator, blobStorage, getServiceLevelAuthority, authEnabled);
+            public IBus CreateBus(IMessageAggregator messageAggregator, IBlobStorage blobStorage, IAsyncCollector<SignalRMessage> signalRBinding, Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority, IBootstrapVariables bootstrapVariables) =>
+                new Bus(new InMemoryBus(this), this, messageAggregator, blobStorage, getServiceLevelAuthority, bootstrapVariables);
         }
     }
 }

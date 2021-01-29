@@ -22,6 +22,8 @@ namespace Soap.Api.Sample.Afs
             CorsOrigin = EnvVars.CorsOrigin;
             FunctionAppHostName = EnvVars.FunctionAppHostName;
             FunctionAppHostUrlWithTrailingSlash = EnvVars.FunctionAppHostUrlWithTrailingSlash;
+            UseServiceLevelAuthorityInTheAbsenceOfASecurityContext = false;
+            AuthEnabled = false;
         }
     }
 }

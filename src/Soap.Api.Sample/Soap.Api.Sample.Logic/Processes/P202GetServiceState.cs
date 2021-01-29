@@ -8,7 +8,9 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class P202GetServiceState : Process, IBeginProcess<C102v1_GetServiceState>

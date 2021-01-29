@@ -163,8 +163,6 @@
                 }
 
                 return x;
-
-
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -182,8 +180,6 @@
                     throw new ApplicationException("Cannot deserialise message", e);
                 }
             }
-
-          
 
             static void ParseMessageId(string messageIdAsString, out Guid messageId)
             {
@@ -228,7 +224,7 @@
                     messageAggregator,
                     blobStorage,
                     signalRBinding,
-                    () => Auth0Functions.GetServiceLevelAuthority(applicationConfig), applicationConfig.AuthEnabled);
+                    () => Auth0Functions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
             }
 
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)

@@ -14,9 +14,9 @@
 
     public class Bus : IBus
     {
-        private readonly bool authEnabled;
-
         private readonly IBlobStorage blobStorage;
+
+        private readonly IBootstrapVariables bootstrapVariables;
 
         private readonly string envPartitionKey;
 
@@ -32,12 +32,13 @@
             IMessageAggregator messageAggregator,
             IBlobStorage blobStorage,
             Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority,
-            bool authEnabled)
+            IBootstrapVariables bootstrapVariables)
         {
             BusClient = busClient;
             this.messageAggregator = messageAggregator;
             this.blobStorage = blobStorage;
-            this.authEnabled = authEnabled;
+            this.bootstrapVariables = bootstrapVariables;
+
             this.getServiceLevelAuthority = async () =>
                 {
                 //only get this once per context, too expensive otherwise
@@ -147,7 +148,7 @@
             /* getServiceLevelAuthority is expensive and cached, that's why we repeat the call below rather then getting to
              a variable is to avoid making the call unnecessarily */
 
-            if (this.authEnabled)
+            if (this.bootstrapVariables.AuthEnabled)
             {
                 switch (forceServiceLevelAuthority)
                 {
@@ -168,10 +169,10 @@
                         commandToSend.Headers.SetAccessToken((await this.getServiceLevelAuthority()).AccessToken);
                         break;
                     case false:
-
-                        commandToSend.Headers.SetIdentityChain(
-                            contextMessage.Headers.GetIdentityChain()); //* context message could be an event not have a chain
-                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken());
+                        
+                        //* there are a variety of cases where all of the following could be blank
+                        commandToSend.Headers.SetIdentityChain(contextMessage.Headers.GetIdentityChain() ?? (this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext ? (await this.getServiceLevelAuthority()).SlaIdChainSegment : null)); 
+                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken() ?? (this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext ? (await this.getServiceLevelAuthority()).AccessToken : null));
                         commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken());
 
                         break;
@@ -180,7 +181,7 @@
 
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
-            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.authEnabled, this.envPartitionKey);
+            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthEnabled, this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 

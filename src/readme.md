@@ -215,7 +215,7 @@ In each tenant create a machine-machine application called "Enterprise Admin", i
    1. Auth0TenantDomain = "https://soap-dev.eu.auth0.com"
    1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
    1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
-   1. Auth0Enabled = true;
+   1. AuthEnabled = true;
 
 **WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
 these are the keys to the castle for the entire service enterprise. The config repo should have azure
@@ -223,23 +223,7 @@ devops security associated with it so that only the few persons with the need to
 do so. Except in cases of small teams, developers should not have access to the config repo. 
 If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
 
-If you are using Auth, each message will now be protected by default and require that the
-user have permission to send it. You can give a user permissions directly, or via a role
-using the Auth0 portal. Permissions in the form of "execute:messagename" will be created
-automatically from the list of messages in the system and synced during deployment as a 
-step of the health check. simply assign them using the self-explanatory portal features
-to give users access.
-
-For messages which should not require any auth you can add the "NoAuth" attribute to those
-messages and they will be allowed regardless of Auth0 state.
-
-## Frontend Aspects
-The <Login /> control in index.js will now render the appropriate controls.
-If you are not ever using Auth you can safely remove the control altogether.
-
-
-## Inter-Service Messsages
-
+See [dev-guide](dev-guide.md#authentication-and-authorisation) for info on how to protect the API and handle login
 
 # NOTES
  
