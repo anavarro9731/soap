@@ -9,7 +9,7 @@ namespace Soap.Api.Sample.Messages.Commands
     /// But it will check in the pipeline that the form you are requesting you have access
     /// to the command it sends.
     /// </summary>
-    [NoAuth]
+    [AuthorisationNotRequired]
     public class C109v1_GetForm : ApiCommand
     {
         public string C109_FormDataEventName { get; set; }

@@ -7,23 +7,26 @@
 
     public class MessageMeta
     {
-        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, ApiIdentity apiIdentity, string idChain)
+        public MessageMeta((DateTime receivedAt, long receivedAtTick) receivedAt, IdentityPermissions identityPermissions, string userId, string auth0Id)
         {
             ReceivedAt = receivedAt;
-            ApiIdentity = apiIdentity;
-            IdChain = idChain?.Split(',').ToList() ?? new List<string>();
+            IdentityPermissions = identityPermissions;
+            Auth0Id = auth0Id;
+            UserId = userId;
         }
 
         public MessageMeta() {}
         
-
         [JsonProperty]
         public (DateTime DateTime, long Ticks) ReceivedAt { get; internal set; }
 
         [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)]
-        public ApiIdentity ApiIdentity { get; internal set; }
+        public IdentityPermissions IdentityPermissions { get; internal set; }
 
         [JsonProperty]
-        public List<string> IdChain { get; internal set; }
+        public string Auth0Id { get; internal set; }
+
+        [JsonProperty]
+        public string UserId { get; internal set; }
     }
 }

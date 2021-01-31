@@ -574,7 +574,7 @@ automatically from the list of messages in the system and synced during deployme
 step of the health check. simply assign them using the self-explanatory portal features
 to give users access.
 
-For messages which should not require any auth you can add the "NoAuth" attribute to those
+For messages which should not require any auth you can add the AuthorisationNotRequired attribute to those
 messages and they will be allowed regardless of Auth0 state.
 
 #### Frontend Aspects
@@ -607,12 +607,13 @@ When you send a command either from the frontend or the backend it will have 3 a
 1. IdentityToken, this will be present if the message is sent in the context of a Auth0 user, sometimes it is not.
 2. AccessToken, this is the Oauth bearer token with the permissions
 3. IdentityChain, this is a list of identifiable parties whose security context this message or it's ancestors
-   have passed through, back to the original message that started the chain. The original message will
-   always be one of a few sources:
-   1. An event, which always starts a new chain
+   have passed through, back to the original message that started the chain. The original message in the chain will
+   always be from one of a the following possible sources:
+   1. An event you have subscribed to, which always starts a new chain
    2. A command from the UI
-   3. A message sent from a third party to an explicit integration endpoint
+   3. A command or event sent from a third party to an explicit integration endpoint
    4. A message sent from the health check
+
 
 These three headers are used to populate the message `Meta` property, and to authorise the message.
 The IdentityChain allows the recipient service to work out if the current security context has changed from

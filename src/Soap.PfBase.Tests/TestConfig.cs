@@ -22,7 +22,7 @@ namespace Soap.PfBase.Tests
 
         public string AppFriendlyName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";
 
-        public string AppId { get; set; } = "domain-tests";
+        public string AppId { get; set; } = "tests";
 
         public string ApplicationVersion { get; set; } = "0.0.0";
 
@@ -34,6 +34,8 @@ namespace Soap.PfBase.Tests
         public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
 
         public bool AuthEnabled { get; set; }
+
+        public string EncryptionKey { get; set; } = "h4Yz4gYQWDDa8zwFHXK3vB6aK9yq8a6u";
 
         public bool UseServiceLevelAuthorityInTheAbsenceOfASecurityContext { get; set; }
         

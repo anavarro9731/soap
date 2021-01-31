@@ -16,5 +16,6 @@
         
         bool AuthEnabled { get; set; }
         
+        string EncryptionKey { get; set; }
     }
 }

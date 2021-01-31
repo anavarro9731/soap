@@ -8,7 +8,7 @@
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
-    public class P205PingPong : Process, IBeginProcess<C100v1_Ping>
+    public class P205RespondToPing : Process, IBeginProcess<C100v1_Ping>
     {
         public Func<C100v1_Ping, Task> BeginProcess =>
             async message =>

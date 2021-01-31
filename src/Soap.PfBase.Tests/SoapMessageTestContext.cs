@@ -33,7 +33,7 @@
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper output,
-            TestIdentity identity,
+            ISecurityInfo securityInfo,
             byte retries,
             bool authEnabled,
             bool enableSlaWhenSecurityContextIsMissing,
@@ -54,21 +54,15 @@
 
                 try
                 {
-                    if (message.IsSubjectToAuthorisation(appConfig.AuthEnabled))
-                    {
-                        /* AzureFunctionContext sets the ApiIdentity from this function, otherwise it remains null
-                         we on the other hand can receive the TestIdentity null from the test. In either case, if
-                         the message is subject to auth, the auth call should throw */
-                        SimulateAuth0AuthoriseCall(message, identity); 
-                    }
-
                     CreateDataStore(
                         messageAggregator,
                         rollingRepo,
                         dataStoreOptions,
                         message.Headers.GetMessageId(),
                         out var dataStore);
-
+                    
+                    AuthFunctions.AuthenticateandAuthoriseOrThrow<TestProfile>(message, appConfig, dataStore, securityInfo)
+                        
                     CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
 
                     CreateBlobStorage(messageAggregator, out var blobStorage);
@@ -84,7 +78,7 @@
                         dataStore: dataStore,
                         messageAggregator: messageAggregator,
                         blobStorage: blobStorage,
-                        apiIdentity: identity?.ApiIdentity,
+                        getUserPermissionsFromIdentityServer: () => Task.FromResult(),
                         getUserProfileFromIdentityServer: () => Task.FromResult(identity?.UserProfile as IUserProfile));
 
                     byte currentRun = 1;
@@ -200,13 +194,13 @@
 
             static void SimulateAuth0AuthoriseCall(ApiMessage message, TestIdentity identity) 
             {
-                if (identity?.ApiIdentity == null)
+                if (identity?.IdentityPermissions == null)
                 {
                     throw new ApplicationException(
                         "Test Identity not provided but this message requires authorisation, this would be comparable to an invalid access token in non-test code");
                 }
                 
-                AuthFunctions.AuthoriseMessageOrThrow(message, identity.ApiIdentity);    
+                AuthFunctions.AuthenticateandAuthoriseOrThrow(message, identity.IdentityPermissions);    
             } 
             
             static void CreateAppConfig(byte retries, bool authEnabled, bool enableSlaWhenSecurityContextIsMissing, out TestConfig applicationConfig)
@@ -263,7 +257,8 @@
                     messageAggregator,
                     blobStorage,
                     null,
-                    () => Task.FromResult(new ServiceLevelAuthority(applicationConfig.AppId, TestHeaderConstants.ServiceLevelAccessTokenHeader)), applicationConfig);
+                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
+                
             }
 
             static void CreateDataStore(

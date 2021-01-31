@@ -23,8 +23,6 @@ namespace Soap.Utility.Objects.Binary
 
     public class HmacHash
     {
-        public const int CurrentIterations = 12000;
-
         public HmacHash(string @string, int iterations, string saltHex)
         {
             var passwordHashHex = PWDTK.PasswordToHashHexString(PWDTK.HashHexStringToBytes(saltHex), @string, iterations);

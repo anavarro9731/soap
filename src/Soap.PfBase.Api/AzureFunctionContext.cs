@@ -81,15 +81,15 @@
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
-                    ApiIdentity apiIdentity = null;
-                    if (message.IsSubjectToAuthorisation(appConfig.AuthEnabled))
+                    IdentityPermissions identityPermissions = null;
+                    if (message.IsSubjectToAuthorisation(appConfig))
                     {
-                        await Auth0Functions.AuthoriseCall(
+                        await Auth0Functions.GetPermissionsFromAccessToken(
                             appConfig,
                             message.Headers.GetAccessToken(),
                             securityInfo,
                             message,
-                            v => apiIdentity = v);
+                            v => identityPermissions = v);
                     }
 
                     CreateMessageAggregator(out var messageAggregator);
@@ -107,7 +107,7 @@
 
                     async Task<IUserProfile> GetUserProfile()
                     {
-                        return await Auth0Functions.GetUserProfile<TUserProfile>(appConfig, dataStore, apiIdentity);
+                        return await Auth0Functions.GetUserProfile<TUserProfile>(appConfig, dataStore, identityPermissions);
                     }
                     
                     CreateBusContext(
@@ -127,7 +127,7 @@
                         notificationServer: notificationServer,
                         blobStorage: blobStorage,
                         messageMapper: mappingRegistration,
-                        apiIdentity: apiIdentity,
+                        identityPermissions: identityPermissions,
                         getUserProfileFromIdentityServer: GetUserProfile
                     );
 
@@ -224,7 +224,7 @@
                     messageAggregator,
                     blobStorage,
                     signalRBinding,
-                    () => Auth0Functions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
+                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
             }
 
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)

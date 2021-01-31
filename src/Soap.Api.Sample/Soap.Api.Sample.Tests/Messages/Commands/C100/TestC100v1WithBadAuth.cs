@@ -13,7 +13,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC100v1WithBadAuth(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.UserOne.Op(x => x.ApiIdentity.ApiPermissions.Clear())).Wait();
+            TestMessage(Commands.Ping, Identities.UserOne.Op(x => x.IdentityPermissions.ApiPermissions.Clear())).Wait();
         }
 
         [Fact]

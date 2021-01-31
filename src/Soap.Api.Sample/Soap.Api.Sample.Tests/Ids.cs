@@ -10,5 +10,7 @@
     public static partial class Ids
     {
         public static readonly string UserOneAuth0Id = "some-auth0|Id";
+
+        public static readonly Guid UserOneId = Guid.NewGuid();
     }
 }

@@ -6,6 +6,7 @@ namespace Soap.Api.Sample.Tests.Messages
     using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Config;
     using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Interfaces.Messages;
@@ -46,7 +47,7 @@ namespace Soap.Api.Sample.Tests.Messages
         {
             Setup(enableSlaWhenSecurityContextIsAbsent:true);
             var c106Headers = Result.MessageBus.CommandsSent.Single(x => x is C106v1_LargeCommand).Headers;
-            c106Headers.GetIdentityChain().Should().Be($"service://{new TestConfig().AppId}");
+            c106Headers.GetIdentityChain().Should().Be($"{AuthSchemePrefixes.Service}://{new TestConfig().AppId}");
             c106Headers.GetIdentityToken().Should().BeNullOrEmpty();
             c106Headers.GetAccessToken().Should().Be(TestHeaderConstants.ServiceLevelAccessTokenHeader);
         }
@@ -79,7 +80,7 @@ namespace Soap.Api.Sample.Tests.Messages
                                 m.Headers.SetMessageId(SpecialIds.ForceServiceLevelAuthorityOnOutgoingMessages);
                             }
                             }),
-                    identity: enableSlaWhenSecurityContextIsAbsent ? null : Identities.UserOne.Op(x => x.ApiIdentity.ApiPermissions.Clear()),
+                    identity: enableSlaWhenSecurityContextIsAbsent ? null : Identities.UserOne.Op(x => x.IdentityPermissions.ApiPermissions.Clear()),
                     authEnabled: !disableAuth,
                     setupMocks: messageAggregatorForTesting =>
                         {

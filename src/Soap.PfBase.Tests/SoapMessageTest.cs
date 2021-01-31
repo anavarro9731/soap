@@ -11,6 +11,7 @@ namespace Soap.PfBase.Tests
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
@@ -76,7 +77,7 @@ namespace Soap.PfBase.Tests
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
             
-            if (authEnabled && identity?.ApiIdentity != null)
+            if (identity?.IdentityPermissions != null && msg.IsSubjectToAuthorisation(authEnabled))
             {
                 msg.Headers.SetIdentityChain(identity.IdentityChainSegment);
                 msg.Headers.SetIdentityToken(TestHeaderConstants.IdentityTokenHeader);

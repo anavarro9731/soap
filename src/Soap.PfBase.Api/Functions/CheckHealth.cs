@@ -17,16 +17,16 @@ namespace Soap.PfBase.Api.Functions
     public static class Functions
     {
         public static HttpResponseMessage
-            CheckHealth<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
+            CheckHealth<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
                 HttpRequest req,
                 MapMessagesToFunctions handlerRegistration,
                 IAsyncCollector<SignalRMessage> signalRBinding,
                 ISecurityInfo securityInfo,
                 ILogger log)
-            where TInboundMessage : ApiCommand, new()
-            where TOutboundMessage : ApiEvent
+            where TPing : ApiCommand, new()
+            where TPong : ApiEvent
             where TSendLargeMsg : ApiCommand, new()
-            where TReceiveLargeMsg : ApiMessage
+            where TLargeMsg : ApiMessage
             where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
@@ -37,11 +37,11 @@ namespace Soap.PfBase.Api.Functions
                 var content = new PushStreamContent(
                     async (outputSteam, httpContent, transportContext) =>
                         await DiagnosticFunctions
-                            .OnOutputStreamReadyToBeWrittenTo<TInboundMessage, TOutboundMessage, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
+                            .OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
                                 outputSteam,
                                 httpContent,
                                 transportContext,
-                                typeof(TInboundMessage).Assembly,
+                                typeof(TPing).Assembly,
                                 $"{req.Scheme}://{req.Host.ToUriComponent()}",
                                 handlerRegistration,
                                 signalRBinding,

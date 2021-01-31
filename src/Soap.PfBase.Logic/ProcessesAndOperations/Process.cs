@@ -80,11 +80,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.ApiIdentity?.Auth0Id));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.IdentityPermissions?.Auth0Id));
             
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.ApiIdentity?.Auth0Id));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.IdentityPermissions?.Auth0Id));
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

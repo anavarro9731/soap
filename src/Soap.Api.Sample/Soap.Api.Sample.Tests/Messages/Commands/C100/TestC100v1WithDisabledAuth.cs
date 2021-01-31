@@ -15,7 +15,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC100v1WithDisabledAuth(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.UserOne.Op(x => x.ApiIdentity.ApiPermissions.Clear()), authEnabled:false).Wait();
+            TestMessage(Commands.Ping, Identities.UserOne.Op(x => x.IdentityPermissions.ApiPermissions.Clear()), authEnabled:false).Wait();
         }
 
         [Fact]

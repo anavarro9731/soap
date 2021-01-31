@@ -42,6 +42,8 @@
 
         public bool AuthEnabled { get; set; }
 
+        public string EncryptionKey { get; set; }
+
         public string Auth0EnterpriseAdminClientId { get; set; }
 
         public string Auth0EnterpriseAdminClientSecret { get; set; }

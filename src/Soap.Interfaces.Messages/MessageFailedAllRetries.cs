@@ -17,7 +17,7 @@
     /// whole contract and allow for different possible versions of the serialiser in the soap core of different services.
     /// </summary>
     /// <typeparam name="TFailedMessage"></typeparam>
-
+    
     public class MessageFailedAllRetries : ApiCommand
     {
         /* FROM DOCS:

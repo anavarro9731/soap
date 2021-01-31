@@ -53,7 +53,7 @@
             return schema;
         }
 
-        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
+        public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
             Stream outputStream,
             HttpContent httpContent,
             TransportContext transportContext,
@@ -66,7 +66,7 @@
             where TPing : ApiCommand, new()
             where TPong : ApiMessage
             where TSendLargeMsg : ApiCommand, new()
-            where TReceiveLargeMsg : ApiMessage
+            where TLargeMsg : ApiMessage
             where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             async ValueTask WriteLine(string s)
@@ -92,17 +92,15 @@
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
-
-                appConfig.AuthEnabled = false; //* enable message tests to run without need credentials
                 
-                await GetPingPongMessageTestResults<TPing, TPong, TUserProfile>(
+                await SendMessageWaitForReply<TPing, TPong, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
                     signalRBinding,
                     WriteLine);
 
-                await GetPingPongMessageTestResults<TSendLargeMsg, TReceiveLargeMsg, TUserProfile>(
+                await SendMessageWaitForReply<TSendLargeMsg, TLargeMsg, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
@@ -210,22 +208,26 @@
             return json;
         }
 
-        private static async Task GetPingPongMessageTestResults<TPing, TPong, TUserProfile>(
+        private static async Task SendMessageWaitForReply<TSent, TReply, TUserProfile>(
             ILogger logger,
             ApplicationConfig appConfig,
             MapMessagesToFunctions mappings,
             IAsyncCollector<SignalRMessage> signalRBinding,
             Func<string, ValueTask> writeLine)
-            where TPing : ApiCommand, new() where TPong : ApiMessage
+            where TSent : ApiCommand, new() where TReply : ApiMessage
             where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
             await writeLine("Running Message Test...");
 
-            var message = new TPing();
+            var message = new TSent();
+            var sla = await AuthFunctions.GetServiceLevelAuthority(appConfig);
+            message.Headers.SetAccessToken(sla.AccessToken);
+            message.Headers.SetIdentityChain(sla.IdentityChainSegment);
+            message.Headers.SetIdentityToken(sla.IdentityToken);
             message.SetDefaultHeadersForIncomingTestMessages();
-
-            await writeLine($"Sending {typeof(TPing).Name} ...");
+            
+            await writeLine($"Sending {typeof(TSent).Name} ...");
 
             //*  should publish/send pong
             var r = await AzureFunctionContext.Execute<TUserProfile>(
@@ -243,7 +245,7 @@
             if (r.Success)
             {
                 Guid pongId;
-                if (typeof(TPong).InheritsOrImplements(typeof(ApiEvent)))
+                if (typeof(TReply).InheritsOrImplements(typeof(ApiEvent)))
                 {
                     pongId = r.PublishedMessages.Single().Headers.GetMessageId();
                 }
@@ -252,7 +254,7 @@
                     pongId = r.CommandsSent.Single().Headers.GetMessageId();
                 }
 
-                await writeLine($"Waiting for {typeof(TPong).Name} with id {pongId}");
+                await writeLine($"Waiting for {typeof(TReply).Name} with id {pongId}");
                 var tries = 5;
                 while (tries > 0)
                 {
@@ -262,7 +264,7 @@
                         await new DataStore(appConfig.DatabaseSettings.CreateRepository()).ReadById<MessageLogEntry>(pongId);
                     if (logged != null && logged.ProcessingComplete)
                     {
-                        await writeLine($"Received {typeof(TPong).Name} Message Test Succeeded.");
+                        await writeLine($"Received {typeof(TReply).Name} Message Test Succeeded.");
                         await writeLine("+");
                         return;
                     }
@@ -270,7 +272,7 @@
                     tries--;
                 }
 
-                await writeLine($"Did not receive {typeof(TPong).Name} response!. Message Test Failure.");
+                await writeLine($"Did not receive {typeof(TReply).Name} response!. Message Test Failure.");
                 await writeLine("-");
             }
         }

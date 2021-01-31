@@ -11,6 +11,7 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
 
     public class Bus : IBus
     {
@@ -21,7 +22,10 @@
         private readonly string envPartitionKey;
 
         private readonly Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority;
-
+        
+        //* if you go back to making an i/o bound op in this function remove .result, it was just a lot of work to pass so i am leaving the infrastructure in place for future
+        private ServiceLevelAuthority ServiceLevelAuthority => this.getServiceLevelAuthority().Result;
+        
         private readonly IMessageAggregator messageAggregator;
 
         private ServiceLevelAuthority serviceLevelAuthority;
@@ -41,7 +45,7 @@
 
             this.getServiceLevelAuthority = async () =>
                 {
-                //only get this once per context, too expensive otherwise
+                //only get this once per context, it could be expensive
                 this.serviceLevelAuthority ??= await getServiceLevelAuthority();
                 return this.serviceLevelAuthority;
                 };
@@ -145,7 +149,7 @@
             commandToSend.Validate();
             commandToSend.RequiredNotNullOrThrow();
             commandToSend = commandToSend.Clone();
-            /* getServiceLevelAuthority is expensive and cached, that's why we repeat the call below rather then getting to
+            /* getServiceLevelAuthority could be expensive and it is cached, that's why we repeat the call below rather then getting to
              a variable is to avoid making the call unnecessarily */
 
             if (this.bootstrapVariables.AuthEnabled)
@@ -153,32 +157,34 @@
                 switch (forceServiceLevelAuthority)
                 {
                     case true:
-                        if (contextMessage.Headers.GetIdentityChain() == null
-                        ) //* context message could be an event, or auth disabled and not have a chain
-                        {
-                            commandToSend.Headers.SetIdentityChain((await this.getServiceLevelAuthority()).SlaIdChainSegment);
-                        }
-                        else
-                        {
-                            commandToSend.Headers.SetIdentityChain(
-                                contextMessage.Headers.GetIdentityChain() + ","
-                                                                          + (await this.getServiceLevelAuthority())
-                                                                          .SlaIdChainSegment);
-                        }
-
-                        commandToSend.Headers.SetAccessToken((await this.getServiceLevelAuthority()).AccessToken);
+                        //* set identity chain
+                        var currentChain = contextMessage.Headers.GetIdentityChain();
+                        commandToSend.Headers.SetIdentityChain(
+                            currentChain switch
+                            {
+                                null => ServiceLevelAuthority.IdentityChainSegment, //* context message could be an event, or auth disabled and not have a chain, etc
+                                _ => $"{currentChain},{ServiceLevelAuthority.IdentityChainSegment}"
+                            });
+                        
+                        commandToSend.Headers.SetAccessToken(ServiceLevelAuthority.AccessToken); 
+                        //* set identity token
+                        commandToSend.Headers.SetIdentityToken(ServiceLevelAuthority.IdentityToken);
                         break;
+                    
                     case false:
                         
-                        //* there are a variety of cases where all of the following could be blank
-                        commandToSend.Headers.SetIdentityChain(contextMessage.Headers.GetIdentityChain() ?? (this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext ? (await this.getServiceLevelAuthority()).SlaIdChainSegment : null)); 
-                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken() ?? (this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext ? (await this.getServiceLevelAuthority()).AccessToken : null));
-                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken());
+                        /* there are a variety of cases where all of the following could be blank because the context message headers are blank, if they are blank (and they should all be blank or filled)
+                        then we use the Sla instead if the flag is set to allow that, the only time this would really make sense without the flag set, would be when a message marked with 
+                        [AuthorisationNotRequired] sent a command also marked with [AuthorisationNotRequired] */
+                        var useSlaWhenCurrentContextMissing = this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext;
+                        commandToSend.Headers.SetIdentityChain(contextMessage.Headers.GetIdentityChain() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.IdentityChainSegment : null)); 
+                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.AccessToken : null));
+                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.AccessToken : null));
 
                         break;
                 }
             }
-
+            
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
             commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthEnabled, this.envPartitionKey);

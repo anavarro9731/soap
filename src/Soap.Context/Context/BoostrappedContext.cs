@@ -15,7 +15,7 @@
 
     public class BoostrappedContext
     {
-        public readonly ApiIdentity ApiIdentity; //* allowed to be null, check callers, should only be used to set Meta
+        public readonly IdentityPermissions IdentityPermissions; //* allowed to be null, check callers, should only be used to set Meta
 
         public readonly IBootstrapVariables AppConfig;
 
@@ -44,11 +44,11 @@
             NotificationServer notificationServer,
             BlobStorage blobStorage,
             MapMessagesToFunctions messageMapper,
-            ApiIdentity apiIdentity,
+            IdentityPermissions identityPermissions,
             Func<Task<IUserProfile>> getUserProfileFromIdentityServer)
         {
             this.MessageMapper = messageMapper;
-            this.ApiIdentity = apiIdentity;  //* allowed to be null
+            this.IdentityPermissions = identityPermissions;  //* allowed to be null
             this.GetUserProfileFromIdentityServer = getUserProfileFromIdentityServer;
             this.AppConfig = appConfig;
             this.DataStore = dataStore;
@@ -69,7 +69,7 @@
             this.NotificationServer = c.NotificationServer;
             this.MessageMapper = c.MessageMapper;
             this.BlobStorage = c.BlobStorage;
-            this.ApiIdentity = c.ApiIdentity;
+            this.IdentityPermissions = c.IdentityPermissions;
             this.GetUserProfileFromIdentityServer = c.GetUserProfileFromIdentityServer;
         }
 

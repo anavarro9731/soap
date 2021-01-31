@@ -39,6 +39,7 @@
          as the system grows, however, it also causes an issue with dictionary keys changing case and then not matching again 
          since they are modeled as objects. which is why we have the naming strategy set to ignore dictionary keys on
          message serialisation. this could also be checked in the header extensions methods (e.g. toLower()) if need be */
+        
     }
 
     public static class MessageHeaderExtensionsA
@@ -135,35 +136,26 @@
             var messageHeaders = msg.Headers;
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
-                $"All incoming Api messages must have a valid {nameof(Keys.MessageId)} header");
+                $"All incoming messages must have a valid {nameof(Keys.MessageId)} header");
             Ensure(
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
-            if (messageHeaders.GetSessionId() != null)
+            if (messageHeaders.GetSessionId() != null || messageHeaders.GetCommandHash() != null ||messageHeaders.GetCommandConversationId() != null) 
             {
-                Ensure(msg is ApiCommand, $"All incoming Api messages with {Keys.SessionId} header can only be commands");
+                Ensure(msg is ApiCommand, $"All incoming messages with session headers (sessionid, commandhash, commandconversationid) can only be commands");
                 
-                Ensure(
-                    messageHeaders.GetCommandHash() != null,
-                    $"All incoming Api messages with {Keys.SessionId} header set must also have {Keys.CommandHash} set");
-
-                Ensure(
-                    messageHeaders.GetCommandConversationId() != null,
-                    $"All incoming Api messages with {Keys.SessionId} header set must also have {Keys.CommandConversationId} set");
+                Ensure(messageHeaders.GetCommandHash() != null && messageHeaders.GetCommandConversationId() != null && messageHeaders.GetSessionId() != null,
+                    $"If providing  session headers (sessionid, commandhash, commandconversationid) you must set all 3");
             }
 
-            if (messageHeaders.GetIdentityToken() != null)
+            if (messageHeaders.GetIdentityToken() != null || messageHeaders.GetAccessToken() != null || messageHeaders.GetIdentityChain() != null)
             {
-                Ensure(msg is ApiCommand, $"All incoming Api messages with {Keys.IdentityToken} header can only be commands");
+                Ensure(msg is ApiCommand, $"All incoming messages with auth headers (accesstoken, identitytoken, identitychain) can only be commands");
                 
                 Ensure(
-                    messageHeaders.GetAccessToken() != null,
-                    $"All incoming Api messages with {Keys.IdentityToken} header set must also have {Keys.AccessToken} set");
-
-                Ensure(
-                    messageHeaders.GetIdentityChain() != null,
-                    $"All incoming Api messages with {Keys.IdentityToken} header set must also have {Keys.IdentityChain} set");
+                    messageHeaders.GetAccessToken() != null && messageHeaders.GetIdentityChain() != null && messageHeaders.GetIdentityToken() != null,
+                    $"If providing auth headers (accesstoken, identitytoken, identitychain) you must set all 3");
             }
             
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
@@ -469,17 +461,17 @@
 
         //* id of blob if message is large
         internal const string BlobId = nameof(BlobId);
-
-        //* id of client side conversation
-        internal const string CommandConversationId = nameof(CommandConversationId);
-
-        //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
-        internal const string CommandHash = nameof(CommandHash);
-
-        //* auth tokens
-        internal const string IdentityToken = nameof(IdentityToken);
-        internal const string AccessToken = nameof(AccessToken);
-
+        
+        //* SESSIONS
+        internal const string CommandConversationId = nameof(CommandConversationId); //* id of client side conversation
+        internal const string CommandHash = nameof(CommandHash); //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
+        internal const string SessionId = nameof(SessionId); //* sessionid for web socket client 
+        
+        //* AUTH
+        internal const string IdentityToken = nameof(IdentityToken); //* openid identity token
+        internal const string AccessToken = nameof(AccessToken); //* oauth bearer token
+        internal const string IdentityChain = nameof(IdentityChain); //* comma separated list of identities that have handled messages in this workflow
+        
         //* dest queue when its a command
         internal const string QueueName = nameof(QueueName);
 
@@ -489,16 +481,12 @@
         //* short type name
         internal const string Schema = nameof(Schema);
 
-        //* SessionId (in the case of WS Client)
-        internal const string SessionId = nameof(SessionId);
-
         //* server side conversation id 
         internal const string StatefulProcessId = nameof(StatefulProcessId);
 
         //* dest topic when its an event
         internal const string Topic = nameof(Topic);
         
-        //* comma separated list of identities that have handled messages in this workflow
-        internal const string IdentityChain = nameof(IdentityChain);
+        
     }
 }
