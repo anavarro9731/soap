@@ -16,7 +16,7 @@
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, 
+        public static async Task Execute(ApiMessage message, MessageMeta meta,
             BoostrappedContext bootstrappedContext)
         {
             {
@@ -24,7 +24,7 @@
                 
                 ContextWithMessageLogEntry matureContext = null;
                 
-                await PrepareContext(bootstrappedContext, v => matureContext = v);
+                await PrepareContext(bootstrappedContext, meta, v => matureContext = v);
                 
                 try
                 {
@@ -43,18 +43,17 @@
             }
 
             async Task PrepareContext(
-                BoostrappedContext boostrappedContext,
+                BoostrappedContext boostrappedContext, MessageMeta meta,
                 Action<ContextWithMessageLogEntry> setContext)
             {
                 MessageLogEntry messageLogEntry = null;
 
                 try
                 {
-                    (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
+                    
+                    var contextAfterMessageObtained = boostrappedContext.Upgrade(message);
 
-                    var contextAfterMessageObtained = boostrappedContext.Upgrade(message, timeStamp);
-
-                    await contextAfterMessageObtained.CreateOrFindLogEntry(v => messageLogEntry = v);
+                    await contextAfterMessageObtained.CreateOrFindLogEntry(meta, v => messageLogEntry = v);
 
                     var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
                     

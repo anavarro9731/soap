@@ -11,12 +11,10 @@
 
         public ContextWithMessage(
             ApiMessage message,
-            (DateTime receivedTime, long receivedTicks) timeStamp,
             BoostrappedContext context)
             : base(context)
         {
             Message = message;
-            TimeStamp = timeStamp;
             this.functions = this.MessageMapper.MapMessage(message);
         }
 
@@ -25,12 +23,9 @@
         {
             Message = c.Message;
             this.functions = c.functions;
-            TimeStamp = c.TimeStamp;
         }
 
         public ApiMessage Message { get; }
-
-        public (DateTime receivedTime, long receivedTicks) TimeStamp { get; }
 
         public Task Handle(ApiMessage msg) => this.functions.Handle(msg);
 

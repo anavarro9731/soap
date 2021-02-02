@@ -69,7 +69,7 @@
 
                     CreateBusContext(messageAggregator, appConfig, blobStorage, out var bus);
 
-                    var context = new BoostrappedContext(
+                    var context = new BoostrapppedContext(
                         messageMapper: messageMapper,
                         appConfig: appConfig,
                         logger: logger,
@@ -77,9 +77,7 @@
                         notificationServer: notificationServer,
                         dataStore: dataStore,
                         messageAggregator: messageAggregator,
-                        blobStorage: blobStorage,
-                        getUserPermissionsFromIdentityServer: () => Task.FromResult(),
-                        getUserProfileFromIdentityServer: () => Task.FromResult(identity?.UserProfile as IUserProfile));
+                        blobStorage: blobStorage);
 
                     byte currentRun = 1;
                     var remainingRuns = retries;
@@ -128,7 +126,7 @@
 
                         try
                         {
-                            await MessagePipeline.Execute(message, context);
+                            await MessagePipeline.Execute(message, meta, context);
 
                             x.Success = true;
                             /*  What we are primarily trying to achieve is to make sure that each execute sets the activeprocesstate,

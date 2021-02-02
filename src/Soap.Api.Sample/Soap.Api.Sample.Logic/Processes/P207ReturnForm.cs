@@ -31,7 +31,7 @@ namespace Soap.Api.Sample.Logic.Processes
                         $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
                     //  TODO test guard
-                    Guard.Against(!Meta.IdentityPermissions.ApiPermissions.Contains(commandType.Name),
+                    Guard.Against(!Meta.IdentityPermissionsOrNull.ApiPermissions.Contains(commandType.Name),
                         $"The user does not have permissions to execute the command {commandShortAssemblyTypeName} requested by this command");
                     
                     if (BlobsNeedToBeSaved(eventShortAssemblyTypeName))

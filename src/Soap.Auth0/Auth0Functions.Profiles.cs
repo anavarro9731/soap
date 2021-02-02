@@ -16,11 +16,13 @@ namespace Soap.Auth0
     {
         public static class Profiles
         {
-            public static async Task<TUserProfile> GetUserProfile<TUserProfile>(
+            public static async Task<TUserProfile> GetUserProfileOrNull<TUserProfile>(
                 ApplicationConfig applicationConfig,
                 DataStore dataStore,
                 string idToken) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
             {
+                if (idToken == null) return null;
+                
                 var auth0User = await GetUserProfileFromIdentityToken(idToken, applicationConfig);
 
                 var user = (await dataStore.Read<TUserProfile>(x => x.Auth0Id == auth0User.UserId)).SingleOrDefault();

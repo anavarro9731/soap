@@ -61,8 +61,6 @@
         }
 
         protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
-
-        protected Task<T> GetUserProfile<T>() where T : class, IUserProfile, IAggregate, new() => this.context.GetUserProfile<T>();
         
         protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.As<T>(); 
         
@@ -80,11 +78,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.IdentityPermissions?.Auth0Id));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.UserProfileOrNull?.Auth0Id));
             
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.IdentityPermissions?.Auth0Id));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.UserProfileOrNull?.Auth0Id));
         }
 
         private void RecordCompleted(ProcessCompleted processCompleted)

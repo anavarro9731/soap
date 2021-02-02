@@ -17,7 +17,7 @@
 
                 async Task PublishPong()
                 {
-                    var p = await GetUserProfile<UserProfile>();
+                    var p = Meta.UserProfileOrNull;
 
                     await Bus.Publish(
                         new E100v1_Pong

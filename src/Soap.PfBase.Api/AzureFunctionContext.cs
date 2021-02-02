@@ -1,13 +1,12 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
-    using System.Linq;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
-    using DataStore.Models;
     using DataStore.Options;
     using Destructurama;
     using Microsoft.Azure.WebJobs;
@@ -15,7 +14,6 @@
     using Serilog;
     using Serilog.Exceptions;
     using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
-    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
@@ -28,6 +26,7 @@
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
 
     public static class AzureFunctionContext
     {
@@ -58,7 +57,7 @@
             Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
         }
 
-        public static async Task<Result> Execute<TUserProfile> (
+        public static async Task<Result> Execute<TUserProfile>(
             string messageAsJson,
             MapMessagesToFunctions mappingRegistration,
             string messageIdAsString,
@@ -81,17 +80,6 @@
 
                     DeserialiseMessage(messageAsJson, messageType, messageId, out var message);
 
-                    IdentityPermissions identityPermissions = null;
-                    if (message.IsSubjectToAuthorisation(appConfig))
-                    {
-                        await Auth0Functions.GetPermissionsFromAccessToken(
-                            appConfig,
-                            message.Headers.GetAccessToken(),
-                            securityInfo,
-                            message,
-                            v => identityPermissions = v);
-                    }
-
                     CreateMessageAggregator(out var messageAggregator);
 
                     CreateDataStore(
@@ -101,15 +89,27 @@
                         dataStoreOptions,
                         out var dataStore);
 
+                    IdentityPermissions identityPermissions = null;
+                    IUserProfile userProfile = null;
+                    await AuthFunctions.AuthenticateandAuthoriseOrThrow(
+                        message,
+                        appConfig,
+                        dataStore,
+                        new Dictionary<string, AuthFunctions.SchemeAuth<TUserProfile>>()
+                        {
+                            {AuthSchemePrefixes.User, AuthFunctions.UserSchemeAuth<TUserProfile>},
+                            {AuthSchemePrefixes.Service, AuthFunctions.ServiceSchemeAuth<TUserProfile>}
+                        },
+                        securityInfo,
+                        v => identityPermissions = v,
+                        v => userProfile = v);
+
+                    CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
+
                     CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
 
                     var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
 
-                    async Task<IUserProfile> GetUserProfile()
-                    {
-                        return await Auth0Functions.GetUserProfile<TUserProfile>(appConfig, dataStore, identityPermissions);
-                    }
-                    
                     CreateBusContext(
                         messageAggregator,
                         appConfig.BusSettings,
@@ -119,17 +119,14 @@
                         out var bus);
 
                     var context = new BoostrappedContext(
-                        appConfig: appConfig,
-                        dataStore: dataStore,
-                        messageAggregator: messageAggregator,
-                        logger: logger,
-                        bus: bus,
-                        notificationServer: notificationServer,
-                        blobStorage: blobStorage,
-                        messageMapper: mappingRegistration,
-                        identityPermissions: identityPermissions,
-                        getUserProfileFromIdentityServer: GetUserProfile
-                    );
+                        appConfig,
+                        dataStore,
+                        messageAggregator,
+                        logger,
+                        bus,
+                        notificationServer,
+                        blobStorage,
+                        mappingRegistration);
 
                     int retries = appConfig.BusSettings.NumberOfApiMessageRetries;
 
@@ -140,7 +137,7 @@
                         if (currentRun > 1) remainingRuns -= 1;
                         try
                         {
-                            await MessagePipeline.Execute(message, context);
+                            await MessagePipeline.Execute(message, meta, context);
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
                             x.CommandsSent.AddRange(bus.CommandsSent);
@@ -163,6 +160,17 @@
                 }
 
                 return x;
+            }
+
+            static void CreateMessageMeta(
+                ApiMessage message,
+                IdentityPermissions permissions,
+                IUserProfile userProfile,
+                out MessageMeta meta)
+            {
+                (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
+
+                meta = new MessageMeta(timeStamp, permissions, userProfile);
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -224,7 +232,8 @@
                     messageAggregator,
                     blobStorage,
                     signalRBinding,
-                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
+                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig),
+                    applicationConfig);
             }
 
             async Task<BlobStorage> CreateBlobStorage(ApplicationConfig applicationConfig, IMessageAggregator messageAggregator)
