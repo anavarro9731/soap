@@ -1,4 +1,5 @@
-﻿//passes handler registration down
+﻿//* passes app specific data down to test framework
+
 namespace Soap.Api.Sample.Tests
 {
     using Soap.Api.Sample.Logic;
@@ -8,7 +9,7 @@ namespace Soap.Api.Sample.Tests
     public class Test : SoapMessageTest
     {
         protected Test(ITestOutputHelper output)
-            : base(output, new HandlerRegistration())
+            : base(output, new HandlerRegistration(), Identities.TestIdentities, new SecurityInfo())
         {
         }
     }

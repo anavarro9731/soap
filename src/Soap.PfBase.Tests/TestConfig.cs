@@ -17,7 +17,6 @@ namespace Soap.PfBase.Tests
 
     public class TestConfig : IBootstrapVariables
     {
-        
         public SoapEnvironments Environment { get; set; } = SoapEnvironments.InMemory;
 
         public string AppFriendlyName { get; set; } = $"Domain Tests -> {Assembly.GetEntryAssembly().GetName().Name}";

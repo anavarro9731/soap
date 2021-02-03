@@ -61,13 +61,4 @@ namespace Soap.PfBase.Tests
              */
         }
     }
-
-    public static class TestHeaderConstants
-    {
-        public const string AccessTokenHeader = "access token";
-
-        public const string IdentityTokenHeader = "identity token";
-
-        public const string ServiceLevelAccessTokenHeader = "service level access token";
-    }
 }

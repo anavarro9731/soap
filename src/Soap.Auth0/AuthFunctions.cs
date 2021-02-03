@@ -19,7 +19,7 @@ namespace Soap.Context
         private static ServiceLevelAuthority cache;
 
         public delegate Task SchemeAuth<TUserProfile>(
-            ApplicationConfig applicationConfig,
+            IBootstrapVariables bootstrapVariables,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
@@ -29,7 +29,7 @@ namespace Soap.Context
 
         public static async Task AuthenticateandAuthoriseOrThrow<TUserProfile>(
             ApiMessage message,
-            ApplicationConfig applicationConfig,
+            IBootstrapVariables bootstrapVariables,
             DataStore dataStore,
             Dictionary<string, SchemeAuth<TUserProfile>> schemeHandlers,
             ISecurityInfo securityInfo,
@@ -40,7 +40,7 @@ namespace Soap.Context
                 IdentityPermissions identityPermissions = null;
                 TUserProfile userProfile = null;
                 
-                var shouldAuthorise = IsSubjectToAuthorisation(message, applicationConfig);
+                var shouldAuthorise = IsSubjectToAuthorisation(message, bootstrapVariables);
 
                 /* if you don't authorise the message, you don't attempt to authenticate the user either.
                  however, just because you authenticate doesn't mean you always return a user profile, services and tests don't have them */
@@ -68,8 +68,8 @@ namespace Soap.Context
 
                     var handler = schemeHandlers[lastIdentityScheme];
 
-                    handler(
-                        applicationConfig,
+                    await handler(
+                        bootstrapVariables,
                         message,
                         dataStore,
                         securityInfo,
@@ -136,8 +136,8 @@ namespace Soap.Context
             return Task.FromResult(cache);
         }
 
-        public static async Task ServiceSchemeAuth<TUserProfile>(
-            ApplicationConfig applicationConfig,
+        public static Task ServiceSchemeAuth<TUserProfile>(
+            IBootstrapVariables bootstrapVariables,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
@@ -145,9 +145,10 @@ namespace Soap.Context
             Action<IdentityPermissions> setPermissions,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
-            var appId = AesOps.Decrypt(schemeValue, applicationConfig.EncryptionKey);
-            Guard.Against(applicationConfig.AppId != appId, "access token invalid");
-
+            var appId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
+            Guard.Against(schemeValue != appId, "last scheme value should match decrypted id token");
+            Guard.Against(bootstrapVariables.AppId != appId, "access token should match app id");
+            
             var identityPermissions = new IdentityPermissions
             {
                 ApiPermissions = GetAllApiPermissions(message)
@@ -155,10 +156,14 @@ namespace Soap.Context
             };
             setPermissions(identityPermissions);
             //* user profile remains null
+
+            return Task.CompletedTask;
         }
+        
+        
 
         public static async Task UserSchemeAuth<TUserProfile>(
-            ApplicationConfig applicationConfig,
+            IBootstrapVariables bootstrapVariables,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
@@ -169,16 +174,16 @@ namespace Soap.Context
 
             var accessToken = message.Headers.GetAccessToken();
             var idToken = message.Headers.GetIdentityToken();
-                
+
             var identityPermissions = await Auth0Functions.GetPermissionsFromAccessToken(
-                                          applicationConfig,
+                                          bootstrapVariables.As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                           accessToken,
                                           securityInfo);
 
             setPermissions(identityPermissions);
 
             var userProfile = await Auth0Functions.Profiles.GetUserProfileOrNull<TUserProfile>(
-                                  applicationConfig,
+                                  bootstrapVariables.As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                   dataStore,
                                   idToken);
 

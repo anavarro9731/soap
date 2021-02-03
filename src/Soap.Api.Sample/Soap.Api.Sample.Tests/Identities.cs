@@ -1,5 +1,6 @@
 ﻿namespace Soap.Api.Sample.Tests
 {
+    using System.Collections.Generic;
     using System.Linq;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
@@ -13,6 +14,13 @@
 
     public static class Identities
     {
+        public static List<TestIdentity> TestIdentities =>
+            typeof(Identities).GetType()
+                              .GetProperties()
+                              .Where(x => x.Name != nameof(TestIdentities))
+                              .Select(x => x.GetValue(null, null).As<TestIdentity>())
+                              .ToList();
+
         public static TestIdentity UserOne =>
             new TestIdentity(
                 new IdentityPermissions

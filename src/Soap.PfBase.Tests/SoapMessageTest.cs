@@ -2,6 +2,7 @@
 namespace Soap.PfBase.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
@@ -11,14 +12,16 @@ namespace Soap.PfBase.Tests
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
     using Xunit.Abstractions;
 
     public class SoapMessageTest
     {
         private readonly MapMessagesToFunctions mappingRegistration;
+
+        private readonly ISecurityInfo securityInfo;
 
         private readonly ITestOutputHelper output;
 
@@ -27,10 +30,16 @@ namespace Soap.PfBase.Tests
         //* copies over each call of Add and Execute retaining state across the whole test
         private IDocumentRepository? rollingRepo;
 
-        protected SoapMessageTest(ITestOutputHelper output, MapMessagesToFunctions mappingRegistration)
+        protected SoapMessageTest(
+            ITestOutputHelper output,
+            MapMessagesToFunctions mappingRegistration,
+            List<TestIdentity> testIdentities,
+            ISecurityInfo securityInfo)
         {
             this.output = output;
             this.mappingRegistration = mappingRegistration;
+            this.securityInfo = securityInfo;
+            SoapMessageTestContext.TestIdentities = testIdentities;
         }
 
         protected Result? Result { get; private set; }
@@ -47,10 +56,21 @@ namespace Soap.PfBase.Tests
             dataStore.CommitChanges().Wait();
         }
 
-        protected void SetupTestByProcessingAMessage<TMessage>(TMessage msg, TestIdentity identity, Action<MessageAggregatorForTesting>? setup = null, bool authEnabled = false, bool enableSlaWhenSecurityContextIsMissing = true)
-            where TMessage : ApiMessage
+        protected void SetupTestByProcessingAMessage<TMessage>(
+            TMessage msg,
+            TestIdentity identity,
+            Action<MessageAggregatorForTesting>? setup = null,
+            bool authEnabled = false,
+            bool enableSlaWhenSecurityContextIsMissing = true) where TMessage : ApiMessage
         {
-            Result = ExecuteMessage(msg, identity, 0, setup:setup, authEnabled:authEnabled, enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsMissing).Result;
+            Result = ExecuteMessage(
+                    msg,
+                    identity,
+                    0,
+                    setup: setup,
+                    authEnabled: authEnabled,
+                    enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsMissing)
+                .Result;
             if (Result.Success == false) throw Result.UnhandledError;
         }
 
@@ -61,9 +81,18 @@ namespace Soap.PfBase.Tests
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setupMocks = null,
-            bool authEnabled = true, bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
+            bool authEnabled = true,
+            bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
         {
-            Result = await ExecuteMessage(msg, identity, retries, beforeRunHook, dataStoreOptions, setupMocks, authEnabled, enableSlaWhenSecurityContextIsMissing);
+            Result = await ExecuteMessage(
+                         msg,
+                         identity,
+                         retries,
+                         beforeRunHook,
+                         dataStoreOptions,
+                         setupMocks,
+                         authEnabled,
+                         enableSlaWhenSecurityContextIsMissing);
         }
 
         private async Task<Result> ExecuteMessage<TMessage>(
@@ -73,34 +102,33 @@ namespace Soap.PfBase.Tests
             (Func<DataStore, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setup = null,
-            bool authEnabled = true, bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
+            bool authEnabled = true,
+            bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
-            
-            if (identity?.IdentityPermissions != null && msg.IsSubjectToAuthorisation(authEnabled))
+
+            if (identity != null)
             {
-                msg.Headers.SetIdentityChain(identity.IdentityChainSegment);
-                msg.Headers.SetIdentityToken(TestHeaderConstants.IdentityTokenHeader);
-                msg.Headers.SetAccessToken(TestHeaderConstants.AccessTokenHeader);
+                msg.Headers.SetIdentityChain(identity.IdChainSegment);
+                msg.Headers.SetIdentityToken(AesOps.Encrypt(identity.UserProfile.id.ToString(), new TestConfig().EncryptionKey));
             }
-            
+
             msg.SetDefaultHeadersForIncomingTestMessages();
-            
 
             this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository();
 
             return await this.soapTestContext.Execute(
-                         msg,
-                         this.mappingRegistration,
-                         this.output,
-                         identity,
-                         retries,
-                         authEnabled,
-                         enableSlaWhenSecurityContextIsMissing,
-                         this.rollingRepo,
-                         beforeRunHook,
-                         dataStoreOptions,
-                         setup);
+                       msg,
+                       this.mappingRegistration,
+                       this.output,
+                       this.securityInfo,
+                       retries,
+                       authEnabled,
+                       enableSlaWhenSecurityContextIsMissing,
+                       this.rollingRepo,
+                       beforeRunHook,
+                       dataStoreOptions,
+                       setup);
         }
     }
 }

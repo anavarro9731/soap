@@ -12,6 +12,7 @@ namespace Soap.Api.Sample.Tests.Messages
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
     using Xunit;
     using Xunit.Abstractions;
 
@@ -27,29 +28,29 @@ namespace Soap.Api.Sample.Tests.Messages
         {
             Setup();
             var c106Headers = Result.MessageBus.CommandsSent.Single(x => x is C106v1_LargeCommand).Headers;
-            c106Headers.GetIdentityChain().Should().Be(Identities.UserOne.IdentityChainSegment);
-            c106Headers.GetIdentityToken().Should().Be(TestHeaderConstants.IdentityTokenHeader);
-            c106Headers.GetAccessToken().Should().Be(TestHeaderConstants.AccessTokenHeader);
+            c106Headers.GetIdentityChain().Should().Be(Identities.UserOne.IdChainSegment);
+            c106Headers.GetIdentityToken().Should().Be(AesOps.Encrypt(Identities.UserOne.UserProfile.id.ToString(), new TestConfig().EncryptionKey));
+            c106Headers.GetAccessToken().Should().BeNullOrEmpty();
         }
         
         [Fact]
-        public void ItShouldSetEnterpriseAdminHeadersOnC106IfServiceLevelAuthIsRequested()
+        public void ItShouldSlaHeadersOnC106IfServiceLevelAuthIsRequested()
         {
             Setup(forceServiceLevelAuthOnOutgoingC106:true);
             var c106Headers = Result.MessageBus.CommandsSent.Single(x => x is C106v1_LargeCommand).Headers;
-            c106Headers.GetIdentityChain().Should().Be($"{Identities.UserOne.IdentityChainSegment},service://{new TestConfig().AppId}");
+            c106Headers.GetIdentityChain().Should().Be($"{Identities.UserOne.IdChainSegment},service://{new TestConfig().AppId}");
             c106Headers.GetIdentityToken().Should().BeNullOrEmpty();
-            c106Headers.GetAccessToken().Should().Be(TestHeaderConstants.ServiceLevelAccessTokenHeader);
+            c106Headers.GetAccessToken().Should().BeNullOrEmpty();
         }
         
         [Fact]
-        public void ItShouldSetEnterpriseAdminHeadersOnC106IfUseServiceLevelAuthWhenThereIsNoSecurityContextHasBeenEnabled()
+        public void ItShouldSetSlaHeadersOnC106IfUseServiceLevelAuthWhenThereIsNoSecurityContextHasBeenEnabled()
         {
             Setup(enableSlaWhenSecurityContextIsAbsent:true);
             var c106Headers = Result.MessageBus.CommandsSent.Single(x => x is C106v1_LargeCommand).Headers;
             c106Headers.GetIdentityChain().Should().Be($"{AuthSchemePrefixes.Service}://{new TestConfig().AppId}");
-            c106Headers.GetIdentityToken().Should().BeNullOrEmpty();
-            c106Headers.GetAccessToken().Should().Be(TestHeaderConstants.ServiceLevelAccessTokenHeader);
+            c106Headers.GetIdentityToken().Should().Be(AesOps.Encrypt(new TestConfig().AppId, new TestConfig().EncryptionKey));
+            c106Headers.GetAccessToken().Should().BeNullOrEmpty();
         }
         
         [Fact]

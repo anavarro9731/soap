@@ -1,11 +1,13 @@
 ﻿namespace Soap.PfBase.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
+    using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
     using Destructurama;
     using Serilog;
@@ -25,10 +27,14 @@
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
+    using Soap.Utility.Functions.Operations;
     using Xunit.Abstractions;
 
     public class SoapMessageTestContext
     {
+
+        public static List<TestIdentity> TestIdentities;
+        
         public async Task<Result> Execute(
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
@@ -60,8 +66,15 @@
                         dataStoreOptions,
                         message.Headers.GetMessageId(),
                         out var dataStore);
+
+                    IUserProfile userProfile = null;
+                    IdentityPermissions identityPermissions = null;
+                    await AuthFunctions.AuthenticateandAuthoriseOrThrow<TestProfile>(message, appConfig, dataStore, new Dictionary<string, AuthFunctions.SchemeAuth<TestProfile>>()
+                    {
+                        { AuthSchemePrefixes.Tests, TestSchemeAuth<TestProfile> }
+                    } ,securityInfo, v => identityPermissions = v, v => userProfile = v);
                     
-                    AuthFunctions.AuthenticateandAuthoriseOrThrow<TestProfile>(message, appConfig, dataStore, securityInfo)
+                    CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
                         
                     CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
 
@@ -69,7 +82,7 @@
 
                     CreateBusContext(messageAggregator, appConfig, blobStorage, out var bus);
 
-                    var context = new BoostrapppedContext(
+                    var context = new BoostrappedContext(
                         messageMapper: messageMapper,
                         appConfig: appConfig,
                         logger: logger,
@@ -189,18 +202,41 @@
 
                 return x;
             }
-
-            static void SimulateAuth0AuthoriseCall(ApiMessage message, TestIdentity identity) 
-            {
-                if (identity?.IdentityPermissions == null)
-                {
-                    throw new ApplicationException(
-                        "Test Identity not provided but this message requires authorisation, this would be comparable to an invalid access token in non-test code");
-                }
-                
-                AuthFunctions.AuthenticateandAuthoriseOrThrow(message, identity.IdentityPermissions);    
-            } 
             
+            static void CreateMessageMeta(
+                ApiMessage message,
+                IdentityPermissions permissions,
+                IUserProfile userProfile,
+                out MessageMeta meta)
+            {
+                (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
+
+                meta = new MessageMeta(timeStamp, permissions, userProfile);
+            }
+            
+            static Task TestSchemeAuth<TUserProfile>(
+                IBootstrapVariables bootstrapVariables,
+                ApiMessage message,
+                DataStore dataStore,
+                ISecurityInfo securityInfo,
+                string schemeValue,
+                Action<IdentityPermissions> setPermissions,
+                Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
+            {
+                var testIdentityId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
+                Guard.Against(schemeValue != testIdentityId, "last scheme value should match decrypted id token");
+                var testIdentity = TestIdentities.SingleOrDefault(t => t.UserProfile.id.ToString() == testIdentityId);
+                if (testIdentity != null)
+                {
+                    setPermissions(testIdentity.IdentityPermissions);
+                    setProfile(testIdentity.UserProfile);
+                }
+                setPermissions(null);
+                setProfile(null);
+
+                return Task.CompletedTask;
+            }
+
             static void CreateAppConfig(byte retries, bool authEnabled, bool enableSlaWhenSecurityContextIsMissing, out TestConfig applicationConfig)
             {
                 applicationConfig = new TestConfig
