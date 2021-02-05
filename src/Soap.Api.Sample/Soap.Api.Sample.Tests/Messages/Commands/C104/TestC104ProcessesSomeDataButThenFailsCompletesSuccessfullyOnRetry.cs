@@ -32,7 +32,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
 
             await TestMessage(
                 c104TestUnitOfWork,
-                Identities.UserOne,
+                Identities.JohnDoeAllPermissions,
                 1,
                 (BeforeRunHook,
                 c104TestUnitOfWork.Headers.GetMessageId()));

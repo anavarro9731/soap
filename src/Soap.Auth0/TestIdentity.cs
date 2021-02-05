@@ -5,6 +5,7 @@ namespace Soap.Api.Sample.Tests
     using Soap.Config;
     using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Utility.Functions.Operations;
 
     public class TestIdentity
     {
@@ -16,6 +17,8 @@ namespace Soap.Api.Sample.Tests
             UserProfile = userProfile;
         }
 
+        public string AccessToken => "access token";
+        public string IdToken(string encryptionKey) => AesOps.Encrypt(UserProfile.id.ToString(), encryptionKey);
         public string IdChainSegment => $"{AuthSchemePrefixes.Tests}://" + UserProfile.id;
         
         public IdentityPermissions IdentityPermissions { get; set; }
@@ -28,7 +31,6 @@ namespace Soap.Api.Sample.Tests
     {
         public TestProfile(Guid id, string auth0Id, string email, string firstName, string lastName)
         {
-            Guard.Against(id == Guid.Empty || string.IsNullOrEmpty(auth0Id) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName), "All constructor values must be provided, no empty values");
             this.id = id;
             this.Auth0Id = auth0Id;
             this.Email = email;

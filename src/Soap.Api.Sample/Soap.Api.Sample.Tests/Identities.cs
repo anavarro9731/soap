@@ -14,14 +14,17 @@
 
     public static class Identities
     {
-        public static List<TestIdentity> TestIdentities =>
-            typeof(Identities).GetType()
-                              .GetProperties()
-                              .Where(x => x.Name != nameof(TestIdentities))
-                              .Select(x => x.GetValue(null, null).As<TestIdentity>())
-                              .ToList();
+        public static TestIdentity JaneDoeNoPermissions =>
+            new TestIdentity(
+                new IdentityPermissions(),
+                new TestProfile(
+                    Ids.JaneDoeWithNoPermissions,
+                    email: "iwas@mycomputer.com",
+                    auth0Id: Ids.JaneDoeWithNoPermissionsAuth0Id,
+                    firstName: "Jane",
+                    lastName: "Doe"));
 
-        public static TestIdentity UserOne =>
+        public static TestIdentity JohnDoeAllPermissions =>
             new TestIdentity(
                 new IdentityPermissions
                 {
@@ -31,10 +34,24 @@
                                                         .ToList()
                 },
                 new TestProfile(
-                    Ids.UserOneId,
+                    Ids.JohnDoeWithAllPermissions,
                     email: "im@mycomputer.com",
-                    auth0Id: Ids.UserOneAuth0Id,
+                    auth0Id: Ids.JohnDoeWithAllPermissionsAuth0Id,
                     firstName: "John",
                     lastName: "Doe"));
+
+        public static List<TestIdentity> TestIdentities
+        {
+            get
+            {
+                var identities = typeof(Identities).GetProperties()
+                                                   .Where(x => x.PropertyType == typeof(TestIdentity))
+                                                   .Select(x => x.GetValue(null, null))
+                                                   .Select(y => y.As<TestIdentity>())
+                                                   .ToList();
+
+                return identities;
+            }
+        }
     }
 }

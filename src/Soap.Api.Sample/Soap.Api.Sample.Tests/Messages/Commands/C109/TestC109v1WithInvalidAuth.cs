@@ -6,17 +6,18 @@
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
 
-    public class TestC109v1 : Test
+    public class TestC109v1InvalidAuth : Test
     {
         private static readonly Guid testDataId = Guid.NewGuid();
 
-        public TestC109v1(ITestOutputHelper outputHelper)
+        public TestC109v1InvalidAuth(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             TestMessage(
@@ -24,7 +25,7 @@
                 {
                     C109_FormDataEventName = typeof(E103v1_GetC107Form).FullName
                 },
-                Identities.JohnDoeAllPermissions,
+                Identities.JaneDoeNoPermissions,
                 setupMocks: messageAggregatorForTesting =>
                     {
                     messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
@@ -33,20 +34,13 @@
         }
 
         [Fact]
-        public void ItShouldNotPublishAResponseToTheBus()
+        public void ItShouldThrowPermissionsError()
         {
-            Result.MessageBus.BusEventsPublished.Should().BeEmpty();
+            Result.Success.Should().BeFalse();
+            Result.UnhandledError.Should().BeOfType<DomainExceptionWithErrorCode>();
+            (Result.UnhandledError as DomainExceptionWithErrorCode).Error.Should()
+                                                                   .Be(AuthErrorCodes.NoApiPermissionExistsForThisMessage);
         }
 
-        [Fact]
-        public void ItShouldPublishAResponseToTheWebSocketClient()
-        {
-            Result.MessageBus.WsEventsPublished.Should().ContainSingle();
-            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E103v1_GetC107Form>();
-            (Result.MessageBus.WsEventsPublished.Single() as E103v1_GetC107Form).E000_CommandName.Should()
-                                                                                .Be(
-                                                                                    typeof(C107v1_CreateOrUpdateTestDataTypes)
-                                                                                        .ToShortAssemblyTypeName());
-        }
     }
 }

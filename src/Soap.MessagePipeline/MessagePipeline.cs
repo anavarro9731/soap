@@ -1,9 +1,7 @@
 ﻿namespace Soap.MessagePipeline
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using FluentValidation;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
@@ -11,21 +9,18 @@
     using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, MessageMeta meta,
-            BoostrappedContext bootstrappedContext)
+        public static async Task Execute(ApiMessage message, MessageMeta meta, BoostrappedContext bootstrappedContext)
         {
             {
                 await FillMessageFromStorageIfApplicable();
-                
+
                 ContextWithMessageLogEntry matureContext = null;
-                
+
                 await PrepareContext(bootstrappedContext, meta, v => matureContext = v);
-                
+
                 try
                 {
                     /* THIS MUST BE SET AT THIS LEVEL. SETTING IT LOWER (via say a method on the context called from
@@ -43,20 +38,20 @@
             }
 
             async Task PrepareContext(
-                BoostrappedContext boostrappedContext, MessageMeta meta,
+                BoostrappedContext boostrappedContext,
+                MessageMeta meta,
                 Action<ContextWithMessageLogEntry> setContext)
             {
                 MessageLogEntry messageLogEntry = null;
 
                 try
                 {
-                    
                     var contextAfterMessageObtained = boostrappedContext.Upgrade(message);
 
                     await contextAfterMessageObtained.CreateOrFindLogEntry(meta, v => messageLogEntry = v);
 
                     var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
-                    
+
                     setContext(contextWithMessageLogEntry);
                 }
                 catch (Exception e)
@@ -73,7 +68,7 @@
                     message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
                 }
             }
-            
+
             async Task ProcessMessage(ContextWithMessageLogEntry context)
             {
                 var msg = context.Message;
@@ -101,8 +96,8 @@
                                  to attempt to finish an unfinished uow if possible, also because you don't want to validate MessageFailedAllRetries
                                  because it would try to case it to the type of the message that failed since you use the MessageFunctions for the failed
                                  message type when you have MessageFailedAllRetries (see MapMessagesToFunctions.MapMessage for details */
-                                msg.ValidateOrThrow(context);   
-                                
+                                msg.ValidateOrThrow(context);
+
                                 await context.Handle(c);
                                 break;
                             case ApiEvent e:
@@ -133,9 +128,8 @@
                     await context.TakeFailureActions(exceptionMessages);
 
                     context.SerilogFailure(exceptionMessages);
-                    
+
                     exceptionThrownToContext = exceptionMessages.ExceptionThrownToContext();
-                    
                 }
                 catch (Exception exceptionHandlingException)
                 {
@@ -147,7 +141,7 @@
                         var exceptionMessages = new FormattedExceptionInfo(originalExceptionPlusHandlingException, context);
 
                         context.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
-                        
+
                         exceptionThrownToContext = exceptionMessages.ExceptionThrownToContext();
                     }
                     catch (Exception lastChanceException) //- log a minimal error message of last resort

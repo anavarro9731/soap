@@ -4,7 +4,6 @@
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
-    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
@@ -25,7 +24,7 @@
                             E000_PingedAt = message.C000_PingedAt,
                             E000_PingedBy = message.C000_PingedBy,
                             E000_PongedAt = DateTime.UtcNow,
-                            E000_PongedBy = p.Auth0Id
+                            E000_PongedBy = p?.Auth0Id
                         });
                 }
                 };

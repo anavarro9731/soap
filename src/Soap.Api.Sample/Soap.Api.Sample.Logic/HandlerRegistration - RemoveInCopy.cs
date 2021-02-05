@@ -10,6 +10,7 @@ namespace Soap.Api.Sample.Logic
         {
             Register(new C102v1Functions());
             Register(new C104v1Functions());
+            Register(new C112v1Functions());
         }
     }
 }

@@ -12,9 +12,9 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC102v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.JohnDoeAllPermissions);
             
-            TestMessage(Commands.GetServiceState, Identities.UserOne).Wait();
+            TestMessage(Commands.GetServiceState, Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]

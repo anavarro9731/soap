@@ -37,9 +37,9 @@ namespace Soap.Context
             Action<IUserProfile> setUserProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             {
-                IdentityPermissions identityPermissions = null;
-                TUserProfile userProfile = null;
-                
+                IdentityPermissions identityPermissionsInternal = null;
+                IUserProfile userProfileInternal = null;
+
                 var shouldAuthorise = IsSubjectToAuthorisation(message, bootstrapVariables);
 
                 /* if you don't authorise the message, you don't attempt to authenticate the user either.
@@ -74,35 +74,43 @@ namespace Soap.Context
                         dataStore,
                         securityInfo,
                         lastIdentityValue,
-                        setPermissions,
-                        setUserProfile);
+                        v => identityPermissionsInternal = v,
+                        v => userProfileInternal = v);
+                    
+                    Guard.Against(
+                        identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(message.GetType().Name),
+                        AuthErrorCodes.NoApiPermissionExistsForThisMessage);
+                    
                 }
 
-                await SaveOrUpdateUserProfileInDb(userProfile, dataStore);
-                
-                setPermissions(identityPermissions);
-                setUserProfile(userProfile);
+
+                await SaveOrUpdateUserProfileInDb(userProfileInternal as TUserProfile, dataStore);
+
+                //* if auth is enabled these could be empty but should never be null
+                setPermissions(identityPermissionsInternal);
+                setUserProfile(userProfileInternal);
             }
 
             static bool IsSubjectToAuthorisation(ApiMessage m, IBootstrapVariables bootstrapVariables)
             {
                 var messageType = m.GetType();
-
+                
                 return bootstrapVariables.AuthEnabled && messageType.InheritsOrImplements(typeof(ApiCommand))
                                                       && !messageType.HasAttribute<AuthorisationNotRequired>();
             }
 
-            static async Task SaveOrUpdateUserProfileInDb<TUserProfile>(TUserProfile userProfile, DataStore dataStore)
-                where TUserProfile : class, IUserProfile, IAggregate, new()
+            static async Task SaveOrUpdateUserProfileInDb<TUserProfileMethodLevel>(TUserProfileMethodLevel userProfile, DataStore dataStore)
+                where TUserProfileMethodLevel : class, IUserProfile, IAggregate, new()
             {
                 if (userProfile == null) return;
 
-                var user = (await dataStore.Read<TUserProfile>(x => x.Auth0Id == userProfile.Auth0Id)).SingleOrDefault();
+                var user = (await dataStore.Read<TUserProfileMethodLevel>(x => x.Auth0Id == userProfile.Auth0Id)).SingleOrDefault();
 
                 if (user == null)
                 {
-                    var newUser = new TUserProfile
+                    var newUser = new TUserProfileMethodLevel
                     {
+                        id = userProfile.id,
                         Auth0Id = userProfile.Auth0Id,
                         Email = userProfile.Email,
                         FirstName = userProfile.FirstName,
@@ -111,15 +119,17 @@ namespace Soap.Context
 
                     await dataStore.Create(newUser);
                 }
-
-                await dataStore.UpdateWhere<TUserProfile>(
-                    u => u.Auth0Id == user.Auth0Id,
-                    x =>
-                        {
-                        x.Email = userProfile.Email;
-                        x.FirstName = userProfile.FirstName;
-                        x.LastName = userProfile.LastName;
-                        });
+                else
+                {
+                    await dataStore.UpdateById<TUserProfileMethodLevel>(
+                        user.id,
+                        x =>
+                            {
+                            x.Email = userProfile.Email;
+                            x.FirstName = userProfile.FirstName;
+                            x.LastName = userProfile.LastName;
+                            });
+                }
             }
         }
 
@@ -129,9 +139,9 @@ namespace Soap.Context
             cache ??= new ServiceLevelAuthority
             {
                 IdentityChainSegment = $"{AuthSchemePrefixes.Service}://" + bootstrapVariables.AppId,
-                AccessToken = RandomOps.NewString(64),
+                AccessToken = RandomOps.RandomString(64),
                 IdentityToken = AesOps.Encrypt(bootstrapVariables.AppId, bootstrapVariables.EncryptionKey)
-            };
+            };  
 
             return Task.FromResult(cache);
         }
@@ -148,7 +158,7 @@ namespace Soap.Context
             var appId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
             Guard.Against(schemeValue != appId, "last scheme value should match decrypted id token");
             Guard.Against(bootstrapVariables.AppId != appId, "access token should match app id");
-            
+
             var identityPermissions = new IdentityPermissions
             {
                 ApiPermissions = GetAllApiPermissions(message)
@@ -159,8 +169,6 @@ namespace Soap.Context
 
             return Task.CompletedTask;
         }
-        
-        
 
         public static async Task UserSchemeAuth<TUserProfile>(
             IBootstrapVariables bootstrapVariables,
@@ -171,19 +179,21 @@ namespace Soap.Context
             Action<IdentityPermissions> setPermissions,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
-
             var accessToken = message.Headers.GetAccessToken();
             var idToken = message.Headers.GetIdentityToken();
 
             var identityPermissions = await Auth0Functions.GetPermissionsFromAccessToken(
-                                          bootstrapVariables.As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
+                                          bootstrapVariables
+                                              .As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                           accessToken,
                                           securityInfo);
 
             setPermissions(identityPermissions);
 
             var userProfile = await Auth0Functions.Profiles.GetUserProfileOrNull<TUserProfile>(
-                                  bootstrapVariables.As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
+                                  bootstrapVariables
+                                      .As<ApplicationConfig
+                                      >(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                   dataStore,
                                   idToken);
 

@@ -28,7 +28,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
 
             await TestMessage(
                 c104TestUnitOfWork,
-                Identities.UserOne,
+                Identities.JohnDoeAllPermissions,
                 1,
                 default,
                 DataStoreOptions.Create().DisableOptimisticConcurrency());

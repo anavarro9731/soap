@@ -50,7 +50,7 @@
                     C107_File = SampleBlobs.File1,
                     C107_Image = SampleBlobs.Image1
                 },
-                Identities.UserOne).Wait();
+                Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]

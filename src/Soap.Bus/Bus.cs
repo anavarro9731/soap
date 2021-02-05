@@ -165,7 +165,8 @@
                                 null => ServiceLevelAuthority.IdentityChainSegment, //* context message could be an event, or auth disabled and not have a chain, etc
                                 _ => $"{currentChain},{ServiceLevelAuthority.IdentityChainSegment}"
                             });
-                        
+                        //TODO I think this is wrong missing encryption. Reconsider messages which DoNotRequireAuth but have auth headers to pass on
+                        // this is really a similar issue to C109 in that the auth headers are used when the message is not authd
                         commandToSend.Headers.SetAccessToken(ServiceLevelAuthority.AccessToken); 
                         //* set identity token
                         commandToSend.Headers.SetIdentityToken(ServiceLevelAuthority.IdentityToken);
@@ -187,7 +188,7 @@
             
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
-            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthEnabled, this.envPartitionKey);
+            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthEnabled, !commandToSend.GetType().HasAttribute<AuthorisationNotRequired>(), this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 

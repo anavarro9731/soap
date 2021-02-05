@@ -35,7 +35,7 @@
             void SendC103()
             {
                 var c103StartPingPong = new C103v1_StartPingPong();
-                SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
+                SetupTestByProcessingAMessage(c103StartPingPong, Identities.JohnDoeAllPermissions);
             }
 
             void SendE150()
@@ -45,7 +45,7 @@
                     E000_PingReference = Guid.NewGuid(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
-                SetupTestByProcessingAMessage(pong, Identities.UserOne);
+                SetupTestByProcessingAMessage(pong, Identities.JohnDoeAllPermissions);
             }
         }
 
@@ -65,7 +65,7 @@
             void SendC103()
             {
                 var c103StartPingPong = new C103v1_StartPingPong();
-                SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
+                SetupTestByProcessingAMessage(c103StartPingPong, Identities.JohnDoeAllPermissions);
             }
 
             void SendE150()
@@ -75,7 +75,7 @@
                     E000_PingReference = ping.Headers.GetMessageId(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
                 pong.Headers.SetStatefulProcessId(ping.Headers.GetStatefulProcessId().Value);
-                SetupTestByProcessingAMessage(pong, Identities.UserOne);
+                SetupTestByProcessingAMessage(pong, Identities.JohnDoeAllPermissions);
             }
         }
 
@@ -95,7 +95,7 @@
             void SendC103()
             {
                 var c103StartPingPong = new C103v1_StartPingPong();
-                SetupTestByProcessingAMessage(c103StartPingPong, Identities.UserOne);
+                SetupTestByProcessingAMessage(c103StartPingPong, Identities.JohnDoeAllPermissions);
             }
 
             void SendE150()
@@ -104,7 +104,7 @@
                 {
                     E000_PingReference = Guid.NewGuid(), E000_PingedAt = ping.Headers.GetTimeOfCreationAtOrigin()
                 };
-                SetupTestByProcessingAMessage(pong, Identities.UserOne);
+                SetupTestByProcessingAMessage(pong, Identities.JohnDoeAllPermissions);
             }
         }
     }

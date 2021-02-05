@@ -40,7 +40,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem);
 
-            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 2, (BeforeRunHook,default));
+            await TestMessage(c104TestUnitOfWork, Identities.JohnDoeAllPermissions, 2, (BeforeRunHook,default));
             //assert
             Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
@@ -59,7 +59,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
                 {
                     await store.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Ids.UserOneAuth0Id); //doesn't matter just make any change to create a history item
+                        luke => luke.Auth0Id = Ids.JohnDoeWithAllPermissionsAuth0Id); //doesn't matter just make any change to create a history item
                     await store.CommitChanges();
                 }
             }

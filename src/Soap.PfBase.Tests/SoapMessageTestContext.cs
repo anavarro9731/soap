@@ -128,7 +128,8 @@
 
                                 logger.Information(
                                     Environment.NewLine
-                                    + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                                    + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE DURING BEFORE RUN HOOK, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
+                                x.Success = false;
                                 x.UnhandledError = e;
                                 return x;
                             }
@@ -186,7 +187,9 @@
                             x.NotificationServer = notificationServer;
 
                             logger.Error(e, "Unhandled Error");
+                            x.Success = false;
                             x.UnhandledError = e;
+
                         }
 
                         currentRun++;
@@ -231,8 +234,12 @@
                     setPermissions(testIdentity.IdentityPermissions);
                     setProfile(testIdentity.UserProfile);
                 }
-                setPermissions(null);
-                setProfile(null);
+                else
+                {
+                    setPermissions(null);
+                    setProfile(null);    
+                }
+                
 
                 return Task.CompletedTask;
             }

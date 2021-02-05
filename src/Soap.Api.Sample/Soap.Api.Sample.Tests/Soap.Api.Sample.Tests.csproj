@@ -21,10 +21,6 @@
     <ProjectReference Include="..\Soap.Api.Sample.Messages\Soap.Api.Sample.Messages.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Messages\Commands" />
-  </ItemGroup>
-
 
 
 </Project>

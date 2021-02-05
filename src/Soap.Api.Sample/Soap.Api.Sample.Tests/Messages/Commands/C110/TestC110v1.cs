@@ -32,7 +32,7 @@
                 {
                     C110_TestDataId = testDataId
                 },
-                Identities.UserOne).Wait();
+                Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]

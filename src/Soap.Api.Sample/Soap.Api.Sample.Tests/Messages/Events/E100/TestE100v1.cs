@@ -14,7 +14,7 @@ namespace Soap.Api.Sample.Tests.Messages.Events.E100
             : base(outputHelper)
         {
             
-            TestMessage(Events.E100v1_Pong, Identities.UserOne.Op(x => x.IdentityPermissions.ApiPermissions.Clear())).Wait();
+            TestMessage(Events.E100v1_Pong, Identities.JaneDoeNoPermissions).Wait();
         }
 
         [Fact]

@@ -50,7 +50,7 @@ namespace Soap.PfBase.Tests
                 this.rollingRepo ??= new TestConfig().DatabaseSettings.CreateRepository(),
                 new MessageAggregatorForTesting());
 
-            this.output.WriteLine($"Created {typeof(TAggregate).Name}");
+            this.output.WriteLine($"Test Setup: Created {typeof(TAggregate).Name}");
 
             dataStore.Create(aggregate).Wait();
             dataStore.CommitChanges().Wait();
@@ -63,6 +63,8 @@ namespace Soap.PfBase.Tests
             bool authEnabled = false,
             bool enableSlaWhenSecurityContextIsMissing = true) where TMessage : ApiMessage
         {
+            this.output.WriteLine($"Test Setup: Received Message {typeof(TMessage).Name}");
+            
             Result = ExecuteMessage(
                     msg,
                     identity,
@@ -107,10 +109,11 @@ namespace Soap.PfBase.Tests
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 
-            if (identity != null)
+            if (identity != null && msg is ApiCommand)
             {
                 msg.Headers.SetIdentityChain(identity.IdChainSegment);
-                msg.Headers.SetIdentityToken(AesOps.Encrypt(identity.UserProfile.id.ToString(), new TestConfig().EncryptionKey));
+                msg.Headers.SetIdentityToken(identity.IdToken(new TestConfig().EncryptionKey));
+                msg.Headers.SetAccessToken(identity.AccessToken);
             }
 
             msg.SetDefaultHeadersForIncomingTestMessages();

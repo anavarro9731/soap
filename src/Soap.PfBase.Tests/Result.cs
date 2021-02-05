@@ -13,7 +13,15 @@
     {
         public static void ExceptionContainsErrorCode(this Result r, ErrorCode e)
         {
-            (r.UnhandledError as FormattedExceptionInfo.PipelineException).KnownErrorCodes.Should().Contain(Guid.Parse(e.Key));
+            switch (r.UnhandledError) 
+            {
+                case FormattedExceptionInfo.PipelineException e1: 
+                    e1.KnownErrorCodes.Should().Contain(Guid.Parse(e.Key));
+                    break;
+                default:
+                 r.UnhandledError.Should().BeOfType<FormattedExceptionInfo.PipelineException>();
+                 break;
+            }
         }
     }
     

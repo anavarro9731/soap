@@ -36,7 +36,7 @@ namespace Soap.Api.Sample.Tests.Messages
 
             TestMessage(
                 c106In,
-                Identities.UserOne,
+                Identities.JohnDoeAllPermissions,
                 0,
                 setupMocks: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobDownloadEvent>()
                                                                                  .Return(

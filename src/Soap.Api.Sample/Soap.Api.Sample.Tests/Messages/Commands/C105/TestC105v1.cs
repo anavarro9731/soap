@@ -18,7 +18,7 @@ namespace Soap.Api.Sample.Tests.Messages
         {
             TestMessage(
                     new C105v1_SendLargeMessage(),
-                    Identities.UserOne,
+                    Identities.JohnDoeAllPermissions,
                     setupMocks: messageAggregatorForTesting =>
                         {
                         messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");

@@ -48,6 +48,7 @@
             this MessageHeaders messageHeaders,
             ApiMessage message,
             bool authEnabled,
+            bool commandRequiresAuth,
             string envPartitionKey)
         {
 
@@ -62,11 +63,11 @@
 
             messageHeaders.SetSchema(message.GetType().FullName);
 
-            if (authEnabled)
+            if (authEnabled && commandRequiresAuth)
             {
                 Ensure(
                     messageHeaders.GetIdentityChain() != null,
-                    "All inter-service outgoing commands from a service must have an identity chain header if auth is enabled");
+                    "All inter-service outgoing commands from a service must have an identity chain header if auth is enabled and the message is not exempted from authorisation");
             }
 
             Ensure(

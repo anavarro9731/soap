@@ -27,7 +27,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             //act
             var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully);
 
-            await TestMessage(c104TestUnitOfWork, Identities.UserOne, 1, (BeforeRunHook,default));
+            await TestMessage(c104TestUnitOfWork, Identities.JohnDoeAllPermissions, 1, (BeforeRunHook,default));
 
             //assert
             var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());

@@ -23,7 +23,7 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
         public async void MessageDiesWhileSavingUnitOfWork()
         {
             //act
-            await TestMessage(Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork), Identities.UserOne, 2);
+            await TestMessage(Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork), Identities.JohnDoeAllPermissions, 2);
 
             //assert
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();

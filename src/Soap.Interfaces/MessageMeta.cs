@@ -19,10 +19,10 @@
         [JsonProperty]
         public (DateTime DateTime, long Ticks) ReceivedAt { get; internal set; }
 
-        [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)]
+        [JsonProperty]
         public IdentityPermissions IdentityPermissionsOrNull { get; internal set; }
 
-        [JsonProperty]
+        [JsonProperty(TypeNameHandling = TypeNameHandling.Auto)] //* dont persist as IUserProfile
         public IUserProfile UserProfileOrNull { get; internal set; }
     }
 }

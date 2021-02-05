@@ -13,13 +13,14 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC100v1WithBadAuth(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.UserOne.Op(x => x.IdentityPermissions.ApiPermissions.Clear())).Wait();
+            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions).Wait();
         }
 
         [Fact]
-        public void ItShouldConsiderTheCallersPermissionsAndFail()
+        public void ItShouldFailIfAuthIsEnabledAndTheUserDoesNotHavePermissionsToSendThisCommand()
         {
             Result.Success.Should().BeFalse();
+            Result.UnhandledError.Should().BeOfType<DomainExceptionWithErrorCode>();
             (Result.UnhandledError as DomainExceptionWithErrorCode).Error.Should()
                                                                    .Be(AuthErrorCodes.NoApiPermissionExistsForThisMessage);
         }

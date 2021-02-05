@@ -13,9 +13,9 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC101v1UpgradingTheDatabaseMoreThanOnce(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.UserOne);
+            SetupTestByProcessingAMessage(Commands.UpgradeTheDatabaseToV1, Identities.JohnDoeAllPermissions);
             
-            TestMessage(Commands.UpgradeTheDatabaseToV2, Identities.UserOne).Wait();
+            TestMessage(Commands.UpgradeTheDatabaseToV2, Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]

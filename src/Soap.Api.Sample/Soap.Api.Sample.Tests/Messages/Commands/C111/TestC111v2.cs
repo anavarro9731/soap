@@ -52,7 +52,7 @@
                     CustomObject = new Address()
                 });
 
-            TestMessage(new C111v2_GetRecentTestData(), Identities.UserOne).Wait();
+            TestMessage(new C111v2_GetRecentTestData(), Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]

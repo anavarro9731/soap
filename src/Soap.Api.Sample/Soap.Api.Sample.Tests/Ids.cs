@@ -9,8 +9,12 @@
 
     public static partial class Ids
     {
-        public static readonly string UserOneAuth0Id = "some-auth0|Id";
+        public static readonly string JohnDoeWithAllPermissionsAuth0Id = "auth0|john";
 
-        public static readonly Guid UserOneId = Guid.NewGuid();
+        public static readonly Guid JohnDoeWithAllPermissions = Guid.NewGuid();
+        
+        public static readonly string JaneDoeWithNoPermissionsAuth0Id = "auth0|jane";
+
+        public static readonly Guid JaneDoeWithNoPermissions = Guid.NewGuid();
     }
 }

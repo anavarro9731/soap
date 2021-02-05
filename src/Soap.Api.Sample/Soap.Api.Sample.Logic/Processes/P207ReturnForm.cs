@@ -18,6 +18,17 @@ namespace Soap.Api.Sample.Logic.Processes
 
     public class P207ReturnForm : Process, IBeginProcess<C109v1_GetForm>
     {
+        public class AuthErrorCodes : ErrorCode
+        {
+            /* Error Codes only need to be mapped if there is front-end logic that might depend on them
+             otherwise the default error handling logic will do the job of returning the error message but without a specific code. */
+
+            public static readonly ErrorCode NoApiPermissionExistsForThisMessage = Create(
+                Guid.Parse("e21a4343-8daf-42fb-894f-0692c9299c21"),
+                $"The user does not have permissions to execute the command requested by this command");
+
+        }
+        
         public Func<C109v1_GetForm, Task> BeginProcess =>
             async message =>
                 {
@@ -30,9 +41,16 @@ namespace Soap.Api.Sample.Logic.Processes
                         !eventType.InheritsOrImplements(typeof(UIFormDataEvent)),
                         $"Specified command {message.C109_FormDataEventName} does not inherit from {nameof(UIFormDataEvent)}");
 
-                    //  TODO test guard
-                    Guard.Against(!Meta.IdentityPermissionsOrNull.ApiPermissions.Contains(commandType.Name),
-                        $"The user does not have permissions to execute the command {commandShortAssemblyTypeName} requested by this command");
+                    
+                    /* because requesting form can in some cases mean returning data in the form that the user may not have the right to request
+                    we need to test the users ability to send the command prepared by the event returned from this message. */
+                    if (ContextWithMessageLogEntry.Current.AppConfig.AuthEnabled && 
+                        !commandType.HasAttribute<AuthorisationNotRequired>())
+                    {
+                        Guard.Against(!Meta.IdentityPermissionsOrNull.ApiPermissions.Contains(commandType.Name),
+                            AuthErrorCodes.NoApiPermissionExistsForThisMessage);    
+                    }
+                    
                     
                     if (BlobsNeedToBeSaved(eventShortAssemblyTypeName))
                     {

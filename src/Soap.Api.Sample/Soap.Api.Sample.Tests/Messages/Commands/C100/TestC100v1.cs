@@ -14,7 +14,7 @@ namespace Soap.Api.Sample.Tests.Messages
         public TestC100v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.UserOne).Wait();
+            TestMessage(Commands.Ping, Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Soap.Api.Sample.Tests.Messages
         [Fact]
         public async void ItShouldCreateTheUserProfile()
         {
-            (await Result.DataStore.ReadActive<UserProfile>()).Single().Auth0Id.Should().Be(Ids.UserOneAuth0Id);
+            (await Result.DataStore.Read<TestProfile>()).Single().Auth0Id.Should().Be(Ids.JohnDoeWithAllPermissionsAuth0Id);
         }
 
     }
