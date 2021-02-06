@@ -17,7 +17,7 @@ namespace Soap.PfBase.Api.Functions
         public static async Task HandleMessage<TUserProfile>(
             Message myQueueItem,
             string messageId,
-            MapMessagesToFunctions handlerRegistration,
+            MapMessagesToFunctions messageFunctionRegistration,
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
@@ -31,7 +31,7 @@ namespace Soap.PfBase.Api.Functions
 
                 var result = await AzureFunctionContext.Execute<TUserProfile>(
                                  Encoding.UTF8.GetString(myQueueItem.Body),
-                                 handlerRegistration,
+                                 messageFunctionRegistration,
                                  messageId,
                                  myQueueItem.Label,
                                  securityInfo,

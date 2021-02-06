@@ -150,10 +150,10 @@ They are sent over the Azure Service Bus where routing is handled by the Azure b
 In the UI this happens automatically using the [Autoform](soapjs/app/url-fragments/test-data/CreateTestData.jsx) 
 control to submit a form.
 
-In service code you would use the [Bus.Send](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P206SendLargeMessage.cs) 
+In service code you would use the [Bus.Send](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P206_C105__SendLargeMessage.cs) 
 method of a Process to do this. Bus.Send has an overload which also allows you to schedule the message to be sent at a point in the future.
 
-Commands can use only the datatypes you see in [C107](Soap.Api.Sample/Soap.Api.Sample.Messages/Commands/C107v1_CreateOrUpdateTestDataTypes.cs)
+Commands can use only the data types you see in [C107](Soap.Api.Sample/Soap.Api.Sample.Messages/Commands/C107v1_CreateOrUpdateTestDataTypes.cs)
 and also any custom types which use those types, but only in a 1-1 relationship with the message, not in lists.
 
 ### Events
@@ -168,7 +168,7 @@ and also any custom types which use those types, including in lists.
 
 #### Publishing
 
-In service code you would use the [Bus.Publish](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P205PingPong.cs) 
+In service code you would use the [Bus.Publish](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P205_C100__RespondToPing.cs) 
 method of a Process or StatefulProcess to do this. By default, events will be published on the Bus to any subscribing services, 
 and also to the websocket client that send the message whose handler is publishing when that is the source of the current 
 "context message". This can however be changed by passing an `EventVisibility` constant as an overloaded parameter of the
@@ -180,7 +180,7 @@ irrespective of how the context message was created. However doing so is an expe
 
 #### Subscribing
 
-Subscribing to an event, is as simple as creating a handler for it, and then [registering that handler](#handler-registration)
+Subscribing to an event, is as simple as creating a MessageFunctions class for it, and then [registering it](#messagefunction-registration)
 You can subscribe to events you publish as well as those belonging to other services.
 
 ### Other considerations 
@@ -242,8 +242,8 @@ static class CarFunctions {
 ## YourApi.Logic
 
 This assembly contains 5 types of objects:
-- *Handlers* which define what the processors for a message are
-- A *HandlerRegistration* class which makes a message active on the endpoint
+- *MessageFunctions* which define what the handlers for a message are
+- A *MessageFunctionRegistration* class which makes a message active on the endpoint
 - *Operations* which manipulate data (i.e. Aggregates)
 - *Processes* both stateful and transient which can have several functions
   - to send command and/or publish events
@@ -255,7 +255,7 @@ This assembly contains 5 types of objects:
 
 We will cover each of these in details.
 
-### Handlers
+### MessageFunctions
 
 These are small classes which have a fixed interface based on the interface [IMessageFunctionsClientSide<>](Soap.Interfaces/IMessageFunctions.cs)
 
@@ -266,7 +266,7 @@ which defines four basic things for a given message type:
 * The `Validate` method which determines how the message will be validated before it is accepted for 
   processing. Usually this call the msg.Validate() syntax validator on the message properties, but it
   doesn't have to and it can also perform any additional logic such as that which may require database
-  access. It the only method in the handler which is allowed to have any logic of it's own.
+  access. 
 - The `HandleFinalFailure` method defines what should happen when a message of this type which
   has failed repeatedly and reached it's retry limit. Usually this will result in some kind of notification
   being generated for someone to review. A database record is automatically created for each message
@@ -282,27 +282,27 @@ It is important to note that if a `Handle` method is defined for a message and t
 `HandleWithTheseStatefulProcesses` defined, only one of those two ways of handling the message will be executed
 and the other will be ignored based purely on the presence of a StatefulProcessId header.
 
-If a message has multiple versions each version will require it's own handler. In this case the handlers
+If a message has multiple versions each version will require it's own MessageFunctions. In this case the handlers
 for the earlier versions will need to transform the message first and avoid having multiple paths for processing
 competing logic, except when this is specifically desired but most of the time when this is the case
 a message with a different name and not version is a more suitable choice. 
 This should be always done by with a local static 
-[Upgrade function in the handler](Soap.Api.Sample/Soap.Api.Sample.Logic/Handlers/C111v1Functions.cs).
+[Upgrade function in the MessageFunction](Soap.Api.Sample/Soap.Api.Sample.Logic/MessageFunctions/C111v1Functions.cs).
 
-### Handler Registration
+### MessageFunction Registration
 
-Handlers are only operational once they are 'registered' by adding a line to 
-the [HandlerRegistration](Soap.Api.Sample/Soap.Api.Sample.Logic/HandlerRegistration.cs) class.
+MessageFunctions are only operational once they are 'registered' by adding a line to 
+the [MessageFunctionRegistration](Soap.Api.Sample/Soap.Api.Sample.Logic/MessageFunctionRegistration.cs) class.
 Consideration has been given to whether these should be loaded by reflection and while this is not
-a bad idea, the ability to disable (or not enable a new) handler has it's benefits particularly in
-regard to allowing a new handler but not ready handler or a handler in which a bug has been found
+a bad idea, the ability to disable a (or not enable a new) handler has it's benefits particularly in
+regard to allowing a new, but not ready, handler or a handler in which a bug has been found
 to be present in the codebase but inactive.
 
-Receiving a message which has no handler will throw an error.
+Receiving a message which has no MessageFunctions will throw an error.
 
 #### Understanding The Logic Pipeline
 
-When a Handler or any of the logic pieces (i.e. Processes or Operations) call into a next step, they use
+When a MessageFunctions or any of the handlers (i.e. Processes or Operations) call into a next step, they use
 a special set of methods that ensure they are calling on the pieces allowed from the current step.
 This is done using the local this.Get<> function in the format of:
 
@@ -405,7 +405,25 @@ Their capabilities include:
 
 Ideally each step in the Process will be modeled as a separate function so that the entry function will expose
 only the raw "process" being performed making it easy for someone unfamiliar with the logic to navigate the
-call stack quickly. [Here](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P207ReturnForm.cs) is an example
+call stack quickly. [Here](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P207_C109__ReturnC107FormData.cs) is an example
+
+#### Processes with return form data
+
+Some processes have a special function which is to handle messages whose purpose is to return form data for 
+the UI's autoform control. They are typical processes in the technical sense, but they follow a specific pattern
+of returning a single message which inherits from the `UIFormDataEvent` class. Whatever the values of this event
+those are the values that will be displayed in the form. Note: to publish this event they call a special base
+class method `PublishUIFormDataEvent` rather than the normal `Publish` method which calls use case specific 
+operations on the event with the form data. Failing to publish using this method will mean the AutoForm control fails to load.  
+
+One important thing to understand is a security concern to consider when writing processes that return form data 
+if the form data is not default data. That is whether the user has access to the data filling the form.
+This is why there should be separate commands for retrieving the default state of a form and
+for a populated state so you can authorise them separately. You can share the same response event and just 
+populate it differently that is OK. 
+There is also the matter of whether the user has permissions to send the subsequent
+command posed by the form presented, which in theory they may not. Be aware of the possibility
+that of a scenario where you request a form whose command you do not have the right to send. 
 
 ### StatefulProcesses
 
@@ -454,7 +472,7 @@ Finally at any point in the logic where the state-machine is determined to have 
 final state, you should call the `CompleteProcess()` method which lets the system know
 that this process is now finished.
 
-StatefulProcess [Example](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P200PingAndWaitForPong.cs)
+StatefulProcess [Example](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P200_C103__PingAndWaitForPong.cs)
 
 #### Using Notifications (including Emails) In Processes
 

@@ -66,9 +66,9 @@ namespace Soap.Context
                         !schemeHandlers.ContainsKey(lastIdentityScheme),
                         "Could not find a handler to process the identity scheme " + lastIdentityScheme);
 
-                    var handler = schemeHandlers[lastIdentityScheme];
+                    var schemeHandler = schemeHandlers[lastIdentityScheme];
 
-                    await handler(
+                    await schemeHandler(
                         bootstrapVariables,
                         message,
                         dataStore,

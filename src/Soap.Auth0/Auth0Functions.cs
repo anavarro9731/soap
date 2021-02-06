@@ -191,13 +191,13 @@ namespace Soap.Auth0
                     ValidIssuer = openIdConfig.Issuer
                 };
 
-                var handler = new JwtSecurityTokenHandler();
+                var tokenHandler = new JwtSecurityTokenHandler();
 
                 try
                 {
                     //* will validate formation and signature by default
 
-                    var principal = handler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
+                    var principal = tokenHandler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
 
                     ExtractPermissionsFromClaims(principal, out var apiPermissionGroupsAsStrings, out var dbPermissionsAsStrings);
 

@@ -9,7 +9,7 @@ namespace Soap.Api.Sample.Tests
     public class Test : SoapMessageTest
     {
         protected Test(ITestOutputHelper output)
-            : base(output, new HandlerRegistration(), Identities.TestIdentities, new SecurityInfo())
+            : base(output, new MessageFunctionRegistration(), Identities.TestIdentities, new SecurityInfo())
         {
         }
     }

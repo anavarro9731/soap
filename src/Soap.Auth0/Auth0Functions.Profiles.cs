@@ -80,13 +80,13 @@ namespace Soap.Auth0
                     ValidIssuer = openIdConfig.Issuer
                 };
 
-                var handler = new JwtSecurityTokenHandler();
+                var tokenHandler = new JwtSecurityTokenHandler();
 
                 try
                 {
                     //* will validate formation and signature by default
 
-                    var principal = handler.ValidateToken(idToken, validationParameters, out var validatedToken);
+                    var principal = tokenHandler.ValidateToken(idToken, validationParameters, out var validatedToken);
                     return new User();
                 }
                 catch (SecurityTokenExpiredException ex)

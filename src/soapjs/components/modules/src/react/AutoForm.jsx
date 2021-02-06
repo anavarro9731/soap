@@ -24,7 +24,7 @@ export default function AutoForm(props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
-    const {formEventName, afterSubmit, sendQuery = true} = props;
+    const {afterSubmit, query, sendQuery = true} = props;
     const {enqueue} = useSnackbar();
     
     useEffect(() => {
@@ -33,11 +33,7 @@ export default function AutoForm(props) {
         }
     }, [isSubmitted])
     
-    let formDataEvent = useQuery({query:{
-            $type: "C109v1_GetForm",
-            c109_FormDataEventName: formEventName,
-            headers: []
-        }, sendQuery});
+    let formDataEvent = useQuery({query, sendQuery});
     
     if (!formDataEvent) return null;
 

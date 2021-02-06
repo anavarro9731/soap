@@ -59,17 +59,17 @@
                                 
             */
 
-        public Type CommandType => UserDefinedValues().GetType();
-        public void SetProperties(string sasTokenForCommand, Guid idOfCommand)
+        
+        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, ApiCommand command)
         {
             {
-                E000_CommandName = ToShortAssemblyTypeName(UserDefinedValues().GetType());
+                E000_CommandName = ToShortAssemblyTypeName(command.GetType());
                 
                 var fieldData = new List<FieldMeta>();
 
                 BuildFieldAndObjectStructureData(
-                    UserDefinedValues().GetType(),
-                    UserDefinedValues(),
+                    command.GetType(),
+                    command,
                     string.Empty,
                     fieldData,
                     E000_CommandName);
@@ -213,8 +213,6 @@
                     }
                 }
             }
-        }
-
-        protected abstract ApiCommand UserDefinedValues();
+        } 
     }
 }

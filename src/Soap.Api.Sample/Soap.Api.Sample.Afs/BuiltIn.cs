@@ -35,7 +35,7 @@
             ILogger log) =>
             Functions.CheckHealth<C100v1_Ping, E100v1_Pong, C105v1_SendLargeMessage, C106v1_LargeCommand, UserProfile>(
                 req,
-                new HandlerRegistration(),
+                new MessageFunctionRegistration(),
                 signalRBinding,
                 new SecurityInfo(),
                 log);
@@ -79,7 +79,7 @@
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log)
         {
-            await PlatformFunctions.HandleMessage<UserProfile>(myQueueItem, messageId, new HandlerRegistration(), new SecurityInfo(), signalRBinding, log);
+            await PlatformFunctions.HandleMessage<UserProfile>(myQueueItem, messageId, new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log);
         }
 
         [FunctionName("AddToGroup")]

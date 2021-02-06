@@ -114,6 +114,7 @@ namespace Soap.Api.Sample.Tests.Messages
                             m.NextAction = forwardAction;
                             }),
                     identity: testIdentity,
+                    enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsAbsent,
                     authEnabled: !disableAuth).Wait();
         }
     }

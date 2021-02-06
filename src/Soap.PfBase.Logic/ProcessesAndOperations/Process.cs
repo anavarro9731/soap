@@ -1,6 +1,7 @@
 ﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
@@ -27,6 +28,26 @@
     /// </summary>
     public abstract class Process : IProcess
     {
+
+        
+        protected static async Task PublishFormDataEvent(BusWrapper bus, UIFormDataEvent @event, ApiCommand commandToSubmitForm)
+        {
+            @event.Op(
+                e =>
+                    {
+                    var commandId = Guid.NewGuid();
+                    var sasToken = ContextWithMessageLogEntry.Current.BlobStorage.GetStorageSasTokenForBlob(
+                        commandId,
+                        new EnumerationFlags(IBlobStorage.BlobSasPermissions.CreateNew),
+                        "large-messages");
+                    e.SetProperties(sasToken, commandId, commandToSubmitForm);
+                    });
+
+            await bus.Publish(
+                @event,
+                new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+        }
+
         
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 

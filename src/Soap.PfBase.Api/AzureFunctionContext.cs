@@ -32,7 +32,7 @@
     {
         /* THIS IS THE ONLY STATIC VARIABLE IN THE WHOLE PRODUCTION PIPELINE
          the client should be thread-safe and has a spin up time of about
-         1 sec so its a trade-off well work making. Something to remember
+         1 sec so its a trade-off well worth making. Something to remember
          and keep an eye on though. I am not sure if there is a performance
          hit if you have too many clients at once, ie. is there any state
          or locking on the client? */

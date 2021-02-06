@@ -9,7 +9,7 @@
 
     /* all variables in here must remain constant for tests to be correct,
         HOWEVER they must ALWAYS use arrows and not equal on the property assignment because
-        they are static and you will share  instances and have concurrency problems if
+        they are static and you will share instances and have concurrency problems if
         one test modifies this */
 
     public static class Identities

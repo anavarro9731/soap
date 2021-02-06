@@ -4,6 +4,6 @@
 
     public static class SoapApiSampleLogic
     {
-        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(HandlerRegistration));
+        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(MessageFunctionRegistration));
     }
 }

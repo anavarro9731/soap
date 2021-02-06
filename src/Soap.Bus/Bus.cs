@@ -180,7 +180,7 @@
                         var useSlaWhenCurrentContextMissing = this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext;
                         commandToSend.Headers.SetIdentityChain(contextMessage.Headers.GetIdentityChain() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.IdentityChainSegment : null)); 
                         commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.AccessToken : null));
-                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.AccessToken : null));
+                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken() ?? (useSlaWhenCurrentContextMissing ? ServiceLevelAuthority.IdentityToken : null));
 
                         break;
                 }

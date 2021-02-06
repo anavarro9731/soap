@@ -20,10 +20,7 @@
             : base(outputHelper)
         {
             TestMessage(
-                new C109v1_GetForm
-                {
-                    C109_FormDataEventName = typeof(E103v1_GetC107Form).FullName
-                },
+                new C109v1_GetC107FormData(),
                 Identities.JohnDoeAllPermissions,
                 setupMocks: messageAggregatorForTesting =>
                     {
@@ -42,8 +39,8 @@
         public void ItShouldPublishAResponseToTheWebSocketClient()
         {
             Result.MessageBus.WsEventsPublished.Should().ContainSingle();
-            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E103v1_GetC107Form>();
-            (Result.MessageBus.WsEventsPublished.Single() as E103v1_GetC107Form).E000_CommandName.Should()
+            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E103v1_GotC107FormData>();
+            (Result.MessageBus.WsEventsPublished.Single() as E103v1_GotC107FormData).E000_CommandName.Should()
                                                                                 .Be(
                                                                                     typeof(C107v1_CreateOrUpdateTestDataTypes)
                                                                                         .ToShortAssemblyTypeName());

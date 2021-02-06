@@ -19,7 +19,7 @@ namespace Soap.PfBase.Api.Functions
         public static HttpResponseMessage
             CheckHealth<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
                 HttpRequest req,
-                MapMessagesToFunctions handlerRegistration,
+                MapMessagesToFunctions messageFunctionRegistration,
                 IAsyncCollector<SignalRMessage> signalRBinding,
                 ISecurityInfo securityInfo,
                 ILogger log)
@@ -43,7 +43,7 @@ namespace Soap.PfBase.Api.Functions
                                 transportContext,
                                 typeof(TPing).Assembly,
                                 $"{req.Scheme}://{req.Host.ToUriComponent()}",
-                                handlerRegistration,
+                                messageFunctionRegistration,
                                 signalRBinding,
                                 securityInfo,
                                 logger),
