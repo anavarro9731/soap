@@ -4,6 +4,7 @@ namespace Soap.Api.Sample.Tests.Messages
 {
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Config;
@@ -111,7 +112,7 @@ namespace Soap.Api.Sample.Tests.Messages
                                 m.Headers.SetMessageId(SpecialIds.ForceServiceLevelAuthorityOnOutgoingMessages);
                             }
 
-                            m.NextAction = forwardAction;
+                            m.C112_NextAction = new TypedEnumerationAndFlags<C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction>(forwardAction);
                             }),
                     identity: testIdentity,
                     enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsAbsent,

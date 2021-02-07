@@ -6,7 +6,7 @@
     using System.Reflection;
     using CircuitBoard;
 
-    public abstract class UIFormDataEvent : ApiEvent
+    public abstract class UIFormDataEvent<TApiCommand> : ApiEvent where TApiCommand: ApiCommand
     {
         public string E000_CommandName { get; set; }
 
@@ -60,7 +60,7 @@
             */
 
         
-        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, ApiCommand command)
+        public void SetProperties(string sasTokenForCommand, Guid idOfCommand, TApiCommand command)
         {
             {
                 E000_CommandName = ToShortAssemblyTypeName(command.GetType());

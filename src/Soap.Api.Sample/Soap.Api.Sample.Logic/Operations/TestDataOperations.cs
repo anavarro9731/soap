@@ -1,6 +1,7 @@
 namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
@@ -9,6 +10,15 @@ namespace Soap.Api.Sample.Logic.Operations
 
     public class TestDataOperations : Operations<TestData>
     {
+
+        public Func<C114v1_DeleteTestDataById, Task> DeleteTestDataById =>
+            async newState =>
+                {
+                {
+                    await DataWriter.DeleteById<TestData>(newState.C114_TestDataId.Value);
+                }
+                };
+        
         public Func<C107v1_CreateOrUpdateTestDataTypes, Task> SetTestData =>
             async newState =>
                 {
@@ -49,10 +59,12 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    StringOptionalMultiline = newState.C107_StringOptionalMultiline,
                                                    StringOptional = newState.C107_StringOptional,
                                                    String = newState.C107_String,
-                                                   PostCodesMulti = newState.C107_PostCodesMulti,
-                                                   PostCodesSingle = newState.C107_PostCodesSingle,
-                                                   PostCodesMultiOptional = newState.C107_PostCodesMultiOptional,
-                                                   PostCodesSingleOptional = newState.C107_PostCodesSingleOptional
+                                                   PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys,
+                                                   PostCodesSingleKey =
+                                                       newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault(),
+                                                   PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys,
+                                                   PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys
+                                                       .SingleOrDefault()
                                                });
                     }
 
@@ -84,10 +96,13 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.StringOptionalMultiline = newState.C107_StringOptionalMultiline;
                                                data.StringOptional = newState.C107_StringOptional;
                                                data.String = newState.C107_String;
-                                               data.PostCodesMulti = newState.C107_PostCodesMulti;
-                                               data.PostCodesSingle = newState.C107_PostCodesSingle;
-                                               data.PostCodesMultiOptional = newState.C107_PostCodesMultiOptional;
-                                               data.PostCodesSingleOptional = newState.C107_PostCodesSingleOptional;
+                                               data.PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys;
+                                               data.PostCodesSingleKey =
+                                                   newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault();
+                                               data.PostCodesMultiOptionalKeys =
+                                                   newState.C107_PostCodesMultiOptional.SelectedKeys;
+                                               data.PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional
+                                                   .SelectedKeys.SingleOrDefault();
                                                });
                 }
                 };

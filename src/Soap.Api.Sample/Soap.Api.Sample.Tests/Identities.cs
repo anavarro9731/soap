@@ -47,7 +47,7 @@
                 var identities = typeof(Identities).GetProperties()
                                                    .Where(x => x.PropertyType == typeof(TestIdentity))
                                                    .Select(x => x.GetValue(null, null))
-                                                   .Select(y => y.As<TestIdentity>())
+                                                   .Select(y => y.Az<TestIdentity>())
                                                    .ToList();
 
                 return identities;

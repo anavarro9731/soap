@@ -65,7 +65,7 @@
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static T As<T>(this object obj) where T : class => (T)obj;
+        public static T Az<T>(this object obj) where T : class => (T)obj;
 
         public static T Clone<T>(this T source) where T : class
         {
@@ -74,7 +74,7 @@
                 source.GetType()
                       .AssemblyQualifiedName; //* be sure to use the underlying type in case source is assigned to a base class or interface
             var obj = json.FromJson<T>(SerialiserIds.JsonDotNetDefault, assemblyQualifiedName);
-            return obj.As<T>();
+            return obj.Az<T>();
         }
 
         /// <summary>

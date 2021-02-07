@@ -362,9 +362,9 @@ export default function AutoForm(props) {
                                 output: (value) => {
                                     if (Array.isArray(value)) {
                                         return {
-                                            allEnumerations: [],
+                                            allEnumerations: [], //* clear this down we don't want to pass it back
                                             selectedKeys: value.map(x => x.key),
-                                            allowMultipleSelections: null
+                                            allowMultipleSelections: null //* same here, inbound only
                                         }
                                     } else {
                                         throw 'Unexpected Enumeration format';

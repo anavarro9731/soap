@@ -25,7 +25,7 @@
 
         protected BlobStorageWrapper BlobOperations => new BlobStorageWrapper(this.context);
 
-        protected TDerivedConfig GetConfig<TDerivedConfig>() where TDerivedConfig : class, IBootstrapVariables => this.context.AppConfig.As<TDerivedConfig>();
+        protected TDerivedConfig GetConfig<TDerivedConfig>() where TDerivedConfig : class, IBootstrapVariables => this.context.AppConfig.Az<TDerivedConfig>();
 
         protected class BlobStorageWrapper
         {

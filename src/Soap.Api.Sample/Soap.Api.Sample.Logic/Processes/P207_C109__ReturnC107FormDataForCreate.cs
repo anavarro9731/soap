@@ -10,13 +10,11 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.Context;
     using Soap.Interfaces;
-    using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.PfBase.Messages;
-    using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
-    public class P207_C109__ReturnC107FormData : Process, IBeginProcess<C109v1_GetC107FormData>
+    public class P207_C109__ReturnC107FormDataForCreate : Process, IBeginProcess<C109v1_GetC107DefaultFormData>
     {
         /* there is always a security concern to consider when writing processes that return form data
         if the form data is not default data, and that is whether the user has access to that data.
@@ -34,16 +32,14 @@ namespace Soap.Api.Sample.Logic.Processes
             new Enumeration("ox29ju", "OX2 9JU")
         };
 
-        
-        public Func<C109v1_GetC107FormData, Task> BeginProcess =>
+        public Func<C109v1_GetC107DefaultFormData, Task> BeginProcess =>
             async message =>
                 {
                 {
                     var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: this.postCodes);
                     c107PostCodesMultiOptional.AddFlag(this.postCodes.First());
                     c107PostCodesMultiOptional.AddFlag(this.postCodes.Last());
-            
-            
+
                     var formData = new C107v1_CreateOrUpdateTestDataTypes
                     {
                         C107_Decimal = 0,
@@ -62,13 +58,13 @@ namespace Soap.Api.Sample.Logic.Processes
                         C107_File = SampleBlobs.File1,
                         C107_Image = SampleBlobs.Image1
                     };
-                    
+
                     if (BlobsNeedToBeSaved())
                     {
                         await SaveTestBlobs();
                     }
 
-                    await PublishFormDataEvent(Bus, new E103v1_GotC107FormData(), formData);
+                    await PublishFormDataEvent(new E103v1_GotC107FormData(), formData);
                 }
 
                 static bool BlobsNeedToBeSaved() =>

@@ -4,6 +4,7 @@ namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
@@ -17,17 +18,16 @@ namespace Soap.Api.Sample.Logic.Processes
             {
                 return async message =>
                     {
-                    if (message.NextAction == C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction
-                            .SendAnotherCommandThatDoesntRequireAuthorisation)
+                    if (message.C112_NextAction.HasFlag(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.SendAnotherCommandThatDoesntRequireAuthorisation))
                     {
                         await Bus.Send(new C112v1_MessageThatDoesntRequireAuthorisation());
                     }
-                    else if (message.NextAction == C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction
-                                 .SendAnotherCommandThatDoesRequireAuthorisation)
+                    else if (message.C112_NextAction.HasFlag(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction
+                                 .SendAnotherCommandThatDoesRequireAuthorisation))
                     {
                         await Bus.Send(new C100v1_Ping());
                     }
-                    else if (message.NextAction == C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.DoNothing)
+                    else if (message.C112_NextAction.HasFlag(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.DoNothing))
                     {
                         //* do nothing
                     }

@@ -134,8 +134,17 @@
 
                         var propNamesList = new List<string>();
 
-                        var messageWithDefaults = GetWithDefaults(messageType, propNamesList, parentName: messageType.Name);
-
+                        object messageWithDefaults;
+                        try
+                        {
+                             messageWithDefaults= GetWithDefaults(messageType, propNamesList, parentName: messageType.Name);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new DomainException(
+                                $"The contract for message type {messageType.Name} is invalid.",
+                                e);
+                        }
                         /* allowing duplicates will cause problems client-side in performing find and replace on properties which are meant to be unique based on the class structure
                         may be other reason too that I have forgotten would need to do a test and see if you ever wanted to remove this */
                         Guard.Against(
@@ -227,7 +236,7 @@
                                     {
                                         //* handle primitives
                                         _ when t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => GetDefaultList(t),  
-                                        _ when t == typeof(MessageHeaders) => new MessageHeaders() { GetWithDefaults(typeof(Enumeration), propNamesList, totalIndent, nameof(Enumeration)).As<Enumeration>() }, //don't break this down, we don't break down lists
+                                        _ when t == typeof(MessageHeaders) => new MessageHeaders() { GetWithDefaults(typeof(Enumeration), propNamesList, totalIndent, nameof(Enumeration)).Az<Enumeration>() }, //don't break this down, we don't break down lists
                                         _ when t == typeof(string) => isRequired ? "string" : string.Empty, 
                                         _ when t == typeof(bool?) => isRequired,
                                         _ when t == typeof(long?) => isRequired
@@ -285,20 +294,21 @@
                                             t.InheritsOrImplements(typeof(IEnumerable)) && t != typeof(MessageHeaders),
                                             "Messages cannot have custom types which inherit from IEnumerable, only List<> is allowed and only on Events");
                                         
-                                        Type rootDeclaringType = propertyInfo.DeclaringType;
+                                        Type rootDeclaringType = t.DeclaringType;
 
-                                        while (rootDeclaringType.DeclaringType != null)
+                                        while (rootDeclaringType?.DeclaringType != null)
                                         {
                                             rootDeclaringType = rootDeclaringType.DeclaringType;
                                         }
 
                                         var tIsAllowedNonNestedCustomType =
-                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t == typeof(Enumeration) || t == typeof(MessageHeaders) || t == typeof(BlobMeta);
-
+                                            t == typeof(MessageHeaders) || t == typeof(BlobMeta) ||
+                                            t.InheritsOrImplements(typeof(EnumerationAndFlags)) || t.InheritsOrImplements(typeof(EnumerationFlags)) || t.InheritsOrImplements(typeof(Enumeration));
+                                        
                                         Guard.Against(
                                             !tIsAllowedNonNestedCustomType
-                                            && !rootDeclaringType.InheritsOrImplements(typeof(ApiMessage)),
-                                            "All Types used in messages other than primitives, Enumeration and EnumerationFlags which are not defined as nested types within the message are not permitted. This is to stabilise and isolate the contract from future change.");
+                                            && (rootDeclaringType == null || rootDeclaringType.InheritsOrImplements(typeof(ApiMessage)) == false),
+                                            "All Types used in messages other than primitives and EnumerationAndFlags which are not defined as nested types within the message are not permitted. This is to stabilise and isolate the contract from future change.");
 
                                         Guard.Against(
                                             t.GetConstructor(Type.EmptyTypes) == null,
@@ -374,7 +384,9 @@
                                     var propertyTypeName = property.PropertyType.ToTypeNameString();
 
                                     var typeIndentLength = 50 - propertyTypeName.Length;
+                                    typeIndentLength = typeIndentLength < 0 ? 0 : typeIndentLength;
                                     plainTextBuilder.AppendLine();
+    
                                     plainTextBuilder.Append(fieldIndent + "|-")
                                                     .Append(property.Name.PadRight(typeIndentLength, '-'))
                                                     .Append(propertyTypeName);

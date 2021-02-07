@@ -48,11 +48,11 @@ namespace Soap.Api.Sample.Logic.Processes
                             E102_LongOptional = testData.LongOptional,
                             E102_StringOptional = testData.StringOptional,
                             E102_DateTimeOptional = testData.DateTimeOptional,
-                            E102_PostCodesMulti = testData.PostCodesMulti,
-                            E102_PostCodesSingle = testData.PostCodesSingle,
+                            E102_PostCodesMulti = testData.PostCodesMultiKeys,
+                            E102_PostCodesSingle = testData.PostCodesSingleKey,
                             E102_StringOptionalMultiline = testData.StringOptionalMultiline,
-                            E102_PostCodesMultiOptional = testData.PostCodesMultiOptional,
-                            E102_PostCodesSingleOptional = testData.PostCodesSingleOptional
+                            E102_PostCodesMultiOptional = testData.PostCodesMultiOptionalKeys,
+                            E102_PostCodesSingleOptional = testData.PostCodesSingleOptionalKey
                         }
                     };
 

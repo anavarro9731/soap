@@ -184,7 +184,7 @@ namespace Soap.Context
 
             var identityPermissions = await Auth0Functions.GetPermissionsFromAccessToken(
                                           bootstrapVariables
-                                              .As<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
+                                              .Az<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                           accessToken,
                                           securityInfo);
 
@@ -192,7 +192,7 @@ namespace Soap.Context
 
             var userProfile = await Auth0Functions.Profiles.GetUserProfileOrNull<TUserProfile>(
                                   bootstrapVariables
-                                      .As<ApplicationConfig
+                                      .Az<ApplicationConfig
                                       >(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                   dataStore,
                                   idToken);

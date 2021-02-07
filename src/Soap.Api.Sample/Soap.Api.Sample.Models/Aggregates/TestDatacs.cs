@@ -1,6 +1,7 @@
 namespace Soap.Api.Sample.Models.Aggregates
 {
     using System;
+    using System.Collections.Generic;
     using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
     using Soap.Api.Sample.Models.ValueTypes;
@@ -38,13 +39,13 @@ namespace Soap.Api.Sample.Models.Aggregates
 
         public long? LongOptional { get; set; }
 
-        public EnumerationAndFlags PostCodesMulti { get; set; }
+        public List<string> PostCodesMultiKeys { get; set; } = new List<string>();
 
-        public EnumerationAndFlags PostCodesMultiOptional { get; set; }
+        public List<string> PostCodesMultiOptionalKeys { get; set; } = new List<string>();
 
-        public EnumerationAndFlags PostCodesSingle { get; set; }
+        public string PostCodesSingleKey { get; set; }
 
-        public EnumerationAndFlags PostCodesSingleOptional { get; set; }
+        public string PostCodesSingleOptionalKey { get; set; }
 
         public string String { get; set; }
 

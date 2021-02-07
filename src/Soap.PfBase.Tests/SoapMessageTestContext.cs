@@ -154,7 +154,7 @@
                                 .Where(m => m.GetType().InheritsOrImplements(typeof(IAssociateProcessStateWithAMessage)))
                                 .SingleOrDefault(
                                     m => ((IAssociateProcessStateWithAMessage)m).ByMessage == message.Headers.GetMessageId())
-                                .As<IAssociateProcessStateWithAMessage>();
+                                .Az<IAssociateProcessStateWithAMessage>();
 
                             if (statefulProcessLaunchedByThisMessage != null)
                             {

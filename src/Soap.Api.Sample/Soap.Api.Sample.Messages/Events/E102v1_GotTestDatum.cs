@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Messages.Events
 {
     using System;
+    using System.Collections.Generic;
     using CircuitBoard;
     using Soap.Interfaces.Messages;
 
@@ -44,13 +45,13 @@
 
             public long? E102_LongOptional { get; set; }
 
-            public EnumerationAndFlags E102_PostCodesMulti { get; set; }
+            public List<string> E102_PostCodesMulti { get; set; }
 
-            public EnumerationAndFlags E102_PostCodesMultiOptional { get; set; }
+            public List<string> E102_PostCodesMultiOptional { get; set; }
 
-            public EnumerationAndFlags E102_PostCodesSingle { get; set; }
+            public string E102_PostCodesSingle { get; set; }
 
-            public EnumerationAndFlags E102_PostCodesSingleOptional { get; set; }
+            public string E102_PostCodesSingleOptional { get; set; }
 
             public string E102_String { get; set; }
 

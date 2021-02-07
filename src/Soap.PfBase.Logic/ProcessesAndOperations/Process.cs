@@ -28,9 +28,7 @@
     /// </summary>
     public abstract class Process : IProcess
     {
-
-        
-        protected static async Task PublishFormDataEvent(BusWrapper bus, UIFormDataEvent @event, ApiCommand commandToSubmitForm)
+        protected async Task PublishFormDataEvent<TApiCommand>(UIFormDataEvent<TApiCommand> @event, TApiCommand commandToSubmitForm) where TApiCommand : ApiCommand
         {
             @event.Op(
                 e =>
@@ -43,7 +41,7 @@
                     e.SetProperties(sasToken, commandId, commandToSubmitForm);
                     });
 
-            await bus.Publish(
+            await this.Bus.Publish(
                 @event,
                 new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
         }
@@ -83,7 +81,7 @@
 
         protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
         
-        protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.As<T>(); 
+        protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.Az<T>(); 
         
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 

@@ -9,8 +9,10 @@ namespace Soap.Api.Sample.Messages.Commands
     [AuthorisationNotRequired]
     public sealed class C112v1_MessageThatDoesntRequireAuthorisation : ApiCommand
     {
-        public ForwardAction NextAction { get; set; }
+        public TypedEnumerationAndFlags<ForwardAction> C112_NextAction { get; set; }
 
+        public ForwardAction C112_Test { get; set; }
+        
         public override void Validate()
         {
             new Validator().ValidateAndThrow(this);
