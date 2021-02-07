@@ -87,7 +87,8 @@
                 var topic = publishEvent.Headers.GetTopic().ToLower();
                 var sender = serviceBusClient.CreateSender(topic);
 
-                publishEvent.Headers.ClearSessionId(); //* bus messages don't use sessionId it's invalid
+                publishEvent.Headers.ClearSessionHeaders(); /* HACK bus messages don't use sessionId it's invalid
+                this really should have been handled earlier another way, but its not the worst */
                 var topicMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
                     MessageId = publishEvent.Headers.GetMessageId()

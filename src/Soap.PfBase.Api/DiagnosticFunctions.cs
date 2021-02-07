@@ -93,21 +93,24 @@
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
                 
-                await SendMessageWaitForReply<TPing, TPong, TUserProfile>(
+                bool success1 = await SendMessageWaitForReply<TPing, TPong, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
                     signalRBinding,
                     WriteLine);
 
-                await SendMessageWaitForReply<TSendLargeMsg, TLargeMsg, TUserProfile>(
+                bool success2 = await SendMessageWaitForReply<TSendLargeMsg, TLargeMsg, TUserProfile>(
                     logger,
                     appConfig,
                     mapMessagesToFunctions,
                     signalRBinding,
                     WriteLine);
 
-                logger.Information("Health Check Completed");
+                var healthCheckCompleted = "Health Check Completed";
+                logger.Information(healthCheckCompleted);
+                await WriteLine(healthCheckCompleted);
+                await WriteLine((success1 && success2) ? "+" : "-");
             }
             catch (Exception e)
             {
@@ -208,7 +211,7 @@
             return json;
         }
 
-        private static async Task SendMessageWaitForReply<TSent, TReply, TUserProfile>(
+        private static async Task<bool> SendMessageWaitForReply<TSent, TReply, TUserProfile>(
             ILogger logger,
             ApplicationConfig appConfig,
             MapMessagesToFunctions mappings,
@@ -265,16 +268,17 @@
                     if (logged != null && logged.ProcessingComplete)
                     {
                         await writeLine($"Received {typeof(TReply).Name} Message Test Succeeded.");
-                        await writeLine("+");
-                        return;
+                        return true;
                     }
 
                     tries--;
                 }
 
                 await writeLine($"Did not receive {typeof(TReply).Name} response!. Message Test Failure.");
-                await writeLine("-");
+                return false;
             }
+
+            return false;
         }
     }
 }

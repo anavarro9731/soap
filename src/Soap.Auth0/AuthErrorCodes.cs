@@ -8,7 +8,7 @@ namespace Soap.Context
          otherwise the default error handling logic will do the job of returning the error message but without a specific code. */
 
         public static readonly ErrorCode NoApiPermissionExistsForThisMessage = Create(
-            Guid.Parse("36312a82-ca04-4b09-978f-5bb9e2809c2d"),
+            Guid.Parse("67dcd6ad-9b29-4b90-b1aa-2e714af68884"),
             "This access token is not valid for this message");
 
     }

@@ -402,13 +402,12 @@
             return m;
         }
         
-        public static MessageHeaders ClearSessionId(this MessageHeaders m)
+        public static MessageHeaders ClearSessionHeaders(this MessageHeaders m)
         {
-            if (m.Exists(v => v.Key == Keys.SessionId))
-            {
-                m.RemoveAll(h => h.Key == Keys.SessionId);
-            }
-            return m;
+                m.RemoveAll(h => h.Key == Keys.SessionId 
+                                 || h.Key == Keys.CommandHash
+                                 ||h.Key == Keys.CommandConversationId);
+                return m;
         }
 
         public static MessageHeaders SetStatefulProcessId(this MessageHeaders m, StatefulProcessId id)

@@ -104,8 +104,8 @@
             eventToPublish.RequiredNotNullOrThrow();
             eventToPublish.Headers.SetTimeOfCreationAtOrigin();
             eventToPublish.Headers.SetMessageId(Guid.NewGuid());
-            eventToPublish.Headers.SetTopic(eventToPublish.Headers.GetType().FullName);
-            eventToPublish.Headers.SetSchema(eventToPublish.Headers.GetType().FullName);
+            eventToPublish.Headers.SetTopic(eventToPublish.GetType().FullName);
+            eventToPublish.Headers.SetSchema(eventToPublish.GetType().FullName);
             eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish);
 
             //* make all checks first
@@ -165,8 +165,6 @@
                                 null => ServiceLevelAuthority.IdentityChainSegment, //* context message could be an event, or auth disabled and not have a chain, etc
                                 _ => $"{currentChain},{ServiceLevelAuthority.IdentityChainSegment}"
                             });
-                        //TODO I think this is wrong missing encryption. Reconsider messages which DoNotRequireAuth but have auth headers to pass on
-                        // this is really a similar issue to C109 in that the auth headers are used when the message is not authd
                         commandToSend.Headers.SetAccessToken(ServiceLevelAuthority.AccessToken); 
                         //* set identity token
                         commandToSend.Headers.SetIdentityToken(ServiceLevelAuthority.IdentityToken);
