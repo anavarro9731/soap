@@ -5,17 +5,18 @@ import {ViewTestData} from "./ViewTestData";
 import {CreateTestData} from "./CreateTestData";
 import {RecentlyAddedTestItems} from "./RecentlyAddedTestItems";
 import {useStyletron} from 'baseui';
+import { ProtectedRoute } from '@soap/modules/lib/react/Login'
 
 export default function() {
     const [css, theme] = useStyletron();
     return (
             <Switch>
-                <Route path="/test-data/new">
+                <ProtectedRoute path="/test-data/new">
                     <CreateTestData/>
-                </Route>
-                <Route path="/test-data/view/:id">
+                </ProtectedRoute>
+                <ProtectedRoute path="/test-data/view/:id">
                     <ViewTestData/>
-                </Route>
+                </ProtectedRoute>
                 <Route path="/test-data/">
                     <RecentlyAddedTestItems />
                     <div className={css({

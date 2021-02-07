@@ -38,7 +38,7 @@ function Index() {
                     </StyledNavigationList>
                 </HeaderNavigation>
                 <Switch>
-                    <ProtectedRoute path="/test-data" component={TestData} />
+                    <Route path="/test-data" component={TestData} />
                     <Route path="/">
                         <Home/>
                     </Route>

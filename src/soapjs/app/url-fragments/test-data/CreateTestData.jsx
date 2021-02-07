@@ -24,7 +24,7 @@ export function CreateTestData() {
                 <H1>Form</H1>
                 <AutoForm
                     query={{
-                        $type: "C109v1_GetC107FormData",
+                        $type: "C109v1_GetC107DefaultFormData",
                         headers: []
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}

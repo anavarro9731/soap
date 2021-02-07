@@ -6,7 +6,6 @@ import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
 
-
 export const Login = (props) => {
      
     const audience = config.vars.audience;
