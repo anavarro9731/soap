@@ -75,27 +75,5 @@ namespace Soap.Api.Sample.Logic.Processes
 
                 await PublishFormDataEvent(new E103v1_GotC107FormData(), formData);
                 };
-    }
-
-    public static class FlagExts
-    {
-        public static EnumerationAndFlags AddFlagIfItExistsInAllEnumerations(this EnumerationAndFlags flags, string key)
-        {
-            if (flags.AllEnumerations.Any(f => f.Key == key))
-            {
-                flags.AddFlag(flags.AllEnumerations.Single(x => x.Key == key));
-            }
-
-            return flags;
-        }
-
-        public static EnumerationAndFlags AddFlagsIfTheyExistInAllEnumerations(this EnumerationAndFlags flags, List<string> keys)
-        {
-            keys ??= new List<string>();
-            var knownKeys = keys.Where(key => flags.AllEnumerations.Any(f => f.Key == key)).ToList();
-            foreach (var key in knownKeys) flags.AddFlag(flags.AllEnumerations.Single(x => x.Key == key));
-
-            return flags;
-        }
-    }
+    }/**/
 }

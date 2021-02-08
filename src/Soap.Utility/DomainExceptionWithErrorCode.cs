@@ -7,7 +7,7 @@
     public class DomainExceptionWithErrorCode : Exception
     {
         public DomainExceptionWithErrorCode(ErrorCode error)
-            : base(null)
+            : base(error.Value)
         {
             CallingAssembly = Assembly.GetCallingAssembly().GetName().Name;
             Error = error.Op(e => e.Active = true);

@@ -97,7 +97,8 @@ namespace Soap.Auth0
 
                 var r = new ResourceServerUpdateRequest
                 {
-                    Scopes = GetScopesFromMessages(securityInfo)
+                    Scopes = GetScopesFromMessages(securityInfo),
+                    TokenDialect = TokenDialect.AccessTokenAuthZ, //couldn't be 100% this wasnt overwritten so set it here as well as create
                 };
 
                 await client.ResourceServers.UpdateAsync(apiId, r);
@@ -294,10 +295,9 @@ namespace Soap.Auth0
                 out string[] apiPermissionGroupsArray,
                 out string[] dbPermissionsArray)
             {
-                var permissionsString = principal.Claims.Single(x => x.Type == "permissions");
-                var permissionsArray = permissionsString.Value.Split(' ');
-                apiPermissionGroupsArray = permissionsArray.Where(x => x.Contains("execute")).ToArray();
-                dbPermissionsArray = permissionsArray.Where(x => !x.Contains("execute")).ToArray();
+                var permissionGroupsAsStrings = principal.Claims.Where(x => x.Type == "permissions").Select(x => x.Value).ToArray();
+                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute")).ToArray();
+                dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute")).ToArray();
             }
 
             static void GetApiPermissionGroups(

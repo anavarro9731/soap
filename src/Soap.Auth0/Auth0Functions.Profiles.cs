@@ -71,8 +71,7 @@ namespace Soap.Auth0
                 var validationParameters = new TokenValidationParameters
                 {
                     RequireSignedTokens = true,
-                    ValidAudience = EnvVars.FunctionAppHostUrlWithTrailingSlash,
-                    ValidateAudience = true,
+                    ValidateAudience = false,
                     ValidateIssuer = true,
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true,
@@ -86,8 +85,17 @@ namespace Soap.Auth0
                 {
                     //* will validate formation and signature by default
 
-                    var principal = tokenHandler.ValidateToken(idToken, validationParameters, out var validatedToken);
-                    return new User();
+                    tokenHandler.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+                    var tokenWithClaims = validatedToken as JwtSecurityToken;
+                    
+                    return new User()
+                    {
+                        Email = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "email")?.Value,
+                        FirstName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "given_name")?.Value,
+                        LastName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "family_name")?.Value,
+                        NickName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "nickname")?.Value,
+                        UserId = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "sub")?.Value
+                    };
                 }
                 catch (SecurityTokenExpiredException ex)
                 {

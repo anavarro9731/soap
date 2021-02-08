@@ -50,7 +50,7 @@ export default (props) => {
         (async function GetBlobFromBackend() {
             if (value !== null && value.objectUrl === undefined) {
                 setIsLoading(true);
-                const endpoint = `${functionAppRoot}/GetBlob`;
+                const endpoint = `${config.vars.functionAppRoot}/GetBlob`;
                 let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
                 const blob = await response.blob();
                 const blobInfo = {
