@@ -60,6 +60,7 @@ namespace Soap.Context
                         "Identity Chain header invalid");
 
                     var lastIdentityScheme = message.Headers.GetIdentityChain().SubstringBeforeLast("://");
+                    if (lastIdentityScheme.Contains("://")) lastIdentityScheme = lastIdentityScheme.SubstringAfterLast(",");
                     var lastIdentityValue = message.Headers.GetIdentityChain().SubstringAfterLast("://");
 
                     Guard.Against(

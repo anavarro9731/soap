@@ -1,46 +1,39 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useReducer} from 'react';
 import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
 import {toTypeName} from "../soap/messages";
 import config from "../soap/config";
-import {uuidv4} from "../soap/util";
-import _ from 'lodash'
+import { useIsMounted } from './useIsMounted';
 
 export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSeconds = 0}) {
 
     const [queryResult, setQueryResult] = useState();
-    const [typesLoaded, setTypesLoaded] = useState(false);
-    const [queuedMessage, setQueuedMessage] = useState(false);
     
     const onResponse = data => {
         setQueryResult(data);
     };
 
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+    const isMounted = useIsMounted();
+    
     useEffect(() => {
-        const typeName = toTypeName(query.$type);
         
-        let queuedMessageId;
-        
-        if (typeName === "types-not-loaded") {
-            if (!queuedMessage) {
-                console.warn("queueing form until types loaded");
-                queuedMessageId = uuidv4();
-                config.startupCallbacks.push({
-                    f: () => {
-                        console.warn("dequeuing form");
-                        setTypesLoaded(true);
-                    }, id: queuedMessageId
-                });
-                setQueuedMessage(true);
-            }
-        } else {
-            setTypesLoaded(true);
+        if (!config.isLoaded) {
+            console.warn("queueing query until config state loaded");
+            config.onLoaded(() => {
+                //* could have been unmounted while config was loading, avoid console error if so
+                console.warn("query callback ran 1");
+                if (isMounted) {
+                    console.warn("query callback ran 2");
+                    forceUpdate();    
+                }                 
+            });
         }
-
+        
         let conversationId = undefined;
 
-        if (sendQuery && typesLoaded) {
-            query.$type = typeName; //convert from class short name to assembly qualified short name
+        if (sendQuery && config.isLoaded) {
+            query.$type = toTypeName(query.$type); //convert from class short name to assembly qualified short name
             if (!query.headers) {
                 query.headers = [];
             }
@@ -56,12 +49,8 @@ export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSe
             if (conversationId) {
                 bus.closeConversation(conversationId);
             }
-            if (queuedMessageId) {
-                _.remove(config.startupCallbacks, i => i.id === queuedMessageId);
-            }
-
         };
-    }, [sendQuery, typesLoaded]);
+    }, [sendQuery]);
 
     return queryResult;
 }

@@ -7,7 +7,7 @@ import {PLACEMENT, toaster, ToasterContainer} from 'baseui/toast';
 import {DURATION, SnackbarProvider,} from 'baseui/snackbar';
 import {Auth0Provider } from "@auth0/auth0-react";
 import config from "../soap/config";
-import {useState} from "react";
+import {useEffect, useReducer} from "react";
 
 const localeOverride = {
     fileuploader: {
@@ -27,14 +27,12 @@ export default function App(props) {
         }
     });
 
-    const [systemReady, setSystemReady] = useState(false);
-    if (!systemReady) {
-        config.startupCallbacks.push({
-            f: () => {
-                setSystemReady(true);
-            }, id: "app.jsx"
-        });
-    }
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+    useEffect(() => {
+        if (!config.isLoaded) {
+            config.onLoaded(() => forceUpdate());
+        } 
+    });
     
     const override = !!props.localeOverride ? {...localeOverride, ...props.localOverride} : localeOverride;
        
@@ -44,7 +42,7 @@ export default function App(props) {
             <BaseProvider theme={props.theme}>
                 <ToasterContainer autoHideDuration={4000} placement={PLACEMENT.topRight}>
                     <SnackbarProvider defaultDuration={DURATION.medium}>
-                        {(systemReady && config.auth0) ? (<Auth0Provider
+                        {(config.isLoaded && config.auth0) ? (<Auth0Provider
                             domain={config.auth0.tenantDomain}
                             clientId={config.auth0.uiAppId}
                             audience={config.vars.audience}

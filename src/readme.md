@@ -231,6 +231,8 @@ See [dev-guide](dev-guide.md#authentication-and-authorisation) for info on how t
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
 - When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
+- We are stuck using the -no-source-maps flag in parcel v1 because auth0 library wont work otherwise, parcel team not fixing
+the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1. won't cancel properly, random errors
 
 # BackLog
 MUST
@@ -238,6 +240,7 @@ MUST
 SHOULD
 - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))
 - Extend Missing Property Proxy to cover properties on child objects of a message
+- Consider refresh tokens and how to implement if not already active
 COULD
 - Cache relatively static I/O things obtained with IO bound ops in pipeline, e.g. openid endpointconfig
 - Adding a Special Flag or Tag to Denote builds that were sent to production (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)

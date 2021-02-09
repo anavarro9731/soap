@@ -7,8 +7,8 @@ import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
 import * as signalR from '@microsoft/signalr';
 
-let _appInsights;
-let _logger = {
+const _logger = {
+    appInsights : null,
     log: (logMsg, logObject, toAzure) => {
 
         const targetObject = {};
@@ -28,39 +28,42 @@ let _logger = {
         else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
 
         if (toAzure) {
-
-
-            if (!_appInsights) {
-                _appInsights = new ApplicationInsights({
+            
+            if (!this.appInsights) {
+                this.appInsights = new ApplicationInsights({
                     config: {
                         instrumentationKey: vars().appInsightsKey
                     }
                 });
-                _appInsights.loadAppInsights();
+                this.appInsights.loadAppInsights();
             }
-            _appInsights.trackTrace({message: logMsg});
+            this.appInsights.trackTrace({message: logMsg});
         }
     }
 };
 
-let _callbacks = [];
+let _auth0;
 let _sessionDetails;
-let _receiver;
-let _auth0Info;
-(async function() {
-     _sessionDetails = await setupSession();
-    if (_callbacks.length > 0) {
-        _callbacks.forEach(c => c.f());
+let _onLoadedCallbacks = [];
+(async function () {
+    await loadConfigState();
+    _onLoadedCallbacks.forEach(c => c());
+})();
+
+async function loadConfigState() {
+    
+    //* load all config state, when this is done the system is ready
+    {
+        const a = async () => { _auth0 = await registerMessageTypesFromApi(); }
+        const b = async () => { _sessionDetails = await createBusSession(receiveMessage); } 
+        
+        const promises = [a(),b()];
+        
+        await Promise.all(promises);
+        console.warn('config state loaded');
     }
-    _callbacks = null;
-}());
-
-
-async function setupSession() {
-
-    await registerMessageTypesFromApi();
-
-    _receiver = async (processor) => {
+    
+    async function receiveMessage(processor) {
 
         const functionAppRoot = vars().functionAppRoot;
 
@@ -83,93 +86,104 @@ async function setupSession() {
         fetch(endpoint); //this will get us messages matched to our environment partition key
 
         return hubConnection.connectionId;
-
-    };
-
-    return await createBusSession();
-}
-
-async function registerMessageTypesFromApi() {
-
-    const endpoint = `${vars().functionAppRoot}/GetJsonSchema`;
+    }
     
-    const jsonArrayOfMessages = await global.fetch(endpoint)
-        .then(response => { 
-            
-            const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
+    async function registerMessageTypesFromApi() {
 
-            if  (auth0Enabled) {
-                _auth0Info = {
-                    uiAppId : response.headers.get('Auth0-UI-Application-ClientId'),
-                    tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
-                    isAuthenticated : false,
-                    accessToken : null,
-                    identityToken : null,
-                    userName: null
-                };
-            }
-            
-            return response.json();
-        });
+        const endpoint = `${vars().functionAppRoot}/GetJsonSchema`;
+        let auth0Info;
+        
+        const jsonArrayOfMessages = await global.fetch(endpoint)
+            .then(response => {
 
-    registerMessageTypes(jsonArrayOfMessages);
-    _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
-}
+                const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
+                if  (auth0Enabled) {
+                    auth0Info = {
+                        uiAppId : response.headers.get('Auth0-UI-Application-ClientId'),
+                        tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
+                        isAuthenticated : false,
+                        accessToken : null,
+                        identityToken : null,
+                        userName: null
+                    };
+                }
 
-async function createBusSession() {
-    
+                return response.json();
+            });
+
+        registerMessageTypes(jsonArrayOfMessages);
+        _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
+        
+        return auth0Info;
+    }
+
+    async function createBusSession(receiver) {
+
         const serviceBusClient = new ServiceBusClient(vars().serviceBusConnectionString); //* timeout at the default of [5 minutes] of inactivity on the AMQP connection
-    //* will hold lock on the session for 5 mins. if the user F5's then you will get a new session id and the old one will die off with the servicebusClient 
-    //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
-    // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
+        //* will hold lock on the session for 5 mins. if the user F5's then you will get a new session id and the old one will die off with the servicebusClient 
+        //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
+        // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
 
-    const browserSessionId = await _receiver(processMessage);
+        const browserSessionId = await receiver(processMessage);
 
-    return {
-        browserSessionId,
-        serviceBusClient,
-    };
+        return {
+            browserSessionId,
+            serviceBusClient,
+        };
 
-    async function processMessage(message) {
+        async function processMessage(message) {
 
-        let anonymousEvent = message;
+            let anonymousEvent = message;
 
-        try {
-            _logger.log(`Received message ${getHeader(message, headerKeys.messageId)}`, anonymousEvent);
+            try {
+                _logger.log(`Received message ${getHeader(message, headerKeys.messageId)}`, anonymousEvent);
 
-            if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
-                //* make the swap
-                anonymousEvent = await downloadMessageBlob(anonymousEvent);
+                if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
+                    //* make the swap
+                    anonymousEvent = await downloadMessageBlob(anonymousEvent);
+                }
+                eventHandler.handle(anonymousEvent);
+            } catch (err) {
+                _logger.log(`>>>>> Error unpacking message ${message.messageId}, ${err + err.stack}`);
             }
-            eventHandler.handle(anonymousEvent);
-        } catch (err) {
-            _logger.log(`>>>>> Error unpacking message ${message.messageId}, ${err + err.stack}`);
+        }
+
+        async function downloadMessageBlob(anonymousEvent) {
+
+            const blobId = getHeader(anonymousEvent, headerKeys.blobId);
+            const sasUrl = getSasUrl(anonymousEvent);
+            const blobServiceClient = new BlobServiceClient(sasUrl);
+            const containerClient = blobServiceClient.getContainerClient("large-messages");
+            const blobClient = containerClient.getBlobClient(blobId);
+            // Get blob content from position 0 to the end
+            // In browsers, get downloaded data by accessing downloadBlockBlobResponse.blobBody
+            const downloadBlockBlobResponse = await blobClient.download();
+            const downloaded = await blobToString(await downloadBlockBlobResponse.blobBody);
+            const blobbedMessage = JSON.parse(downloaded);
+            await containerClient.deleteBlob(blobId);
+            return blobbedMessage;
+
+            //a helper method used to convert a browser Blob into string.
+            async function blobToString(blob) {
+
+                const fileReader = new FileReader();
+                return new Promise((resolve, reject) => {
+                    fileReader.onloadend = (ev) => {
+                        resolve(ev.target.result);
+                    };
+                    fileReader.onerror = reject;
+                    fileReader.readAsText(blob);
+                });
+            }
+
         }
     }
-
-    async function downloadMessageBlob(anonymousEvent) {
-
-        const blobId = getHeader(anonymousEvent, headerKeys.blobId);
-        const sasUrl = getSasUrl(anonymousEvent);
-        const blobServiceClient = new BlobServiceClient(sasUrl);
-        const containerClient = blobServiceClient.getContainerClient("large-messages");
-        const blobClient = containerClient.getBlobClient(blobId);
-        // Get blob content from position 0 to the end
-        // In browsers, get downloaded data by accessing downloadBlockBlobResponse.blobBody
-        const downloadBlockBlobResponse = await blobClient.download();
-        const downloaded = await blobToString(await downloadBlockBlobResponse.blobBody);
-        const blobbedMessage = JSON.parse(downloaded);
-        await containerClient.deleteBlob(blobId);
-        return blobbedMessage;
-
-    }
 }
 
-let _sender = (msg) => {
+function sendMessage(msg) {
 
     if (!_sessionDetails) {
-        queued.push(msg);
-        console.warn(`queueing msg ${msg.$type} until types are loaded`);
+        console.error(`trying to send msg ${msg.$type} before types are loaded. message will be discarded`);
     } else {
 
         (async function (typedMessage) {
@@ -240,7 +254,7 @@ let _sender = (msg) => {
             
         }(msg));
     }
-};
+}
 
 function getSasUrl(message) {
 
@@ -248,19 +262,6 @@ function getSasUrl(message) {
     const sasUrl = `${vars().blobStorageUri}${sasToken}`;
     _logger.log("attaching to " + sasUrl);
     return sasUrl;
-}
-
-//a helper method used to convert a browser Blob into string.
-async function blobToString(blob) {
-
-    const fileReader = new FileReader();
-    return new Promise((resolve, reject) => {
-        fileReader.onloadend = (ev) => {
-            resolve(ev.target.result);
-        };
-        fileReader.onerror = reject;
-        fileReader.readAsText(blob);
-    });
 }
 
 function vars() {
@@ -289,20 +290,20 @@ export default {
     get vars() {
       return vars();  
     },
-    get startupCallbacks() {
-        return _callbacks;
-    },
-    set logger(l) {
-        _logger = l;
-    },
     get logger() {
         return _logger;
     },
-    get auth0() {
-        return _auth0Info;
+    get isLoaded() {
+      return !!_sessionDetails;  
+    },
+    get () {
+        return _auth0;
+    },
+    onLoaded(callback) {
+        _onLoadedCallbacks.push(callback);
     },
     send(message) {
-        _sender(message);
+        sendMessage(message);
     },
     logFormDetail: false,
     logClassDeclarations: false

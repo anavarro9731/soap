@@ -12,7 +12,7 @@ export function toTypeName(name) {
         const names = getListOfRegisteredMessages();
         if (names.length === 0) {
             console.warn("types not loaded yet");
-            return "types-not-loaded"; //* not yet loaded
+            return undefined; //* not yet loaded
         }
         const found = _.filter(names, n => _.endsWith(n, name));
         if (found.length > 1) {
