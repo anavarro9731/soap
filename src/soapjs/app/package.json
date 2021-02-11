@@ -4,7 +4,7 @@
   "dependencies": {
     "@auth0/auth0-react": "^1.2.0",
     "@microsoft/signalr": "^5.0.1",
-    "@soap/modules": "^1.190.0",
+    "@soap/modules": "^1.212.0",
     "baseui": "^9.106.0",
     "history": "^5.0.0",
     "react": "^16.14.0",

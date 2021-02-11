@@ -17,8 +17,7 @@ export const useLogin = () => {
     } = useAuth0();
 
     const [refreshIndex, setRefreshIndex] = useState(0);
-
-   
+    
     useEffect(() => {
         (async () => {
             

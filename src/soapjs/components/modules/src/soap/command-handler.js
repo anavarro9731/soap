@@ -112,7 +112,7 @@ export default {
             setHeader(command, headerKeys.commandConversationId, conversationId);
             const {headers, ...payload} = command;
             setHeader(command, headerKeys.commandHash,  md5Hash(payload));
-            
+            console.error("state at header creation", JSON.stringify(config.auth0), config.auth0.isAuthenticated);
             if (config.auth0 && config.auth0.isAuthenticated) {
                 setHeader(command, headerKeys.identityToken, config.auth0.identityToken);
                 setHeader(command, headerKeys.accessToken, config.auth0.accessToken);

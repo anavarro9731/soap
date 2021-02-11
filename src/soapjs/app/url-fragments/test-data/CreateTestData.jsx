@@ -9,6 +9,7 @@ export function CreateTestData() {
     const [testDataId, setTestDataId] = useState();
     const [testDataCreated, setTestDataCreated] = useState(false);
 
+    
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataAdded",
         onEventReceived(event, envelope) {
@@ -17,7 +18,7 @@ export function CreateTestData() {
             }
         }
     });
-
+    
     return (
         <Grid>
             <Cell span={6}>

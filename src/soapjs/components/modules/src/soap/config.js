@@ -42,9 +42,8 @@ const _logger = {
     }
 };
 
-let _auth0;
-let _sessionDetails;
-let _onLoadedCallbacks = [];
+let _auth0, _sessionDetails;
+const _onLoadedCallbacks = [];
 (async function () {
     await loadConfigState();
     _onLoadedCallbacks.forEach(c => c());
@@ -296,10 +295,11 @@ export default {
     get isLoaded() {
       return !!_sessionDetails;  
     },
-    get () {
+    get auth0() {
         return _auth0;
     },
     onLoaded(callback) {
+        console.warn("adding callback", callback.toString());
         _onLoadedCallbacks.push(callback);
     },
     send(message) {
