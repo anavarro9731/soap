@@ -1,5 +1,5 @@
 import React from 'react';
-import {addTranslations, App, config} from '@soap/modules';
+import {addTranslations, App, Login, config} from '@soap/modules';
 import {LightTheme} from 'baseui';
 import {H2} from "baseui/typography";
 import ReactDOM from "react-dom";
@@ -8,9 +8,9 @@ import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} fro
 import {StyledLink} from "baseui/link";
 import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
-import {Login, ProtectedRoute } from '@soap/modules/lib/react/Login'
 
 addTranslations(translations);
+config.debugSystemState = true;
 
 function Index() {
     

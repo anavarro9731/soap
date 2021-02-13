@@ -1,7 +1,7 @@
 import React from "react";
 import {useAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import {Route} from "react-router-dom";
-import {useLogin} from "../hooks/useLogin";
+import {useAuth} from "../hooks/useLogin";
 import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
@@ -22,12 +22,13 @@ export const Login = (props) => {
     const {
         idToken,
         accessToken,
+        authReady,
         refresh
-    } = useLogin();
+    } = useAuth();
 
     const [isOpen, setIsOpen] = React.useState(false);
 
-    if (!config.auth0) {
+    if (!authReady || !config.auth0) {
         return null;
     }
     
@@ -86,6 +87,7 @@ export const Login = (props) => {
 export const ProtectedRoute = ({component, ...args}) => (
     <Route component={withAuthenticationRequired(component)} {...args} />
 );
+
 
 /* this code would be useful 
 after login for changing where the back button goes but HashRouter doesn't 

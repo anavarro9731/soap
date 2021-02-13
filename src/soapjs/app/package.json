@@ -2,23 +2,33 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@auth0/auth0-react": "^1.2.0",
-    "@microsoft/signalr": "^5.0.1",
-    "@soap/modules": "^1.212.0",
+    "@soap/modules": "^1.236.0",
     "baseui": "^9.106.0",
     "history": "^5.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
-    "soap": "^0.36.0",
     "styletron-engine-atomic": "^1.4.6",
     "styletron-react": "^5.2.7",
     "test-data": "^1.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
+    "@babel/plugin-proposal-export-default-from": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.0.0",
     "parcel": "^1.12.4"
   },
+  "__comments": {
+    "browserlist": "https://flaviocopes.com/parcel-regeneratorruntime-not-defined/",
+    "alias": "the alias node allows you to use @soap/modules directly while developing, see comment in babel.config.json as well alias:{ \"@soap/modules\": \"../components/modules/src\" } but i couldnt get it working b/c hooks error, i think its the auth0-react lib causing the problem cause it depends on 17.0.1 react? which can go as soon as protecteroute is fixed , some parcel errors"
+  },
+  "browserslist": [
+    "last 1 Edge version",
+    "last 1 Chrome version",
+    "last 1 Firefox version"
+  ],
   "scripts": {
     "build": "parcel build ./index.html --public-url ./ --no-source-maps",
     "serve": "parcel serve ./index.html --no-source-maps"

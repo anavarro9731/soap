@@ -3,7 +3,7 @@ import commandHandler from '../soap/command-handler';
 import {useIsConfigLoaded} from "./systemStateHooks";
 
 export function useCommand(command) {
-    const configLoaded = useIsConfigLoaded();
+    const configLoaded = useIsConfigLoaded("useCommand.js");
     
     if (configLoaded) {
         const conversationId = commandHandler.handle(command, () => null, 0);

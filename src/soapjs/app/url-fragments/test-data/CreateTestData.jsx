@@ -8,7 +8,6 @@ export function CreateTestData() {
 
     const [testDataId, setTestDataId] = useState();
     const [testDataCreated, setTestDataCreated] = useState(false);
-
     
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataAdded",

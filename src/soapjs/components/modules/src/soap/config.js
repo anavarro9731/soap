@@ -59,7 +59,6 @@ async function loadConfigState() {
         const promises = [a(),b()];
         
         await Promise.all(promises);
-        console.warn('config state loaded');
     }
     
     async function receiveMessage(processor) {
@@ -299,12 +298,12 @@ export default {
         return _auth0;
     },
     onLoaded(callback) {
-        console.warn("adding callback", callback.toString());
         _onLoadedCallbacks.push(callback);
     },
     send(message) {
         sendMessage(message);
     },
     logFormDetail: false,
-    logClassDeclarations: false
+    logClassDeclarations: false,
+    debugSystemState:false
 };

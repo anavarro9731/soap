@@ -11,7 +11,7 @@ export function toTypeName(name) {
     } else { //convert short name
         const names = getListOfRegisteredMessages();
         if (names.length === 0) {
-            console.warn("types not loaded yet");
+            if (config.debugSystemState) console.warn("requesting registered messages but types not loaded yet");
             return undefined; //* not yet loaded
         }
         const found = _.filter(names, n => _.endsWith(n, name));

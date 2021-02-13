@@ -84,6 +84,8 @@ export default {
             [{acceptableStalenessFactorInSeconds}, types.number],
         );
 
+        if (!config.isLoaded) throw "Cannot send a message before the config is loaded";
+        
         if (
             foundCachedResults(
                 command,
@@ -112,8 +114,10 @@ export default {
             setHeader(command, headerKeys.commandConversationId, conversationId);
             const {headers, ...payload} = command;
             setHeader(command, headerKeys.commandHash,  md5Hash(payload));
-            console.error("state at header creation", JSON.stringify(config.auth0), config.auth0.isAuthenticated);
+
+            if (config.debugSystemState) console.warn("state at header creation", JSON.stringify(config.auth0), config.auth0.isAuthenticated);
             if (config.auth0 && config.auth0.isAuthenticated) {
+                
                 setHeader(command, headerKeys.identityToken, config.auth0.identityToken);
                 setHeader(command, headerKeys.accessToken, config.auth0.accessToken);
                 setHeader(command, headerKeys.identityChain, "user://"+config.auth0.userName)
