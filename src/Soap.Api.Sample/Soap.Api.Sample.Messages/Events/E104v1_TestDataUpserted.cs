@@ -4,14 +4,14 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    public class E104v1_TestDataAdded : ApiEvent
+    public class E104v1_TestDataUpserted : ApiEvent
     {
-        public E104v1_TestDataAdded(Guid testDataId)
+        public E104v1_TestDataUpserted(Guid testDataId)
         {
             E104_TestDataId = testDataId;
         }
 
-        public E104v1_TestDataAdded()
+        public E104v1_TestDataUpserted()
         {
             
         }
@@ -23,7 +23,7 @@
             new Validator().ValidateAndThrow(this);
         }
 
-        public class Validator : AbstractValidator<E104v1_TestDataAdded>
+        public class Validator : AbstractValidator<E104v1_TestDataUpserted>
         {
             public Validator()
             {

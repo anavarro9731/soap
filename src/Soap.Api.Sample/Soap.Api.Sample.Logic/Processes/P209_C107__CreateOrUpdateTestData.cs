@@ -22,7 +22,7 @@ namespace Soap.Api.Sample.Logic.Processes
 
                 async Task PublishTestDataAdded()
                 {
-                    await Bus.Publish(new E104v1_TestDataAdded(msg.C107_Guid.Value));
+                    await Bus.Publish(new E104v1_TestDataUpserted(msg.C107_Guid.Value));
                 }
 
                 async Task CreateOrUpdateTestData()

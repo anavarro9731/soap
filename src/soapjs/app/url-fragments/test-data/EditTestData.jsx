@@ -7,13 +7,13 @@ import wordKeys from "../../translations/word-keys";
 export function CreateTestData() {
 
     const [testDataId, setTestDataId] = useState();
-    const [testDataCreated, setTestDataCreated] = useState(false);
+    const [testDataCreated, setTestDataUpdated] = useState(false);
     
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataUpserted",
         onEventReceived(event, envelope) {
             if (event.e104_TestDataId === testDataId) {
-                setTestDataCreated(true);
+                setTestDataUpdated(true);
             }
         }
     });
@@ -24,7 +24,7 @@ export function CreateTestData() {
                 <H1>Form</H1>
                 <AutoForm
                     query={{
-                        $type: "C109v1_GetC107DefaultFormData",
+                        $type: "C113v1_GetC107FormDataForEdit",
                         headers: []
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}

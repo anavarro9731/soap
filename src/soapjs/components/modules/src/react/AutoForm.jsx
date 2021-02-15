@@ -2,20 +2,19 @@ import React, {useEffect, useState} from 'react';
 import {useQuery} from '../hooks/useQuery';
 import {useCommand} from '../hooks/useCommand';
 import config from '../soap/config';
-import {headerKeys, toTypeName} from '../soap/messages';
+import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from '../soap/messages';
 import {Button, KIND} from 'baseui/button';
 import {Input} from 'baseui/input'
 import FileUpload from './FileUpload';
 import {DatePicker} from 'baseui/datepicker';
 import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
-import {Controller, get, useForm} from "react-hook-form";
+import {Controller, useForm} from "react-hook-form";
 import {FormControl} from "baseui/form-control";
 import {Label3} from 'baseui/typography';
 import ReactErrorBoundary from "./ReactErrorBoundary";
 import {Select} from "baseui/select";
 import {Textarea} from "baseui/textarea";
-import {createRegisteredTypedMessageInstanceFromAnonymousObject} from '../soap/messages';
-import { useSnackbar,} from 'baseui/snackbar';
+import {useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
 import {toaster} from 'baseui/toast';
 
@@ -23,24 +22,70 @@ export default function AutoForm(props) {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [command, setCommand] = useState(undefined);
+    const [sendCommand, setSendCommand] = useState(false);
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
     const {afterSubmit, query, sendQuery = true} = props;
     const {enqueue} = useSnackbar();
-    
+
     useEffect(() => {
         if (isSubmitted) {
             window.scrollTo(0, 0);
         }
     }, [isSubmitted])
-    
+
     let formDataEvent = useQuery({query, sendQuery});
+    
+    try {
+        
+        useCommand(command, sendCommand);
+
+        if (sendCommand && isSubmitted === false) {
+
+            //* snackbar here
+            enqueue({
+                message: 'Form Submitted Successfully',
+                startEnhancer: ({size}) => <Check size={size}/>,
+            });
+
+            if (!!afterSubmit) {
+                afterSubmit(command);
+            }
+        }
+
+    } finally {
+        if (sendCommand && isSubmitted === false) { //* without isSubmitted you get an infinite loop
+            setIsSubmitted(true);
+        }
+    }
     
     if (!formDataEvent) return null;
 
+    return (
+        <div>
+            <form onSubmit={handleSubmit(onSubmit, onError)}>
+                {formDataEvent.e000_FieldData.map(field =>
+                    (<ReactErrorBoundary key={field.name + "-errorB"}>
+                        {renderField(field)}
+                    </ReactErrorBoundary>)
+                )}
+                <Button
+                    disabled={isSubmitted}
+                    kind={KIND.primary}
+                    isLoading={isSubmitting}>
+                    Submit
+                </Button>
+            </form>
+            {renderDebug()}
+        </div>
+
+    );
+    
+    
     async function onSubmit(formValues) {
 
         try {
-            
+
             setIsSubmitting(true);
 
             if (config.logFormDetail) config.logger.log("FormValues", JSON.stringify(formValues, null, 2));
@@ -52,7 +97,7 @@ export default function AutoForm(props) {
             const command = createRegisteredTypedMessageInstanceFromAnonymousObject(formValues);
 
             const validationEndpoint = `${config.vars.functionAppRoot}/ValidateMessage?type=${encodeURIComponent(command.$type)}`;
-            
+
             let response = await fetch(validationEndpoint, {
                 method: 'POST',
                 headers: {
@@ -65,30 +110,20 @@ export default function AutoForm(props) {
             if (msg) {
                 const messages = msg.split('\r\n');
                 toaster.negative(messages.map(m => (<Label3 color="primaryB" key={m}>{m}</Label3>)));
-            } else {
-                try {
-                    useCommand(command);
-
-                    if (!!afterSubmit) afterSubmit(command);
-
-                    //* snackbar here
-                    enqueue({
-                        message: 'Form Submitted Successfully',
-                        startEnhancer: ({size}) => <Check size={size}/>,
-                    })
-                } finally {
-                    setIsSubmitted(true);
-                }
-
+                return;
             }
+
+            setCommand(command);
+            setSendCommand(true);
+
         } finally {
             setIsSubmitting(false);
         }
 
         function mutateFormValuesIntoAnonymousCommandObject(obj, formDataEvent) {
-            
+
             cleanProperties(obj);
-            
+
             const {
                 e000_CommandName: commandAssemblyTypeName,
                 e000_SasStorageTokenForCommand: sasToken,
@@ -149,18 +184,18 @@ export default function AutoForm(props) {
 
             }
         }
-        
+
         function fieldHasErrored(fieldName) {
             let fullPath = "errors";
             if (fieldName.includes('.')) {
                 const parts = fieldName.split('.');
                 for (const part of parts) {
                     fullPath += '?.' + part;
-                }    
+                }
             } else {
                 fullPath += '.' + fieldName;
             }
-            
+
             let error = eval(fullPath);
             error = typeof error === 'object' ? 'required' : undefined;
             return error;
@@ -262,12 +297,12 @@ export default function AutoForm(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             const transform = {
                                 input: (value) => {
-                                    return isNaN(value) ? '' : value.toString(); 
+                                    return isNaN(value) ? '' : value.toString();
                                 }, // incoming input value
                                 output: (e) => {
                                     const output = parseFloat(e.target.value);
                                     return isNaN(output) ? '' : output; // what's going to the final submit and store
-                                } 
+                                }
                             };
                             return (
                                 <FormControl
@@ -461,25 +496,6 @@ export default function AutoForm(props) {
             return debug;
         }
     }
-
-    return (
-            <div>
-                <form onSubmit={handleSubmit(onSubmit, onError)}>
-                    {formDataEvent.e000_FieldData.map(field =>
-                        (<ReactErrorBoundary key={field.name + "-errorB"}>
-                            {renderField(field)}
-                        </ReactErrorBoundary>)
-                    )}
-                    <Button
-                        disabled={isSubmitted}
-                        kind={KIND.primary}
-                        isLoading={isSubmitting}>
-                        Submit
-                    </Button>
-                </form>
-                {renderDebug()}
-            </div>
-
-    );
+    
 }
 

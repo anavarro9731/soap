@@ -10,6 +10,8 @@ import config from "../soap/config";
 import {useEffect, useReducer} from "react";
 import {useIsConfigLoaded} from "../hooks/systemStateHooks";
 import {StyledSpinnerNext} from "baseui/spinner";
+import {getHeader} from "../soap/util";
+import {headerKeys} from "../soap/messages";
 
 const localeOverride = {
     fileuploader: {
@@ -29,7 +31,7 @@ export default function App(props) {
     useEvent({
         eventName: "Soap.Interfaces.Messages.E001v1_MessageFailed",
         onEventReceived(event, envelope) {
-            toaster.negative(event.e001_ErrorMessage);
+            toaster.negative(`${event.e001_ErrorMessage} Error Id: ${getHeader(event, headerKeys.messageId)}`);
         }
     });
     

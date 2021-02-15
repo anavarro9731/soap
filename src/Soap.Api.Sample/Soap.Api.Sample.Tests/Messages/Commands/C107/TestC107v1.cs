@@ -63,16 +63,16 @@
         public void ItShouldPublishAResponseToTheBus()
         {
             Result.MessageBus.BusEventsPublished.Should().ContainSingle();
-            Result.MessageBus.BusEventsPublished.Single().Should().BeOfType<E104v1_TestDataAdded>();
-            Result.MessageBus.BusEventsPublished.Single().As<E104v1_TestDataAdded>().E104_TestDataId.Should().Be(testDataId);
+            Result.MessageBus.BusEventsPublished.Single().Should().BeOfType<E104v1_TestDataUpserted>();
+            Result.MessageBus.BusEventsPublished.Single().As<E104v1_TestDataUpserted>().E104_TestDataId.Should().Be(testDataId);
         }
 
         [Fact]
         public void ItShouldPublishAResponseToTheWebSocketClient()
         {
             Result.MessageBus.WsEventsPublished.Should().ContainSingle();
-            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E104v1_TestDataAdded>();
-            Result.MessageBus.WsEventsPublished.Single().As<E104v1_TestDataAdded>().E104_TestDataId.Should().Be(testDataId);
+            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E104v1_TestDataUpserted>();
+            Result.MessageBus.WsEventsPublished.Single().As<E104v1_TestDataUpserted>().E104_TestDataId.Should().Be(testDataId);
         }
     }
 }

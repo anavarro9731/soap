@@ -23,8 +23,8 @@ export function parseDotNetShortAssemblyQualifiedName(assemblyQualifiedName) {
     return {className, assemblyName};
 }
 
-export function getHeader(command, headerKey) {
-    const header = _.find(command.headers, h => h.key == headerKey);
+export function getHeader(message, headerKey) {
+    const header = _.find(message.headers, h => h.key == headerKey);
     if (!header) throw `header ${headerKey} not defined`;
     return header.value;
 }

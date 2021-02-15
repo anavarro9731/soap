@@ -150,7 +150,11 @@ export default {
             bus.subscribe(
                 bus.channels.events,
                 '#', //* wildcard
-                onResponse,
+                (msg, postalEnvelope) => {
+                    if (getHeader(msg, headerKeys.schema) !== "Soap.Interfaces.Messages.E001v1_MessageFailed") {
+                        onResponse(msg);
+                    }
+                },
                 getHeader(command, headerKeys.commandConversationId)
             );
         }

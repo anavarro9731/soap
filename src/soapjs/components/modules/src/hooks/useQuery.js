@@ -10,10 +10,7 @@ export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSe
 
     const [queryResult, setQueryResult] = useState();
     const configLoaded = useIsConfigLoaded("useQuery.js");
-    
-    const { 
-        authReady
-    } = useAuth();
+    const { authReady } = useAuth();
     
     const onResponse = data => {
         setQueryResult(data);
