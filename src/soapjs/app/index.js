@@ -10,7 +10,7 @@ import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
-config.debugSystemState = true;
+
 
 function Index() {
     

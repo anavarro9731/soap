@@ -44,6 +44,11 @@ export default (props) => {
 
     const {onChange, onBlur, error, acceptedTypes, value, disabled} = props;
     const [isUploading, setIsLoading] = useState(false);
+    
+    const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
+    const [isOpen, setIsOpen] = useState(false);
+    const [css] = useStyletron();
+    
 
     //* run to get the blob state after first render is complete
     useEffect(() => {
@@ -64,10 +69,50 @@ export default (props) => {
             }
         })();
     }, []) //* run only once
+   
+    return (
+        <div>
+            <FileUploader
+                accept={acceptedTypes}
+                disabled={disabled}
+                onBlur={onBlur}
+                multiple={false}
+                progressMessage={isUploading ? `Processing... hang tight.` : ""}
+                onDrop={async (acceptedFiles, rejectedFiles) => {
+                    setIsLoading(true);
+                    const blob = await getBlobFromDisk(acceptedFiles[0]);
+                    const enrichedBlob = await enrichBlobInfo(blob);
+                    const blobToUpload = objectUrlToBlob(enrichedBlob.objectUrl);
+                    await uploadBlobToBackend(blobToUpload);
+                    onChange(enrichedBlob);
+                    setIsLoading(false);
+                }}
+                overrides={{
+                    FileDragAndDrop: {
+                        style: (props) => ({
+                            borderLeftColor: error
+                                ? props.$theme.colors.borderNegative
+                                : props.$theme.colors.primaryA,
+                            borderRightColor: error
+                                ? props.$theme.colors.borderNegative
+                                : props.$theme.colors.primaryA,
+                            borderTopColor: error
+                                ? props.$theme.colors.borderNegative
+                                : props.$theme.colors.primaryA,
+                            borderBottomColor: error
+                                ? props.$theme.colors.borderNegative
+                                : props.$theme.colors.primaryA,
+                            backgroundColor: error
+                                ? props.$theme.colors.backgroundLightNegative
+                                : props.$theme.colors.backgroundStateDisabled
+                        })
+                    }
+                }}
+            />
+            {renderUploadedItem()}
+        </div>
+    );
 
-    const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
-    const [isOpen, setIsOpen] = useState(false);
-    const [css] = useStyletron();
 
     async function getBlobFromDisk(file) {
 
@@ -136,13 +181,13 @@ export default (props) => {
     function renderUploadedItem() {
 
         if (isUploading) return;  //* show nothing while preparing value
-        
+
         if (value && value.objectUrl !== undefined) { //* could be null on empty new form
 
             if (disabled) {
                 return (<Label3>Uploaded {value.name}</Label3>);
             }
-            
+
             let thumb, fullSize, file;
             if (value.isImage) {
                 thumb = <img src={value.thumb} alt={value.name}/>;
@@ -208,47 +253,5 @@ export default (props) => {
             );
         }
     }
-    
-    return (
-        <div>
-            <FileUploader
-                accept={acceptedTypes}
-                disabled={disabled}
-                onBlur={onBlur}
-                multiple={false}
-                progressMessage={isUploading ? `Processing... hang tight.` : ""}
-                onDrop={async (acceptedFiles, rejectedFiles) => {
-                    setIsLoading(true);
-                    const blob = await getBlobFromDisk(acceptedFiles[0]);
-                    const enrichedBlob = await enrichBlobInfo(blob);
-                    const blobToUpload = objectUrlToBlob(enrichedBlob.objectUrl);
-                    await uploadBlobToBackend(blobToUpload);
-                    onChange(enrichedBlob);
-                    setIsLoading(false);
-                }}
-                overrides={{
-                    FileDragAndDrop: {
-                        style: (props) => ({
-                            borderLeftColor: error
-                                ? props.$theme.colors.borderNegative
-                                : props.$theme.colors.primaryA,
-                            borderRightColor: error
-                                ? props.$theme.colors.borderNegative
-                                : props.$theme.colors.primaryA,
-                            borderTopColor: error
-                                ? props.$theme.colors.borderNegative
-                                : props.$theme.colors.primaryA,
-                            borderBottomColor: error
-                                ? props.$theme.colors.borderNegative
-                                : props.$theme.colors.primaryA,
-                            backgroundColor: error
-                                ? props.$theme.colors.backgroundLightNegative
-                                : props.$theme.colors.backgroundStateDisabled
-                        })
-                    }
-                }}
-            />
-            {renderUploadedItem()}
-        </div>
-    );
+
 };

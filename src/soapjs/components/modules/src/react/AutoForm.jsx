@@ -20,45 +20,72 @@ import {toaster} from 'baseui/toast';
 
 export default function AutoForm(props) {
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [command, setCommand] = useState(undefined);
-    const [sendCommand, setSendCommand] = useState(false);
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
     const {afterSubmit, query, sendQuery = true} = props;
     const {enqueue} = useSnackbar();
-
+    
+    const [showLoader, setShowLoader] = useState(false);
+    
+    const [submitted, setSubmitted] = useState(false); 
+    const [submitSucceeded, setSubmitSucceeded] = useState(false);
+    
+    //* used as a pair, to cause the sending of the command when the user submits
+    const [command, setCommand] = useState(undefined);
+    const [sendCommand, setSendCommand] = useState(false);
+    
+    const isInitialSubmit = (sendCommand && submitted === false);
+    
+    
     useEffect(() => {
-        if (isSubmitted) {
+        if (submitted) {
             window.scrollTo(0, 0);
         }
-    }, [isSubmitted])
+    }, [submitted])
 
+    //* triggered immediately
     let formDataEvent = useQuery({query, sendQuery});
-    
-    try {
+
+    useEffect(() => {
         
-        useCommand(command, sendCommand);
+        if (submitSucceeded) {
+            /* we don't run this code in the click handler because we don't know if the command.handle call
+            succeeded yet
+             */
 
-        if (sendCommand && isSubmitted === false) {
-
-            //* snackbar here
+            /* queue the snackbar, this causes a rerender and that would throw
+            a react error because you cannot rerender snackbar (which is a parent component) 
+            while rendering autoform so this is needs to be in a useEffect rather than it
+            the in try block after sending
+             */
             enqueue({
                 message: 'Form Submitted Successfully',
                 startEnhancer: ({size}) => <Check size={size}/>,
             });
 
+            //* if there is a post submit hook run it
             if (!!afterSubmit) {
                 afterSubmit(command);
             }
         }
 
+    },[submitSucceeded]);
+    
+    try {
+        //* once the user has submitted the form in the onclick handler then it will set sendCommand and the hook will send
+        useCommand(command, sendCommand);
+        
+        if (isInitialSubmit) {
+            setSubmitSucceeded(true);
+        }
+
     } finally {
-        if (sendCommand && isSubmitted === false) { //* without isSubmitted you get an infinite loop
-            setIsSubmitted(true);
+        if (isInitialSubmit) { //* without isInitialSubmit you get an infinite loop after submitting
+            //* only submit it once, even if it fails
+            setSubmitted(true);
         }
     }
-    
+
+    //* needs to be at the end as early termination would change the hooks that are run (its like an if else)
     if (!formDataEvent) return null;
 
     return (
@@ -70,15 +97,14 @@ export default function AutoForm(props) {
                     </ReactErrorBoundary>)
                 )}
                 <Button
-                    disabled={isSubmitted}
+                    disabled={submitted}
                     kind={KIND.primary}
-                    isLoading={isSubmitting}>
+                    isLoading={showLoader}>
                     Submit
                 </Button>
             </form>
             {renderDebug()}
         </div>
-
     );
     
     
@@ -86,7 +112,7 @@ export default function AutoForm(props) {
 
         try {
 
-            setIsSubmitting(true);
+            setShowLoader(true);
 
             if (config.logFormDetail) config.logger.log("FormValues", JSON.stringify(formValues, null, 2));
 
@@ -117,7 +143,7 @@ export default function AutoForm(props) {
             setSendCommand(true);
 
         } finally {
-            setIsSubmitting(false);
+            setShowLoader(false);
         }
 
         function mutateFormValuesIntoAnonymousCommandObject(obj, formDataEvent) {
@@ -225,7 +251,7 @@ export default function AutoForm(props) {
                             return (
                                 <FormControl
                                     label={fieldMeta.label}
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                 >
                                     <Checkbox
                                         name={name}
@@ -249,7 +275,7 @@ export default function AutoForm(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
                                 <FormControl
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <Input
@@ -273,7 +299,7 @@ export default function AutoForm(props) {
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
                                 <FormControl
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <Textarea
@@ -306,7 +332,7 @@ export default function AutoForm(props) {
                             };
                             return (
                                 <FormControl
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <Input
@@ -352,7 +378,7 @@ export default function AutoForm(props) {
                             };
                             return (
                                 <FormControl
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <DatePicker
@@ -408,7 +434,7 @@ export default function AutoForm(props) {
                             };
                             return (
                                 <FormControl
-                                    disabled={isSubmitted}
+                                    disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <Select
@@ -446,7 +472,7 @@ export default function AutoForm(props) {
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <FileUpload
-                                        disabled={isSubmitted}
+                                        disabled={submitted}
                                         error={fieldHasErrored(fieldMeta.name)}
                                         value={value}
                                         onBlur={onBlur}
@@ -475,7 +501,7 @@ export default function AutoForm(props) {
                                     label={fieldMeta.label} caption={fieldMeta.caption}
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <FileUpload
-                                        disabled={isSubmitted}
+                                        disabled={submitted}
                                         acceptedTypes=".jpg,.jpeg,.jfif,.png"
                                         onBlur={onBlur}
                                         //dimensions={{maxWidth:640,maxHeight:480}}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {useAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import {Route} from "react-router-dom";
 import {useAuth} from "../hooks/useLogin";
@@ -28,10 +28,18 @@ export const Login = (props) => {
 
     const [isOpen, setIsOpen] = React.useState(false);
 
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authDebug = urlParams.get('authDebug');
+        if (authDebug && isOpen === false) {
+            setIsOpen(true);
+        }
+    });
+
     if (!authReady || !config.auth0) {
         return null;
     }
-    
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -39,12 +47,7 @@ export const Login = (props) => {
         return <div>Oops... {error.message}</div>;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const authDebug = urlParams.get('authDebug');
-    if (authDebug && isOpen == false) {
-        setIsOpen(true);
-    }
-    
+
     if (isAuthenticated) {
 
         return (<React.Fragment>

@@ -36,9 +36,26 @@ export default function App(props) {
     });
     
     const configLoaded = useIsConfigLoaded("app.jsx");
+    const override = !!props.localeOverride ? {...localeOverride, ...props.localOverride} : localeOverride;
+
+    useEffect(() => {
+        if (config.debugSystemState) console.warn("app.jsx rendered");
+    });
     
+    return (<LocaleProvider locale={override}>
+        <StyletronProvider value={engine}>
+            <BaseProvider theme={props.theme}>
+                <ToasterContainer autoHideDuration={4000} placement={PLACEMENT.topRight}>
+                    <SnackbarProvider defaultDuration={DURATION.medium}>
+                        {getContent()}
+                    </SnackbarProvider>
+                </ToasterContainer>
+            </BaseProvider>
+        </StyletronProvider>
+    </LocaleProvider>);
+
     function getContent() {
-        
+
         if (configLoaded) {
             if (config.auth0) {
                 return (<Auth0Provider
@@ -57,24 +74,5 @@ export default function App(props) {
             return (<CenterSpinner />);
         }
     }
-    
-    const override = !!props.localeOverride ? {...localeOverride, ...props.localOverride} : localeOverride;
-    
-    useEffect(() => {
-        if (config.debugSystemState) console.warn("app.jsx rendered");    
-    });
-    
-    
-    return (<LocaleProvider locale={override}>
-        <StyletronProvider value={engine}>
-            <BaseProvider theme={props.theme}>
-                <ToasterContainer autoHideDuration={4000} placement={PLACEMENT.topRight}>
-                    <SnackbarProvider defaultDuration={DURATION.medium}>
-                        {getContent()}
-                    </SnackbarProvider>
-                </ToasterContainer>
-            </BaseProvider>
-        </StyletronProvider>
-    </LocaleProvider>);
 }
 
