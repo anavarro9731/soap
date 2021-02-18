@@ -26,16 +26,9 @@ export const Login = (props) => {
         refresh
     } = useAuth();
 
-    const [isOpen, setIsOpen] = React.useState(false);
-
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const authDebug = urlParams.get('authDebug');
-        if (authDebug && isOpen === false) {
-            setIsOpen(true);
-        }
-    });
-
+    const urlParams = new URLSearchParams(window.location.search);
+    const authDebug = urlParams.get('authDebug');
+    
     if (!authReady || !config.auth0) {
         return null;
     }
@@ -46,12 +39,13 @@ export const Login = (props) => {
     if (error) {
         return <div>Oops... {error.message}</div>;
     }
-
-
+    
     if (isAuthenticated) {
 
         return (<React.Fragment>
-            <DebugLayer>
+            
+            {authDebug ? 
+                (<DebugLayer>
                 <Button onClick={
                     () => {
                         console.log("accessToken", accessToken);
@@ -60,8 +54,8 @@ export const Login = (props) => {
                         console.log("config", config);
                     }}>debugdata</Button>
                 <Button onClick={() => refresh()}>refresh</Button>
-            </DebugLayer>
-
+            </DebugLayer>) : null }
+            
             <div>Hello, {user.name}</div>
             &nbsp;
             <Button kind={KIND.secondary}
@@ -71,15 +65,18 @@ export const Login = (props) => {
                 config.auth0.identityToken = null;
                 logout({returnTo: window.location.origin});
             }}>Logout</Button>
+            
         </React.Fragment>);
     } else {
         return <React.Fragment>
-            <DebugLayer>
+            { authDebug ? (<DebugLayer>
                 <Button onClick={
                     () => {
                         console.log("config", config);
                     }}>debugdata</Button>
-            </DebugLayer><Button kind={KIND.secondary}
+            </DebugLayer>) : null }
+            
+            <Button kind={KIND.secondary}
                                  size={SIZE.compact} onClick={() => loginWithRedirect({
             redirect_uri: `${window.location.origin}`,
             audience: audience,

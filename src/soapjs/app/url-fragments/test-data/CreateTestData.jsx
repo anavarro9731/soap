@@ -3,11 +3,13 @@ import {H1} from "baseui/typography";
 import React, {useState} from "react";
 import {Cell, Grid} from "baseui/layout-grid";
 import wordKeys from "../../translations/word-keys";
+import { useLocation } from 'react-router-dom';
 
 export function CreateTestData() {
 
     const [testDataId, setTestDataId] = useState();
     const [testDataCreated, setTestDataCreated] = useState(false);
+    const location = useLocation();
     
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataUpserted",
@@ -28,7 +30,11 @@ export function CreateTestData() {
                         headers: []
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}
-                    afterSubmit={(command) => setTestDataId(command.c107_Guid)}/>
+                    afterSubmit={(command) => setTestDataId(command.c107_Guid)}
+                    submitText="Save"
+                    cancelText="Back"
+                    cancelHref="#/test-data"
+                />
             </Cell>
             <Cell span={6}>
                 <H1>View</H1>

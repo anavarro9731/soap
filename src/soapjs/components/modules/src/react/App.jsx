@@ -46,7 +46,7 @@ export default function App(props) {
         <StyletronProvider value={engine}>
             <BaseProvider theme={props.theme}>
                 <ToasterContainer autoHideDuration={4000} placement={PLACEMENT.topRight}>
-                    <SnackbarProvider defaultDuration={DURATION.medium}>
+                    <SnackbarProvider defaultDuration={DURATION.short}>
                         {getContent()}
                     </SnackbarProvider>
                 </ToasterContainer>

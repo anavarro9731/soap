@@ -3,11 +3,14 @@ import {H1} from "baseui/typography";
 import React, {useState} from "react";
 import {Cell, Grid} from "baseui/layout-grid";
 import wordKeys from "../../translations/word-keys";
+import {useParams} from "react-router-dom";
 
-export function CreateTestData() {
+export function EditTestData() {
 
     const [testDataId, setTestDataId] = useState();
-    const [testDataCreated, setTestDataUpdated] = useState(false);
+    const [testDataUpdated, setTestDataUpdated] = useState(false);
+    const { id } = useParams();
+
     
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataUpserted",
@@ -25,17 +28,21 @@ export function CreateTestData() {
                 <AutoForm
                     query={{
                         $type: "C113v1_GetC107FormDataForEdit",
+                        c113_TestDataId: id,
                         headers: []
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}
-                    afterSubmit={(command) => setTestDataId(command.c107_Guid)}/>
+                    afterSubmit={(command) => setTestDataId(command.c107_Guid)}
+                    submitText="Save"
+                    cancelText="Back"
+                    cancelHref="#/test-data"/>
             </Cell>
             <Cell span={6}>
                 <H1>View</H1>
                 <JsonView query={{
                     $type: 'Soap.Api.Sample.Messages.Commands.C110v1_GetTestDataById',
                     c110_TestDataId: testDataId
-                }} sendQuery={testDataCreated}/>
+                }} sendQuery={testDataUpdated}/>
             </Cell>
         </Grid>
     );

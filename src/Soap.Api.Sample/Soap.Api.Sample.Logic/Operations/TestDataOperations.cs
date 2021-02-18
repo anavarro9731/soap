@@ -42,7 +42,7 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    DecimalOptional = newState.C107_DecimalOptional,
                                                    Guid = newState.C107_Guid,
                                                    GuidOptional = newState.C107_GuidOptional,
-                                                   Long = newState.C107_LongOptional,
+                                                   Long = newState.C107_Long,
                                                    LongOptional = newState.C107_LongOptional,
                                                    DateTime = newState.C107_DateTime,
                                                    DateTimeOptional = newState.C107_DateTimeOptional,
