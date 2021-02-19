@@ -1,13 +1,13 @@
 import {useEffect, useState } from 'react';
 import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
-import {toTypeName} from "../soap/messages";
 import {useIsConfigLoaded} from "./systemStateHooks";
 import {useAuth} from "./useLogin";
 import config from "../soap/config";
+import {toTypeName} from "../soap/messages";
 
 export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSeconds = 0}) {
-
+        
     const [queryResult, setQueryResult] = useState();
     const configLoaded = useIsConfigLoaded("useQuery.js");
     const { authReady } = useAuth();

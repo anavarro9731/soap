@@ -17,12 +17,11 @@ import {Textarea} from "baseui/textarea";
 import {useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
 import {toaster} from 'baseui/toast';
-import {StyledLink} from "baseui/link";
 
 export default function AutoForm(props) {
 
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
-    const {afterSubmit, query, sendQuery = true, cancelHref, cancelText, submitText} = props;
+    const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText} = props;
     const {enqueue} = useSnackbar();
     
     const [showLoader, setShowLoader] = useState(false);
@@ -96,9 +95,13 @@ export default function AutoForm(props) {
                         {renderField(field)}
                     </ReactErrorBoundary>)
                 )}
-                {cancelHref ? (<StyledLink href={cancelHref}>
+                {afterCancel ? (<Button
+                    disabled={submitted}
+                    type="button"
+                    onClick={afterCancel}
+                    kind={KIND.primary}>
                     {cancelText ?? "Cancel"}
-                </StyledLink>) : null}&nbsp;&nbsp;&nbsp;
+                </Button>) : null}&nbsp;&nbsp;&nbsp;
                 <Button
                     disabled={submitted}
                     kind={KIND.primary}

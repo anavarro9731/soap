@@ -14,7 +14,6 @@ export default function() {
             <Switch>
                 <ProtectedRoute path="/test-data/new" component={CreateTestData} />
                 <ProtectedRoute path="/test-data/edit/:id" component={EditTestData} />
-                
                 <ProtectedRoute path="/test-data/view/:id" component={ViewTestData}/>                 
                 
                 <Route path="/test-data/">

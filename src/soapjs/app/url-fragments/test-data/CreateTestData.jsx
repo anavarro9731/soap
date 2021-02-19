@@ -26,14 +26,13 @@ export function CreateTestData() {
                 <H1>Form</H1>
                 <AutoForm
                     query={{
-                        $type: "C109v1_GetC107DefaultFormData",
-                        headers: []
+                        $type: "Soap.Api.Sample.Messages.Commands.C109v1_GetC107DefaultFormData"
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}
                     afterSubmit={(command) => setTestDataId(command.c107_Guid)}
                     submitText="Save"
                     cancelText="Back"
-                    cancelHref="#/test-data"
+                    afterCancel={() => location.href="#/test-data"}
                 />
             </Cell>
             <Cell span={6}>

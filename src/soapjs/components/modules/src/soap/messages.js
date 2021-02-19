@@ -5,7 +5,7 @@ import _ from 'lodash';
 let messageTypesSingleton = {};
 
 export function toTypeName(name) {
-    if (!name) throw "Message $type property not provided, please make sure the message has this property set to the name of the Command or Event e.g. E100v1_Pong, C100v1_Ping";
+    if (!name) throw "Name not provided, please set to the name of the Command or Event e.g. E100v1_Pong, C100v1_Ping";
     if (name.match(/^.+, .+$/i)) { //already is long form
         return name;    
     } else { //convert short name

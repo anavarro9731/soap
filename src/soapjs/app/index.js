@@ -8,6 +8,7 @@ import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} fro
 import {StyledLink} from "baseui/link";
 import {HashRouter as Router, Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
+import {ReactErrorBoundary} from "../components/modules/src";
 
 addTranslations(translations);
 
@@ -15,6 +16,7 @@ addTranslations(translations);
 function Index() {
     
     return (
+        <ReactErrorBoundary>
         <App theme={LightTheme}>
             <Router>
                 <HeaderNavigation>
@@ -45,6 +47,7 @@ function Index() {
                 </Switch>
             </Router>
         </App>
+        </ReactErrorBoundary>
     );
 }
 

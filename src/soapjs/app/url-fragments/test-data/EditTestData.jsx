@@ -28,14 +28,14 @@ export function EditTestData() {
                 <AutoForm
                     query={{
                         $type: "C113v1_GetC107FormDataForEdit",
-                        c113_TestDataId: id,
-                        headers: []
+                        c113_TestDataId: id
                     }}
                     testFormHeader={translate(wordKeys.testFormHeader)}
                     afterSubmit={(command) => setTestDataId(command.c107_Guid)}
                     submitText="Save"
                     cancelText="Back"
-                    cancelHref="#/test-data"/>
+                    afterCancel={() => location.href="#/test-data"}
+                    />
             </Cell>
             <Cell span={6}>
                 <H1>View</H1>
