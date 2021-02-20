@@ -1,4 +1,4 @@
-import { wireErrorHandlerOfLastResort } from '../index';
+import wireErrorHandlerOfLastResort from '../error-handler';
 
 test("unhandled errors are caught", () => {
     

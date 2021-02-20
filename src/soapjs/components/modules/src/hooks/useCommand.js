@@ -5,10 +5,12 @@ import {useEffect} from "react";
 import {useAuth} from "./useLogin";
 import {toTypeName} from "../soap/messages";
 
-export function useCommand(command, sendCommand = true) {
+export function useCommand(command, sendCommand = true, closeConversation = true) {
     
     const configLoaded = useIsConfigLoaded("useCommand.js");
     const { authReady } = useAuth();
+    
+    let conversationId;
     
     useEffect(() => {
         
@@ -17,10 +19,13 @@ export function useCommand(command, sendCommand = true) {
             if (!command.headers) {
                 command.headers = [];
             }
-            const conversationId = commandHandler.handle(command, () => null, 0);
-            bus.closeConversation(conversationId);
+            conversationId = commandHandler.handle(command, () => null, 0);
+            if (closeConversation) {
+                bus.closeConversation(conversationId);
+            }
         }
         
     }, [configLoaded, authReady, sendCommand]);
     
+    return conversationId;
 }

@@ -35,5 +35,11 @@
         {
             (await Result.DataStore.ReadById<TestData>(testDataId)).Active.Should().BeFalse();
         }
+        
+        [Fact]
+        public async void ItShouldPublishAnEvent()
+        {
+            (await Result.DataStore.ReadById<TestData>(testDataId)).Active.Should().BeFalse();
+        }
     }
 }

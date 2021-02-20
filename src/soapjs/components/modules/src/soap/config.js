@@ -7,6 +7,8 @@ import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
 import * as signalR from '@microsoft/signalr';
 
+const isTest = process.env.NODE_ENV === 'test';
+
 const _logger = {
     appInsights : null,
     log: (logMsg, logObject, toAzure) => {
@@ -27,7 +29,7 @@ const _logger = {
         if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
         else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
 
-        if (toAzure) {
+        if (toAzure && !isTest) {
             
             if (!this.appInsights) {
                 this.appInsights = new ApplicationInsights({
@@ -45,8 +47,10 @@ const _logger = {
 let _auth0, _sessionDetails;
 const _onLoadedCallbacks = [];
 (async function () {
-    await loadConfigState();
-    _onLoadedCallbacks.forEach(c => c());
+    if (!isTest) { 
+        await loadConfigState();
+        _onLoadedCallbacks.forEach(c => c());
+    }
 })();
 
 async function loadConfigState() {

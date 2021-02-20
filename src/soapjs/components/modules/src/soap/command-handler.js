@@ -84,7 +84,7 @@ export default {
             [{acceptableStalenessFactorInSeconds}, types.number],
         );
 
-        if (!config.isLoaded) throw "Cannot send a message before the config is loaded";
+        //if (!config.isLoaded) throw "Cannot send a message before the config is loaded";
         
         if (
             foundCachedResults(

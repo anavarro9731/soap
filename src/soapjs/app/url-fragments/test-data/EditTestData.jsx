@@ -34,7 +34,7 @@ export function EditTestData() {
                     afterSubmit={(command) => setTestDataId(command.c107_Guid)}
                     submitText="Save"
                     cancelText="Back"
-                    afterCancel={() => location.href="#/test-data"}
+                    afterCancel={() => window.location.href="#/test-data"}
                     />
             </Cell>
             <Cell span={6}>
