@@ -20,6 +20,8 @@ import {toaster} from 'baseui/toast';
 
 export default function AutoForm(props) {
 
+    //* this logic should be redone with useReducer
+    
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
     const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText} = props;
     const {enqueue} = useSnackbar();

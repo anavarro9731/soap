@@ -134,7 +134,7 @@ Azure ServiceBus|No|**Session-Enabled Queue on VNext instance** (SessionId=EPK)<
 Azure SignalR Service|No|**Group-Enabled Messages on VNext instance** (Group=EPK)<br />SignalR Groups will be created for your EPK and all connections initiated from your machine will be added to that Group, finally any Websocket Broadcasts will be limited to your the Group for your EPK. These will expire when you kill of your connections.|AzureSignalRConnectionString
 Azure Storage (Blob)|You will need to start the Azurite instance or you will get an error. In rider this is done from the View>Tool Windows>Services window. If attempting to start it pops up a dialog asking you to confirm some settings, you need to choose the system global file path to the azure node module (e.g. `~\AppData\Roaming\npm\node_modules\azurite`). Assuming you installed the Rider Azure toolkit plugin as specified above, simply press Play on the instance. |**Azurite Local Instance**<br />Azurite settings are fixed in the local.settings.json file and do not change. When running in Development mode, the FunctionContext will set some additional properties which cannot be set by config such as CORS on the Azurite instance during function startup. On startup the function app will also print an Azurite SAS to the console which you can append to any manual Azurite request for testing HTTP. Finally, there have been noted instanced where Azurite settings do not update as expected, this seems to happen only initially after install. If you get CORS errors, [in Rider] stop the instance from the services tool window, right click on the named instance node and choose "Clean Azurite" then start it again to fix this problem.|AzureWebJobsStorage
 Azure CosmosDb|No|**Cosmos containers for each EPK (or CosmosDb Emulator Local Instance)**<br />The recommended approach is to use a cloud instance with one database, which shares it's resources across containers, having one container per EPK. To use this approach you don't need to do anything more than set the EPK. This is recommended because for unknown reasons the local emulator is much slower than an actual cloud instance. If using local Cosmos Emulator, you can install using `choco install azure-cosmosdb-emulator` and then edit the shortcut and set the following switches on the command: `"C:\Program Files\Azure Cosmos DB Emulator\Microsoft.Azure.Cosmos.Emulator.exe" /PartitionCount=250 /DisableRateLimiting`. Next set the 4 local.settings.json Cosmos values using the data in the connection string which you can get from the emulator homepage (after its installed), by default this is https://localhost:8081/. More Emulator Info [here](https://docs.microsoft.com/en-us/azure/cosmos-db/local-emulator)
-
+Auth0|No|**Permissions prefixed for each EPK** (EPK-PermissionName)|Auth0 variables see Auth section
 *A note on the emulators: You may want to run `netstat -ao` to check nothing is using ports 10000-10003
 before starting azurite, or port 8081 before starting the cosmos emulator, otherwise you will need to change the ports they run on and change the connection strings in local.settings.json*
 
@@ -205,14 +205,15 @@ integration with Auth0. It is not enabled by default and is optional. To enable 
       and configure any other specifics that will apply to all services
    1. Enable MFA again from the left-nav if desired
 1. Create 3 tenant(s) in that account
-   1. yourorganisation-dev 
+   1. yourorganisation-dev
    1. yourorganisation-vnext 
    1. yourorganisation-rel
-In each tenant create a machine-machine application called "Enterprise Admin", if prompted don't create a default application.
-1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
+   
+In each tenant create a machine-machine application called "Enterprise Admin", and give it all permissions on the Auth0 Mgmt Api. If prompted don't create a default application.
+   1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
       for *Getting an access token for your API line*, from the line that begins with "--data" 
       and set them in the ENV_Config file in the YourApi.Config repo for each environment.
-   1. Auth0TenantDomain = "https://soap-dev.eu.auth0.com"
+   1. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
    1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
    1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
    1. AuthEnabled = true;

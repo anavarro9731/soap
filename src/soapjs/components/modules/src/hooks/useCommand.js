@@ -15,7 +15,10 @@ export function useCommand(command, sendCommand = true, closeConversation = true
     useEffect(() => {
         
         if (configLoaded && authReady && sendCommand) {
-            command.$type = toTypeName(command.$type); //convert from class short name to assembly qualified short name
+            const typeName = toTypeName(command.$type); //* convert from class short name to assembly qualified short name 
+            if (command.$type !== typeName) { //* should be equal on proxy classes created from registered messages, important because you cannot modify proxied properties
+                command.$type = typeName;
+            } 
             if (!command.headers) {
                 command.headers = [];
             }
