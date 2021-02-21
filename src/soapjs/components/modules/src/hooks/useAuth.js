@@ -2,6 +2,7 @@ import {useEffect, useState} from 'react';
 import {useAuth0} from '@auth0/auth0-react';
 import config from "../soap/config";
 import {useIsConfigLoaded} from "./systemStateHooks";
+import {validateArgs, types} from "../soap/util";
 
 export const useAuth = () => {
 
@@ -15,6 +16,7 @@ export const useAuth = () => {
         getIdTokenClaims,
         getAccessTokenSilently,
         user,
+        loginWithRedirect,
         getAccessTokenWithPopup
     } = useAuth0();
 
@@ -24,7 +26,7 @@ export const useAuth = () => {
     useEffect(() => {
         (async () => {
 
-            if (config.debugSystemState) console.warn("values at useAuth's useEffectHook", "configLoaded:"+configLoaded, "isLoading:"+isLoading, "isAuthenticated:"+isAuthenticated);
+            if (config.debugSystemState) console.warn("values at useAuth's useEffectHook", "configLoaded:" + configLoaded, "isLoading:" + isLoading, "isAuthenticated:" + isAuthenticated);
 
             if (configLoaded) {
                 if (config.auth0) {
@@ -58,6 +60,16 @@ export const useAuth = () => {
         accessToken,
         authEnabled: !!config.auth0,
         authReady,
+        requireAuth(onAuthenticated) {
+            validateArgs([{onAuthenticated}, types.function]);
+            if (authReady && !!config.auth0) {
+                if (isAuthenticated) {
+                    onAuthenticated();
+                } else {
+                    loginWithRedirect({appState: {returnTo: window.location.href}});
+                }    
+            }
+        },
         refresh() {
             setRefreshIndex(refreshIndex + 1)
         }

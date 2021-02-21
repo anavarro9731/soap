@@ -2,8 +2,6 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {    
-    "history": "^5.0.0",
-    "test-data": "^1.0.2",
     "@auth0/auth0-react": "^1.2.0",
     "@azure/service-bus": "^7.0.0",
     "@azure/storage-blob": "^12.3.0",

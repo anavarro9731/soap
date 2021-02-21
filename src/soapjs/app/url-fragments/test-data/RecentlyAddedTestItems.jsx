@@ -1,4 +1,4 @@
-import {useCommand, useQuery} from "@soap/modules";
+import {useCommand, useQuery, useAuth } from "@soap/modules";
 import {H5, Paragraph1} from "baseui/typography";
 import React, {Fragment, useState, useReducer} from "react";
 import {StyledSpinnerNext} from 'baseui/spinner';
@@ -49,6 +49,8 @@ export function RecentlyAddedTestItems() {
         command: undefined
     });
     
+    const { requireAuth } = useAuth();
+    
     useCommand(state.command, state.sendCommand);
     
     function close() {
@@ -56,12 +58,15 @@ export function RecentlyAddedTestItems() {
     }
     
     function deleteRow() {
-        dispatch({
-            type: 'delete',
-            command: {
-                $type: 'Soap.Api.Sample.Messages.Commands.C114v1_DeleteTestDataById',
-                C114_TestDataId: state.itemId
-            }
+        
+        requireAuth(() => {
+            dispatch({
+                type: 'delete',
+                command: {
+                    $type: 'Soap.Api.Sample.Messages.Commands.C114v1_DeleteTestDataById',
+                    C114_TestDataId: state.itemId
+                }
+            });    
         });
     }
     

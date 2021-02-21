@@ -6,6 +6,7 @@ import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
 
+
 export const Login = (props) => {
      
     const audience = config.vars.audience;
@@ -90,7 +91,9 @@ export const ProtectedRoute = ({component, ...args}) => {
     
     if (authReady) {
         if (authEnabled) {
-            return (<Route component={withAuthenticationRequired(component)} {...args} />);            
+            return (<Route component={withAuthenticationRequired(component, {
+                returnTo: window.location.href
+            })} {...args} />);            
         } else {
             return (<Route component={component} {...args} />);
         }
@@ -101,25 +104,8 @@ export const ProtectedRoute = ({component, ...args}) => {
 };
 
 
-/* this code would be useful 
-after login for changing where the back button goes but HashRouter doesn't 
-support history object and using the Azure CDN which would allow us to
-get away from HashRouter and Use Router would be a problem because its
-not available for test and the delay in publishing would make dev impossible
-It's not that important a feature to spend any more time on it but worth
-noting for future options as this is how the sample code works.
 
-to use it you would import these two constants into the main page
-and set the onRedirectCallback={onRedirectCallback} attr of the Auth0provider
-and history={history} attr of the Router object and
-import {createBrowserHistory} from "history";
- */
-/*
-export const history = createBrowserHistory();
-export const onRedirectCallback = (appState) => {
-    // Use the router's history module to replace the url
-    history.replace(appState?.returnTo || window.location.pathname);
-*/
+
     
 
 

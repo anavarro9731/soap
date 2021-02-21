@@ -1,6 +1,7 @@
 export { useQuery } from './hooks/useQuery';
 export { useCommand } from './hooks/useCommand';
 export { useEvent } from './hooks/useEvent';
+export { useAuth } from './hooks/useAuth';
 export { translate, addTranslations } from './i18n/index';
 export {default as bus } from './soap/bus';
 export {default as config } from './soap/config';

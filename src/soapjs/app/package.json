@@ -2,15 +2,13 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "^1.275.0",
+    "@soap/modules": "^1.276.0",
     "baseui": "^9.110.0",
-    "history": "^5.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.2.0",
     "styletron-engine-atomic": "^1.4.7",
-    "styletron-react": "^5.2.7",
-    "test-data": "^1.0.2"
+    "styletron-react": "^5.2.7"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

@@ -6,7 +6,7 @@ import ReactDOM from "react-dom";
 import translations from "./translations/en-soap.app.sample-default";
 import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} from "baseui/header-navigation";
 import {StyledLink} from "baseui/link";
-import {HashRouter as Router, Route, Switch} from "react-router-dom";
+import {Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
@@ -14,11 +14,9 @@ config.debugSystemState=true;
 config.authDebug=true;
 
 function Index() {
-    
     return (
         <ReactErrorBoundary>
         <App theme={LightTheme}>
-            <Router>
                 <HeaderNavigation>
                     <StyledNavigationList $align={ALIGN.left}>
                         <StyledNavigationItem>Test App</StyledNavigationItem>
@@ -45,7 +43,6 @@ function Index() {
                         <Home/>
                     </Route>
                 </Switch>
-            </Router>
         </App>
         </ReactErrorBoundary>
     );
