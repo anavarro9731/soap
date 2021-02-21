@@ -83,8 +83,6 @@ export default {
             [{onResponse}, types.function],
             [{acceptableStalenessFactorInSeconds}, types.number],
         );
-
-        //if (!config.isLoaded) throw "Cannot send a message before the config is loaded";
         
         if (
             foundCachedResults(
@@ -115,7 +113,7 @@ export default {
             const {headers, ...payload} = command;
             setHeader(command, headerKeys.commandHash,  md5Hash(payload));
 
-            if (config.debugSystemState) console.warn("state at header creation", JSON.stringify(config.auth0), config.auth0.isAuthenticated);
+            if (config.debugSystemState) console.warn("config state at header creation", JSON.stringify(config.auth0, null, 2));
             if (config.auth0 && config.auth0.isAuthenticated) {
                 
                 setHeader(command, headerKeys.identityToken, config.auth0.identityToken);

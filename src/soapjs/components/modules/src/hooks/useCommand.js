@@ -2,7 +2,7 @@ import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
 import {useIsConfigLoaded} from "./systemStateHooks";
 import {useEffect} from "react";
-import {useAuth} from "./useLogin";
+import {useAuth} from "./useAuth";
 import {toTypeName} from "../soap/messages";
 
 export function useCommand(command, sendCommand = true, closeConversation = true) {

@@ -68,7 +68,7 @@ export default function App(props) {
                     {props.children}
                 </Auth0Provider>);
             } else {
-                {props.children}
+                return (<React.Fragment>{props.children}</React.Fragment>);
             }
         } else {
             return (<CenterSpinner />);

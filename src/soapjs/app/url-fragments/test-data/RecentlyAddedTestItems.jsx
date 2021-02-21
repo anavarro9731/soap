@@ -21,7 +21,7 @@ export function RecentlyAddedTestItems() {
                     itemId : action.itemId, 
                     deletedRowIds : state.deletedRowIds,
                     deleteModalOpen: true,
-                    rowLabel: action.itemLabel,
+                    itemLabel: action.itemLabel,
                     command: undefined,
                     sendCommand: false
                 };
@@ -32,7 +32,7 @@ export function RecentlyAddedTestItems() {
                 itemId : state.itemId,
                 deletedRowIds : [...state.deletedRowIds, state.itemId],
                 deleteModalOpen: false,
-                rowLabel: state.rowLabel,
+                itemLabel: state.rowLabel,
                 command: action.command,
                 sendCommand: true
             };
@@ -44,7 +44,7 @@ export function RecentlyAddedTestItems() {
         itemId: null,
         deletedRowIds: [],
         deleteModalOpen: false,
-        rowLabel: null,
+        itemLabel: null,
         sendCommand: false,
         command: undefined
     });
@@ -99,7 +99,7 @@ export function RecentlyAddedTestItems() {
                 <Modal onClose={close} isOpen={state.deleteModalOpen}>
                     <ModalHeader>Are you sure?</ModalHeader>
                     <ModalBody>
-                        Deleting this item "{state.itemLabel}"set cannot be undone.
+                        Deleting this item "{state.itemLabel}" cannot be undone.
                     </ModalBody>
                     <ModalFooter>
                         <ModalButton kind="tertiary" onClick={close}>

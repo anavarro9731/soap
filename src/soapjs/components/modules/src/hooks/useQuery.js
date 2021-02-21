@@ -2,7 +2,7 @@ import {useEffect, useState } from 'react';
 import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
 import {useIsConfigLoaded} from "./systemStateHooks";
-import {useAuth} from "./useLogin";
+import {useAuth} from "./useAuth";
 import config from "../soap/config";
 import {toTypeName} from "../soap/messages";
 

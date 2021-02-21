@@ -1,8 +1,9 @@
 {
-  "name": "@soap/modules",
-  "version": "1.275.0",
-  "peerDependencies": {},
-  "dependencies": {
+  "name": "soap-app-sample",
+  "version": "1.0.0",
+  "dependencies": {    
+    "history": "^5.0.0",
+    "test-data": "^1.0.2",
     "@auth0/auth0-react": "^1.2.0",
     "@azure/service-bus": "^7.0.0",
     "@azure/storage-blob": "^12.3.0",
@@ -23,26 +24,23 @@
     "styletron-react": "^5.2.7"
   },
   "devDependencies": {
-    "@babel/cli": "^7.12.1",
-    "@babel/core": "^7.12.3",
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-export-default-from": "^7.12.1",
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.6.3",
     "@babel/preset-react": "^7.0.0",
-    "jest-cli": "^26.6.2"
+    "parcel": "^1.12.4"
   },
+    "alias": {
+      "@soap/modules": "./components"
+    },
   "browserslist": [
     "last 1 Edge version",
     "last 1 Chrome version",
     "last 1 Firefox version"
   ],
-  "files": [
-    "/lib/"
-  ],
-  "type": "module",
-  "main": "./lib/index.js",
   "scripts": {
-    "prepare": "babel src -d lib",
-    "test": "jest --rootDir src"
+    "build": "parcel build ./index.html --public-url ./ --no-source-maps",
+    "serve": "parcel serve ./index.html --no-source-maps"
   }
 }

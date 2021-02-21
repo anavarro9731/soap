@@ -1,5 +1,0 @@
-{
-  "__comment" : "this is here only to support directly referencing @soap/modules with an alias during dev where you dont want to republish @soap/modules all the time if you are making significant changes to it, otherwise @soap/modules applies these changes internally before publishing",
-  "presets": [["@babel/preset-env", { "targets": "defaults" }], "@babel/preset-react"], 
-  "plugins": ["@babel/plugin-proposal-export-default-from", "@babel/plugin-transform-runtime"]
-}

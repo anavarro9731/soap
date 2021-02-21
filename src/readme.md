@@ -237,8 +237,9 @@ the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1
 
 # BackLog
 MUST
-- Update to new [Azure.Cosmos] CosmosDb SDK and new CircuitBoard (currently using the really old (2 versions back) SDK this is a datastore change)
-- Ensure Notifications server can send emails
+- Update DataStore to new [Azure.Cosmos] CosmosDb SDK and latest CircuitBoard, the update SOAP)
+- Ensure Notifications server can at least send emails, have some config (shouldn't require EnvKey))
+- Custom Domain and CDN (before live)
 - Stripe Integration (before payments)
 SHOULD
 - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))

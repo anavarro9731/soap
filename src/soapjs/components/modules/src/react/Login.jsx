@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import {useAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import {Route} from "react-router-dom";
-import {useAuth} from "../hooks/useLogin";
+import {useAuth} from "../hooks/useAuth";
 import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
@@ -84,9 +84,21 @@ export const Login = (props) => {
     }
 };
 
-export const ProtectedRoute = ({component, ...args}) => (
-    <Route component={withAuthenticationRequired(component)} {...args} />
-);
+export const ProtectedRoute = ({component, ...args}) => {
+
+    const { authReady, authEnabled } = useAuth();
+    
+    if (authReady) {
+        if (authEnabled) {
+            return (<Route component={withAuthenticationRequired(component)} {...args} />);            
+        } else {
+            return (<Route component={component} {...args} />);
+        }
+    } else {
+        return null;
+    }
+    
+};
 
 
 /* this code would be useful 
