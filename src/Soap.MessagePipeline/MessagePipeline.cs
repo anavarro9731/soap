@@ -123,7 +123,7 @@
 
                 try //- log the message failure
                 {
-                    var exceptionMessages = new FormattedExceptionInfo(exception, context);
+                    var exceptionMessages = new FormattedExceptionInfo(exception, context.AppConfig);
 
                     await context.TakeFailureActions(exceptionMessages);
 
@@ -138,7 +138,7 @@
                         var originalExceptionPlusHandlingException = new ExceptionHandlingException(
                             new AggregateException(exceptionHandlingException, exception));
 
-                        var exceptionMessages = new FormattedExceptionInfo(originalExceptionPlusHandlingException, context);
+                        var exceptionMessages = new FormattedExceptionInfo(originalExceptionPlusHandlingException, context.AppConfig);
 
                         context.Logger.Fatal("Cannot write error to db message log {@details}", exceptionMessages);
 

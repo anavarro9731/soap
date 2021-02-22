@@ -49,23 +49,23 @@ namespace Soap.Context
                     Guard.Against(
                         shouldAuthorise && (message.Headers.GetIdentityChain() == null
                                             || message.Headers.GetIdentityToken() == null
-                                            || message.Headers.GetAccessToken() == null),
-                        "All Authorisation headers not provided but message is not exempt from authorisation");
+                                            || message.Headers.GetAccessToken() == null), "All Authorisation headers not provided but message is not exempt from authorisation",
+                        "A Security policy violation is preventing this action from succeeding S01");
 
                     Guard.Against(
                         Regex.IsMatch(
                             message.Headers.GetIdentityChain(),
                             $"^({AuthSchemePrefixes.Service}|{AuthSchemePrefixes.Tests}|{AuthSchemePrefixes.User}):\\/\\/.+$")
-                        == false,
-                        "Identity Chain header invalid");
+                        == false, "Identity Chain header invalid",
+                        "A Security policy violation is preventing this action from succeeding S02");
 
                     var lastIdentityScheme = message.Headers.GetIdentityChain().SubstringBeforeLast("://");
                     if (lastIdentityScheme.Contains("://")) lastIdentityScheme = lastIdentityScheme.SubstringAfterLast(",");
                     var lastIdentityValue = message.Headers.GetIdentityChain().SubstringAfterLast("://");
 
                     Guard.Against(
-                        !schemeHandlers.ContainsKey(lastIdentityScheme),
-                        "Could not find a handler to process the identity scheme " + lastIdentityScheme);
+                        !schemeHandlers.ContainsKey(lastIdentityScheme), "Could not find a handler to process the identity scheme " + lastIdentityScheme,
+                        "A Security policy violation is preventing this action from succeeding S03");
 
                     var schemeHandler = schemeHandlers[lastIdentityScheme];
 
@@ -80,11 +80,10 @@ namespace Soap.Context
                     
                     Guard.Against(
                         identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(message.GetType().Name),
-                        AuthErrorCodes.NoApiPermissionExistsForThisMessage);
+                        AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");
                     
                 }
-
-
+                
                 await SaveOrUpdateUserProfileInDb(userProfileInternal as TUserProfile, dataStore);
 
                 //* if auth is enabled these could be empty but should never be null

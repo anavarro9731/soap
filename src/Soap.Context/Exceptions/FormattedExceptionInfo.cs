@@ -5,11 +5,12 @@
     using System.Linq;
     using FluentValidation;
     using Soap.Context.Context;
+    using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
 
     public class FormattedExceptionInfo
     {
-        public FormattedExceptionInfo(Exception exception, ContextWithMessageLogEntry context)
+        public FormattedExceptionInfo(Exception exception, IBootstrapVariables bootstrapVariables)
         {
             if (exception is ValidationException validationException)
             {
@@ -31,7 +32,7 @@
                 if (exception.Message == "#default-message#")
                 {
                     AllErrors.Add(
-                        (ErrorSourceType.GUARD, null, context.AppConfig.DefaultExceptionMessage,
+                        (ErrorSourceType.GUARD, null, bootstrapVariables.DefaultExceptionMessage,
                             exception.InnerException.ToString()));
                 }
                 else
@@ -45,32 +46,41 @@
                     $"{domainExceptionWithErrorCode.Error.Key} [{domainExceptionWithErrorCode.Error.Value}]"
                     + domainExceptionWithErrorCode.StackTrace;
 
-                AllErrors.Add(
+                if (string.IsNullOrWhiteSpace(domainExceptionWithErrorCode.ExternalMessage)) {
+                {
+                    AllErrors.Add(
                         (ErrorSourceType.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key), 
-                            context.AppConfig
+                            bootstrapVariables
                                    .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
+                            internalErrorMessage));    
+                }}
+                else
+                {
+                    AllErrors.Add(
+                        (ErrorSourceType.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
+                            domainExceptionWithErrorCode.ExternalMessage,
                             internalErrorMessage));
-                
+                }
             }
             else if (exception is ApplicationException)
             {
-                AllErrors.Add((ErrorSourceType.RAW, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+                AllErrors.Add((ErrorSourceType.RAW, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));
             }
             else if (exception is ExceptionHandlingException)  //* won't be sent to clients (see MessagePipeline.Execute catch block)
             {
-                AllErrors.Add((ErrorSourceType.EXWHEX, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+                AllErrors.Add((ErrorSourceType.EXWHEX, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));
             }
             else
             {
-                AllErrors.Add((ErrorSourceType.CLR, null, context.AppConfig.DefaultExceptionMessage, exception.ToString()));
+                AllErrors.Add((ErrorSourceType.CLR, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));
             }
 
             SummaryOfExternalErrorMessages = AllErrors
                                              .Select(x => x.ExternalMessage)
                                              .Aggregate((aggregated, next) => aggregated + Environment.NewLine + next);
 
-            ApplicationName = context.AppConfig.AppId;
-            EnvironmentName = context.AppConfig.Environment.Value;
+            ApplicationName = bootstrapVariables.AppId;
+            EnvironmentName = bootstrapVariables.Environment.Value;
         }
 
         public FormattedExceptionInfo()

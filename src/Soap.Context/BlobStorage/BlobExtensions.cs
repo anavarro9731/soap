@@ -25,8 +25,8 @@
         {
             Guard.Against(
                 !Regex.IsMatch(base64String, "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"),
-                "Data is invalid format",
-                "Blob is not base64 formatted");
+                "Blob is not base64 formatted",
+                "Data is invalid format");
 
             var bytes = Convert.FromBase64String(base64String);
 

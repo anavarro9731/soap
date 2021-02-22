@@ -16,7 +16,7 @@
 
         public static void Against(Func<bool> unacceptable, string externalClientMessage, string internalClientMessage)
         {
-            Against(unacceptable(), internalClientMessage, externalClientMessage);
+            Against(unacceptable(), externalClientMessage, internalClientMessage);
         }
 
         public static void Against(
@@ -35,7 +35,7 @@
             }
         }
 
-        public static void Against(bool unacceptable, string externalClientMessage, string internalClientMessage)
+        public static void Against(bool unacceptable, string internalClientMessage, string externalClientMessage)
         {
             if (unacceptable) throw new DomainException(externalClientMessage, new Exception(internalClientMessage));
         }
@@ -50,13 +50,14 @@
             }
         }
 
-        public static void Against(bool unacceptable, ErrorCode error)
+        public static void Against(bool unacceptable, ErrorCode error, string externalClientMessage = null)
         {
             //* allowing this to be null would throw an error when handling the error, i considered it better to throw it like this
             if (error == null) throw new ApplicationException("Guard was trigger, but Error Code was null");
             if (unacceptable)
             {
-                throw new DomainExceptionWithErrorCode(error);
+                throw new DomainExceptionWithErrorCode(error, externalClientMessage);
+
             }
         }
     }
