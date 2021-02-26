@@ -103,6 +103,7 @@ async function loadConfigState() {
                     auth0Info = {
                         uiAppId : response.headers.get('Auth0-UI-Application-ClientId'),
                         tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
+                        redirectUri: response.headers.get('Auth0-Tenant-Domain'),
                         isAuthenticated : false,
                         accessToken : null,
                         identityToken : null,

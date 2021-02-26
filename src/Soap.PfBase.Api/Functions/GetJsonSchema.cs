@@ -49,12 +49,14 @@ namespace Soap.PfBase.Api.Functions
             {
                 AddHeader(req, "Access-Control-Expose-Headers", "*");
                 AddHeader(req, "Auth0-Enabled", appConfig.AuthEnabled.ToString().ToLower());
+
                 
                 if (appConfig.AuthEnabled)
                 {
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
                     var applicationClientId = await Auth0Functions.GetUiApplicationClientId(appConfig, messagesAssembly);
                     AddHeader(req, "Auth0-UI-Application-ClientId", applicationClientId);
+                    AddHeader(req, "Auth0-Redirect-Uri", $"https://{appConfig.CorsOrigin}");
                 }
 
                 static void AddHeader(HttpRequest req, string headerName, string headerValue)

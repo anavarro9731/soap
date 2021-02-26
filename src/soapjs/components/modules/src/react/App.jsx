@@ -74,7 +74,7 @@ export default function App(props) {
                     domain={config.auth0.tenantDomain}
                     clientId={config.auth0.uiAppId}
                     audience={config.vars.audience}
-                    redirectUri={"http://localhost:1234/"}
+                    redirectUri={config.auth0.redirectUri}
                     onRedirectCallback={onRedirectCallback}
                     useRefreshTokens={true}
                 >

@@ -123,7 +123,7 @@ namespace Soap.Auth0
                     Name = apiName,
                     Scopes = resourceServerScopes,
                     TokenDialect = TokenDialect.AccessTokenAuthZ,
-                    EnforcePolicies = true, //RBAC ENABLED?
+                    EnforcePolicies = true, //RBAC ENABLED
                     AllowOfflineAccess = true,
                     SkipConsentForVerifiableFirstPartyClients = true
                 };
