@@ -6,7 +6,6 @@ namespace Soap.Auth0
     using System.Linq;
     using System.Reflection;
     using System.Security.Claims;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel;
@@ -20,7 +19,8 @@ namespace Soap.Auth0
     using Soap.Config;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
-
+    using System.Text.RegularExpressions;
+    
     public static partial class Auth0Functions
     {
         private static OpenIdConnectConfiguration cache_openIdConnectConfiguration;
@@ -95,13 +95,63 @@ namespace Soap.Auth0
                 await writeLine(
                     $"Updating Auth0 Api for this service in environment {applicationConfig.Environment.Value} with the latest permissions.");
 
+                var allScopes = await MergeScopesWithThoseOnline();
+
                 var r = new ResourceServerUpdateRequest
                 {
-                    Scopes = GetScopesFromMessages(securityInfo),
-                    TokenDialect = TokenDialect.AccessTokenAuthZ, //couldn't be 100% this wasnt overwritten so set it here as well as create
+                    Scopes = allScopes,
+                    TokenDialect =
+                        TokenDialect.AccessTokenAuthZ //couldn't be 100% this wasnt overwritten so set it here as well as create
                 };
 
                 await client.ResourceServers.UpdateAsync(apiId, r);
+
+                async Task<List<ResourceServerScope>> MergeScopesWithThoseOnline()
+                {
+                    var resourceServer = await client.ResourceServers.GetAsync(apiId);
+                    var existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline = resourceServer.Scopes;
+
+                    List<ResourceServerScope> existingPermissionsAlreadySavedOnlineThatWeDidNotCreate;
+                    List<ResourceServerScope> existingPermissionsAlreadySavedOnlineThatWeDidCreate;
+                    if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
+                    {
+                        existingPermissionsAlreadySavedOnlineThatWeDidNotCreate =
+                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline
+                                .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                .ToList();
+                        existingPermissionsAlreadySavedOnlineThatWeDidCreate = 
+                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline
+                               .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                               .ToList();
+                    }
+                    else
+                    {
+                        existingPermissionsAlreadySavedOnlineThatWeDidNotCreate = new List<ResourceServerScope>();
+                        existingPermissionsAlreadySavedOnlineThatWeDidCreate =
+                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline;
+                    }
+                    
+                    var ourCurrentPermissions = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
+                    var finalUpdatedPermissions = ourCurrentPermissions.Union(existingPermissionsAlreadySavedOnlineThatWeDidNotCreate).ToList();
+                    
+                    var obsoletePermissions = existingPermissionsAlreadySavedOnlineThatWeDidCreate.Where(x => !ourCurrentPermissions.Exists(y => y.Value == x.Value)).ToList();
+                    if (obsoletePermissions.Any())
+                    {
+                        await writeLine(
+                            "Removing Permissions:" + Environment.NewLine + obsoletePermissions.Select(x => x.Value)
+                                .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
+                    }
+
+                    var newPermissions = ourCurrentPermissions.Where(x => !existingPermissionsAlreadySavedOnlineThatWeDidCreate.Exists(y => y.Value == x.Value)).ToList();
+                    if (newPermissions.Any())
+                    {
+                        await writeLine(
+                            "Adding Permissions:" + Environment.NewLine + newPermissions.Select(x => x.Value)
+                                .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
+                    }
+
+                    return finalUpdatedPermissions;
+                }
             }
 
             static async Task RegisterApiWithAuth0(
@@ -116,7 +166,7 @@ namespace Soap.Auth0
                     $"Auth0 Api for this service in environment {applicationConfig.Environment.Value} does not exist. Creating it now.");
 
                 //* register api 
-                var resourceServerScopes = GetScopesFromMessages(securityInfo);
+                var resourceServerScopes = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
                 var r = new ResourceServerCreateRequest
                 {
                     Identifier = apiId,
@@ -158,13 +208,13 @@ namespace Soap.Auth0
                                  });
             }
 
-            static List<ResourceServerScope> GetScopesFromMessages(ISecurityInfo securityInfo)
+            static List<ResourceServerScope> GetPermissionsFromMessagesBasedOnOurParitionKey(ISecurityInfo securityInfo)
             {
                 var scopes = securityInfo.PermissionGroups.Select(
                                              x => new ResourceServerScope
                                              {
                                                  Description = x.Description ?? x.Name,
-                                                 Value = x.AsClaim()
+                                                 Value = x.AsClaim(EnvVars.EnvironmentPartitionKey)
                                              })
                                          .ToList();
 
@@ -284,20 +334,30 @@ namespace Soap.Auth0
                 /* if there are bad permissions data in auth0, we dont want to disable all users from logging in,
                 we will just ignore those permissions and log the problem */
                 var permissionRegex =
-                    "^(read|create|update|delete):[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}|(execute:[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12})$";
+                    "^(" + DbPermissionsRegex() + "):[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}|(execute:[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12})$";
                 cleanPermissions = permissionsArray.Select(x => x.ToLower().Trim())
                                                    .Where(x => Regex.IsMatch(x, permissionRegex))
                                                    .ToList();
             }
 
+            static string DbPermissionsRegex() => $"{DatabasePermissions.READ.PermissionName.ToLower()}|{DatabasePermissions.CREATE.PermissionName.ToLower()}|{DatabasePermissions.UPDATE.PermissionName.ToLower()}|{DatabasePermissions.DELETE.PermissionName.ToLower()}";
+            
             static void ExtractPermissionsFromClaims(
                 ClaimsPrincipal principal,
                 out string[] apiPermissionGroupsArray,
                 out string[] dbPermissionsArray)
             {
-                var permissionGroupsAsStrings = principal.Claims.Where(x => x.Type == "permissions").Select(x => x.Value).ToArray();
-                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute")).ToArray();
-                dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute")).ToArray();
+                var permissionGroupsAsStrings =
+                    principal.Claims.Where(x => x.Type == "permissions").Select(x => x.Value).ToArray();
+                
+                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute"))
+                                                                    .Select( /* replace environment specific key if it exists */
+                                                                        x => x.Replace(x.SubstringBefore("::"), string.Empty)).ToArray();
+                
+                dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute"))
+                            .Select( /* replace environment specific key if it exists */
+                                x => x.Replace(x.SubstringBefore("::"), string.Empty)).ToArray();
+                
             }
 
             static void GetApiPermissionGroups(

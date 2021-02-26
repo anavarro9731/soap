@@ -17,8 +17,9 @@
 
     public static class ApiPermissionGroupExt
     {
-        public static string AsClaim(this ApiPermissionGroup apiPermissionGroup) =>
-            "execute:" + Regex.Replace(apiPermissionGroup.Name.ToLower(), "[^a-z0-9.]", "") + ":"
+        public static string AsClaim(this ApiPermissionGroup apiPermissionGroup, string environmentPartitionKey) =>
+            (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) + "execute:"
+            + Regex.Replace(apiPermissionGroup.Name.ToLower(), "[^a-z0-9.]", "") + ":"
             + apiPermissionGroup.Id.ToString().ToLower();
     }
 }

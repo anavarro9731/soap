@@ -12,6 +12,7 @@ public class SecurityInfo : ISecurityInfo
         {
             Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
             Name =   "Ping Pong",
+            Description = "Test Messages",
             ApiPermissions = new List<string>
             {
                 nameof(C100v1_Ping),
