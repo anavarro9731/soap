@@ -586,38 +586,38 @@ Once the Auth0 integration is active in the config, you then need to consider th
 #### Authorisation 
 
 Each message will now be protected by default and require that the
-user have permission to send it. You can give a user permissions directly, or via a role
-using the Auth0 portal. Permissions in the form of "execute:messagename" will be created
+user have permission to send it. You can give a user permissions directly, or via a role,
+using the Auth0 portal. Permissions in the form of "ENVKEY:execute:messagename" will be created
 automatically from the list of messages in the system and synced during deployment as a
-step of the health check. simply assign them using the self-explanatory portal features
-to give users access.
+step of the health check. Simply assign them using the self-explanatory portal features
+to give users access. If you remove a message from the [SecurityInfo](Soap.Api.Sample/Soap.Api.Sample.Afs/SecurityInfo.cs)
+class it will automatically be removed from any assigned roles or users when that version
+is deployed.
 
-For messages which should not require any auth you can add the AuthorisationNotRequired attribute to those
-messages and they will be allowed regardless of Auth0 state.
+For messages which should not require any auth you can add the AuthorisationNotRequired attribute 
+to those messages and they will be allowed regardless of Auth0 state.
 
 #### Frontend Aspects
 
 The <Login /> control in index.js will now render the appropriate controls for login and logout capability
-If you are not ever using Auth you can safely remove the control altogether.
+If you are not ever planning on using Auth you can safely remove the control altogether.
 
 #### Authentication
 
 Is performed automatically by the API when a message is received. 
-The Auth0 UserId and permissions are stored in the `Meta` property of any Process.
+The Auth0 Permissions and/or UserProfile are stored in the `Meta` property of any Process.
 
-However in many cases you may be looking for more than just the Id. Auth0 stores some
-basic information about the user as expressed in the `IUserProfile` interface and this
-interface is then implemented in the starter project as the  `UserProfile` class. A class
-implementing IUserProfile and IAggregate must be passed to the HandleMessage function on
+Auth0 stores some basic information about the user as expressed in the `IUserProfile` 
+interface and this interface is then implemented in the starter project as the  `UserProfile` 
+class. A class implementing IUserProfile and IAggregate must be passed to the
+[receive function](Soap.Api.Sample/Soap.Api.Sample.Afs/BuiltIn.cs) function on
 receipt of a message and this is then used to create/update the user profile based on the 
 data in Auth0. This data is stored in the service database alongside any other aggregates
 and in that respect is not different than any other datatype except that it is synced automatically
-with the Auth0's database whenever you call the special `GetUserProfile<T>` method of any
-Process. This method needs to be passed the same class that is used in the 
-[receive function](Soap.Api.Sample/Soap.Api.Sample.Afs/BuiltIn.cs) which by default is the `UserProfile` class
-and it will return an instance of that object with the users details. Feel free to
-add any properties to this class and manage it via an `ProfileOperation : Operations<UserProfile>` 
-class.
+with the data in the token whenever you make an API call. Feel free to
+add any properties to the UserProfile class and commit those updates 
+via an `ProfileOperation : Operations<UserProfile>` class, however changing value in any fields 
+of the implemented `IUserProfile` interface will be overwritten each time the user makes a call.      
 
 #### Inter-Service Messages
 

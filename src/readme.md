@@ -203,7 +203,7 @@ integration with Auth0. It is not enabled by default and is optional. To enable 
 1. Create auth0 account (free level is fine)
    1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
       and configure any other specifics that will apply to all services
-   1. Enable MFA again from the left-nav if desired
+   1. Enable MFA from the left-nav if desired
 1. Create 3 tenant(s) in that account
    1. yourorganisation-dev
    1. yourorganisation-vnext 
@@ -214,8 +214,8 @@ In each tenant create a machine-machine application called "Enterprise Admin", a
       for *Getting an access token for your API line*, from the line that begins with "--data" 
       and set them in the ENV_Config file in the YourApi.Config repo for each environment.
    1. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
-   1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEmClwimTJCH0QnJjB9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
-   1. Auth0HealthCheckClientId = "GMOVi8eSzZmCGgL7QYMO8RZIi4w7ZMEj";
+   1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEm__SAMPLE-SECRET__9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
+   1. Auth0HealthCheckClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
    1. AuthEnabled = true;
 
 **WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
