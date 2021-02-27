@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="9.2.1" />
-    <PackageReference Include="mnailgun" Version="3.0.2" />
+    <PackageReference Include="Mailjet.Api" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />

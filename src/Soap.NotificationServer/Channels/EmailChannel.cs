@@ -3,22 +3,23 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Net.Mail;
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
+    using Mailjet.Client;
+    using Mailjet.Client.TransactionalEmails;
+    using Soap.Context;
     using Soap.Interfaces;
-    using Typesafe.Mailgun;
 
     public class EmailChannel : IServerChannelInfo
     {
-        private readonly MailGunEmailSenderSettings emailSettings;
+        private readonly MailJetEmailSenderSettings emailSettings;
 
-        private readonly MailgunClient mailGunClient;
+        private readonly MailjetClient mailJetClient;
 
-        public EmailChannel(MailGunEmailSenderSettings settings)
+        public EmailChannel(MailJetEmailSenderSettings settings)
         {
-            this.mailGunClient = new MailgunClient(settings.MailGunDomain, settings.ApiKey, 3);
+            this.mailJetClient = new MailjetClient(settings.ApiKey, settings.ApiSecret);
             this.emailSettings = settings;
         }
 
@@ -28,67 +29,66 @@
         {
             var recipients = notification.Recipient.Split(';');
             foreach (var s in recipients)
-                Prohibit(
+            {
+                Guard.Against(
                     !this.emailSettings.AllowedTo.Contains("*") && !this.emailSettings.AllowedTo.Contains(s),
                     $"Sending emails to {s} is not allowed.");
+            }
 
             return this.emailSettings.MessageAggregator
                        .CollectAndForward(new SendingEmail(notification.Body, notification.Subject, recipients))
-                       .To(SendViaMailGun);
+                       .To(Send);
+
+            Task Send(SendingEmail sendingEmail)
+            {
+                var email = new TransactionalEmailBuilder().WithFrom(new SendContact("ft.engineering@roseandmy.work"))
+                                                           .WithSubject("Test subject")
+                                                           .WithHtmlPart("<h1>Header</h1>Test Data")
+                                                           .WithTo(new SendContact("ft.engineering@roseandmy.work"))
+                                                           .Build();
+
+                return this.mailJetClient.SendTransactionalEmailAsync(email);
+            }
         }
 
-        private static void Prohibit(bool condition, string message)
-        {
-            if (condition) throw new ApplicationException(message);
-        }
-
-        private Task SendViaMailGun(SendingEmail sendingEmail)
-        {
-            var result = this.mailGunClient.SendMail(
-                new MailMessage(this.emailSettings.From, string.Join(';', sendingEmail.SendTo))
-                {
-                    Subject = sendingEmail.Subject,
-                    Body = sendingEmail.Text
-                });
-
-            return Task.CompletedTask;
-        }
-
-        public class MailGunEmailSenderSettings : INotificationChannelSettings
+        public class MailJetEmailSenderSettings : INotificationChannelSettings
         {
             internal readonly IMessageAggregator MessageAggregator;
 
-            public MailGunEmailSenderSettings(
+            public MailJetEmailSenderSettings(
                 string from,
                 string apiKey,
-                string mailGunDomain,
+                string apiSecret,
                 IReadOnlyList<string> allowedTo,
                 IMessageAggregator messageAggregator)
             {
                 this.MessageAggregator = messageAggregator;
-                Prohibit(string.IsNullOrEmpty(from), $"{nameof(MailGunEmailSenderSettings)}.{nameof(from)} cannot be null");
-                Prohibit(string.IsNullOrEmpty(apiKey), $"{nameof(MailGunEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
-                Prohibit(
-                    string.IsNullOrEmpty(mailGunDomain),
-                    $"{nameof(MailGunEmailSenderSettings)}.{nameof(mailGunDomain)} cannot be null");
+                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailJetEmailSenderSettings)}.{nameof(from)} cannot be null");
+                Guard.Against(
+                    string.IsNullOrEmpty(apiKey),
+                    $"{nameof(MailJetEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
+                Guard.Against(
+                    string.IsNullOrEmpty(apiSecret),
+                    $"{nameof(MailJetEmailSenderSettings)}.{nameof(apiSecret)} cannot be null");
 
                 From = from;
                 ApiKey = apiKey;
-                MailGunDomain = mailGunDomain;
+                ApiSecret = apiSecret;
                 AllowedTo = allowedTo ?? new[]
                 {
                     "*"
                 };
             }
 
-            //the purpose of this is to prevent sending to bogus addresses when testing which causes problems for our mailgun account
+            /* the purpose of this is whilelist at config level (particularly when testing) to avoid sending to bogus addresses
+             which causes problems for our reputation with providers */
             public IReadOnlyList<string> AllowedTo { get; }
 
             public string ApiKey { get; }
 
-            public string From { get; }
+            public string ApiSecret { get; }
 
-            public string MailGunDomain { get; }
+            public string From { get; }
 
             public IServerChannelInfo CreateChannel() => new EmailChannel(this);
         }
