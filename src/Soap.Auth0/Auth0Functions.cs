@@ -95,7 +95,7 @@ namespace Soap.Auth0
                 await writeLine(
                     $"Updating Auth0 Api for this service in environment {applicationConfig.Environment.Value} with the latest permissions.");
 
-                var allScopes = await MergeScopesWithThoseOnline();
+                var allScopes = await MergeLatestPermissionsFromOurPartitionWithTheSetOnline();
 
                 var r = new ResourceServerUpdateRequest
                 {
@@ -106,51 +106,65 @@ namespace Soap.Auth0
 
                 await client.ResourceServers.UpdateAsync(apiId, r);
 
-                async Task<List<ResourceServerScope>> MergeScopesWithThoseOnline()
+                async Task<List<ResourceServerScope>> MergeLatestPermissionsFromOurPartitionWithTheSetOnline()
                 {
                     var resourceServer = await client.ResourceServers.GetAsync(apiId);
-                    var existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline = resourceServer.Scopes;
+                    var onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions = resourceServer.Scopes;
+                    
+                    SeparateOnlinePermissionsIntoGroups(onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
+                        out var onlinePermissionsFromOurPartition, out var onlinePermissionsFromOtherPartitions);
 
-                    List<ResourceServerScope> existingPermissionsAlreadySavedOnlineThatWeDidNotCreate;
-                    List<ResourceServerScope> existingPermissionsAlreadySavedOnlineThatWeDidCreate;
-                    if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
-                    {
-                        existingPermissionsAlreadySavedOnlineThatWeDidNotCreate =
-                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline
-                                .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
-                                .ToList();
-                        existingPermissionsAlreadySavedOnlineThatWeDidCreate = 
-                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline
-                               .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
-                               .ToList();
-                    }
-                    else
-                    {
-                        existingPermissionsAlreadySavedOnlineThatWeDidNotCreate = new List<ResourceServerScope>();
-                        existingPermissionsAlreadySavedOnlineThatWeDidCreate =
-                            existingPermissionsWhichMightIncludeOtherDevelopersPermissionsAlreadySavedOnline;
-                    }
-                    
-                    var ourCurrentPermissions = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
-                    var finalUpdatedPermissions = ourCurrentPermissions.Union(existingPermissionsAlreadySavedOnlineThatWeDidNotCreate).ToList();
-                    
-                    var obsoletePermissions = existingPermissionsAlreadySavedOnlineThatWeDidCreate.Where(x => !ourCurrentPermissions.Exists(y => y.Value == x.Value)).ToList();
-                    if (obsoletePermissions.Any())
+                    var currentPermissionsInOurPartition = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
+                    var updatedPermissionsToBeSavedOnline = currentPermissionsInOurPartition
+                                                  .Union(onlinePermissionsFromOtherPartitions)
+                                                  .ToList();
+
+                    var onlinePermissionsBeingRemoved = onlinePermissionsFromOurPartition
+                                              .Where(x => !currentPermissionsInOurPartition.Exists(y => y.Value == x.Value))
+                                              .ToList();
+                    if (onlinePermissionsBeingRemoved.Any())
                     {
                         await writeLine(
-                            "Removing Permissions:" + Environment.NewLine + obsoletePermissions.Select(x => x.Value)
+                            "Removing Permissions:" + Environment.NewLine + onlinePermissionsBeingRemoved.Select(x => x.Value)
                                 .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
                     }
 
-                    var newPermissions = ourCurrentPermissions.Where(x => !existingPermissionsAlreadySavedOnlineThatWeDidCreate.Exists(y => y.Value == x.Value)).ToList();
-                    if (newPermissions.Any())
+                    var newPermissionsBeingAddedOnline = currentPermissionsInOurPartition.Where(
+                                                                  x => !onlinePermissionsFromOurPartition
+                                                                           .Exists(y => y.Value == x.Value))
+                                                              .ToList();
+                    if (newPermissionsBeingAddedOnline.Any())
                     {
                         await writeLine(
-                            "Adding Permissions:" + Environment.NewLine + newPermissions.Select(x => x.Value)
+                            "Adding Permissions:" + Environment.NewLine + newPermissionsBeingAddedOnline.Select(x => x.Value)
                                 .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
                     }
 
-                    return finalUpdatedPermissions;
+                    if (!newPermissionsBeingAddedOnline.Any() && !onlinePermissionsBeingRemoved.Any())
+                    {
+                        await writeLine("No Permissions Changes.");
+                    }
+
+                    return updatedPermissionsToBeSavedOnline;
+
+                    static void SeparateOnlinePermissionsIntoGroups(List<ResourceServerScope> onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions, 
+                        out List<ResourceServerScope> onlinePermissionsFromOurPartition, out List<ResourceServerScope> onlinePermissionsFromOtherPartitions)
+                    {
+                        if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
+                        {
+                            onlinePermissionsFromOtherPartitions = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
+                                                                   .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                   .ToList();
+                            onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
+                                                                .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                .ToList();
+                        }
+                        else
+                        {
+                            onlinePermissionsFromOtherPartitions = new List<ResourceServerScope>();
+                            onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions;
+                        }
+                    }
                 }
             }
 
@@ -214,7 +228,7 @@ namespace Soap.Auth0
                                              x => new ResourceServerScope
                                              {
                                                  Description = x.Description ?? x.Name,
-                                                 Value = x.AsClaim(EnvVars.EnvironmentPartitionKey)
+                                                 Value = x.AsEnvironmentPartitionAwareClaim(EnvVars.EnvironmentPartitionKey)
                                              })
                                          .ToList();
 
@@ -349,17 +363,33 @@ namespace Soap.Auth0
             {
                 var permissionGroupsAsStrings =
                     principal.Claims.Where(x => x.Type == "permissions").Select(x => x.Value).ToArray();
+
+                permissionGroupsAsStrings = FilterToAppropriateEnvironmentPartition(permissionGroupsAsStrings);
                 
-                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute"))
-                                                                    .Select( /* replace environment specific key if it exists */
-                                                                        x => x.Replace(x.SubstringBefore("::"), string.Empty)).ToArray();
+                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute")).ToArray();
                 
-                dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute"))
-                            .Select( /* replace environment specific key if it exists */
-                                x => x.Replace(x.SubstringBefore("::"), string.Empty)).ToArray();
-                
+                dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute")).ToArray();
             }
 
+            static string[] FilterToAppropriateEnvironmentPartition(string[] permissions)
+            {
+                var key = EnvVars.EnvironmentPartitionKey;
+
+                var result = string.IsNullOrEmpty(key)
+                           ? permissions.Where(p => !p.Contains("::"))
+                           : permissions.Where(p => p.StartsWith(key));
+                
+                result = result.Select(RemoveEnvironmentPartitionKeyIfItExists);
+
+                return result.ToArray();
+                
+                static string RemoveEnvironmentPartitionKeyIfItExists(string x)
+                {
+                    //* removes "johndoedeveloper::" prefix
+                    return x.Replace(x.SubstringBefore("::"), string.Empty).Replace("::", string.Empty);
+                }
+            }
+            
             static void GetApiPermissionGroups(
                 List<string> permissionGroupsAsStrings,
                 ISecurityInfo securityInfo,

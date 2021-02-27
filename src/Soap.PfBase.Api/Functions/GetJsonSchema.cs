@@ -56,7 +56,7 @@ namespace Soap.PfBase.Api.Functions
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
                     var applicationClientId = await Auth0Functions.GetUiApplicationClientId(appConfig, messagesAssembly);
                     AddHeader(req, "Auth0-UI-Application-ClientId", applicationClientId);
-                    AddHeader(req, "Auth0-Redirect-Uri", $"https://{appConfig.CorsOrigin}");
+                    AddHeader(req, "Auth0-Redirect-Uri", appConfig.CorsOrigin);
                 }
 
                 static void AddHeader(HttpRequest req, string headerName, string headerValue)
