@@ -101,7 +101,6 @@
                             MetadataReference.CreateFromFile(typeof(TypedEnumeration<>).Assembly.Location), 
                             MetadataReference.CreateFromFile(typeof(ErrorMessageSensitivity).Assembly.Location), //? maybe not need, perf bonus to fix TODO
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
-                            MetadataReference.CreateFromFile(typeof(System.Collections.IList).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),
                             MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location)

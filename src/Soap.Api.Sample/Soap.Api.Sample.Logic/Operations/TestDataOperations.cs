@@ -16,7 +16,6 @@ namespace Soap.Api.Sample.Logic.Operations
             async newState =>
                 {
                 {
-                    throw new WarningException("haha");
                     await DataWriter.DeleteById<TestData>(newState.C114_TestDataId.Value);
                 }
                 };

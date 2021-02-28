@@ -48,9 +48,9 @@
             Task Send(SendingEmail sendingEmail)
             {
                 var email = new TransactionalEmailBuilder().WithFrom(new SendContact(emailMeta.FromAddress ?? this.emailSettings.From))
-                                                           .WithSubject("Test subject")
-                                                           .WithHtmlPart("<h1>Header</h1>Test Data")
-                                                           .WithTo(new SendContact("ft.engineering@roseandmy.work"))
+                                                           .WithSubject(notification.Subject)
+                                                           .WithHtmlPart(notification.Body)
+                                                           .WithTo(new SendContact(emailMeta.Recipient))
                                                            .Build();
 
                 return this.mailJetClient.SendTransactionalEmailAsync(email);
