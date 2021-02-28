@@ -51,7 +51,7 @@
             Result.MessageBus.WsEventsPublished.Should().ContainSingle();
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E103v1_GotC107FormData>();
             Result.MessageBus.WsEventsPublished.Single()
-                  .Az<E103v1_GotC107FormData>()
+                  .DirectCast<E103v1_GotC107FormData>()
                   .E000_FieldData.Single(x => x.Name == nameof(C107v1_CreateOrUpdateTestDataTypes.C107_Decimal).ToCamelCase())
                   .InitialValue.Should()
                   .Be(44.44M);  

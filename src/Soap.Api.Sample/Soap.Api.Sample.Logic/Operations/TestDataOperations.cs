@@ -1,6 +1,7 @@
 namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
+    using System.ComponentModel;
     using System.Linq;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
@@ -15,6 +16,7 @@ namespace Soap.Api.Sample.Logic.Operations
             async newState =>
                 {
                 {
+                    throw new WarningException("haha");
                     await DataWriter.DeleteById<TestData>(newState.C114_TestDataId.Value);
                 }
                 };

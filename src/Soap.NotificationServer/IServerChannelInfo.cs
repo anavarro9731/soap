@@ -5,6 +5,6 @@
 
     public interface IServerChannelInfo : INotificationChannel
     {
-        Task Send(Notification notification);
+        Task Send(Notification notification, ChannelSpecificNotificationMeta meta);
     }
 }

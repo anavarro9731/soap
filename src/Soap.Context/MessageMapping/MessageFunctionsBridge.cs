@@ -43,6 +43,6 @@
         public Task HandleFinalFailure(MessageFailedAllRetries msg) =>
             this.messageFunctionsTyped.HandleFinalFailure(msg);
 
-        public void Validate(ApiMessage msg) => this.messageFunctionsTyped.Validate((T)msg);
+        public void Validate(ApiMessage message) => this.messageFunctionsTyped.Validate((T)message);
     }
 }

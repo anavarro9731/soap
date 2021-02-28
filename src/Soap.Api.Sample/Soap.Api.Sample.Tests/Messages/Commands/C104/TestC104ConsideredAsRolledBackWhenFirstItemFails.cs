@@ -1,6 +1,7 @@
 ﻿//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.TestC104
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
     using FluentAssertions;
@@ -35,6 +36,8 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(c104TestUnitOfWork, Identities.JohnDoeAllPermissions, 1, (BeforeRunHook,default));
 
             //assert
+            Result.Success.Should().BeFalse();
+            Result.MessageBus.CommandsSent.Single().Should().BeOfType<MessageFailedAllRetries>();
             Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 

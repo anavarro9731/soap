@@ -41,7 +41,7 @@
 
                         if (propertyValue != null && propertyType.InheritsOrImplements(typeof(List<>)))
                         {
-                            var list = propertyValue.Az<IList>();
+                            var list = propertyValue.DirectCast<IList>();
 
                             if (list.Count > 0 && list[0].GetType().IsSystemType() == false)
                             {

@@ -13,9 +13,7 @@
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
-
-        public List<IUserChannelInfo> UserChannelInfo { get; set; }
-
+        
         public string UserName { get; set; }
     }
 }

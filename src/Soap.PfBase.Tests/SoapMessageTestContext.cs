@@ -76,7 +76,7 @@
                     
                     CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
                         
-                    CreateNotificationServer(appConfig.NotificationServerSettings, out var notificationServer);
+                    CreateNotificationServer(appConfig.NotificationServerSettings, messageAggregator, out var notificationServer);
 
                     CreateBlobStorage(messageAggregator, out var blobStorage);
 
@@ -154,7 +154,7 @@
                                 .Where(m => m.GetType().InheritsOrImplements(typeof(IAssociateProcessStateWithAMessage)))
                                 .SingleOrDefault(
                                     m => ((IAssociateProcessStateWithAMessage)m).ByMessage == message.Headers.GetMessageId())
-                                .Az<IAssociateProcessStateWithAMessage>();
+                                .DirectCast<IAssociateProcessStateWithAMessage>();
 
                             if (statefulProcessLaunchedByThisMessage != null)
                             {
@@ -282,9 +282,13 @@
                 messageAggregator = messageAggregatorForTesting;
             }
 
-            static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
+            static void CreateNotificationServer(
+                NotificationServer.Settings settings,
+                IMessageAggregator messageAggregator,
+                out NotificationServer notificationServer)
             {
-                notificationServer = settings.CreateServer();
+                notificationServer = settings.CreateServer(messageAggregator);
+                
             }
 
             static void CreateBusContext(

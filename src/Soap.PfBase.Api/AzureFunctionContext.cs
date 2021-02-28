@@ -122,32 +122,41 @@
                     }
                     catch (Exception exception)
                     {
-                        
-                        /* sort of HACK, because of the location in the call,
-                         we are sending a forced message outside of the unit of work 
-                         to any wss sender so that the UI can inform a user. */
-                        string errorMessage =  "A Security policy violation is preventing this action from succeeding S00";
-                        try
+                        if (!(message is MessageFailedAllRetries)) 
                         {
-                            errorMessage = new FormattedExceptionInfo(exception, appConfig).SummaryOfExternalErrorMessages;
-                        } catch {}
-                        var toWsClients = new E001v1_MessageFailed()
-                        {
-                            E001_ErrorMessage = errorMessage,
-                            E001_MessageId = message.Headers.GetMessageId(),
-                            E001_MessageTypeName = message.GetType().ToShortAssemblyTypeName(),
-                            E001_StatefulProcessId = message.Headers.GetStatefulProcessId()
-                        };
-                    
-                        await bus.Publish(toWsClients, message, new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
-                        await messageAggregator.AllMessages.OfType<QueuedEventToPublish>().Single().CommitClosure();
-                        
+                            /* sort of HACK, because of the location in the call,
+                             we are sending a forced message outside of the unit of work 
+                             to any wss sender so that the UI can inform a user. */
+                            string errorMessage = "A Security policy violation is preventing this action from succeeding S00";
+                            try
+                            {
+                                errorMessage = new FormattedExceptionInfo(exception, appConfig).SummaryOfExternalErrorMessages;
+                            }
+                            catch
+                            {
+                            }
+
+                            var toWsClients = new E001v1_MessageFailed()
+                            {
+                                E001_ErrorMessage = errorMessage,
+                                E001_MessageId = message.Headers.GetMessageId(),
+                                E001_MessageTypeName = message.GetType().ToShortAssemblyTypeName(),
+                                E001_StatefulProcessId = message.Headers.GetStatefulProcessId()
+                            };
+
+                            await bus.Publish(
+                                toWsClients,
+                                message,
+                                new IBusClient.EventVisibilityFlags(IBusClient.EventVisibility.ReplyToWebSocketSender));
+                            await messageAggregator.AllMessages.OfType<QueuedEventToPublish>().Single().CommitClosure();
+                        }
+
                         throw new SecurityException("Security Exception", exception);
                     }
 
                     CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
 
-                    CreateNotificationServer(appConfig.NotificationSettings, out var notificationServer);
+                    CreateNotificationServer(appConfig.NotificationSettings, messageAggregator, out var notificationServer);
                     
                     var context = new BoostrappedContext(
                         appConfig,
@@ -241,9 +250,9 @@
                 dataStore = new DataStore(lifetimeRepositoryClient, messageAggregator, dataStoreOptions);
             }
 
-            static void CreateNotificationServer(NotificationServer.Settings settings, out NotificationServer notificationServer)
+            static void CreateNotificationServer(NotificationServer.Settings settings, IMessageAggregator messageAggregator, out NotificationServer notificationServer)
             {
-                notificationServer = settings.CreateServer();
+                notificationServer = settings.CreateServer(messageAggregator);
             }
 
             static void CreateMessageAggregator(out IMessageAggregator messageAggregator)

@@ -26,8 +26,11 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
             await TestMessage(Commands.TestUnitOfWork(SpecialIds.MessageDiesWhileSavingUnitOfWork), Identities.JohnDoeAllPermissions, 2);
 
             //assert
+            Result.Success.Should().BeFalse();
+            Result.MessageBus.CommandsSent.Single().Should().BeOfType<MessageFailedAllRetries>();
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E001v1_MessageFailed>();
             Result.UnhandledError.Message.Should().Contain(SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
+            
         }
     }
 }

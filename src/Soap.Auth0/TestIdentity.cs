@@ -3,11 +3,13 @@ namespace Soap.Api.Sample.Tests
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
     using Soap.Config;
     using Soap.Context;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Operations;
+    using Soap.Utility.Models;
 
     public class TestIdentity
     {
@@ -74,5 +76,6 @@ namespace Soap.Api.Sample.Tests
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
+        
     }
 }

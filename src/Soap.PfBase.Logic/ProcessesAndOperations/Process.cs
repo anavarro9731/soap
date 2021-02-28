@@ -81,7 +81,7 @@
 
         protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
         
-        protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.Az<T>(); 
+        protected T GetConfig<T>() where T: class, IBootstrapVariables => this.context.AppConfig.DirectCast<T>(); 
         
         protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 

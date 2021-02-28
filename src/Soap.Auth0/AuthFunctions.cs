@@ -77,10 +77,24 @@ namespace Soap.Context
                         lastIdentityValue,
                         v => identityPermissionsInternal = v,
                         v => userProfileInternal = v);
+
+                    if (message is MessageFailedAllRetries m)
+                    {
+                        message.Validate();
+                        var nameOfFailedMessage = Type.GetType(m.TypeName).Name;
+                        
+                        Guard.Against(
+                            identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(nameOfFailedMessage),
+                            AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");
+                    }
+                    else
+                    {
+                        Guard.Against(
+                            identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(message.GetType().Name),
+                            AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");    
+                    }
                     
-                    Guard.Against(
-                        identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(message.GetType().Name),
-                        AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");
+                    
                     
                 }
                 
@@ -168,6 +182,17 @@ namespace Soap.Context
             //* user profile remains null
 
             return Task.CompletedTask;
+            
+            static List<string> GetAllApiPermissions(ApiMessage message) =>
+                (message is MessageFailedAllRetries fat ? Type.GetType(fat.TypeName) : message.GetType())
+                       .Assembly.GetTypes()
+                       .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
+                       .Select(t => t.Name)
+                       .Union(
+                           typeof(MessageFailedAllRetries).Assembly.GetTypes()
+                                                          .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
+                                                          .Select(t => t.Name))
+                       .ToList();
         }
 
         public static async Task UserSchemeAuth<TUserProfile>(
@@ -184,7 +209,7 @@ namespace Soap.Context
 
             var identityPermissions = await Auth0Functions.GetPermissionsFromAccessToken(
                                           bootstrapVariables
-                                              .Az<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
+                                              .DirectCast<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                           accessToken,
                                           securityInfo);
 
@@ -192,7 +217,7 @@ namespace Soap.Context
 
             var userProfile = await Auth0Functions.Profiles.GetUserProfileOrNull<TUserProfile>(
                                   bootstrapVariables
-                                      .Az<ApplicationConfig
+                                      .DirectCast<ApplicationConfig
                                       >(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
                                   dataStore,
                                   idToken);
@@ -200,15 +225,6 @@ namespace Soap.Context
             setProfile(userProfile);
         }
 
-        private static List<string> GetAllApiPermissions(ApiMessage message) =>
-            message.GetType()
-                   .Assembly.GetTypes()
-                   .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
-                   .Select(t => t.Name)
-                   .Union(
-                       typeof(MessageFailedAllRetries).Assembly.GetTypes()
-                                                      .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
-                                                      .Select(t => t.Name))
-                   .ToList();
+
     }
 }

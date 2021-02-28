@@ -4,7 +4,7 @@
     <Version>5.22.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CircuitBoard" Version="4.10.0-alpha" />
+    <PackageReference Include="CircuitBoard" Version="4.10.0" />
     <PackageReference Include="Destructurama.Attributed" Version="2.0.0" />
   </ItemGroup>
 </Project>

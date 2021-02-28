@@ -10,7 +10,7 @@
 
         Task HandleFinalFailure(MessageFailedAllRetries msg);
 
-        void Validate(ApiMessage msg);
+        void Validate(ApiMessage message);
     }
 
     public interface IMessageFunctionsClientSide<T> : ICanCall<IOperation>,

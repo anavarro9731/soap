@@ -1,7 +1,9 @@
 ﻿namespace Soap.NotificationServer
 {
+    using CircuitBoard.MessageAggregator;
+
     public interface INotificationChannelSettings
     {
-        IServerChannelInfo CreateChannel();
+        IServerChannelInfo CreateChannel(IMessageAggregator messageAggregator);
     }
 }

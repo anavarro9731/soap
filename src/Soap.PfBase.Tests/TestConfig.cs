@@ -38,11 +38,11 @@ namespace Soap.PfBase.Tests
 
         public bool UseServiceLevelAuthorityInTheAbsenceOfASecurityContext { get; set; }
         
-        public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings
+        public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings()
         {
-            ChannelSettings = new List<INotificationChannelSettings>
+            ChannelSettings = new List<INotificationChannelSettings>()
             {
-                new InMemoryChannel.Settings()
+                new EmailChannel.MailJetEmailSenderSettings("im@mycomputer.com", "apiKey", "apiSecret")
             }
         };
     }

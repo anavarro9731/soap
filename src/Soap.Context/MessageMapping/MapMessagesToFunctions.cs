@@ -41,9 +41,9 @@
         {
             var messageType = message.GetType();
 
-            if (message is MessageFailedAllRetries f)
+            if (message is MessageFailedAllRetries m)
             {
-                var typeOfFailedMessage = Type.GetType(f.TypeName);
+                var typeOfFailedMessage = Type.GetType(m.TypeName);
                 return this.messageMappings[typeOfFailedMessage];
             }
             else
