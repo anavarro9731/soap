@@ -4,7 +4,7 @@ namespace Soap.NotificationServer.Channels
 
     public class EmailNotificationSpecificNotificationMeta : ChannelSpecificNotificationMeta
     {
-        public EmailNotificationSpecificNotificationMeta(string recipient, string fromAddress)
+        public EmailNotificationSpecificNotificationMeta(string recipient, string fromAddress = null)
             : base(recipient, NotificationChannelTypes.Email)
         {
             FromAddress = fromAddress;

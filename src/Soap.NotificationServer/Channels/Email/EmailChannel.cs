@@ -47,7 +47,7 @@
 
             Task Send(SendingEmail sendingEmail)
             {
-                var email = new TransactionalEmailBuilder().WithFrom(new SendContact(emailMeta.FromAddress))
+                var email = new TransactionalEmailBuilder().WithFrom(new SendContact(emailMeta.FromAddress ?? this.emailSettings.From))
                                                            .WithSubject("Test subject")
                                                            .WithHtmlPart("<h1>Header</h1>Test Data")
                                                            .WithTo(new SendContact("ft.engineering@roseandmy.work"))
@@ -65,7 +65,7 @@
                 string apiSecret,
                 IReadOnlyList<string> allowedTo = null)
             {
-                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailJetEmailSenderSettings)}.{nameof(from)} cannot be null");
+                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailJetEmailSenderSettings)}.{nameof(from)} cannot be null. You must provide a backup from address, in case the user does not specify one with the Notification");
                 Guard.Against(
                     string.IsNullOrEmpty(apiKey),
                     $"{nameof(MailJetEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
