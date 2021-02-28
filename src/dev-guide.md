@@ -476,7 +476,41 @@ StatefulProcess [Example](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P200_C
 
 #### Using Notifications (including Emails) In Processes
 
-TODO
+The Notifications server is a generic platform that supports sending a notification
+via one or more channels. By default the only channel available is a EmailChannel based
+on the MailJet email service. However, adding other channels should be a very easy job.
+
+To configure the Notification Server you need to configure at least one channel in the
+Environment Config. By default nothing is configured. 
+
+If you use the MailJet email channel, you will need to create an account with MailJet,
+then edit the config and update the notification settings like this:
+
+```c#
+NotificationSettings = new NotificationServer.Settings()
+            {
+                ChannelSettings = new List<INotificationChannelSettings>()
+                {
+                    new EmailChannel.MailJetEmailSenderSettings("no-reply@mycompany.com", "apiKey","apiSecret")
+                }
+            };
+```
+That is all you need to do to send notifications from within the domain logic.
+Notifications are sent using the `NotificationServer.Notify` method available in any Process.
+See [P203](Soap.Api.Sample/Soap.Api.Sample.Logic/Processes/P203_MessageFailedAllRetries__NotifyOfFinalFailure.cs)
+for an example.
+
+Be aware of the second parameter of the Notify method `failMessageIfFailedToSendNotification`
+which if set to true will cause the unit of work to be abandoned if the notification cannot be sent.
+Remember notifications are sent outside the unit of work, technically speaking, and they are
+also sent immediately when you call the Notify method. This is not ideal in some senses, but
+also it is not possible in most cases to enlist things like email in a transaction. Obviously,
+you have to think through the consequences. In some case this parameter can help, but in most
+cases it should be set to false. If neither settings of `failMessageIfFailedToSendNotification`
+gives you want you want, you might consider creating a new command like SendNotification which
+has a handler that only sends notifications. This would then allow you to treat notifications
+as actual elements of the unit of work albeit they are guaranteed to succeed, but they will
+run in a separate transaction.
 
 ### Queries
 
