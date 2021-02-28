@@ -1,6 +1,7 @@
 ﻿namespace Soap.PfBase.Api
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -98,8 +99,9 @@
                             MetadataReference.CreateFromFile(typeof(NotificationServer).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(IBus).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(TypedEnumeration<>).Assembly.Location), 
-                            MetadataReference.CreateFromFile(typeof(ErrorMessageSensitivity).Assembly.Location), //?
+                            MetadataReference.CreateFromFile(typeof(ErrorMessageSensitivity).Assembly.Location), //? maybe not need, perf bonus to fix TODO
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(System.Collections.IList).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),
                             MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location)

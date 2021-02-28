@@ -16,7 +16,7 @@
 
         public NotificationServer(Settings settings, IMessageAggregator messageAggregator)
         {
-            settings.ChannelSettings.ForEach(s => this.channels.Add(s.CreateChannel(messageAggregator)));
+            settings.ChannelSettings.ToList().ForEach(s => this.channels.Add(s.CreateChannel(messageAggregator)));
         }
 
         public List<NotificationSent> NotificationsSent { get; set; } = new List<NotificationSent>();
@@ -100,7 +100,7 @@
 
         public class Settings
         {
-            public List<INotificationChannelSettings> ChannelSettings { get; set; } = new List<INotificationChannelSettings>();
+            public INotificationChannelSettings[] ChannelSettings { get; set; } = new INotificationChannelSettings[0];
 
             public NotificationServer CreateServer(IMessageAggregator messageAggregator) =>
                 new NotificationServer(this, messageAggregator);

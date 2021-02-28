@@ -40,7 +40,7 @@ namespace Soap.PfBase.Tests
         
         public NotificationServer.Settings NotificationServerSettings { get; set; } = new NotificationServer.Settings()
         {
-            ChannelSettings = new List<INotificationChannelSettings>()
+            ChannelSettings = new []
             {
                 new EmailChannel.MailJetEmailSenderSettings("im@mycomputer.com", "apiKey", "apiSecret")
             }
