@@ -42,7 +42,7 @@ namespace Soap.PfBase.Tests
         {
             ChannelSettings = new []
             {
-                new EmailChannel.MailJetEmailSenderSettings("im@mycomputer.com", "apiKey", "apiSecret")
+                new EmailChannel.MailJetEmailSenderSettings("apiKey", "apiSecret", "no-reply@test-company.com", "italerts@test-company.com")
             }
         };
     }

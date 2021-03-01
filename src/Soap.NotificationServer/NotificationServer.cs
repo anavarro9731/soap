@@ -12,11 +12,11 @@
 
     public class NotificationServer
     {
-        private readonly List<IServerChannelInfo> channels = new List<IServerChannelInfo>();
+        public readonly List<IServerChannelInfo> Channels = new List<IServerChannelInfo>();
 
         public NotificationServer(Settings settings, IMessageAggregator messageAggregator)
         {
-            settings.ChannelSettings.ToList().ForEach(s => this.channels.Add(s.CreateChannel(messageAggregator)));
+            settings.ChannelSettings.ToList().ForEach(s => this.Channels.Add(s.CreateChannel(messageAggregator)));
         }
 
         public List<NotificationSent> NotificationsSent { get; set; } = new List<NotificationSent>();
@@ -80,7 +80,7 @@
 
             IServerChannelInfo GetChannelOrNull(NotificationChannelTypes type)
             {
-                var channel = this.channels.SingleOrDefault(x => x.Type == type);
+                var channel = this.Channels.SingleOrDefault(x => x.Type == type);
 
                 Guard.Against(
                     channel == null && failMessageIfFailedToSendNotification,

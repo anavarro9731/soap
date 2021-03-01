@@ -20,6 +20,10 @@
 
         private readonly IMessageAggregator messageAggregator;
 
+        public string ItAlertsEmail => this.emailSettings.ItAlertsEmailAddress;
+
+        public string GenericSenderEmail => this.emailSettings.GenericSenderAddress;
+        
         public EmailChannel(MailJetEmailSenderSettings settings, IMessageAggregator messageAggregator)
         {
             this.mailJetClient = new MailjetClient(settings.ApiKey, settings.ApiSecret);
@@ -47,7 +51,7 @@
 
             Task Send(SendingEmail sendingEmail)
             {
-                var email = new TransactionalEmailBuilder().WithFrom(new SendContact(emailMeta.FromAddress ?? this.emailSettings.From))
+                var email = new TransactionalEmailBuilder().WithFrom(new SendContact(emailMeta.FromAddress ?? this.emailSettings.GenericSenderAddress))
                                                            .WithSubject(notification.Subject)
                                                            .WithHtmlPart(notification.Body)
                                                            .WithTo(new SendContact(emailMeta.Recipient))
@@ -60,12 +64,14 @@
         public class MailJetEmailSenderSettings : INotificationChannelSettings
         {
             public MailJetEmailSenderSettings(
-                string from,
                 string apiKey,
                 string apiSecret,
+                string genericSenderAddress,
+                string itAlertsEmailAddress,
                 IReadOnlyList<string> allowedTo = null)
             {
-                Guard.Against(string.IsNullOrEmpty(from), $"{nameof(MailJetEmailSenderSettings)}.{nameof(from)} cannot be null. You must provide a backup from address, in case the user does not specify one with the Notification");
+                Guard.Against(string.IsNullOrEmpty(genericSenderAddress), $"{nameof(MailJetEmailSenderSettings)}.{nameof(genericSenderAddress)} cannot be null. You must provide a backup from address, in case the user does not specify one with the Notification");
+                Guard.Against(string.IsNullOrEmpty(itAlertsEmailAddress), $"{nameof(MailJetEmailSenderSettings)}.{nameof(itAlertsEmailAddress)} cannot be null. You must provide an address for IT alerts");
                 Guard.Against(
                     string.IsNullOrEmpty(apiKey),
                     $"{nameof(MailJetEmailSenderSettings)}.{nameof(apiKey)} cannot be null");
@@ -73,7 +79,8 @@
                     string.IsNullOrEmpty(apiSecret),
                     $"{nameof(MailJetEmailSenderSettings)}.{nameof(apiSecret)} cannot be null");
 
-                From = from;
+                GenericSenderAddress = genericSenderAddress;
+                ItAlertsEmailAddress = itAlertsEmailAddress;
                 ApiKey = apiKey;
                 ApiSecret = apiSecret;
                 AllowedTo = allowedTo ?? new[]
@@ -90,7 +97,9 @@
 
             public string ApiSecret { get; }
 
-            public string From { get; }
+            public string GenericSenderAddress { get; }
+
+            public string ItAlertsEmailAddress { get; }
 
             public IServerChannelInfo CreateChannel(IMessageAggregator messageAggregator) => new EmailChannel(this, messageAggregator);
         }

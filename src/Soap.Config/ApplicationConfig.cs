@@ -39,7 +39,7 @@
         public string AppId { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
-
+        
         public bool AuthEnabled { get; set; }
 
         public string EncryptionKey { get; set; }
