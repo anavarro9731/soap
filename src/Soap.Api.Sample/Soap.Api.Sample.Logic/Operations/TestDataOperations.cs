@@ -80,7 +80,7 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.DecimalOptional = newState.C107_DecimalOptional;
                                                data.Guid = newState.C107_Guid;
                                                data.GuidOptional = newState.C107_GuidOptional;
-                                               data.Long = newState.C107_LongOptional;
+                                               data.Long = newState.C107_Long;
                                                data.LongOptional = newState.C107_LongOptional;
                                                data.DateTime = newState.C107_DateTime;
                                                data.DateTimeOptional = newState.C107_DateTimeOptional;
