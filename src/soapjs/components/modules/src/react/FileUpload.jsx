@@ -25,14 +25,15 @@ function resizeTo(blob, {maxHeight, maxWidth}) {
     });
 }
 
-async function uploadBlobToBackend(blobInfo) {
+async function uploadBlobToBackend(blobId, blob) {
 
     const endpoint = `${config.vars.functionAppRoot}/AddBlob`;
-    await fetch(`${endpoint}?id=${blobInfo.id}`, {
+    await fetch(`${endpoint}?id=${blobId}`, {
         method: "post",
         //we don’t set Content-Type header manually, because a Blob object has a built-in type for Blob objects that type becomes the value of Content-Type.
-        body: blobInfo.blob
+        body: blob
     });
+    
 }
 
 async function objectUrlToBlob(objectUrl) {
@@ -63,7 +64,9 @@ export default (props) => {
                     name: value.name,
                     blob: blob
                 };
+                
                 const enrichedBlob = await enrichBlobInfo(blobInfo);
+                
                 onChange(enrichedBlob);  //* forces react hook form to save value in controller
                 setIsLoading(false);
             }
@@ -82,8 +85,8 @@ export default (props) => {
                     setIsLoading(true);
                     const blob = await getBlobFromDisk(acceptedFiles[0]);
                     const enrichedBlob = await enrichBlobInfo(blob);
-                    const blobToUpload = objectUrlToBlob(enrichedBlob.objectUrl);
-                    await uploadBlobToBackend(blobToUpload);
+                    const blobToUpload = await objectUrlToBlob(enrichedBlob.objectUrl);
+                    await uploadBlobToBackend(enrichedBlob.id, blobToUpload);
                     onChange(enrichedBlob);
                     setIsLoading(false);
                 }}

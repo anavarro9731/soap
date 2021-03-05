@@ -3,8 +3,8 @@ import {useEvent} from '../hooks/useEvent';
 import {Client as Styletron} from 'styletron-engine-atomic';
 import {Provider as StyletronProvider} from 'styletron-react';
 import {BaseProvider, LocaleProvider, withStyle} from 'baseui';
-import {PLACEMENT, toaster, ToasterContainer} from 'baseui/toast';
-import {DURATION, SnackbarProvider,} from 'baseui/snackbar';
+import {PLACEMENT as PLACEMENT_TOASTER, toaster, ToasterContainer} from 'baseui/toast';
+import {DURATION, SnackbarProvider, PLACEMENT as PLACEMENT_SNACKBAR } from 'baseui/snackbar';
 import {Auth0Provider } from "@auth0/auth0-react";
 import config from "../soap/config";
 import {useEffect, useReducer} from "react";
@@ -55,8 +55,8 @@ export default function App(props) {
     return (<LocaleProvider locale={override}>
         <StyletronProvider value={engine}>
             <BaseProvider theme={props.theme}>
-                <ToasterContainer autoHideDuration={4000} placement={PLACEMENT.topRight}>
-                    <SnackbarProvider defaultDuration={DURATION.short}>
+                <ToasterContainer autoHideDuration={4000} placement={PLACEMENT_TOASTER.topRight}>
+                    <SnackbarProvider defaultDuration={DURATION.short} placement={PLACEMENT_SNACKBAR.bottom}>
                         <Router>
                         {getContent()}
                         </Router>

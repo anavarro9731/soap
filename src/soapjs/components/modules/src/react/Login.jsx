@@ -17,6 +17,7 @@ export const Login = (props) => {
         error,
         user,
         loginWithRedirect,
+        buildAuthorizeUrl,
         logout
     } = useAuth0();
 
@@ -29,6 +30,18 @@ export const Login = (props) => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const authDebug = urlParams.get('authDebug');
+    
+    let signupUrl;
+    
+    useEffect(() => {
+        const getCustomAuthoriseUrl = async () => {
+            let authoriseUrl = await buildAuthorizeUrl();
+            authoriseUrl += '&screen_hint=signup';
+            signupUrl = authoriseUrl;
+            console.log(signupUrl);
+        };
+        getCustomAuthoriseUrl();
+    });
     
     if (!authReady || !config.auth0) {
         return null;
@@ -69,6 +82,7 @@ export const Login = (props) => {
             
         </React.Fragment>);
     } else {
+        
         return <React.Fragment>
             { authDebug ? (<DebugLayer>
                 <Button onClick={
@@ -76,7 +90,8 @@ export const Login = (props) => {
                         console.log("config", config);
                     }}>debugdata</Button>
             </DebugLayer>) : null }
-            
+            <Button kind={KIND.secondary}
+                    size={SIZE.compact} onClick={() => window.location.href = signupUrl}>Sign Up</Button>
             <Button kind={KIND.secondary}
                                  size={SIZE.compact} onClick={() => loginWithRedirect({
             redirect_uri: `${window.location.origin}`,

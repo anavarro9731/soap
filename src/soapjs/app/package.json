@@ -2,7 +2,7 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "^1.281.0",
+    "@soap/modules": "^1.284.0",
     "baseui": "^9.110.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
@@ -16,7 +16,7 @@
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.6.3",
     "@babel/preset-react": "^7.0.0",
-    "parcel": "^1.12.4"
+    "parcel": "1.12.3"
   },
   "browserslist": [
     "last 1 Edge version",
