@@ -220,9 +220,9 @@ Log "Uploading Config Repo"
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
-g$gPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/soap/_git/$AzureDevopsName.config master --set-upstream"
-Write-Host $gPushCmd
-iex $gPushCmd
+$gitPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/soap/_git/$AzureDevopsName.config master --set-upstream"
+Write-Host $gitPushCmd
+iex $gitPushCmd
 
 Log-Step "Creating Service Repo, Please wait..."
 
