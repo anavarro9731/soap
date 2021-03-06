@@ -613,7 +613,33 @@ of where to implement them. As a nested class is an option when they are used on
 
 SOAP supports an optional integration with Auth0's IDP server to provide and identity management solution 
 
-You can enable this integration by following the steps in the [readme](readme.md#authentication-and-authorisation-options)
+It is not enabled by default and is optional. To enable this follow these steps:
+
+#### Setup
+
+1. Create auth0 account (free level is fine)
+    1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
+       and configure any other specifics that will apply to all services
+    1. Enable MFA from the left-nav if desired
+1. Create 3 tenant(s) in that account
+    1. yourorganisation-dev
+    1. yourorganisation-vnext
+    1. yourorganisation-rel
+
+In each tenant create a machine-machine application called "Enterprise Admin", and give it all permissions on the Auth0 Mgmt Api. If prompted don't create a default application.
+1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
+   for *Getting an access token for your API line*, from the line that begins with "--data"
+   and set them in the ENV_Config file in the YourApi.Config repo for each environment.
+1. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
+1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEm__SAMPLE-SECRET__9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
+1. Auth0HealthCheckClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
+1. AuthEnabled = true;
+
+**WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
+these are the keys to the castle for the entire service enterprise. The config repo should have azure
+devops security associated with it so that only the few persons with the need to access these variables
+do so. Except in cases of small teams, developers should not have access to the config repo.
+If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
 
 Once the Auth0 integration is active in the config, you then need to consider the following
 

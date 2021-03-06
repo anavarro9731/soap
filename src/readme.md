@@ -193,52 +193,17 @@ Then run the command `Run -CreateRelease` this will sort out creating the new br
 It will push the release to Azure and create the environment if necessary.
 Finally, it will leave you on the master branch afterwards.
 
-# Authentication and Authorisation Options
-
-If you want this to be a protected application with private logins the platform supports easy
-integration with Auth0. It is not enabled by default and is optional. To enable this follow these steps:
-
-## Setup 
-
-1. Create auth0 account (free level is fine)
-   1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
-      and configure any other specifics that will apply to all services
-   1. Enable MFA from the left-nav if desired
-1. Create 3 tenant(s) in that account
-   1. yourorganisation-dev
-   1. yourorganisation-vnext 
-   1. yourorganisation-rel
-   
-In each tenant create a machine-machine application called "Enterprise Admin", and give it all permissions on the Auth0 Mgmt Api. If prompted don't create a default application.
-   1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
-      for *Getting an access token for your API line*, from the line that begins with "--data" 
-      and set them in the ENV_Config file in the YourApi.Config repo for each environment.
-   1. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
-   1. Auth0HealthCheckClientSecret = "BXNHigoH4NFSEm__SAMPLE-SECRET__9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
-   1. Auth0HealthCheckClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
-   1. AuthEnabled = true;
-
-**WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
-these are the keys to the castle for the entire service enterprise. The config repo should have azure
-devops security associated with it so that only the few persons with the need to access these variables
-do so. Except in cases of small teams, developers should not have access to the config repo. 
-If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
-
-See [dev-guide](dev-guide.md#authentication-and-authorisation) for info on how to protect the API and handle login
-
 # NOTES
  
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
-- When using Jetbrains Rider [@2020.2] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
+- When using Jetbrains Rider [@2020.3] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
 - We are stuck using the -no-source-maps flag in parcel v1 because auth0 library wont work otherwise, parcel team not fixing
 the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1. won't cancel properly, random errors
 
 # BackLog
 MUST
-- Update DataStore to new [Azure.Cosmos] CosmosDb SDK and latest CircuitBoard, the update SOAP)
-- Ensure Notifications server can at least send emails, have some config (shouldn't require EnvKey))
 - Custom Domain and CDN (before live)
 - Stripe Integration (before payments)
 SHOULD
