@@ -1,4 +1,4 @@
-namespace Soap.PfBase.Tests
+namespace Soap.Interfaces
 {
     using System;
     using Soap.Interfaces.Messages;

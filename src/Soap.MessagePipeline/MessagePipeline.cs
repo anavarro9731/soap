@@ -9,6 +9,7 @@
     using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
 
     public static class MessagePipeline
     {

@@ -9,6 +9,7 @@
     using Soap.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility;
 
     public class ServiceStateOperations : Operations<ServiceState>
     {

@@ -2,6 +2,7 @@
 {
     using System;
     using Soap.Context;
+    using Soap.Utility;
 
     public class ApiMessageValidationErrorCodes : ErrorCode
     {

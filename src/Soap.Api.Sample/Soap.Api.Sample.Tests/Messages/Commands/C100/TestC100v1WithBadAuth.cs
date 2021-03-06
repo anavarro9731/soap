@@ -1,12 +1,13 @@
 //* ##REMOVE-IN-COPY##
 
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C100
 {
     using FluentAssertions;
-    using Soap.Context;
-    using Soap.Utility.Functions.Extensions;
+    using Soap.Auth0;
+    using Soap.Utility;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC100v1WithBadAuth : Test
     {

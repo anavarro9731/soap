@@ -1,6 +1,6 @@
 ﻿//* ##REMOVE-IN-COPY##
 
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C105
 {
     using System.Linq;
     using System.Threading.Tasks;

@@ -16,6 +16,7 @@
     using CircuitBoard.Messages;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     /* doesn't need it's own project right now because it is not needed by the Soap.Config repo

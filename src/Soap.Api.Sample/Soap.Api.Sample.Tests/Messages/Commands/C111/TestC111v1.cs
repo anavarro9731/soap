@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C111
 {
     using System;
     using System.Linq;

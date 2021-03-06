@@ -1,4 +1,4 @@
-﻿namespace Soap.Interfaces
+﻿namespace Soap.NotificationServer
 {
     public abstract class ChannelSpecificNotificationMeta : INotificationChannel
     {

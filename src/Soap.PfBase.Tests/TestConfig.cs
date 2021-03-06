@@ -13,6 +13,7 @@ to share any more than the general flow */
 namespace Soap.PfBase.Tests
 {
     using Soap.Interfaces;
+    using Soap.NotificationServer.Channels.Email;
     using NotificationServer = Soap.NotificationServer.NotificationServer;
 
     public class TestConfig : IBootstrapVariables

@@ -4,35 +4,38 @@ using Soap.Api.Sample.Messages.Commands;
 using Soap.Api.Sample.Messages.Events;
 using Soap.Interfaces;
 
-public class SecurityInfo : ISecurityInfo
+namespace Soap.Api.Sample.Afs
 {
-    public List<ApiPermissionGroup> PermissionGroups { get; } = new List<ApiPermissionGroup>
+    public class SecurityInfo : ISecurityInfo
     {
-        new ApiPermissionGroup
+        public List<ApiPermissionGroup> PermissionGroups { get; } = new List<ApiPermissionGroup>
         {
-            Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
-            Name =   "Ping Pong",
-            Description = "Test Messages",
-            ApiPermissions = new List<string>
+            new ApiPermissionGroup
             {
-                nameof(C100v1_Ping),
-                nameof(C103v1_StartPingPong),
-                nameof(E100v1_Pong)
-            }
-        },
-        new ApiPermissionGroup()
-        {
-            Id = Guid.Parse("C9BF5807-56F1-4FC3-A49E-CCB93218F82C"),
-            Name = "Test Data",
-            ApiPermissions = new List<string>
+                Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
+                Name =   "Ping Pong",
+                Description = "Test Messages",
+                ApiPermissions = new List<string>
+                {
+                    nameof(C100v1_Ping),
+                    nameof(C103v1_StartPingPong),
+                    nameof(E100v1_Pong)
+                }
+            },
+            new ApiPermissionGroup()
             {
-                nameof(C111v1_GetRecentTestData),
-                nameof(C110v1_GetTestDataById),
-                nameof(C109v1_GetC107DefaultFormData),
-                nameof(C107v1_CreateOrUpdateTestDataTypes),
-                nameof(C114v1_DeleteTestDataById),
-                nameof(C113v1_GetC107FormDataForEdit)
+                Id = Guid.Parse("C9BF5807-56F1-4FC3-A49E-CCB93218F82C"),
+                Name = "Test Data",
+                ApiPermissions = new List<string>
+                {
+                    nameof(C111v1_GetRecentTestData),
+                    nameof(C110v1_GetTestDataById),
+                    nameof(C109v1_GetC107DefaultFormData),
+                    nameof(C107v1_CreateOrUpdateTestDataTypes),
+                    nameof(C114v1_DeleteTestDataById),
+                    nameof(C113v1_GetC107FormDataForEdit)
+                }
             }
-        }
-    };
+        };
+    }
 }

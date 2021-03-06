@@ -6,8 +6,8 @@
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using FluentValidation;
-    using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class NotificationServer

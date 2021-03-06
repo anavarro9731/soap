@@ -14,6 +14,7 @@
     using Soap.Config;
     using Soap.Context;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     

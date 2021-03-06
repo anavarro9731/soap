@@ -1,4 +1,4 @@
-namespace Soap.Context
+namespace Soap.Auth0
 {
     using System;
     using System.Collections.Generic;
@@ -7,10 +7,10 @@ namespace Soap.Context
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces.LowLevel;
-    using Soap.Auth0;
     using Soap.Config;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 

@@ -1,4 +1,4 @@
-﻿namespace Soap.Context
+﻿namespace Soap.Utility
 {
     using System;
     using System.Reflection;
@@ -23,3 +23,4 @@
         public string CallingAssembly { get; set; }
     }
 }
+

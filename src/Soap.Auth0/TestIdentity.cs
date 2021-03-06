@@ -1,15 +1,12 @@
-namespace Soap.Api.Sample.Tests
+namespace Soap.Auth0
 {
     using System;
     using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using CircuitBoard;
     using DataStore.Interfaces.LowLevel;
     using Soap.Config;
-    using Soap.Context;
     using Soap.Interfaces;
+    using Soap.Utility;
     using Soap.Utility.Functions.Operations;
-    using Soap.Utility.Models;
 
     public class TestIdentity
     {

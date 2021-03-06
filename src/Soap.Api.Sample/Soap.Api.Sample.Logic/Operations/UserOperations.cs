@@ -11,7 +11,7 @@ namespace Soap.Api.Sample.Logic.Operations
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
-    using Guard = Soap.Context.Guard;
+    using Guard = Soap.Utility.Guard;
 
     /// <summary>
     ///     Not really representative of user operations, too specific, uses undocumented features for testing UOW

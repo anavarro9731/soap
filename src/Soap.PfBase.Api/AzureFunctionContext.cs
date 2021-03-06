@@ -16,6 +16,7 @@
     using Serilog;
     using Serilog.Exceptions;
     using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
+    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
@@ -28,6 +29,7 @@
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 

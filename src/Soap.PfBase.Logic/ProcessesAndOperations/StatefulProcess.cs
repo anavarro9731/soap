@@ -13,6 +13,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Soap.Utility.Objects.Binary;

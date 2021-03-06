@@ -1,20 +1,16 @@
 ﻿//* ##REMOVE-IN-COPY##
 
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C112
 {
     using System.Linq;
-    using System.Threading.Tasks;
     using CircuitBoard;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
-    using Soap.Config;
+    using Soap.Auth0;
     using Soap.Context;
-    using Soap.Context.BlobStorage;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
     using Xunit;
     using Xunit.Abstractions;
 

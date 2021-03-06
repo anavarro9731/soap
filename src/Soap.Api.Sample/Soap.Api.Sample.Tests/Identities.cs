@@ -4,6 +4,7 @@
     using System.Linq;
     using CircuitBoard;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Auth0;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer.Channels;

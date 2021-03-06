@@ -1,13 +1,10 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C109
 {
-    using System;
     using System.Linq;
-    using System.Threading.Tasks;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.BlobStorage;
-    using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;

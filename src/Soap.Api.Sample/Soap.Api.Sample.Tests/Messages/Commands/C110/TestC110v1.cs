@@ -1,4 +1,4 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C110
 {
     using System;
     using System.Linq;
@@ -7,9 +7,6 @@
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Api.Sample.Models.ValueTypes;
-    using Soap.Context.BlobStorage;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
 

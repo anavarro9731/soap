@@ -8,6 +8,7 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility;
 
     public class P209_C107__CreateOrUpdateTestData : Process, IBeginProcess<C107v1_CreateOrUpdateTestDataTypes>
     {

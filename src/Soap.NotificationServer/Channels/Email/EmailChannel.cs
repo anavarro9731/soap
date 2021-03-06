@@ -1,4 +1,4 @@
-﻿namespace Soap.NotificationServer.Channels
+﻿namespace Soap.NotificationServer.Channels.Email
 {
     using System;
     using System.Collections.Generic;
@@ -8,8 +8,7 @@
     using CircuitBoard.Messages;
     using Mailjet.Client;
     using Mailjet.Client.TransactionalEmails;
-    using Soap.Context;
-    using Soap.Interfaces;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class EmailChannel : IServerChannelInfo

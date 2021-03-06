@@ -12,6 +12,7 @@
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations.ProcessMessages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     /// <summary>

@@ -1,4 +1,4 @@
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C101
 {
     using System.Linq;
     using CircuitBoard;
@@ -7,6 +7,7 @@ namespace Soap.Api.Sample.Tests.Messages
     using Soap.Api.Sample.Models.Aggregates;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC101v1UpgradingTheDatabaseMoreThanOnce : Test
     {

@@ -1,9 +1,6 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.Commands.MessageFailedAllRetries
 {
-    using System;
     using FluentAssertions;
-    using Soap.Api.Sample.Messages.Commands;
-    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces.Messages;
     using Xunit;
     using Xunit.Abstractions;

@@ -1,6 +1,7 @@
-namespace Soap.Context
+namespace Soap.Auth0
 {
     using System;
+    using Soap.Utility;
 
     public class AuthErrorCodes : ErrorCode
     {

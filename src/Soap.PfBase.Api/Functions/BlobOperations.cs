@@ -9,6 +9,7 @@ namespace Soap.PfBase.Api.Functions
     using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.MessagePipeline.MessageAggregator;
+    using Soap.Utility;
     using Soap.Utility.Enums;
 
     public static partial class PlatformFunctions

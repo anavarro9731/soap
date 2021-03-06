@@ -1,13 +1,13 @@
 ﻿//* ##REMOVE-IN-COPY##
-namespace Soap.Api.Sample.Tests.Messages.TestC104
+namespace Soap.Api.Sample.Tests.Messages.Commands.C104
 {
     using System.Linq;
     using FluentAssertions;
     using Soap.Context;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC104MessageDiesWhileSavingUnitOfWork : TestC104
     {

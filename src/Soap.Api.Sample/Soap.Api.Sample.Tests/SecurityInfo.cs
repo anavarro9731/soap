@@ -4,20 +4,23 @@ using Soap.Api.Sample.Messages.Commands;
 using Soap.Api.Sample.Messages.Events;
 using Soap.Interfaces;
 
-public class SecurityInfo : ISecurityInfo
+namespace Soap.Api.Sample.Tests
 {
-    public List<ApiPermissionGroup> PermissionGroups { get; } = new List<ApiPermissionGroup>
+    public class SecurityInfo : ISecurityInfo
     {
-        new ApiPermissionGroup
+        public List<ApiPermissionGroup> PermissionGroups { get; } = new List<ApiPermissionGroup>
         {
-            Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
-            Name =   "Ping Pong",
-            ApiPermissions = new List<string>
+            new ApiPermissionGroup
             {
-                nameof(C100v1_Ping),
-                nameof(C103v1_StartPingPong),
-                nameof(E100v1_Pong)
+                Id = Guid.Parse("8F7DD1BD-F6D7-4379-9089-702EB5DCCA27"),
+                Name =   "Ping Pong",
+                ApiPermissions = new List<string>
+                {
+                    nameof(C100v1_Ping),
+                    nameof(C103v1_StartPingPong),
+                    nameof(E100v1_Pong)
+                }
             }
-        }
-    };
+        };
+    }
 }

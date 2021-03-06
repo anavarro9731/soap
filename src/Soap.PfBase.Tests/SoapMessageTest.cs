@@ -8,7 +8,7 @@ namespace Soap.PfBase.Tests
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
-    using Soap.Api.Sample.Tests;
+    using Soap.Auth0;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;

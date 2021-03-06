@@ -1,13 +1,13 @@
-﻿namespace Soap.Api.Sample.Tests.Messages
+﻿namespace Soap.Api.Sample.Tests.Messages.Commands.MessageFailedAllRetries
 {
     using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
-    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.NotificationServer.Channels;
+    using Soap.NotificationServer;
+    using Soap.NotificationServer.Channels.Email;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;

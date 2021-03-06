@@ -12,7 +12,7 @@
     using Destructurama;
     using Serilog;
     using Serilog.Exceptions;
-    using Soap.Api.Sample.Tests;
+    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
@@ -26,6 +26,7 @@
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
     using Xunit.Abstractions;

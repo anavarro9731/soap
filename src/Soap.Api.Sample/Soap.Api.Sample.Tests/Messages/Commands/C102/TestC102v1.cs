@@ -1,11 +1,12 @@
 ﻿//* ##REMOVE-IN-COPY##
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C102
 {
     using System.Linq;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Events;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC102v1 : Test
     {

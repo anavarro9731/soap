@@ -1,8 +1,7 @@
-﻿namespace Soap.Context
+﻿namespace Soap.Utility
 {
     using System;
     using CircuitBoard;
-    using Soap.Interfaces.Messages;
 
     public class ErrorCode : TypedEnumeration<ErrorCode>
     {

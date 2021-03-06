@@ -8,6 +8,7 @@
     using Soap.Interfaces;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility;
 
     public static class ResultMethods
     {

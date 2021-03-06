@@ -12,6 +12,7 @@
     using Soap.Context;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public interface ServiceBusManagementFunctions

@@ -6,6 +6,7 @@
     using FluentValidation;
     using Soap.Context.Context;
     using Soap.Interfaces;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class FormattedExceptionInfo

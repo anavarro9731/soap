@@ -232,7 +232,7 @@ CreateOrClean-Directory $ServiceRoot
 Log "Creating Client App"
 
 Set-Location $PSScriptRoot
-$Excluded = @('.cache','dist','node_modules','srv.ps1','story.md','yarn**.*')
+$Excluded = @('.cache','dist','node_modules','srv.ps1','package.json.apponly','package.json.withsoap','yarn**.*')
 $sourceAppDir = "$PSScriptRoot\soapjs\app"
 $folders = Get-ChildItem -Path $sourceAppDir | Where {($_.PSIsContainer) -and ($Excluded -notcontains $_.Name)}
 foreach ($f in $folders){

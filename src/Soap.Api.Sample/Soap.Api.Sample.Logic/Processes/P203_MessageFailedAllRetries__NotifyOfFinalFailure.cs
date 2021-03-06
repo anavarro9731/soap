@@ -8,6 +8,7 @@
     using Soap.Interfaces.Messages;
     using Soap.NotificationServer;
     using Soap.NotificationServer.Channels;
+    using Soap.NotificationServer.Channels.Email;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility.Functions.Extensions;
 

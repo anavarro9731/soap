@@ -36,7 +36,7 @@
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
     using Soap.MessagePipeline.MessageAggregator;
-    using Soap.PfBase.Tests;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public static class DiagnosticFunctions

@@ -1,13 +1,12 @@
-namespace Soap.Api.Sample.Tests.Messages
+namespace Soap.Api.Sample.Tests.Messages.Commands.C100
 {
     using System.Linq;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Events;
-    using Soap.Api.Sample.Models.Aggregates;
-    using Soap.Interfaces.Messages;
-    using Soap.Utility.Functions.Extensions;
+    using Soap.Auth0;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC100v1 : Test
     {

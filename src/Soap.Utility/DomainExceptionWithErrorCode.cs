@@ -1,4 +1,4 @@
-﻿namespace Soap.Context
+﻿namespace Soap.Utility
 {
     using System;
     using System.Reflection;

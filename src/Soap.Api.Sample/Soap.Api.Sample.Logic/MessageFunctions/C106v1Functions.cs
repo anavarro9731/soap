@@ -7,6 +7,7 @@ namespace Soap.Api.Sample.Logic.MessageFunctions
     using Soap.Context;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
 
     public class C106v1Functions : IMessageFunctionsClientSide<C106v1_LargeCommand>
     {

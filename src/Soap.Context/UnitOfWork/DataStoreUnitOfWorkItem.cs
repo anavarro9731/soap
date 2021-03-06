@@ -8,6 +8,7 @@
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using Newtonsoft.Json;
+    using Soap.Utility;
     using Soap.Utility.Enums;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;

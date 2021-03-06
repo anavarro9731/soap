@@ -1,5 +1,5 @@
 ﻿//* ##REMOVE-IN-COPY##
-namespace Soap.Api.Sample.Tests.Messages.TestC104
+namespace Soap.Api.Sample.Tests.Messages.Commands.C104
 {
     using System.Linq;
     using System.Threading.Tasks;
@@ -7,14 +7,13 @@ namespace Soap.Api.Sample.Tests.Messages.TestC104
     using FluentAssertions;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
-    using Soap.Context.Exceptions;
     using Soap.Context.Logging;
-    using Soap.Interfaces;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces.Messages;
-    using Soap.MessagePipeline;
     using Soap.PfBase.Tests;
     using Xunit;
     using Xunit.Abstractions;
+    using Commands = Soap.Api.Sample.Tests.Commands;
 
     public class TestC104RollbackSkipsOverItemsUpdatedSinceWeChangedThem : TestC104
     {

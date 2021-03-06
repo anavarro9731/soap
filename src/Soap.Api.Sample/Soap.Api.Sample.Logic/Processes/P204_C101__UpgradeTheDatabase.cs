@@ -12,6 +12,7 @@
     using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility;
 
     public class P204_C101__UpgradeTheDatabase : Process, IBeginProcess<C101v1_UpgradeTheDatabase>
     {

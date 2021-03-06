@@ -7,7 +7,7 @@
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
     
-    using Guard = Soap.Context.Guard;
+    using Guard = Soap.Utility.Guard;
 
     public abstract class MapMessagesToFunctions
     {
