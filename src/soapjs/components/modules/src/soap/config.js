@@ -310,5 +310,6 @@ export default {
     },
     logFormDetail: false,
     logClassDeclarations: false,
-    debugSystemState:false
+    debugSystemState:false,
+    showSignup:true
 };

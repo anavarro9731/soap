@@ -1,11 +1,10 @@
-import React, {useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {useAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import {Route} from "react-router-dom";
 import {useAuth} from "../hooks/useAuth";
 import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
-
 
 export const Login = (props) => {
      
@@ -31,14 +30,15 @@ export const Login = (props) => {
     const urlParams = new URLSearchParams(window.location.search);
     const authDebug = urlParams.get('authDebug');
     
-    let signupUrl;
+    const [signupUrl, setSignupUrl] = useState();
     
     useEffect(() => {
         const getCustomAuthoriseUrl = async () => {
-            let authoriseUrl = await buildAuthorizeUrl();
-            authoriseUrl += '&screen_hint=signup';
-            signupUrl = authoriseUrl;
-            console.log(signupUrl);
+            if (config.showSignup) {
+                let authoriseUrl = await buildAuthorizeUrl();
+                authoriseUrl += '&screen_hint=signup';
+                setSignupUrl(authoriseUrl);
+            }
         };
         getCustomAuthoriseUrl();
     });
@@ -90,8 +90,8 @@ export const Login = (props) => {
                         console.log("config", config);
                     }}>debugdata</Button>
             </DebugLayer>) : null }
-            <Button kind={KIND.secondary}
-                    size={SIZE.compact} onClick={() => window.location.href = signupUrl}>Sign Up</Button>
+            { signupUrl ? <Button kind={KIND.secondary}
+                    size={SIZE.compact} onClick={() => window.location.href = signupUrl}>Sign Up</Button> : null }
             <Button kind={KIND.secondary}
                                  size={SIZE.compact} onClick={() => loginWithRedirect({
             redirect_uri: `${window.location.origin}`,
