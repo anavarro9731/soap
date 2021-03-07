@@ -1,12 +1,14 @@
 ﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic.Operations;
+    using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Context;
     using Soap.Context.Context;
@@ -22,6 +24,9 @@
                 {
                     await ReseedDatabaseIfRequested();
 
+                    var serviceState = await new ServiceStateQueries().GetServiceStateById();
+                    //if (serviceState.DatabaseState.SelectedKeys.Select(x => Convert.ToInt32(x)).Max())
+                    
                     switch (message.C101_ReleaseVersion)
                     {
                         case var v when v.HasFlag(ReleaseVersions.V1):
