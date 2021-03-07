@@ -141,13 +141,16 @@ before starting azurite, or port 8081 before starting the cosmos emulator, other
 Assuming you have followed the steps in order from the [link](#creating-a-new-service-and-pipeline) section then it should already have created all the VNEXT cloud services.
 You know need to update the local.settings.json and .env files and with values from the new cloud resources
 which we cannot possible know at the time you run create-new-service.ps1, to do this run the configure-local-environment.ps1 script
+You will need to enter several variables to give the script access to download the online config.
 
-Now you need to start the Function App, you will get error at first since the queue does not exit,
-ignore these and navigate in a browser to http://localhost:7071/api/checkhealth once this script which will
+Next, make sure the Azurite service is running per the above instruction.
+Then you need to start the Azure Function Project ```YourProjectName.Afs```
+You will get errors in the console output first since the queue does not exit,
+Ignore these and navigate in a browser to http://localhost:7071/api/checkhealth
+Once this script, which will
 - create developer specific database
-- create developer specific subscriptions and queues
-
-is complete the errors should stop.
+- create developer specific subscriptions and queues,
+completes the errors should stop.
 
 Last you need to build and run the client app.
 Before you can do that you need to import the files into the solution, 
@@ -158,13 +161,11 @@ Then right-click on the solution root node and select Add->Attach Existing Folde
 then choose the "app" folder in the root of the new repo.
 This will add it as a node in the solution file/folder treeview.
 
-Next, open a terminal {Ctrl+Alt+1} goto the /app folder in your project and run
+Next, open a terminal {Ctrl+Alt+1} goto the root/src/app folder of the repo
+Run these two commands in succession
 `yarn install`
 `yarn run serve`
-then navigate to http://localhost:1234/
-
-Now you are ready for local development and can run the Azure Function Project ```YourProjectName.Afs```
-You will also need to start the client-side project from the terminal by running the following command `.\srv.ps1` from the `root\src\js\yourprojectname\` folder
+then navigate to http://localhost:1234/ in your browser to see the app running (use F12 to verify there are no error)
 
 ### Environments
 
