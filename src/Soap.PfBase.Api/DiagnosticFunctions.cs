@@ -62,7 +62,8 @@
             MapMessagesToFunctions mapMessagesToFunctions,
             IAsyncCollector<SignalRMessage> signalRBinding,
             ISecurityInfo securityInfo,
-            ILogger logger)
+            ILogger logger,
+            IEnumerable<ApiCommand> startupCommands)
             where TPing : ApiCommand, new()
             where TPong : ApiMessage
             where TSendLargeMsg : ApiCommand, new()
@@ -87,8 +88,6 @@
 
                 await CheckDatabaseExists(appConfig, WriteLine);
 
-                await Auth0Functions.CheckAuth0Setup(securityInfo, appConfig, WriteLine);
-
                 await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
 
                 await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
@@ -107,10 +106,30 @@
                     signalRBinding,
                     WriteLine);
 
+                List<bool> startupCommandResults = new List<bool>();
+                if (startupCommands != null)
+                {
+                    WriteLine("Running Startup Commands ...");
+                    foreach (var startupCommand in startupCommands)
+                    {
+                        var startupCommandSuccess = await ExecuteCommandInline<TUserProfile>(startupCommand,                   
+                                                        logger,
+                                                        appConfig,
+                                                        mapMessagesToFunctions,
+                                                        signalRBinding,
+                                                        WriteLine);
+                        startupCommandResults.Add(startupCommandSuccess);
+                        
+                    }
+                }
+                
+                
+                await Auth0Functions.CheckAuth0Setup(securityInfo, appConfig, WriteLine);
+                
                 var healthCheckCompleted = "Health Check Completed";
                 logger.Information(healthCheckCompleted);
                 await WriteLine(healthCheckCompleted);
-                await WriteLine((success1 && success2) ? "+" : "-");
+                await WriteLine((success1 && success2 && startupCommandResults.All(x => x)) ? "+" : "-");
             }
             catch (Exception e)
             {
@@ -279,6 +298,39 @@
             }
 
             return false;
+        }
+        
+        private static async Task<bool> ExecuteCommandInline<TUserProfile>(
+            ApiCommand message,
+            ILogger logger,
+            ApplicationConfig appConfig,
+            MapMessagesToFunctions mappings,
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            Func<string, ValueTask> writeLine)
+            where TUserProfile : class, IUserProfile, IAggregate, new()
+
+        {
+            var sla = await AuthFunctions.GetServiceLevelAuthority(appConfig);
+            message.Headers.SetAccessToken(sla.AccessToken);
+            message.Headers.SetIdentityChain(sla.IdentityChainSegment);
+            message.Headers.SetIdentityToken(sla.IdentityToken);
+            message.SetDefaultHeadersForIncomingTestMessages();
+            
+            await writeLine($"Sending {message.GetType().Name} ...");
+            
+            var r = await AzureFunctionContext.Execute<TUserProfile>(
+                        message.ToJson(SerialiserIds.ApiBusMessage),
+                        mappings,
+                        message.Headers.GetMessageId().ToString(),
+                        message.GetType().ToShortAssemblyTypeName(),
+                        null,
+                        logger,
+                        appConfig,
+                        signalRBinding);
+
+            await writeLine(r.ToJson(SerialiserIds.JsonDotNetDefault));
+
+            return r.Success;
         }
     }
 }

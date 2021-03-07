@@ -15,7 +15,7 @@
     and not everyone may have that permission.
      */
 
-    public abstract class ApiCommand : ApiMessage
+    public abstract class ApiCommand : ApiMessage, IStartAProcess
     {
     }
     

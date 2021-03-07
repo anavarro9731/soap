@@ -10,7 +10,7 @@
     using Soap.Api.Sample.Logic.Operations;
     using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Messages.Commands;
-    using Soap.Context;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
@@ -22,52 +22,58 @@
             async message =>
                 {
                 {
-                    await ReseedDatabaseIfRequested();
+                    var serviceState = await new ServiceStateQueries().GetServiceStateById() ?? await SetInitialServiceState();
 
-                    var serviceState = await new ServiceStateQueries().GetServiceStateById();
-                    //if (serviceState.DatabaseState.SelectedKeys.Select(x => Convert.ToInt32(x)).Max())
-                    
-                    switch (message.C101_ReleaseVersion)
+                    var currentVersionAsInt = serviceState.DatabaseState.SelectedKeys.Any()
+                                                  ? serviceState.DatabaseState.SelectedKeys.Select(int.Parse).Max()
+                                                  : 0; //* it's new
+
+                    var requestedVersionKey =
+                        message.C101_ReleaseVersion.SelectedKeys.Single(); //* message validator should ensure this succeeds
+                    var requestedVersionAsInt = int.Parse(requestedVersionKey);
+
+                    //* messageVersion is equal
+                    if (currentVersionAsInt == requestedVersionAsInt) return;
+
+                    //* messageVersion is less
+                    Guard.Against(
+                        currentVersionAsInt > requestedVersionAsInt,
+                        $"You are asking to upgrade the database to version {requestedVersionAsInt} which is lower than the current version {currentVersionAsInt}.");
+
+                    //* messageVersion is greater than currentVersion
+
+                    var allVersionsWhoseScriptsNeedRunning = new TypedEnumerationFlags<ReleaseVersions>();
+
+                    foreach (var version in ReleaseVersions.GetAllInstances())
                     {
-                        case var v when v.HasFlag(ReleaseVersions.V1):
-                            await V1();
-                            break;
-                        case var v when v.HasFlag(ReleaseVersions.V2):
-                            await V2();
-                            break;
-                        default:
-                            Guard.Against(true, ErrorCodes.NoUpgradeScriptExistsForThisVersion);
-                            break;
+                        var versionAsInt = int.Parse(version.Key);
+                        if (versionAsInt > currentVersionAsInt && versionAsInt <= requestedVersionAsInt)
+                        {
+                            allVersionsWhoseScriptsNeedRunning.AddFlag(version);
+                        }
+                    }
+
+                    if (allVersionsWhoseScriptsNeedRunning.HasFlag(ReleaseVersions.V1))
+                    {
+                        //* do other stuff
+                        SetDbVersion(ReleaseVersions.V1);
+                    }
+
+                    if (allVersionsWhoseScriptsNeedRunning.HasFlag(ReleaseVersions.V2))
+                    {
+                        //* do other stuff
+                        SetDbVersion(ReleaseVersions.V2);
                     }
                 }
 
-                async Task ReseedDatabaseIfRequested()
+                Task<ServiceState> SetInitialServiceState()
                 {
-                    if (message.C101_ReSeed.GetValueOrDefault())
-                    {
-                        await ExecuteOutsideTransactionUsingCurrentContext();
-                    }
-                }
-                
-                
-                async Task V1()
-                {
-                    await SetInitialServiceState();
-
-                    Task SetInitialServiceState()
-                    {
-                        return this.Get<ServiceStateOperations>().Call(x => x.CreateServiceState)();
-                    }
+                    return this.Get<ServiceStateOperations>().Call(x => x.CreateServiceState)();
                 }
 
-                async Task V2()
+                Task SetDbVersion(ReleaseVersions newVersion)
                 {
-                    await SetDbVersion();
-
-                    Task SetDbVersion()
-                    {
-                        return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(ReleaseVersions.V2);
-                    }
+                    return this.Get<ServiceStateOperations>().Call(x => x.SetDatabaseVersion)(newVersion);
                 }
                 };
 
@@ -91,7 +97,6 @@
             await newSession.Create(context.MessageLogEntry);
             await newSession.CommitChanges();
         }
-
 
         public class ErrorCodes : ErrorCode
         {

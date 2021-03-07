@@ -1,6 +1,7 @@
 namespace Soap.PfBase.Api.Functions
 {
     using System;
+    using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
@@ -22,7 +23,8 @@ namespace Soap.PfBase.Api.Functions
                 MapMessagesToFunctions messageFunctionRegistration,
                 IAsyncCollector<SignalRMessage> signalRBinding,
                 ISecurityInfo securityInfo,
-                ILogger log)
+                ILogger log,
+                IEnumerable<ApiCommand> startupCommands = null)
             where TPing : ApiCommand, new()
             where TPong : ApiEvent
             where TSendLargeMsg : ApiCommand, new()
@@ -46,7 +48,8 @@ namespace Soap.PfBase.Api.Functions
                                 messageFunctionRegistration,
                                 signalRBinding,
                                 securityInfo,
-                                logger),
+                                logger,
+                                startupCommands),
                     new MediaTypeHeaderValue("text/plain"));
 
                 var result = new HttpResponseMessage

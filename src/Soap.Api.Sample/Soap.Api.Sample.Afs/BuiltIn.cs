@@ -10,6 +10,7 @@
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.Extensions.Logging;
+    using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
@@ -38,7 +39,8 @@
                 new MessageFunctionRegistration(),
                 signalRBinding,
                 new SecurityInfo(),
-                log);
+                log, 
+                new []{new C101v1_UpgradeTheDatabase(ReleaseVersions.V1)});
 
         [FunctionName("GetBlob")]
         public static async Task<IActionResult> GetBlob(

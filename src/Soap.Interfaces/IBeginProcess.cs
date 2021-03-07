@@ -8,8 +8,8 @@
     ///     a way to enforce the signature for handling a msg
     /// </summary>
     /// can only be started with a command but can be continued by anything
-    public interface IBeginProcess<in TMessage> where TMessage : ApiCommand
+    public interface IBeginProcess<in TStarter> where TStarter : IStartAProcess
     {
-        Func<TMessage, Task> BeginProcess { get; }
+        Func<TStarter, Task> BeginProcess { get; }
     }
 }

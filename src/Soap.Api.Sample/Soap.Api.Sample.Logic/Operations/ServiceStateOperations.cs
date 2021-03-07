@@ -1,12 +1,13 @@
 ﻿namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using CircuitBoard;
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic.Queries;
     using Soap.Api.Sample.Models.Aggregates;
-    using Soap.Context;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility;
@@ -31,10 +32,11 @@
                     serviceState = new ServiceState
                     {
                         id = ServiceStateId,
-                        DatabaseState = new EnumerationFlags(ReleaseVersions.V1)
+                        DatabaseState = new EnumerationFlags()
                     };
                 }
                 };
+
 
         public Func<ReleaseVersions, Task<ServiceState>> SetDatabaseVersion =>
             async newState =>
