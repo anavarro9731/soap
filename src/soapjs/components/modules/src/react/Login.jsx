@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {useAuth0, withAuthenticationRequired} from "@auth0/auth0-react";
 import {Route} from "react-router-dom";
 import {useAuth} from "../hooks/useAuth";
@@ -7,7 +7,7 @@ import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
 
 export const Login = (props) => {
-     
+
     const audience = config.vars.audience;
 
     const {
@@ -29,20 +29,22 @@ export const Login = (props) => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const authDebug = urlParams.get('authDebug');
-    
+
     const [signupUrl, setSignupUrl] = useState();
-    
+
     useEffect(() => {
         const getCustomAuthoriseUrl = async () => {
-            if (config.showSignup) {
-                let authoriseUrl = await buildAuthorizeUrl();
-                authoriseUrl += '&screen_hint=signup';
-                setSignupUrl(authoriseUrl);
+            if (authReady && !!config.auth0) {
+                if (config.showSignup) {
+                    let authoriseUrl = await buildAuthorizeUrl();
+                    authoriseUrl += '&screen_hint=signup';
+                    setSignupUrl(authoriseUrl);
+                }
             }
-        };
+        }
         getCustomAuthoriseUrl();
-    });
-    
+    }, [authReady]);
+
     if (!authReady || !config.auth0) {
         return null;
     }
@@ -53,23 +55,23 @@ export const Login = (props) => {
     if (error) {
         return <div>Oops... {error.message}</div>;
     }
-    
+
     if (isAuthenticated) {
 
         return (<React.Fragment>
-            
-            {authDebug ? 
+
+            {authDebug ?
                 (<DebugLayer>
-                <Button onClick={
-                    () => {
-                        console.log("accessToken", accessToken);
-                        console.log("idToken", idToken);
-                        console.log("user", user);
-                        console.log("config", config);
-                    }}>debugdata</Button>
-                <Button onClick={() => refresh()}>refresh</Button>
-            </DebugLayer>) : null }
-            
+                    <Button onClick={
+                        () => {
+                            console.log("accessToken", accessToken);
+                            console.log("idToken", idToken);
+                            console.log("user", user);
+                            console.log("config", config);
+                        }}>debugdata</Button>
+                    <Button onClick={() => refresh()}>refresh</Button>
+                </DebugLayer>) : null}
+
             <div>Hello, {user.name}</div>
             &nbsp;
             <Button kind={KIND.secondary}
@@ -79,43 +81,44 @@ export const Login = (props) => {
                 config.auth0.identityToken = null;
                 logout({returnTo: window.location.origin});
             }}>Logout</Button>
-            
+
         </React.Fragment>);
     } else {
-        
+
         return <React.Fragment>
-            { authDebug ? (<DebugLayer>
+            {authDebug ? (<DebugLayer>
                 <Button onClick={
                     () => {
                         console.log("config", config);
                     }}>debugdata</Button>
-            </DebugLayer>) : null }
-            { signupUrl ? <Button kind={KIND.secondary}
-                    size={SIZE.compact} onClick={() => window.location.href = signupUrl}>Sign Up</Button> : null }
+            </DebugLayer>) : null}
+            {signupUrl ? <Button kind={KIND.secondary}
+                                 size={SIZE.compact} onClick={() => window.location.href = signupUrl}>Sign
+                Up</Button> : null}
             <Button kind={KIND.secondary}
-                                 size={SIZE.compact} onClick={() => loginWithRedirect({
-            redirect_uri: `${window.location.origin}`,
-            audience: audience,
-        })}>Log In</Button></React.Fragment>;
+                    size={SIZE.compact} onClick={() => loginWithRedirect({
+                redirect_uri: `${window.location.origin}`,
+                audience: audience,
+            })}>Log In</Button></React.Fragment>;
     }
 };
 
 export const ProtectedRoute = ({component, ...args}) => {
 
-    const { authReady, authEnabled } = useAuth();
-    
+    const {authReady, authEnabled} = useAuth();
+
     if (authReady) {
         if (authEnabled) {
             return (<Route component={withAuthenticationRequired(component, {
                 returnTo: window.location.href
-            })} {...args} />);            
+            })} {...args} />);
         } else {
             return (<Route component={component} {...args} />);
         }
     } else {
         return null;
     }
-    
+
 };
 
 

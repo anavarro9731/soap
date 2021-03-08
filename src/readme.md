@@ -104,11 +104,8 @@ These are listed in the ```azure-pipelines.yml``` file in the root of the new pr
 
 Now wait for the resource group you defined when you ran ```.\create-new-service.psm1``` to be populated
 with the required services which will occur after the script finishes and the azure devops build runs this can take 
-10-20 mins.
+15-20 mins.
 
-Once this is complete you will have to perform a single step manually for which there is not at present a
-direct az cli command. That is to enable "With Credentials" on the function app's CORS settings. You will
-have to do this for the `Release` environment when it is created also.
 
 ###Running Locally
 
