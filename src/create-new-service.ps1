@@ -210,17 +210,17 @@ dotnet nuget add source $SoapFeedUri
 dotnet add package Soap.Config -s $SoapFeedUri
 cd $ConfigRepoRoot
 
-Log "Creating Azure Devops Config Project"
+Log "Creating Azure Devops Project"
 az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName
 
-Log "Creating Azure Devops Project Repo"
+Log "Creating Azure Devops Config Repo"
 az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureDevopsName --name "$AzureDevopsName.config"
 
 Log "Uploading Config Repo"
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
-$gitPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/soap/_git/$AzureDevopsName.config master --set-upstream"
+$gitPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/_git/$AzureDevopsName.config master --set-upstream"
 Write-Host $gitPushCmd
 iex $gitPushCmd
 
