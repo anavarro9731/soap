@@ -212,6 +212,7 @@ SHOULD
 - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))
 - Extend Missing Property Proxy to cover properties on child objects of a message
 - Consider refresh tokens and how to implement if not already active
+- Create a flag to publish only soap packages (by leaving azurefunctionproject param blank)
 COULD
 - Cache some further relatively static I/O things obtained with IO bound ops in pipeline
 - Adding a Special Flag or Tag to Denote builds that were sent to production (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
