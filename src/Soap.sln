@@ -8,10 +8,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		create-new-service.ps1 = create-new-service.ps1
 		pwsh-bootstrap.ps1 = pwsh-bootstrap.ps1
 		..\azure-pipelines.yml = ..\azure-pipelines.yml
-		readme.md = readme.md
+		setup.md = setup.md
 		configure-local-environment.ps1 = configure-local-environment.ps1
 		test.ps1 = test.ps1
-		dev-guide.md = dev-guide.md
+		readme.md = readme.md
 		changelog.md = changelog.md
 		commit-all.ps1 = commit-all.ps1
 	EndProjectSection
