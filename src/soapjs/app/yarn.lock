@@ -1412,6 +1412,30 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
+"@soap/modules@^1.288.0":
+  version "1.288.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.288.0.tgz#05a2e5069056e838ec9b54f7152f7f7268fe77ee"
+  integrity sha1-BaLlBpBW6Djsm1T3FS9/cmj+d+4=
+  dependencies:
+    "@auth0/auth0-react" "^1.2.0"
+    "@azure/service-bus" "^7.0.0"
+    "@azure/storage-blob" "^12.3.0"
+    "@babel/runtime" "^7.12.1"
+    "@microsoft/applicationinsights-web" "^2.5.10"
+    "@microsoft/signalr" "^5.0.1"
+    baseui "^9.110.0"
+    compressorjs "^1.0.7"
+    i18next "^17.0.7"
+    i18next-xhr-backend "^3.0.0"
+    lodash "^4.17.20"
+    postal "^2.0.5"
+    react "^16.14.0"
+    react-dom "^16.14.0"
+    react-hook-form "^6.15.3"
+    react-router-dom "^5.2.0"
+    styletron-engine-atomic "^1.4.7"
+    styletron-react "^5.2.7"
+
 "@types/async-lock@^1.1.0":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@types/async-lock/-/async-lock-1.1.2.tgz#cbc26a34b11b83b28f7783a843c393b443ef8bef"
