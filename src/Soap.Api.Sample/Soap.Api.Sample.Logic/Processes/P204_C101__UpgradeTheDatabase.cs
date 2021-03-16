@@ -56,13 +56,13 @@
                     if (allVersionsWhoseScriptsNeedRunning.HasFlag(ReleaseVersions.V1))
                     {
                         //* do other stuff
-                        SetDbVersion(ReleaseVersions.V1);
+                        await SetDbVersion(ReleaseVersions.V1);
                     }
 
                     if (allVersionsWhoseScriptsNeedRunning.HasFlag(ReleaseVersions.V2))
                     {
                         //* do other stuff
-                        SetDbVersion(ReleaseVersions.V2);
+                        await SetDbVersion(ReleaseVersions.V2);
                     }
                 }
 
