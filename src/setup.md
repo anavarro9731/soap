@@ -23,6 +23,9 @@ choco install jetbrains-rider
 ###Install Azure CLI and extensions
 ```
 choco install azure-cli
+```
+close and reopen powershell
+```
 az extension add --name azure-devops
 ```
 ###Install GIT
@@ -40,6 +43,9 @@ set them
 ###Install Client-side tools
 ```
 choco install nodejs
+```
+close and reopen powershell
+```
 npm install -g yarn
 ```
 ###Install Local Dev tools
@@ -97,6 +103,9 @@ Both variables can use the same PAT.
 ### Create Source Code and Infrastructure
 
 Open powershell.
+
+run `az login` followed by `az devops login` to make sure the CLI is authenticated.
+If you have multiple organisations/accounts be careful that your are logged into the right one.
 
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
 Next you must edit the pipeline variables for the new build.
