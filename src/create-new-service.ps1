@@ -86,7 +86,7 @@ Function Get-AzLocation([string] $s = $null)  {
 	Return $Location
 }
 Function Get-TenantId([string] $s = $null)  {
-	$TenantId = EmptyConcat $s 'Enter The TenantId of the ServicePrincipal needed to create the infratructure'
+	$TenantId = EmptyConcat $s 'Enter The TenantId of the ServicePrincipal needed to create the infrastructure'
 	if (IsEmpty $TenantId) {
 		Write-Host 'ServicePrincipal TenantId cannot be blank'
 		Exit -1
@@ -94,7 +94,7 @@ Function Get-TenantId([string] $s = $null)  {
 	Return $TenantId
 }
 Function Get-ClientId([string] $s = $null)  {
-	$ClientId = EmptyConcat $s 'Enter The Azure ClientId of the ServicePrincipal needed to create the infratructure'
+	$ClientId = EmptyConcat $s 'Enter The Azure ClientId of the ServicePrincipal needed to create the infrastructure'
 	if (IsEmpty $ClientId) {
 		Write-Host 'ServicePrincipal ClientId cannot be blank'
 		Exit -1
@@ -102,7 +102,7 @@ Function Get-ClientId([string] $s = $null)  {
 	Return $ClientId
 }
 Function Get-ClientSecret([string] $s = $null)  {
-	$ClientSecret = EmptyConcat $s 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infratructure'
+	$ClientSecret = EmptyConcat $s 'Enter The Azure ClientSecret of the ServicePrincipal needed to create the infrastructure'
 	if (IsEmpty $ClientSecret) {
 		Write-Host 'ServicePrincipal ClientSecret cannot be blank'
 		Exit -1
@@ -330,7 +330,7 @@ Run -PrepareNewVersion -forceVersion 0.1.0-alpha -Push SILENT
 
 Log-Step "Creating Pipeline"
 
-az pipelines create --name "$AzureDevopsName" --description "Pipeline for $AzureDevopsName" --yaml-path "./azure-pipelines.yml" --skip-run #* must come after files committed to repo, variables need to be added for this to work
+az pipelines create --name "$AzureDevopsName" --description "Pipeline for $AzureDevopsName" --yaml-path "./azure-pipelines.yml" -p "$AzureDevopsName" -p "$AzureDevopsName" --repository "$AzureDevopsName" --repository-type tfsgit --skip-run #* must come after files committed to repo, variables need to be added for this to work
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$AzPersonalAccessToken"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$TenantId"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
