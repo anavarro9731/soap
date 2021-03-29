@@ -53,6 +53,11 @@ npm install -g yarn
 lodctr /R (corrupted perf counters will cause azurite emulator errors, run this command twice in succession)
 npm install -g azurite
 ```
+###Install DotNet 5
+```
+https://dotnet.microsoft.com/download
+or via choco install 
+```
 ### Verify Installations
 ```
 choco list --local-only
@@ -71,10 +76,13 @@ There are several items that don't work right otherwise.
 
 #### Creating an Azure Service Principal
 To obtain  az-clientid, az-tenantid, az-clientsecret values you will need to create a service principal login.
-You will need to do this from the Azure CloudShell as global admin for the right permissions.
+You will need to do this from the Azure CloudShell as global admin for the right permissions and
 Once logged into shell.azure.com as global admin run:
 ```
- az ad sp create-for-rbac --name ServicePrincipalName
+ az ad sp create-for-rbac --name SoapServicePrincipal
+ make sure you are on the right subscription before running the command if not, change it first!
+ az account list
+ az account set -s "SubscriptionNameOrIdHere"
 ```
 See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
 
@@ -87,8 +95,8 @@ You need to obtain three 3 values.
 ```javascript
 {
 "appId": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
-"displayName": "DevopsServicePrincipal",
-"name": "http://DevopsServicePrincipal",
+"displayName": "SoapServicePrincipal",
+"name": "http://SoapServicePrincipal",
 "password": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
 "tenant": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e"
 }
@@ -106,6 +114,14 @@ Open powershell.
 
 run `az login` followed by `az devops login` to make sure the CLI is authenticated.
 If you have multiple organisations/accounts be careful that your are logged into the right one.
+ az account list
+ az account set -s "SubscriptionNameOrIdHere"
+
+then run 
+`az devops configure --defaults organization=https://dev.azure.com/YOURORGANIZATION/`
+
+test with `az devops project list`
+cls
 
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
 Next you must edit the pipeline variables for the new build.
