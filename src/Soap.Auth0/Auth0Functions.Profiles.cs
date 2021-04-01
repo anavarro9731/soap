@@ -11,6 +11,7 @@ namespace Soap.Auth0
     using Microsoft.IdentityModel.Tokens;
     using Soap.Config;
     using Soap.Interfaces;
+    using Soap.Utility.Functions.Extensions;
 
     public static partial class Auth0Functions
     {
@@ -22,7 +23,7 @@ namespace Soap.Auth0
                 string idToken) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
             {
                 if (idToken == null) return null;
-                
+
                 var auth0User = await GetUserProfileFromIdentityToken(idToken, applicationConfig);
 
                 var user = (await dataStore.Read<TUserProfile>(x => x.Auth0Id == auth0User.UserId)).SingleOrDefault();
@@ -33,8 +34,8 @@ namespace Soap.Auth0
                     {
                         Auth0Id = auth0User.UserId,
                         Email = auth0User.Email,
-                        FirstName = auth0User.FirstName,
-                        LastName = auth0User.LastName
+                        FirstName = !string.IsNullOrEmpty(auth0User.FirstName) ? auth0User.FirstName : auth0User.FullName.SubstringBeforeLast(' '),
+                        LastName = !string.IsNullOrEmpty(auth0User.LastName) ? auth0User.LastName : auth0User.FullName.SubstringAfterLast(' ')
                     };
 
                     return await dataStore.Create(newUser);
@@ -45,8 +46,12 @@ namespace Soap.Auth0
                             x =>
                                 {
                                 x.Email = auth0User.Email;
-                                x.FirstName = auth0User.FirstName;
-                                x.LastName = auth0User.LastName;
+                                x.FirstName = !string.IsNullOrEmpty(auth0User.FirstName)
+                                                  ? auth0User.FirstName
+                                                  : auth0User.FullName.SubstringBeforeLast(' ');
+                                x.LastName = !string.IsNullOrEmpty(auth0User.LastName)
+                                                 ? auth0User.LastName
+                                                 : auth0User.FullName.SubstringAfterLast(' ');
                                 })).Single();
             }
 
@@ -85,14 +90,15 @@ namespace Soap.Auth0
                 {
                     //* will validate formation and signature by default
 
-                    tokenHandler.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
+                    tokenHandler.ValidateToken(idToken, validationParameters, out var validatedToken);
                     var tokenWithClaims = validatedToken as JwtSecurityToken;
-                    
-                    return new User()
+
+                    return new User
                     {
                         Email = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "email")?.Value,
                         FirstName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "given_name")?.Value,
                         LastName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "family_name")?.Value,
+                        FullName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "name")?.Value,
                         NickName = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "nickname")?.Value,
                         UserId = tokenWithClaims.Claims.SingleOrDefault(x => x.Type == "sub")?.Value
                     };
