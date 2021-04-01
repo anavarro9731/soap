@@ -2,7 +2,10 @@
 
 - v.6.4.0 
   - initial
-    
+- v.6.6.0
+  - claim schema updates to support AzureAD
+  
+
 # BackLog
 
 - MUST
