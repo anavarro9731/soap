@@ -109,7 +109,7 @@
                 List<bool> startupCommandResults = new List<bool>();
                 if (startupCommands != null)
                 {
-                    WriteLine("Running Startup Commands ...");
+                    await WriteLine("Running Startup Commands ...");
                     foreach (var startupCommand in startupCommands)
                     {
                         var startupCommandSuccess = await ExecuteCommandInline<TUserProfile>(startupCommand,                   
