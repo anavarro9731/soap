@@ -253,3 +253,17 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Win Cruft
+.DS_Store
+.idea
+
+# Frontend
+*.env
+# Don't check auto-generated stuff into git
+.cache
+.parcel-cache
+dist
+node_modules
+
+
