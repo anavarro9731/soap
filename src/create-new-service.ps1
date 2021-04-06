@@ -181,10 +181,11 @@ Log $vars
 Log-Step "Creating Config Repo, Please wait..."
 
 CreateOrClean-Directory $ConfigRepoRoot
-Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\DEV_Config.cs" -Recurse -Force
-Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\VNEXT_Config.cs" -Recurse -Force
-Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\REL_Config.cs" -Recurse -Force
-Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\LIVE_Config.cs" -Recurse -Force
+Copy-Item "..\.gitignore" "$ConfigRepoRoot\.gitignore" -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\DEV_Config.cs"  -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\VNEXT_Config.cs"  -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\REL_Config.cs"  -Force
+Copy-Item ".\Soap.Api.Sample\Soap.Api.Sample.Afs\SampleConfig.cs" "$ConfigRepoRoot\LIVE_Config.cs"  -Force
 Set-Location $ConfigRepoRoot
 git init
 dotnet new classlib -f "netcoreapp3.1" -n Config
@@ -240,7 +241,6 @@ foreach ($f in $folders){
 }
 Copy-Item "$sourceAppDir\*.*" "$ServiceRoot\app\" -Exclude $Excluded
 Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
-Copy-Item "$PSScriptRoot\soapjs\.gitignore" "$ServiceRoot\app\"
 
 Log "Creating Server App"
 
@@ -319,7 +319,11 @@ Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$Azur
 Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzResourceGroup`" ``"
 Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzLocation`" ``"
 #* run it and load the modules
-./pwsh-bootstrap.ps1 
+./pwsh-bootstrap.ps1
+
+Log "Ignoring files"
+
+Copy-Item "$PSScriptRoot\..\.gitignore" "$ServiceRoot\"
 
 Log "Uploading Repo"
 
