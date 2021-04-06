@@ -13,9 +13,7 @@ const _logger = {
     appInsights : null,
     log: (logMsg, logObject, toAzure) => {
 
-        const targetObject = {};
-        Error.captureStackTrace(targetObject);
-        targetObject.stack = targetObject.stack.substring(5);
+        const stackTrace = new Error().stack.substring(5);
 
         if (typeof logMsg === types.object) logMsg = logMsg.toString();
         if (typeof logObject === types.object) logObject = JSON.stringify(logObject, null, 2);
@@ -25,7 +23,7 @@ const _logger = {
             [{toAzure}, types.boolean, optional]
         );
 
-        logMsg += targetObject.stack;
+        logMsg += stackTrace;
         if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
         else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
 
