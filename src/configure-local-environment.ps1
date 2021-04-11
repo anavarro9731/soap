@@ -186,7 +186,7 @@ APPINSIGHTS_KEY=`"$var_APPINSIGHTS_INSTRUMENTATIONKEY`"
 BLOBSTORAGE_URI=`"http://127.0.0.1:10000/devstoreaccount1`"
 ENVIRONMENT_PARTITION_KEY=`"$EnvironmentPartitionKey`"
 "@
-$DotEnvPath = (Get-ChildItem -Path "$PSScriptRoot" -Recurse .env | Select-Object -ExpandProperty FullName | Select -First 1)
+$DotEnvPath = Join-Path  (Get-ChildItem -Path "$PSScriptRoot" -Recurse index.html -Depth 2 | Select-Object -ExpandProperty FullName | Split-Path) ".env"
 Set-Content -Path "$DotEnvPath" -Value $DotEnv
 
 

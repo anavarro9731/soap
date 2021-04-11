@@ -13,6 +13,7 @@ export { validateArgs, types, optional, getHeader, setHeader, uuidv4 } from './s
 export { default as App } from './react/App';
 export { default as JsonView } from './react/JsonView';
 export { default as FileUpload } from './react/FileUpload';
+export { default as FileView } from './react/FileView';
 export { default as AutoForm } from './react/AutoForm';
 export { default as ReactErrorBoundary } from './react/ReactErrorBoundary';
 export { Login, ProtectedRoute } from './react/Login';

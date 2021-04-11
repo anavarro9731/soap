@@ -2,20 +2,20 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "^1.288.0",
-    "baseui": "^9.110.0",
-    "react": "^16.14.0",
-    "react-dom": "^16.14.0",
-    "react-router-dom": "^5.2.0",
-    "styletron-engine-atomic": "^1.4.7",
-    "styletron-react": "^5.2.7"
+    "@soap/modules": "^1.289.0",
+    "baseui": "9.112.0",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
+    "react-router-dom": "5.2.0",
+    "styletron-engine-atomic": "1.4.7",
+    "styletron-react": "5.2.7"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.10",
-    "@babel/plugin-proposal-export-default-from": "^7.12.1",
-    "@babel/plugin-transform-runtime": "^7.12.1",
-    "@babel/preset-env": "^7.6.3",
-    "@babel/preset-react": "^7.0.0",
+    "@babel/core": "7.12.10",
+    "@babel/plugin-proposal-export-default-from": "7.12.1",
+    "@babel/plugin-transform-runtime": "7.12.1",
+    "@babel/preset-env": "7.6.3",
+    "@babel/preset-react": "7.0.0",
     "parcel": "1.12.3"
   },
   "browserslist": [

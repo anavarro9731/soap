@@ -9,7 +9,8 @@
 # BackLog
 
 - MUST
-    - Save Roles into UserProfile 
+    - Save Roles into UserProfile so you can check them serverside
+    - Crud Fragment Generator
     - Custom Domain and CDN (before live)
     - Stripe Integration (before payments)
 - SHOULD

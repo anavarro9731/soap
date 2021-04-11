@@ -22,6 +22,7 @@ namespace Soap.PfBase.Api.Functions
                 string type = req.Query["type"];
                 var t = Type.GetType(type);
                 var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                
                 var msg = (ApiMessage)requestBody.FromJson(t, SerialiserIds.ApiBusMessage);
 
                 var errorMessage = string.Empty;

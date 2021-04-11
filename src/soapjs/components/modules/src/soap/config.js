@@ -9,60 +9,67 @@ import * as signalR from '@microsoft/signalr';
 
 const isTest = process.env.NODE_ENV === 'test';
 
-const _logger = {
-    appInsights : null,
-    log: (logMsg, logObject, toAzure) => {
+const _logger = (function () { 
+    //* the IIFE used is so that the "this.appInsights" expression will consider this to be the object-literal being constructed rather than the calling context
+    return {
+        appInsights: null,
+        log: (logMsg, logObject, toAzure) => {
 
-        const stackTrace = new Error().stack.substring(5);
+            const stackTrace = new Error().stack.substring(5);
 
-        if (typeof logMsg === types.object) logMsg = logMsg.toString();
-        if (typeof logObject === types.object) logObject = JSON.stringify(logObject, null, 2);
+            if (typeof logMsg === types.object) logMsg = logMsg.toString();
+            if (typeof logObject === types.object) logObject = JSON.stringify(logObject, null, 2);
 
-        validateArgs(
-            [{msg: logMsg}, types.string],
-            [{toAzure}, types.boolean, optional]
-        );
+            validateArgs(
+                [{msg: logMsg}, types.string],
+                [{toAzure}, types.boolean, optional]
+            );
 
-        logMsg += stackTrace;
-        if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
-        else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
+            logMsg += stackTrace;
+            if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
+            else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
 
-        if (toAzure && !isTest) {
-            
-            if (!this.appInsights) {
-                this.appInsights = new ApplicationInsights({
-                    config: {
-                        instrumentationKey: vars().appInsightsKey
-                    }
-                });
-                this.appInsights.loadAppInsights();
+            if (toAzure && !isTest) {
+
+                if (!this.appInsights) {
+                    this.appInsights = new ApplicationInsights({
+                        config: {
+                            instrumentationKey: vars().appInsightsKey
+                        }
+                    });
+                    this.appInsights.loadAppInsights();
+                }
+                this.appInsights.trackTrace({message: logMsg});
             }
-            this.appInsights.trackTrace({message: logMsg});
         }
     }
-};
+})();
 
 let _auth0, _sessionDetails;
 const _onLoadedCallbacks = [];
 (async function () {
-    if (!isTest) { 
+    if (!isTest) {
         await loadConfigState();
         _onLoadedCallbacks.forEach(c => c());
     }
 })();
 
 async function loadConfigState() {
-    
+
     //* load all config state, when this is done the system is ready
     {
-        const a = async () => { _auth0 = await registerMessageTypesFromApi(); }
-        const b = async () => { _sessionDetails = await createBusSession(receiveMessage); } 
-        
-        const promises = [a(),b()];
-        
+        const a = async () => {
+            _auth0 = await registerMessageTypesFromApi();
+        }
+        const b = async () => {
+            _sessionDetails = await createBusSession(receiveMessage);
+        }
+
+        const promises = [a(), b()];
+
         await Promise.all(promises);
     }
-    
+
     async function receiveMessage(processor) {
 
         const functionAppRoot = vars().functionAppRoot;
@@ -87,24 +94,24 @@ async function loadConfigState() {
 
         return hubConnection.connectionId;
     }
-    
+
     async function registerMessageTypesFromApi() {
 
         const endpoint = `${vars().functionAppRoot}/GetJsonSchema`;
         let auth0Info;
-        
+
         const jsonArrayOfMessages = await global.fetch(endpoint)
             .then(response => {
 
                 const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
-                if  (auth0Enabled) {
+                if (auth0Enabled) {
                     auth0Info = {
-                        uiAppId : response.headers.get('Auth0-UI-Application-ClientId'),
-                        tenantDomain : response.headers.get('Auth0-Tenant-Domain'),
+                        uiAppId: response.headers.get('Auth0-UI-Application-ClientId'),
+                        tenantDomain: response.headers.get('Auth0-Tenant-Domain'),
                         redirectUri: response.headers.get('Auth0-Redirect-Uri'),
-                        isAuthenticated : false,
-                        accessToken : null,
-                        identityToken : null,
+                        isAuthenticated: false,
+                        accessToken: null,
+                        identityToken: null,
                         userName: null
                     };
                 }
@@ -114,7 +121,7 @@ async function loadConfigState() {
 
         registerMessageTypes(jsonArrayOfMessages);
         _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
-        
+
         return auth0Info;
     }
 
@@ -252,7 +259,7 @@ function sendMessage(msg) {
                 _logger.log(`Upload block blob ${blobId} successfully`, uploadBlobResponse.requestId);
 
             }
-            
+
         }(msg));
     }
 }
@@ -266,6 +273,7 @@ function getSasUrl(message) {
 }
 
 function vars() {
+
     const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
     functionAppRoot || _logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.");
     const appInsightsKey = process.env.APPINSIGHTS_KEY;
@@ -276,7 +284,7 @@ function vars() {
     blobStorageUri || _logger.log("process.env.BLOBSTORAGE_URI not defined check .env file.");
     const envPartitionKey = process.env.ENVIRONMENT_PARTITION_KEY;
     envPartitionKey || _logger.log("process.env.ENVIRONMENT_PARTITION_KEY not defined check .env file.")
-    
+
     return {
         functionAppRoot,
         audience: functionAppRoot + '/',
@@ -289,13 +297,13 @@ function vars() {
 
 export default {
     get vars() {
-      return vars();  
+        return vars();
     },
     get logger() {
         return _logger;
     },
     get isLoaded() {
-      return !!_sessionDetails;  
+        return !!_sessionDetails;
     },
     get auth0() {
         return _auth0;
@@ -308,6 +316,6 @@ export default {
     },
     logFormDetail: false,
     logClassDeclarations: false,
-    debugSystemState:false,
-    showSignup:true
+    debugSystemState: false,
+    showSignup: true
 };

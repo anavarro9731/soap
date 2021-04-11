@@ -10,8 +10,8 @@ import {Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
-config.debugSystemState=true;
-config.authDebug=true;
+config.debugSystemState=false;
+config.authDebug=false;
 
 function Index() {
     return (

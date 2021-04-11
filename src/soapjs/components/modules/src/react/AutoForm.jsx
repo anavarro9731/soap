@@ -4,7 +4,7 @@ import {useCommand} from '../hooks/useCommand';
 import config from '../soap/config';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from '../soap/messages';
 import {Button, KIND} from 'baseui/button';
-import {Input} from 'baseui/input'
+import {Input, MaskedInput} from 'baseui/input'
 import FileUpload from './FileUpload';
 import {DatePicker} from 'baseui/datepicker';
 import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
@@ -273,6 +273,33 @@ export default function AutoForm(props) {
                         }}
                     />);
             case "guid":
+               return ( 
+                   <Controller
+                    control={control}
+                    name={fieldMeta.name}
+                    defaultValue={fieldMeta.initialValue ?? ''}
+                    rules={fieldMeta.required ? {validate: value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)} : {}}
+                    render={({onChange, onBlur, value, name, ref}) => {
+                        return (
+                            <FormControl
+                                disabled={submitted}
+                                label={fieldMeta.label} caption={fieldMeta.caption}
+                                error={fieldHasErrored(fieldMeta.name)}>
+                                <MaskedInput
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    inputRef={ref}
+                                    name={name}
+                                    value={value}
+                                    onChange={onChange}
+                                    onBlur={onBlur}
+                                    placeholder="Unique Identifier (e.g. ac769a1f-e681-4bc4-8098-45e0b4d923cf)"
+                                    mask={"********-****-****-****-************"}
+                                    maskChar="*"
+                                /></FormControl>
+                        );
+                    }}
+                />);
+                
             case "string":
                 return (
                     <Controller

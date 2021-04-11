@@ -85,6 +85,7 @@ export default (props) => {
                     setIsLoading(true);
                     const blob = await getBlobFromDisk(acceptedFiles[0]);
                     const enrichedBlob = await enrichBlobInfo(blob);
+                    enrichedBlob.id = uuidv4();
                     const blobToUpload = await objectUrlToBlob(enrichedBlob.objectUrl);
                     await uploadBlobToBackend(enrichedBlob.id, blobToUpload);
                     onChange(enrichedBlob);
@@ -174,7 +175,7 @@ export default (props) => {
                 blobInfo.objectUrl = URL.createObjectURL(blobInfo.blob);
                 break;
         }
-        blobInfo.id = uuidv4();
+        
         blobInfo.sizeInKb = Math.round(blobInfo.blob.size / 1000) + " kb";
         delete blobInfo.blob;
         return blobInfo;

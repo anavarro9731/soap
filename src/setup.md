@@ -217,15 +217,18 @@ It will push the release to Azure and create the environment if necessary.
 Finally, it will leave you on the master branch afterwards.
 
 # NOTES
- 
-- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
+
 - Azure SDK releases found [here](https://azure.github.io/azure-sdk/releases/latest/dotnet.html)
+- We are stuck using the -no-source-maps flag in parcel v1 because auth0 library wont work otherwise, parcel team not fixing
+  the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1. won't cancel properly, random errors
+  
+# Common Errors 
+- Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
+- Azurite has been known to generate CORS errors for other things, e.g. when the problem is really the SAS token generated server side
 - When using Jetbrains Rider [@2020.3] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
-- We are stuck using the -no-source-maps flag in parcel v1 because auth0 library wont work otherwise, parcel team not fixing
-the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1. won't cancel properly, random errors
-- When publishing the soap project itself, make sure that pwsh-bootstrap is loaded for the soap project and not another
-project which could happen if for example you were running test.ps1 recently. Second make sure the client app is running
+- When publishing the soap project itself, make sure that pwsh-bootstrap is loaded for the soap project and not another project which could happen if for example you were running test.ps1 recently. Second make sure the client app is running
   against a packaged version of soap. e.g. srv.ps1 -ToRemoteSoap. Both these problems should alert you through issues
   when publishing but its good to note them.
+  
 

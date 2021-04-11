@@ -58,7 +58,7 @@
             {
                 Services = AccountSasServices.All,
                 ResourceTypes = AccountSasResourceTypes.All,
-                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1),
+                ExpiresOn = GetSasExpiry,
                 Protocol = SasProtocol.HttpsAndHttp
             };
             
@@ -151,7 +151,7 @@
                     BlobContainerName = blobClient.GetParentBlobContainerClient().Name,
                     BlobName = blobClient.Name,
                     Resource = "b",
-                    ExpiresOn = DateTimeOffset.UtcNow.AddHours(1)
+                    ExpiresOn = GetSasExpiry
                 };
 
                 sasBuilder.SetPermissions(
@@ -168,6 +168,8 @@
                 return sasToken;
             }
         }
+
+        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1); //* add an hour to work even in BST
 
         public async Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
