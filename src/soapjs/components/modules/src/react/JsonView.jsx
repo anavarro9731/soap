@@ -11,7 +11,7 @@ export default function JsonView(props) {
 
     const {query, sendQuery} = props;
 
-    let dataViewEvent = useQuery({query, sendQuery});
+    const [dataViewEvent, refresh] = useQuery({query, sendQuery});
 
     if (dataViewEvent) {
         return (<pre>{JSON.stringify(dataViewEvent, undefined, 2)}</pre>);

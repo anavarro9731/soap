@@ -175,7 +175,7 @@ $LocalSettingsJson = @"
     }
 }
 "@
-$LocalSettingsJsonPath = (Get-ChildItem -Path "$PSScriptRoot" -Recurse local.settings.json | Select-Object -ExpandProperty FullName | Select -First 1)
+$LocalSettingsJsonPath = Join-Path (Get-ChildItem -Path "$PSScriptRoot" -Recurse host.json -Depth 2 | Select-Object -ExpandProperty FullName | Split-Path) "local.settings.json"
 Set-Content -Path "$LocalSettingsJsonPath" -Value $LocalSettingsJson
 
 Log-Step "Set .env properies"

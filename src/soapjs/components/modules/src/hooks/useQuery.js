@@ -11,6 +11,7 @@ export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSe
     const [queryResult, setQueryResult] = useState();
     const configLoaded = useIsConfigLoaded("useQuery.js");
     const { authReady } = useAuth();
+    const [refreshIndex, setRefreshIndex] = useState(0);
     
     const onResponse = data => {
         setQueryResult(data);
@@ -41,7 +42,12 @@ export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSe
             if (config.debugSystemState) console.warn("useQuery destructor ran because one of the items in [sendQuery, configLoaded, authReady] changed or the component was mounted/unmounted, and any outstanding conversation was terminated.");
         };
         
-    }, [sendQuery, configLoaded, authReady]);
+    }, [sendQuery, configLoaded, authReady, refreshIndex]);
 
-    return queryResult;
+    function refresh() {
+        setRefreshIndex(refreshIndex + 1);
+        setQueryResult(null);
+    }
+    
+    return [queryResult, refresh];
 }

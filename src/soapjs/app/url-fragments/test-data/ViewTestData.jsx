@@ -21,8 +21,8 @@ export function ViewTestData() {
         c110_TestDataId: id
     };
 
-    let dataViewEvent = useQuery({query});
-
+    const [dataViewEvent, refresh] = useQuery({query});
+    
     if (dataViewEvent) {
         
         return (
@@ -36,6 +36,7 @@ export function ViewTestData() {
                                 Back
                             </StyledLink>
                             <H1>{dataViewEvent.e102_TestData.e102_String}</H1>
+                            
                         </div>
                     </Cell>
                 </Grid>

@@ -183,7 +183,9 @@ Then right-click on the solution root node and select Add->Attach Existing Folde
 then choose the "app" folder in the root of the new repo.
 This will add it as a node in the solution file/folder treeview.
 
-Next, open a terminal {Ctrl+Alt+1} goto the root/src/app folder of the repo
+Next, open a terminal {Ctrl+Alt+1} goto the root/src/components/modules folder of the repo
+Run `yarn install`
+Next, goto the root/src/app folder of the repo
 Run these two commands in succession
 `yarn install`
 `yarn run serve`
@@ -230,5 +232,6 @@ Finally, it will leave you on the master branch afterwards.
 - When publishing the soap project itself, make sure that pwsh-bootstrap is loaded for the soap project and not another project which could happen if for example you were running test.ps1 recently. Second make sure the client app is running
   against a packaged version of soap. e.g. srv.ps1 -ToRemoteSoap. Both these problems should alert you through issues
   when publishing but its good to note them.
+- Had some very wierd situation on a new machine where I was getting an error about now being able to find the local.settings.json file when starting the function app locally. Closing ALL instances of Rider and reloading seemed to fix it.
   
 

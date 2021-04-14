@@ -44,7 +44,7 @@ export default function AutoForm(props) {
     }, [submitted])
 
     //* triggered immediately
-    let formDataEvent = useQuery({query, sendQuery});
+    const [formDataEvent, refresh] = useQuery({query, sendQuery});
 
     useEffect(() => {
         
