@@ -45,7 +45,7 @@ namespace Soap.Api.Sample.Logic.Processes
                 async Task<List<TestData>> GetRecentTestData()
                 {
                     var recentTestData = await this.Get<TestDataQueries>()
-                                                   .Call(x => x.GetRecentTestData(msg.C111_MaxAgeInDays ?? 5, msg.C111_MaxRecords ?? 10))();
+                                                   .Call(x => x.GetRecentTestData(msg.C111_MaxAgeInDays ?? 365, msg.C111_MaxRecords ?? 50))();
                     return recentTestData;
                 }
                 };

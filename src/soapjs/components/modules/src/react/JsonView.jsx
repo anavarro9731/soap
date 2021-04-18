@@ -3,7 +3,7 @@ import {useQuery} from '../hooks/useQuery';
 import {withStyle} from 'baseui';
 import {StyledSpinnerNext} from 'baseui/spinner';
 
-export default function JsonView(props) {
+export function JsonView(props) {
 
     const CenterSpinner = withStyle(StyledSpinnerNext, {
         margin: "auto"

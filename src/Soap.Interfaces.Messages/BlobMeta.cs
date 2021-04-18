@@ -12,5 +12,7 @@ namespace Soap.Interfaces.Messages
         public Guid? Id { get; set; }
 
         public string Name { get; set; }
+
+        public string BlobMetaMarker { get; set; } = "20fb62ff-9dd3-436e-a356-eceb335c2572";
     }
 }

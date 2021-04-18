@@ -1,8 +1,10 @@
 ﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C114
 {
     using System;
+    using System.Linq;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
+    using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Xunit;
     using Xunit.Abstractions;
@@ -37,9 +39,19 @@
         }
         
         [Fact]
-        public async void ItShouldPublishAnEvent()
+        public void ItShouldPublishAResponseToTheBus()
         {
-            (await Result.DataStore.ReadById<TestData>(testDataId)).Active.Should().BeFalse();
+            Result.MessageBus.BusEventsPublished.Should().ContainSingle();
+            Result.MessageBus.BusEventsPublished.Single().Should().BeOfType<E106v1_TestDataRemoved>();
+            Result.MessageBus.BusEventsPublished.Single().As<E106v1_TestDataRemoved>().E106_TestDataId.Should().Be(testDataId);
+        }
+
+        [Fact]
+        public void ItShouldPublishAResponseToTheWebSocketClient()
+        {
+            Result.MessageBus.WsEventsPublished.Should().ContainSingle();
+            Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E106v1_TestDataRemoved>();
+            Result.MessageBus.WsEventsPublished.Single().As<E106v1_TestDataRemoved>().E106_TestDataId.Should().Be(testDataId);
         }
     }
 }

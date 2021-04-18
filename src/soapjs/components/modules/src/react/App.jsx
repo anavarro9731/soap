@@ -1,18 +1,17 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useEvent} from '../hooks/useEvent';
 import {Client as Styletron} from 'styletron-engine-atomic';
 import {Provider as StyletronProvider} from 'styletron-react';
-import {BaseProvider, LocaleProvider, withStyle} from 'baseui';
+import {BaseProvider, LocaleProvider} from 'baseui';
 import {PLACEMENT as PLACEMENT_TOASTER, toaster, ToasterContainer} from 'baseui/toast';
-import {DURATION, SnackbarProvider, PLACEMENT as PLACEMENT_SNACKBAR } from 'baseui/snackbar';
-import {Auth0Provider } from "@auth0/auth0-react";
+import {DURATION, PLACEMENT as PLACEMENT_SNACKBAR, SnackbarProvider} from 'baseui/snackbar';
+import {Auth0Provider} from "@auth0/auth0-react";
 import config from "../soap/config";
-import {useEffect, useReducer} from "react";
 import {useIsConfigLoaded} from "../hooks/systemStateHooks";
-import {StyledSpinnerNext} from "baseui/spinner";
 import {getHeader} from "../soap/util";
 import {headerKeys} from "../soap/messages";
-import {HashRouter as Router, Route, Switch} from "react-router-dom";
+import {HashRouter as Router} from "react-router-dom";
+import {CenterSpinner} from "./CenterSpinner";
 
 const localeOverride = {
     fileuploader: {
@@ -23,42 +22,38 @@ const localeOverride = {
 
 const engine = new Styletron();
 
-const CenterSpinner = withStyle(StyledSpinnerNext, {
-    margin: "auto"
-})
+export function App(props) {
 
-export default function App(props) {
-    
     function onRedirectCallback(appState) {
         if (config.debugSystemState) {
-            console.warn("redirect callback ran", appState, history);    
+            console.warn("redirect callback ran", appState, history);
         }
         if (!!appState?.returnTo) {
-            window.location.href = appState?.returnTo    
+            window.location.href = appState?.returnTo
         }
     };
-    
+
     useEvent({
         eventName: "Soap.Interfaces.Messages.E001v1_MessageFailed",
         onEventReceived(event, envelope) {
             toaster.negative(`${event.e001_ErrorMessage} Error Id: ${getHeader(event, headerKeys.messageId)}`);
         }
     });
-    
+
     const configLoaded = useIsConfigLoaded("app.jsx");
     const override = !!props.localeOverride ? {...localeOverride, ...props.localOverride} : localeOverride;
 
     useEffect(() => {
         if (config.debugSystemState) console.warn("app.jsx rendered");
     });
-    
+
     return (<LocaleProvider locale={override}>
         <StyletronProvider value={engine}>
             <BaseProvider theme={props.theme}>
                 <ToasterContainer autoHideDuration={4000} placement={PLACEMENT_TOASTER.topRight}>
                     <SnackbarProvider defaultDuration={DURATION.short} placement={PLACEMENT_SNACKBAR.bottom}>
                         <Router>
-                        {getContent()}
+                            {getContent()}
                         </Router>
                     </SnackbarProvider>
                 </ToasterContainer>
@@ -84,7 +79,7 @@ export default function App(props) {
                 return (<React.Fragment>{props.children}</React.Fragment>);
             }
         } else {
-            return (<CenterSpinner />);
+            return (<CenterSpinner/>);
         }
     }
 }

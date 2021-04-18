@@ -10,11 +10,16 @@ export { headerKeys, toTypeName } from './soap/messages';
 export { validateArgs, types, optional, getHeader, setHeader, uuidv4 } from './soap/util';
 
 /* react */
-export { default as App } from './react/App';
-export { default as JsonView } from './react/JsonView';
-export { default as FileUpload } from './react/FileUpload';
-export { default as FileView } from './react/FileView';
-export { default as AutoForm } from './react/AutoForm';
+export { App } from './react/App';
+export { JsonView } from './react/JsonView';
+export { FileUpload } from './react/FileUpload';
+export { FileView } from './react/FileView';
+export { AutoForm } from './react/AutoForm';
 export { default as ReactErrorBoundary } from './react/ReactErrorBoundary';
 export { Login, ProtectedRoute } from './react/Login';
-export { default as DebugLayer } from './react/DebugLayer';
+export { ActionDrawer } from './react/ActionDrawer';
+export { PrimaryActionMenu, SecondaryActionMenu } from './react/ActionMenu';
+export { ActionModal } from './react/ActionModal';
+export { AggregateList } from './react/AggregateList';
+export { AggregateView } from './react/AggregateView';
+export { CenterSpinner } from './react/CenterSpinner';

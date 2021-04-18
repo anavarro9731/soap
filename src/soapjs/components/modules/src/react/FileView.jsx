@@ -1,12 +1,9 @@
 import * as React from "react";
 import {useEffect, useState} from "react";
-import {ListItem, ListItemLabel} from "baseui/list";
-import {Button} from "baseui/button";
 import Download from "baseui/icon/arrow-down"
 import {StyledLink} from "baseui/link";
 import {Modal, ModalBody, ModalHeader, ROLE, SIZE} from "baseui/modal";
 import {useStyletron} from "baseui";
-import {uuidv4} from "../soap/util";
 import Compressor from 'compressorjs'
 import config from "../soap/config";
 
@@ -28,17 +25,17 @@ async function objectUrlToBlob(objectUrl) {
     return blob;
 }
 
-export default (props) => {
+export function FileView(props) {
 
     const {value} = props;
-    
+
     const [isLoading, setIsLoading] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [enrichedBlob, setEnrichedBlob] = useState(null);
-    
+
     const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
     const [css] = useStyletron();
-    
+
 
     //* run to get the blob state after first render is complete
     useEffect(() => {
@@ -53,14 +50,14 @@ export default (props) => {
                     name: value.name,
                     blob: blob
                 };
-                
+
                 const enrichedBlob = await enrichBlobInfo(blobInfo);
                 setEnrichedBlob(enrichedBlob);
                 setIsLoading(false);
             }
         })();
     }, []) //* run only once
-   
+
     return (
         <div>
             {renderUploadedItem()}
@@ -161,7 +158,7 @@ export default (props) => {
                     {fullSize}
                     {file}
                 </div>
-                
+
             );
         }
     }

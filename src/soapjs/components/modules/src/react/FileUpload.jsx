@@ -41,7 +41,7 @@ async function objectUrlToBlob(objectUrl) {
     return blob;
 }
 
-export default (props) => {
+export function FileUpload (props) {
 
     const {onChange, onBlur, error, acceptedTypes, value, disabled} = props;
     const [isUploading, setIsLoading] = useState(false);

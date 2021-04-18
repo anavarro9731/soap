@@ -18,25 +18,25 @@ import {useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
 import {toaster} from 'baseui/toast';
 
-export default function AutoForm(props) {
+export function AutoForm(props) {
 
     //* this logic should be redone with useReducer
-    
+
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
     const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText} = props;
     const {enqueue} = useSnackbar();
-    
+
     const [showLoader, setShowLoader] = useState(false);
-    
-    const [submitted, setSubmitted] = useState(false); 
+
+    const [submitted, setSubmitted] = useState(false);
     const [submitSucceeded, setSubmitSucceeded] = useState(false);
-    
+
     //* used as a pair, to cause the sending of the command when the user submits
     const [command, setCommand] = useState(undefined);
     const [sendCommand, setSendCommand] = useState(false);
-    
+
     const isInitialSubmit = (sendCommand && submitted === false);
-    
+
     useEffect(() => {
         if (submitted) {
             window.scrollTo(0, 0);
@@ -47,7 +47,7 @@ export default function AutoForm(props) {
     const [formDataEvent, refresh] = useQuery({query, sendQuery});
 
     useEffect(() => {
-        
+
         if (submitSucceeded) {
             /* we don't run this code in the click handler because we don't know if the command.handle call
             succeeded yet
@@ -69,12 +69,12 @@ export default function AutoForm(props) {
             }
         }
 
-    },[submitSucceeded]);
-    
+    }, [submitSucceeded]);
+
     try {
         //* once the user has submitted the form in the onclick handler then it will set sendCommand and the hook will send
         useCommand(command, sendCommand);
-        
+
         if (isInitialSubmit) {
             setSubmitSucceeded(true);
         }
@@ -114,8 +114,8 @@ export default function AutoForm(props) {
             {renderDebug()}
         </div>
     );
-    
-    
+
+
     async function onSubmit(formValues) {
 
         try {
@@ -273,33 +273,33 @@ export default function AutoForm(props) {
                         }}
                     />);
             case "guid":
-               return ( 
-                   <Controller
-                    control={control}
-                    name={fieldMeta.name}
-                    defaultValue={fieldMeta.initialValue ?? ''}
-                    rules={fieldMeta.required ? {validate: value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)} : {}}
-                    render={({onChange, onBlur, value, name, ref}) => {
-                        return (
-                            <FormControl
-                                disabled={submitted}
-                                label={fieldMeta.label} caption={fieldMeta.caption}
-                                error={fieldHasErrored(fieldMeta.name)}>
-                                <MaskedInput
-                                    error={fieldHasErrored(fieldMeta.name)}
-                                    inputRef={ref}
-                                    name={name}
-                                    value={value}
-                                    onChange={onChange}
-                                    onBlur={onBlur}
-                                    placeholder="Unique Identifier (e.g. ac769a1f-e681-4bc4-8098-45e0b4d923cf)"
-                                    mask={"********-****-****-****-************"}
-                                    maskChar="*"
-                                /></FormControl>
-                        );
-                    }}
-                />);
-                
+                return (
+                    <Controller
+                        control={control}
+                        name={fieldMeta.name}
+                        defaultValue={fieldMeta.initialValue ?? ''}
+                        rules={fieldMeta.required ? {validate: value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)} : {}}
+                        render={({onChange, onBlur, value, name, ref}) => {
+                            return (
+                                <FormControl
+                                    disabled={submitted}
+                                    label={fieldMeta.label} caption={fieldMeta.caption}
+                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    <MaskedInput
+                                        error={fieldHasErrored(fieldMeta.name)}
+                                        inputRef={ref}
+                                        name={name}
+                                        value={value}
+                                        onChange={onChange}
+                                        onBlur={onBlur}
+                                        placeholder="Unique Identifier (e.g. ac769a1f-e681-4bc4-8098-45e0b4d923cf)"
+                                        mask={"********-****-****-****-************"}
+                                        maskChar="*"
+                                    /></FormControl>
+                            );
+                        }}
+                    />);
+
             case "string":
                 return (
                     <Controller
@@ -557,6 +557,6 @@ export default function AutoForm(props) {
             return debug;
         }
     }
-    
+
 }
 
