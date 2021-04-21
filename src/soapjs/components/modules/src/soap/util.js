@@ -52,8 +52,12 @@ export function validateArgs(...requiredArgs) {
             
             const requireArrayOf = Array.isArray(requiredType);
             if (requireArrayOf === true) {
-                if (Array.isArray(argValue) === false)
+                if (Array.isArray(argValue) === false) {
+                    if (isOptional && (argValue === undefined)) {
+                     return;   
+                    }
                     throw `Argument ${argName} is supposed to be an array but the value provided is of type ${typeof argValue}. E^05`;
+                }
                 requiredType = requiredType[0];
                 argValue.forEach((v, i) => {
                     checkType(

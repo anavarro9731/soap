@@ -14,7 +14,7 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.PfBase.Messages;
     using Soap.Utility.Functions.Operations;
 
-    public class P207_C109__ReturnC107FormDataForCreate : Process, IBeginProcess<C109v1_GetC107DefaultFormData>
+    public class P207_C109__ReturnC107FormDataForCreate : Process, IBeginProcess<C109v1_GetC107FormDataForCreate>
     {
         /* there is always a security concern to consider when writing processes that return form data
         if the form data is not default data, and that is whether the user has access to that data.
@@ -32,7 +32,7 @@ namespace Soap.Api.Sample.Logic.Processes
             new Enumeration("ox29ju", "OX2 9JU")
         };
 
-        public Func<C109v1_GetC107DefaultFormData, Task> BeginProcess =>
+        public Func<C109v1_GetC107FormDataForCreate, Task> BeginProcess =>
             async message =>
                 {
                 {

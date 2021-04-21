@@ -148,7 +148,9 @@ async function loadConfigState() {
 
                 if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
                     //* make the swap
+                    
                     anonymousEvent = await downloadMessageBlob(anonymousEvent);
+                    
                 }
                 eventHandler.handle(anonymousEvent);
             } catch (err) {
@@ -213,6 +215,7 @@ function sendMessage(msg) {
                 setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
 
                 if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
+                    
                     const messageBlob = new Blob([JSON.stringify(message)]);
                     await uploadMessageToBlobStorage(message, messageBlob);
                     clearDownMessageProperties(message);

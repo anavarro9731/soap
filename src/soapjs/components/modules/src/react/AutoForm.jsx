@@ -5,7 +5,7 @@ import config from '../soap/config';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from '../soap/messages';
 import {Button, KIND} from 'baseui/button';
 import {Input, MaskedInput} from 'baseui/input'
-import FileUpload from './FileUpload';
+import {FileUpload} from './FileUpload';
 import {DatePicker} from 'baseui/datepicker';
 import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
 import {Controller, useForm} from "react-hook-form";

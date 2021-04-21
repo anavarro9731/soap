@@ -129,6 +129,7 @@ export default {
             const commandBlob = new Blob( [JSON.stringify(command)] );
             
             if (commandBlob.size > 256000) {
+                
                 //* make sure these were provided
                 getHeader(command, headerKeys.blobId);
                 getHeader(command, headerKeys.sasStorageToken);

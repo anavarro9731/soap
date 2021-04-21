@@ -8,10 +8,10 @@ import {CenterSpinner} from "./CenterSpinner";
 
 export function AggregateView(props) {
 
-    const {title, aggregate, propertyRenderer, refreshFunction, backFunction} = props;
+    const {title, entityMenus, aggregate, propertyRenderer, refreshFunction, backFunction} = props;
 
     return (
-        <Grid gridMaxWidth={1600}>
+        <Grid gridMaxWidth={1900}>
             <Cell span={12}>
                 <HeadingLevel><Heading>{title}
                     {backFunction ?
@@ -36,7 +36,7 @@ export function AggregateView(props) {
             </Cell>
             <Cell span={12}>
                 {aggregate ?
-                    <ObjectTableTop object={aggregate} propertyRenderer={propertyRenderer}/>
+                    <ObjectTableTop entityMenus={entityMenus} object={aggregate} propertyRenderer={propertyRenderer}/>
                     :
                     <CenterSpinner/>}
             </Cell>

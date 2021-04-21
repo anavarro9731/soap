@@ -15,7 +15,7 @@
             : base(outputHelper)
         {
             TestMessage(
-                new C109v1_GetC107DefaultFormData(),
+                new C109v1_GetC107FormDataForCreate(),
                 Identities.JohnDoeAllPermissions,
                 setupMocks: messageAggregatorForTesting =>
                     {

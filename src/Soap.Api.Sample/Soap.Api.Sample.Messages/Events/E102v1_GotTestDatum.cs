@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using CircuitBoard;
     using Soap.Interfaces.Messages;
 
     public class E102v1_GotTestDatum : ApiEvent

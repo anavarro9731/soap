@@ -1,17 +1,26 @@
 import {Cell, Grid} from "baseui/layout-grid";
 import {H5} from "baseui/typography";
 import React from "react";
-import {Button, KIND} from "baseui/button";
+import {Button, KIND, SIZE} from "baseui/button";
 import bus from "../soap/bus";
-import {ArrayTableTop} from "./Tables";
+import {ArrayTableTop, EntityMenu} from "./Tables";
 import {CenterSpinner} from "./CenterSpinner";
+import {optional, types, validateArgs} from "../soap/util";
 
 export function AggregateList(props) {
 
-    const {title, aggregates, propertyRenderer, refreshFunction, backFunction} = props;
-
+    const {title, entityMenus, aggregates, propertyRenderer, refreshFunction, backFunction} = props;
+    
+    validateArgs(
+        [{title}, types.string], 
+        [{entityMenus}, types.object, optional],
+        [{propertyRenderer}, types.object, optional],
+        [{refreshFunction}, types.function, optional],
+        [{backFunction}, types.function, optional]
+    );
+    
     return (
-        <Grid gridMaxWidth={1600}>
+        <Grid gridMaxWidth={1900}>
             <Cell span={12}>
                 <H5>{title}
                     {backFunction ?
@@ -28,7 +37,7 @@ export function AggregateList(props) {
                                 marginLeft: "10px"
                             })
                         }
-                    }} kind={KIND.secondary} onClick={() => {
+                    }} kind={KIND.secondary} size={SIZE.compact} onClick={() => {
                         bus.closeAllDialogs();
                         refreshFunction();
                     }}>Refresh List</Button> : null}
@@ -36,7 +45,7 @@ export function AggregateList(props) {
             </Cell>
             <Cell span={12}>
                 {aggregates ?
-                    <ArrayTableTop arrayOfObjects={aggregates} propertyRenderer={propertyRenderer}/>
+                    <ArrayTableTop entityMenus={entityMenus} arrayOfObjects={aggregates} propertyRenderer={propertyRenderer}/>
                     :
                     <CenterSpinner/>}
             </Cell>

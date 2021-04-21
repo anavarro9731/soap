@@ -55,7 +55,7 @@ export default {
     validateArgs(
         [{ f }, types.function],
     );
-    subscribe("ui", "close-all-dialogs", f);
+    return subscribe("ui", "close-all-dialogs", f);
   },
   
   publish: publish,

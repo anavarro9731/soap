@@ -43,7 +43,7 @@
                 {
                     new BlobCorsRule()
                     {
-                        AllowedMethods = "GET,PUT",
+                        AllowedMethods = "GET,PUT,POST,DELETE,OPTIONS",
                         AllowedOrigins = "*",
                         MaxAgeInSeconds = sasTokenExpiryInSecondsFromNow,
                         AllowedHeaders = "*",
@@ -78,7 +78,7 @@
             return blob.ToMessage();
         }
 
-        public async Task<Blob> GetBlob(Guid id, string containerName = "content")
+        public async Task<Blob> GetBlob(Guid id, string containerName = "large-messages")
         {
             try
             {

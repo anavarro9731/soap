@@ -37,6 +37,17 @@ export function getRegisteredMessageType(typeName) {
     return messageTypesSingleton[typeName];
 }
 
+export function getIdOfMessageEntity(entity) {
+    if (entity) {   
+        const childKeys = Object.keys(entity);
+        const idKey = childKeys.find(key => key.substring(key.indexOf('_') + 1).toLowerCase() === "id");
+        return entity[idKey];
+    } else {
+        return undefined;
+    }
+}
+
+
 export const headerKeys = {
     sasStorageToken: "SasStorageToken",
     messageId: "MessageId",

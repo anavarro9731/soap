@@ -1,35 +1,47 @@
-import {styled, useStyletron, withStyle} from "baseui";
+import {useStyletron} from "baseui";
 import {PLACEMENT, StatefulPopover} from "baseui/popover";
-import {Button, KIND} from "baseui/button";
+import {Button, KIND, SIZE} from "baseui/button";
 import {ChevronRight} from "baseui/icon";
-import React, {useState} from 'react';
+import React from 'react';
 import bus from "../soap/bus";
 
-export function PrimaryActionMenu() {
+export const PrimaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
+export function PrimaryActionMenu(props) {
+    const {buttonText = "Act"} = props;
     return (
-        <ActionMenu overrides={{
+        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
             Body: {
-                ActionMenuContent:
-                    {
-                        style: {
-                            borderWidth: "0px"
-                        }
-                    }
+                style: {
+                    borderWidth: "0px"
+                }
             }
         }}/>
     );
 }
 
-export function SecondaryActionMenu() {
+export const SecondaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
+export function SecondaryActionMenu(props) {
+    const {buttonText = "Act"} = props;
     return (
-        <ActionMenu overrides={{
+        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
             Body: {
-                ActionMenuContent:
-                    {
-                        style: {
-                            borderWidth: "1px"
-                        }
-                    }
+                style: {
+                    borderWidth: "1px"
+                }
+            }
+        }}/>
+    );
+}
+
+export const ViewMenuButton =(props) => <Button kind={KIND.secondary} size={SIZE.compact} {...props} />;
+export function ViewMenu(props) {
+    const {buttonText = "View"} = props;
+    return (
+        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.secondary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
+            Body: {
+                style: {
+                    borderWidth: "1px"
+                }
             }
         }}/>
     );
@@ -37,48 +49,43 @@ export function SecondaryActionMenu() {
 
 const ActionMenu = (props) => {
 
-    const {borderWidth, children, buttonText = "Actions"} = props;
+    const {borderWidth, children, button} = props;
     const [css, theme] = useStyletron();
 
-    const [closeAllDialogsSubscription, setCloseAllDialogsSubscription] = useState(false);
-    const [closeFromContent, setCloseFromContent] = useState();
-
-    closeAllDialogsSubscription.unsubscribe();
-    setCloseAllDialogsSubscription(bus.onCloseAllDialogs(() => closeFromContent()));
+    //const [closeAllDialogsSubscription, setCloseAllDialogsSubscription] = useState();
+    //const [closeFromContent, setCloseFromContent] = useState();
+    //
+    // useEffect(() => {
+    //     bus.onCloseAllDialogs(() => closeFromContent());
+    //     // const sub = bus.onCloseAllDialogs(() => closeFromContent());
+    //     // //setCloseAllDialogsSubscription(sub);
+    //     // if (closeAllDialogsSubscription) {
+    //     //     closeAllDialogsSubscription.unsubscribe();    
+    //     // }    
+    // })
+    //
 
     return (
-        children ? 
-        <StatefulPopover
-            dismissOnClickOutside={true}
-            placement={PLACEMENT.right}
-            overrides={{
-                Body: {
-                    style: ({$theme}) => ({
-                        boxShadow: 'none',
-                    }),
-                }
-            }}
-            content={({close}) => {
+        children ?
+            <StatefulPopover
+                dismissOnClickOutside={true}
+                placement={PLACEMENT.right}
+                overrides={{
+                    Body: {
+                        style: ({$theme}) => ({
+                            boxShadow: 'none',
+                        }),
+                    }
+                }}
+                content={({close}) => {
 
-                //* the close method pass into content is different on every render so we need to capture it
-                setCloseFromContent(close);
+                    //* the close method pass into content is different on every render so we need to capture it
+                    bus.onCloseAllDialogs(close);
 
-                return (
-                    <ActionMenuContent>
-                        {children}
-                    </ActionMenuContent>
-                );
-            }}
-        >
-            <Button endEnhancer={ChevronRight} kind={KIND.minimal}>{buttonText}</Button>
-        </StatefulPopover> : null
+                    return <div>{children}</div>
+                }}
+            >
+                {button}
+            </StatefulPopover> : null
     );
 }
-
-const ActionMenuContent = styled('div', ({$theme}) => ({
-    backgroundColor: $theme.colors.backgroundPrimary,
-    borderStyle: $theme.borders.border600.borderStyle,
-    borderColor: $theme.borders.border600.borderColor,
-    flexDirection: 'column',
-    display: 'flex'
-}));

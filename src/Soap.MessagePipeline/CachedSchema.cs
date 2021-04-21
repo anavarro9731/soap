@@ -133,7 +133,7 @@
 
                         PrintMessageName();
 
-                        var propNamesList = new List<string>();
+                        var propNamesList = new Dictionary<Type,string>();
 
                         object messageWithDefaults;
                         try
@@ -148,12 +148,13 @@
                         }
                         /* allowing duplicates will cause problems client-side in performing find and replace on properties which are meant to be unique based on the class structure
                         may be other reason too that I have forgotten would need to do a test and see if you ever wanted to remove this */
+                        var propNames = propNamesList.Values.ToList();
                         Guard.Against(
-                            propNamesList.HasDuplicates(),
-                            $"Cannot have multiple properties with the same name in the same message. {propNamesList.GetDuplicatesOrNull()?.Aggregate((x, y) => $"{x},{y}")} Check all nested class properties.");
+                            propNames.HasDuplicates(),
+                            $"Cannot have multiple properties with the same name in the same message. {propNames.GetDuplicatesOrNull()?.Aggregate((x, y) => $"{x},{y}")} Check all nested class properties.");
 
                         //*FRAGILE* see match in config.js, these have special meaning client-side
-                        Guard.Against(propNamesList.Any(x =>
+                        Guard.Against(propNames.Any(x =>
                                 {
                                 var lower = x.ToLower();
                                 return lower switch
@@ -178,11 +179,15 @@
                         plainTextBuilder.AppendLine(border);
                     }
 
-                    void AddToPropNamesList(PropertyInfo propertyInfo, List<string> list, string s)
+                    void AddToPropNamesList(Type aType, PropertyInfo propertyInfo, Dictionary<Type, string> list, string propertyName)
                     {
                         if (!TypeIsExceptional(propertyInfo))
                         {
-                            list.Add(s);
+                            if (!list.ContainsKey(aType))
+                            {
+                                list.Add(aType, propertyName);    
+                            }
+                            
                         }
                     }
                     
@@ -196,7 +201,7 @@
                                property.DeclaringType == typeof(Enumeration);
                     }
 
-                    object GetWithDefaults(Type aType, List<string> propNamesList, int indent = 0, string parentName = null)
+                    object GetWithDefaults(Type aType, Dictionary<Type,string> propNamesList, int indent = 0, string parentName = null)
                     {
                         var instance = Activator.CreateInstance(aType);
 
@@ -227,7 +232,7 @@
                                 
                                 property.SetValue(instance, GetDefault(propertyType));
 
-                                AddToPropNamesList(property, propNamesList, propertyName);
+                                AddToPropNamesList(aType, property, propNamesList, propertyName);
 
 
                                 

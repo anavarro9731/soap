@@ -30,7 +30,7 @@ namespace Soap.Api.Sample.Afs
                 {
                     nameof(C111v1_GetRecentTestData),
                     nameof(C110v1_GetTestDataById),
-                    nameof(C109v1_GetC107DefaultFormData),
+                    nameof(C109v1_GetC107FormDataForCreate),
                     nameof(C107v1_CreateOrUpdateTestDataTypes),
                     nameof(C114v1_DeleteTestDataById),
                     nameof(C113v1_GetC107FormDataForEdit)

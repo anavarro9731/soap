@@ -1,6 +1,9 @@
-import {AggregateList, useEvent, useQuery, AggregateView} from "@soap/modules";
+import {AggregateList, AggregateView, useEvent, useQuery} from "@soap/modules";
 import React, {Fragment} from "react";
-
+import {CreateTestData} from "./drawers/CreateTestData";
+import {EntityMenu} from "../../../components/modules/src/react/Tables";
+import {EditTestData} from "./drawers/EditTestData";
+import {getIdOfMessageEntity} from "../../../components/modules/src/soap/messages";
 
 export function ListTestData() {
 
@@ -26,14 +29,28 @@ export function ListTestData() {
 
     return (
         <Fragment>
-            <AggregateList title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>
-            <AggregateView title="An Aggregate" aggregate={e105?.e105_TestData[0]} refreshFunction={() => refresh()} />
+            <AggregateList entityMenus={
+                {
+                    "root": new EntityMenu(null, [
+                        () => <CreateTestData/>
+                    ]),
+                    "root-ArrayItems": new EntityMenu(null, [
+                        (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>
+                    ]),
+                    "e105_Child": new EntityMenu((entity) => alert(entity), [
+                        (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>
+                    ]),
+                    "e105_Children2": new EntityMenu((entity) => alert(entity), [
+                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>1</button>,
+                        (entity) => <button onClick={() => alert(getIdOfMessageEntity(entity))}>2</button>
+                    ]),
+                    "e105_Children-ArrayItems": new EntityMenu((entity) => alert(entity), [
+                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>1</button>,
+                        (entity) => <button onClick={() => alert(getIdOfMessageEntity(entity))}>2</button>
+                    ])
+                }
+            } title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>
+
+            <AggregateView title="An Aggregate" aggregate={e105?.e105_TestData[0]} refreshFunction={() => refresh()}/>
         </Fragment>);
-
-
-    // <Cell><Button kind={KIND.minimal}
-    //               onClick={() => location.href = "#/test-data/view/" + item.e105_Id}>View</Button></Cell>
-    // <Cell><Button kind={KIND.minimal}
-    //               onClick={() => location.href = "#/test-data/edit/" + item.e105_Id}>Edit</Button></Cell>
-
 }

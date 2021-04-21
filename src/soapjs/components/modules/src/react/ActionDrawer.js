@@ -12,7 +12,7 @@ export function ActionDrawer(props) {
 
     const {title, auth, children} = props;
     const {requireAuth} = useAuth();
-    const {isOpen, setIsOpen} = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [css, theme] = useStyletron();
     
     useEffect(() => {
@@ -21,15 +21,15 @@ export function ActionDrawer(props) {
     }, []); //* run once
     
     return (<Fragment>
-        <Button kind={KIND.primary} onClick={() => {
+        <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.primary} onClick={() => {
             if (auth) {
                 requireAuth(() => {
                     setIsOpen(true);
-                });
+                })
             } else {
-                    setIsOpen(false);
+                setIsOpen(false)
             }
-        }} children={{title}} />
+        }} children={title} />
         
         <Drawer 
             isOpen={isOpen} 

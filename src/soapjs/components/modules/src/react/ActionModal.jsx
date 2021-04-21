@@ -53,7 +53,7 @@ export function ActionModal(props) {
                 }>
                     No
                 </ModalButton>
-                <ModalButton kind={KIND.secondary} onClick={
+                <ModalButton kind={KIND.secondary} size={SIZE.compact} onClick={
                     () => {
                         setUseCommandArgs(current => ({
                             ...current,

@@ -6,7 +6,7 @@ export { translate, addTranslations } from './i18n/index';
 export {default as bus } from './soap/bus';
 export {default as config } from './soap/config';
 export {default as wireErrorHandlerOfLastResort } from './soap/error-handler'; 
-export { headerKeys, toTypeName } from './soap/messages';
+export { headerKeys, toTypeName, getIdOfMessageEntity } from './soap/messages';
 export { validateArgs, types, optional, getHeader, setHeader, uuidv4 } from './soap/util';
 
 /* react */
@@ -18,8 +18,9 @@ export { AutoForm } from './react/AutoForm';
 export { default as ReactErrorBoundary } from './react/ReactErrorBoundary';
 export { Login, ProtectedRoute } from './react/Login';
 export { ActionDrawer } from './react/ActionDrawer';
-export { PrimaryActionMenu, SecondaryActionMenu } from './react/ActionMenu';
+export { PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewMenu, ViewMenuButton } from './react/ActionMenu';
 export { ActionModal } from './react/ActionModal';
 export { AggregateList } from './react/AggregateList';
+export { EntityMenu } from './react/Tables';
 export { AggregateView } from './react/AggregateView';
 export { CenterSpinner } from './react/CenterSpinner';
