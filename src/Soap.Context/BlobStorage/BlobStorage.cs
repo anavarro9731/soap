@@ -78,7 +78,7 @@
             return blob.ToMessage();
         }
 
-        public async Task<Blob> GetBlob(Guid id, string containerName = "large-messages")
+        public async Task<Blob> GetBlob(Guid id, string containerName = "content")
         {
             try
             {
