@@ -21,7 +21,7 @@ export function ActionDrawer(props) {
     }, []); //* run once
     
     return (<Fragment>
-        <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.primary} onClick={() => {
+        <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.secondary} onClick={() => {
             if (auth) {
                 requireAuth(() => {
                     setIsOpen(true);

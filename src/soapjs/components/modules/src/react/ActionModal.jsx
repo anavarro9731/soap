@@ -24,7 +24,7 @@ export function ActionModal(props) {
     });
     
     return (<Fragment>
-        <Button kind={KIND.tertiary} onClick={() => {
+        <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.secondary} onClick={() => {
             if (auth) {
                 requireAuth(() => {
                     setModalIsOpen(true);
@@ -45,7 +45,7 @@ export function ActionModal(props) {
                 {children}
             </ModalBody>
             <ModalFooter>
-                <ModalButton kind={KIND.secondary} onClick={
+                <ModalButton kind={KIND.secondary} size={SIZE.compact} onClick={
                     () => {
                         setModalIsOpen(false);
                         setCloseDialogs(true);
