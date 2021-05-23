@@ -32,10 +32,10 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
         }
         
         [Fact]
-        public async void ItShouldSetSlaHeadersOnTheOutgoingMessageIfServiceLevelAuthIsRequestedByTheSenderOfTheOutgoingMessage()
+        public void ItShouldSetSlaHeadersOnTheOutgoingMessageIfServiceLevelAuthIsRequestedByTheSenderOfTheOutgoingMessage()
         {
             Setup(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.SendAnotherCommandThatDoesRequireAuthorisation, Identities.JaneDoeNoPermissions, forceServiceLevelAuthOnOutgoingC106:true);
-            var serviceLevelAuthority = (await AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
+            var serviceLevelAuthority = (AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
             var outgoingHeaders = Result.MessageBus.CommandsSent.Single(x => x is C100v1_Ping).Headers;
             outgoingHeaders.GetIdentityChain().Should().Be($"{Identities.JaneDoeNoPermissions.IdChainSegment},{serviceLevelAuthority.IdentityChainSegment}");
             outgoingHeaders.GetIdentityToken().Should().Be(serviceLevelAuthority.IdentityToken);
@@ -43,10 +43,10 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
         }
         
         [Fact]
-        public async void ItShouldSetSlaHeadersOnOutgoingMessageWhenThereIsNoAuthHeadersOnIncomingButEnableSlaWhenSecurityContextIsAbsentIsSet()
+        public void ItShouldSetSlaHeadersOnOutgoingMessageWhenThereIsNoAuthHeadersOnIncomingButEnableSlaWhenSecurityContextIsAbsentIsSet()
         {
             Setup(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.SendAnotherCommandThatDoesRequireAuthorisation, null, enableSlaWhenSecurityContextIsAbsent:true);
-            var serviceLevelAuthority = (await AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
+            var serviceLevelAuthority = (AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
             var outgoingHeaders = Result.MessageBus.CommandsSent.Single(x => x is C100v1_Ping).Headers;
             outgoingHeaders.GetIdentityChain().Should().Be($"{serviceLevelAuthority.IdentityChainSegment}");
             outgoingHeaders.GetIdentityToken().Should().Be(serviceLevelAuthority.IdentityToken);

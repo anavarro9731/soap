@@ -6,8 +6,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.PfBase.Models\Soap.PfBase.Models.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Entities" />
-  </ItemGroup>
 
 </Project>

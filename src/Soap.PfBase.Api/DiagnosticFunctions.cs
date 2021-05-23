@@ -243,7 +243,7 @@
             await writeLine("Running Message Test...");
 
             var message = new TSent();
-            var sla = await AuthFunctions.GetServiceLevelAuthority(appConfig);
+            var sla = AuthFunctions.GetServiceLevelAuthority(appConfig);
             message.Headers.SetAccessToken(sla.AccessToken);
             message.Headers.SetIdentityChain(sla.IdentityChainSegment);
             message.Headers.SetIdentityToken(sla.IdentityToken);
@@ -310,7 +310,7 @@
             where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
-            var sla = await AuthFunctions.GetServiceLevelAuthority(appConfig);
+            var sla = AuthFunctions.GetServiceLevelAuthority(appConfig);
             message.Headers.SetAccessToken(sla.AccessToken);
             message.Headers.SetIdentityChain(sla.IdentityChainSegment);
             message.Headers.SetIdentityToken(sla.IdentityToken);

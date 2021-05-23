@@ -84,9 +84,16 @@ async function loadConfigState() {
             const messageObj = JSON.parse(message.substring(3)); //don't let signalr do the serialising or it will use the wrong JSON settings
             await processor(messageObj);
         });
+        
+        hubConnection.onreconnecting(err => console.warn("SignalR Reconnecting", err));
+        hubConnection.onreconnected(connectionId => console.warn("SignalR Reconnected"));
+        hubConnection.onclose(err => console.warn("SignalR Closing", err))
 
-        await hubConnection.start();
-
+        try {
+            await hubConnection.start();
+        } catch(err) {
+            console.error("SignalR Connection Error", err);
+        }
         const endpoint = `${functionAppRoot}/AddToGroup?connectionId=${encodeURIComponent(hubConnection.connectionId)}`;
 
         //* don't wait it will finish before first response

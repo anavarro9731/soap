@@ -34,8 +34,8 @@
 
         public async Task DevStorageSetup()
         {
-            var client = new BlobServiceClient(this.blobStorageSettings.ConnectionString);
-            var properties = await client.GetPropertiesAsync();
+            var blobServiceClient = this.blobStorageSettings.GetServiceClient;
+            var properties = await blobServiceClient.GetPropertiesAsync();
             int sasTokenExpiryInSecondsFromNow = 1000;
             if (properties.Value.Cors.Count == 0)
             {
@@ -50,7 +50,7 @@
                         ExposedHeaders = "*"
                     }
                 };
-                await client.SetPropertiesAsync(properties);
+                await blobServiceClient.SetPropertiesAsync(properties);
             }
             
             // Create a SAS token that's valid for one hour.
@@ -94,7 +94,7 @@
 
             static async Task<Blob> Download(Events.BlobDownloadEvent @event)
             {
-                var client = @event.StorageSettings.CreateClient(@event.BlobId.ToString(), @event.ContainerName);
+                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
                 var result = await client.DownloadAsync();
                 await using var memoryStream = new MemoryStream();
                 await result.Value.Content.CopyToAsync(memoryStream);
@@ -124,7 +124,7 @@
 
             static async Task<bool> Exists(Events.BlobDownloadEvent @event)
             {
-                var client = @event.StorageSettings.CreateClient(@event.BlobId.ToString(), @event.ContainerName);
+                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
                 var result = await client.ExistsAsync();
                 return result;
             }
@@ -138,7 +138,7 @@
 
             string GetToken(Events.BlobGetSasTokenEvent args)
             {
-                var blobClient = this.blobStorageSettings.CreateClient(args.BlobId, args.ContainerName);
+                var blobClient = this.blobStorageSettings.CreateBlobClient(args.BlobId, args.ContainerName);
 
                 //* Check whether this BlobClient object has been authorized with Shared Key.
                 Guard.Against(
@@ -203,7 +203,7 @@
 
         private static async Task Upload(Events.BlobUploadEvent args)
         {
-            var client = args.StorageSettings.CreateClient(args.Blob.Id.ToString(), args.ContainerName);
+            var client = args.StorageSettings.CreateBlobClient(args.Blob.Id.ToString(), args.ContainerName);
 
             await client.UploadAsync(
                 new MemoryStream(args.Blob.Bytes),
@@ -261,19 +261,24 @@
 
         public class Settings
         {
+            private static BlobServiceClient blobServiceClient;
+            
             public Settings(string connectionString, IMessageAggregator messageAggregator)
             {
                 ConnectionString = connectionString;
                 MessageAggregator = messageAggregator;
+                blobServiceClient ??= new BlobServiceClient(connectionString);
             }
 
             public IMessageAggregator MessageAggregator { get; }
 
             public string ConnectionString { get; }
 
-            public BlobClient CreateClient(string blobName, string containerName = "content", BlobClientOptions options = null)
+            public BlobServiceClient GetServiceClient => blobServiceClient;
+            
+            public BlobClient CreateBlobClient(string blobName, string containerName = "content", BlobClientOptions options = null)
             {
-                var container = new BlobContainerClient(ConnectionString, containerName);
+                var container = blobServiceClient.GetBlobContainerClient(containerName);
                 container.CreateIfNotExists(PublicAccessType.Blob);
                 var client = new BlobClient(ConnectionString, containerName, blobName, options);
                 return client;

@@ -23,11 +23,14 @@
 
         private readonly IAsyncCollector<SignalRMessage> signalRBinding;
 
+        private static ServiceBusClient serviceBusClient;
+
         private AzureBus(IMessageAggregator messageAggregator, Settings settings, IAsyncCollector<SignalRMessage> signalRBinding)
         {
             this.messageAggregator = messageAggregator;
             this.settings = settings;
             this.signalRBinding = signalRBinding;
+            serviceBusClient ??= new ServiceBusClient(settings.BusConnectionString);
         }
 
         public List<ApiEvent> BusEventsPublished { get; } = new List<ApiEvent>();
@@ -49,8 +52,7 @@
 
         public async Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility)
         {
-            await using var serviceBusClient = new ServiceBusClient(this.settings.BusConnectionString);
-
+            
             /* ORDER MATTERS, because we clear the session id on the Bus Broadcast, but it needs to be there for the WebSocketReply
              ideally we'd set the header here, but we need it to come through on the unitofwork item */
 
@@ -116,9 +118,7 @@
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
-            await using var client = new ServiceBusClient(this.settings.BusConnectionString);
-
-            var sender = client.CreateSender(sendCommand.Headers.GetQueue());
+            var sender = serviceBusClient.CreateSender(sendCommand.Headers.GetQueue());
 
             var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
             {
@@ -169,7 +169,7 @@
             public IBus CreateBus(
                 IMessageAggregator messageAggregator,
                 IBlobStorage blobStorage,
-                IAsyncCollector<SignalRMessage> signalRBinding,Func<Task<ServiceLevelAuthority>> getServiceLevelAuthority, IBootstrapVariables bootstrapVariables) =>
+                IAsyncCollector<SignalRMessage> signalRBinding, Func<ServiceLevelAuthority> getServiceLevelAuthority, IBootstrapVariables bootstrapVariables) =>
                 new Bus(new AzureBus(messageAggregator, this, signalRBinding), this, messageAggregator, blobStorage, getServiceLevelAuthority, bootstrapVariables);
 
             public class Validator : AbstractValidator<Settings>

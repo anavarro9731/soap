@@ -1,9 +1,10 @@
 import {AggregateList, AggregateView, useEvent, useQuery} from "@soap/modules";
 import React, {Fragment} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
-import {EntityMenu} from "../../../components/modules/src/react/Tables";
+import {EntityMenu} from "../../../components/modules/src";
 import {EditTestData} from "./drawers/EditTestData";
-import {getIdOfMessageEntity} from "../../../components/modules/src/soap/messages";
+import {getIdOfMessageEntity} from "../../../components/modules/src";
+import {RemoveTestData} from "./modals/RemoveTestData";
 
 export function ListTestData() {
 
@@ -35,18 +36,14 @@ export function ListTestData() {
                         () => <CreateTestData/>
                     ]),
                     "root-ArrayItems": new EntityMenu(null, [
-                        (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>
+                        (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>,
+                        (entity) => <RemoveTestData entity={{id: entity.e105_Id , label: entity.e105_Label}}/>
                     ]),
-                    "e105_Child": new EntityMenu((entity) => alert(entity), [
-                        (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>
+                    "e105_CChild": new EntityMenu((entity) => alert(entity), [
+                        
                     ]),
-                    "e105_Children2": new EntityMenu((entity) => alert(entity), [
-                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>1</button>,
-                        (entity) => <button onClick={() => alert(getIdOfMessageEntity(entity))}>2</button>
-                    ]),
-                    "e105_Children-ArrayItems": new EntityMenu((entity) => alert(entity), [
-                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>1</button>,
-                        (entity) => <button onClick={() => alert(getIdOfMessageEntity(entity))}>2</button>
+                    "e105_CChildren-ArrayItems": new EntityMenu((entity) => alert(entity), [
+                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
                     ])
                 }
             } title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>

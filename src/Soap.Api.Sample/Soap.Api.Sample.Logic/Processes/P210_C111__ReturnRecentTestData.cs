@@ -10,6 +10,7 @@ namespace Soap.Api.Sample.Logic.Processes
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility.Functions.Extensions;
 
     public class P210_C111__ReturnRecentTestData : Process, IBeginProcess<C111v2_GetRecentTestData>
     {
@@ -33,7 +34,45 @@ namespace Soap.Api.Sample.Logic.Processes
                                     E105_Guid = e.Guid,
                                     E105_Id = e.id,
                                     E105_Label = e.String,
-                                    E105_CreatedAt = e.Created
+                                    E105_CreatedAt = e.Created,
+                                    E105_CChild = e.CChild?.Map(c => new E105v1_GotRecentTestData.ChildC()
+                                    {
+                                        E105_BChildren = c.BChildren?.Select(b => new E105v1_GotRecentTestData.ChildB()
+                                        {
+                                            E105_BChildBool = b.Bool,
+                                            E105_BChildId = b.id,
+                                            E105_BChildLong = b.Long,
+                                            E105_BChildString = b.String
+                                        }).ToList() ?? new List<E105v1_GotRecentTestData.ChildB>(),
+                                        E105_BChild = c.BChild?.Map(b => new E105v1_GotRecentTestData.ChildB()
+                                        {
+                                            E105_BChildId = b.id,
+                                            E105_BChildBool = b.Bool,
+                                            E105_BChildLong = b.Long,
+                                            E105_BChildString = b.String
+                                        }),
+                                        E105_CChildId = c.id,
+                                        E105_CChildString = c.String
+                                    }),
+                                    E105_CChildren = e.CChildren?.Select(c => new E105v1_GotRecentTestData.ChildC()
+                                    {
+                                        E105_BChildren = c.BChildren?.Select(b => new E105v1_GotRecentTestData.ChildB()
+                                        {
+                                            E105_BChildBool = b.Bool,
+                                            E105_BChildId = b.id,
+                                            E105_BChildLong = b.Long,
+                                            E105_BChildString = b.String
+                                        }).ToList() ?? new List<E105v1_GotRecentTestData.ChildB>(),
+                                        E105_BChild = c.BChild?.Map(b => new E105v1_GotRecentTestData.ChildB()
+                                        {
+                                            E105_BChildId = b.id,
+                                            E105_BChildBool = b.Bool,
+                                            E105_BChildLong = b.Long,
+                                            E105_BChildString = b.String
+                                        }),
+                                        E105_CChildId = c.id,
+                                        E105_CChildString = c.String
+                                    }).ToList() ?? new List<E105v1_GotRecentTestData.ChildC>()
                                 }))
                     };
 

@@ -35,8 +35,11 @@
 
     public static class AzureFunctionContext
     {
-        /* THIS IS THE ONLY STATIC VARIABLE IN THE WHOLE PRODUCTION PIPELINE
-         the client should be thread-safe and has a spin up time of about
+        /* This along with the ServiceBusClient, BlobStorageClient, and NotificationServer
+         are the only static variables in the whole pipeline and they are so
+         as a best practice for sharing connections amongst azure functions.
+         
+         This client should be thread-safe and has a spin up time of about
          1 sec so its a trade-off well worth making. Something to remember
          and keep an eye on though. I am not sure if there is a performance
          hit if you have too many clients at once, ie. is there any state

@@ -1,17 +1,16 @@
 namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
-    using System.ComponentModel;
     using System.Linq;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Api.Sample.Models.Entities;
     using Soap.Api.Sample.Models.ValueTypes;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class TestDataOperations : Operations<TestData>
     {
-
         public Func<C114v1_DeleteTestDataById, Task> DeleteTestDataById =>
             async newState =>
                 {
@@ -19,7 +18,7 @@ namespace Soap.Api.Sample.Logic.Operations
                     await DataWriter.DeleteById<TestData>(newState.C114_TestDataId.Value);
                 }
                 };
-        
+
         public Func<C107v1_CreateOrUpdateTestDataTypes, Task> SetTestData =>
             async newState =>
                 {
@@ -61,11 +60,47 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    StringOptional = newState.C107_StringOptional,
                                                    String = newState.C107_String,
                                                    PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys,
-                                                   PostCodesSingleKey =
-                                                       newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault(),
+                                                   PostCodesSingleKey = newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault(),
                                                    PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys,
-                                                   PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys
-                                                       .SingleOrDefault()
+                                                   PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys.SingleOrDefault(),
+                                                   CChild = new TestChildC
+                                                   {
+                                                       BChild = new TestChildB
+                                                       {
+                                                           Bool = true,
+                                                           Long = 123456789,
+                                                           String = "123 Anywhere St."
+                                                       },
+                                                       BChildren = Enumerable.Range(1, 10)
+                                                                             .Select(
+                                                                                 x => new TestChildB
+                                                                                 {
+                                                                                     Bool = true,
+                                                                                     Long = 123456789,
+                                                                                     String = "101 Anywhere St."
+                                                                                 }) 
+                                                                             .ToList(),
+                                                       String = "C String"
+                                                   },
+                                                   CChildren = Enumerable.Range(1, 10).Select(x => new TestChildC()
+                                                   {
+                                                       BChild = new TestChildB
+                                                       {
+                                                           Bool = true,
+                                                           Long = 123456789,
+                                                           String = "456 Anywhere St."
+                                                       },
+                                                       BChildren = Enumerable.Range(1, 10)
+                                                                             .Select(
+                                                                                 x => new TestChildB
+                                                                                 {
+                                                                                     Bool = true,
+                                                                                     Long = 123456789,
+                                                                                     String = "789 Anywhere St."
+                                                                                 })
+                                                                             .ToList(),
+                                                       String = "C String"
+                                                   }).ToList()
                                                });
                     }
 
@@ -98,12 +133,9 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.StringOptional = newState.C107_StringOptional;
                                                data.String = newState.C107_String;
                                                data.PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys;
-                                               data.PostCodesSingleKey =
-                                                   newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault();
-                                               data.PostCodesMultiOptionalKeys =
-                                                   newState.C107_PostCodesMultiOptional.SelectedKeys;
-                                               data.PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional
-                                                   .SelectedKeys.SingleOrDefault();
+                                               data.PostCodesSingleKey = newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault();
+                                               data.PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys;
+                                               data.PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys.SingleOrDefault();
                                                });
                 }
                 };

@@ -148,7 +148,7 @@ namespace Soap.Auth0
         }
 
         //it's possible in the future this could turn into an expensive operation that's why we have placed the cache
-        public static Task<ServiceLevelAuthority> GetServiceLevelAuthority(IBootstrapVariables bootstrapVariables)
+        public static ServiceLevelAuthority GetServiceLevelAuthority(IBootstrapVariables bootstrapVariables)
         {
             cache ??= new ServiceLevelAuthority
             {
@@ -157,7 +157,7 @@ namespace Soap.Auth0
                 IdentityToken = AesOps.Encrypt(bootstrapVariables.AppId, bootstrapVariables.EncryptionKey)
             };  
 
-            return Task.FromResult(cache);
+            return cache;
         }
 
         public static Task ServiceSchemeAuth<TUserProfile>(

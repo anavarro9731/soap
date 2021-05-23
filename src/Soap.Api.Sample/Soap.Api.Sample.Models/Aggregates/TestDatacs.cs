@@ -2,8 +2,9 @@ namespace Soap.Api.Sample.Models.Aggregates
 {
     using System;
     using System.Collections.Generic;
-    using CircuitBoard;
+    using System.Linq;
     using DataStore.Interfaces.LowLevel;
+    using Soap.Api.Sample.Models.Entities;
     using Soap.Api.Sample.Models.ValueTypes;
     using Soap.Interfaces.Messages;
 
@@ -22,6 +23,10 @@ namespace Soap.Api.Sample.Models.Aggregates
         public decimal? Decimal { get; set; }
 
         public decimal? DecimalOptional { get; set; }
+
+        public TestChildC CChild { get; set; } 
+
+        public List<TestChildC> CChildren { get; set; }
 
         public BlobMeta File { get; set; }
 

@@ -322,7 +322,8 @@
 
             static void CreateBlobStorage(IMessageAggregator messageAggregator, out BlobStorage blobStorage)
             {
-                blobStorage = new BlobStorage(new BlobStorage.Settings("fake-conn-string", messageAggregator));
+                var connectionString = "UseDevelopmentStorage=true"; //* doesn't get called, gets mocked, just used to prevent client .ctor failing
+                blobStorage = new BlobStorage(new BlobStorage.Settings(connectionString, messageAggregator));
             }
         }
     }
