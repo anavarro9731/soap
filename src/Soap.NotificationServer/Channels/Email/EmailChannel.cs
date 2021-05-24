@@ -15,7 +15,7 @@
     {
         private readonly MailJetEmailSenderSettings emailSettings;
 
-        private readonly MailjetClient mailJetClient;
+        private static MailjetClient mailJetClient;
 
         private readonly IMessageAggregator messageAggregator;
 
@@ -25,9 +25,9 @@
         
         public EmailChannel(MailJetEmailSenderSettings settings, IMessageAggregator messageAggregator)
         {
-            this.mailJetClient = new MailjetClient(settings.ApiKey, settings.ApiSecret);
             this.emailSettings = settings;
             this.messageAggregator = messageAggregator;
+            mailJetClient ??= new MailjetClient(settings.ApiKey, settings.ApiSecret);
         }
 
         public NotificationChannelTypes Type { get; } = NotificationChannelTypes.Email;
@@ -56,7 +56,7 @@
                                                            .WithTo(new SendContact(emailMeta.Recipient))
                                                            .Build();
 
-                return this.mailJetClient.SendTransactionalEmailAsync(email);
+                return mailJetClient.SendTransactionalEmailAsync(email);
             }
         }
 

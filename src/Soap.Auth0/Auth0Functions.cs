@@ -25,6 +25,8 @@ namespace Soap.Auth0
     {
         private static OpenIdConnectConfiguration cache_openIdConnectConfiguration;
 
+        private static ManagementApiClient managementApiClient;
+
         public static async Task CheckAuth0Setup(
             ISecurityInfo securityInfo,
             ApplicationConfig applicationConfig,
@@ -467,8 +469,8 @@ namespace Soap.Auth0
             ApplicationConfig applicationConfig,
             Action<ManagementApiClient> setClient)
         {
-            var client = new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2"));
-            setClient(client);
+            managementApiClient ??= new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2"));
+            setClient(managementApiClient);
         }
 
         private static async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)

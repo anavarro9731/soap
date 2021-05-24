@@ -12,6 +12,8 @@ namespace Soap.Auth0
     {
         public static class Tokens
         {
+            private static RestClient restClient;
+            
             public static async Task GetEnterpriseAdminM2MTokenForThisApi(ApplicationConfig applicationConfig, Action<string> setToken)
             {
                 string adminM2MToken = null;
@@ -33,20 +35,20 @@ namespace Soap.Auth0
 
                 setToken(adminToken);
             }
-
+            
             private static async Task GetApiAccessToken(
                 ApplicationConfig applicationConfig,
                 Action<string> setApiAccessToken,
                 string audience)
             {
-                var client = new RestClient($"https://{applicationConfig.Auth0TenantDomain}/oauth/token");
+                restClient ??= new RestClient($"https://{applicationConfig.Auth0TenantDomain}/oauth/token");
                 var request = new RestRequest(Method.POST);
                 request.AddHeader("content-type", "application/json");
                 request.AddParameter(
                     "application/json",
                     $"{{\"client_id\":\"{applicationConfig.Auth0EnterpriseAdminClientId}\",\"client_secret\":\"{applicationConfig.Auth0EnterpriseAdminClientSecret}\",\"audience\":\"{audience}\",\"grant_type\":\"client_credentials\"}}",
                     ParameterType.RequestBody);
-                var response = await client.ExecuteAsync(request);
+                var response = await restClient.ExecuteAsync(request);
                 var tokenJson = response.Content;
                 dynamic tokenObject = JsonConvert.DeserializeObject(tokenJson);
                 string accessToken = null;
