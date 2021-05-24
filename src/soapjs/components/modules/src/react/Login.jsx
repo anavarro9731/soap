@@ -29,7 +29,8 @@ export const Login = (props) => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const authDebug = urlParams.get('authDebug');
-
+    const code = urlParams.get('code');
+    
     const [signupUrl, setSignupUrl] = useState();
 
     useEffect(() => {
@@ -43,7 +44,16 @@ export const Login = (props) => {
             }
         }
         getCustomAuthoriseUrl();
-    }, [authReady]);
+        
+        //* remove code param from url to prevent entries in browser history causing failure behaviour (e.g. endless redirects, invalid state errors)
+        //* the timing 
+        if (!!code) {
+            setTimeout(() => {
+                window.history.replaceState({}, document.title, location.origin + '/#/');
+            }, 500); //*ugly hack but you need to ensure that auth0 library has fully processed the code, without this is doesn't pickup the login
+            
+        }
+    }, [authReady], [code]);
 
     if (!authReady || !config.auth0) {
         return null;
