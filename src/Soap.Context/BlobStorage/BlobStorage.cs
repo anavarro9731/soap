@@ -139,18 +139,11 @@
 
             string GetToken(Events.BlobGetSasTokenEvent args)
             {
-                var blobClient = this.blobStorageSettings.CreateBlobClient(args.BlobId, args.ContainerName);
-
-                //* Check whether this BlobClient object has been authorized with Shared Key.
-                Guard.Against(
-                    !blobClient.CanGenerateSasUri,
-                    "BlobClient must be authorized with Shared Key credentials to create a service SAS.");
-
                 // Create a SAS token that's valid for one hour.
                 var sasBuilder = new BlobSasBuilder
                 {
-                    BlobContainerName = blobClient.GetParentBlobContainerClient().Name,
-                    BlobName = blobClient.Name,
+                    BlobContainerName = args.ContainerName,
+                    BlobName = args.BlobId,
                     Resource = "b",
                     ExpiresOn = GetSasExpiry
                 };
@@ -163,14 +156,14 @@
                         _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => BlobSasPermissions.Create,
                         _ => throw new ApplicationException("Must specify an accepted set of blob permissions")
                     });
+                
+                var sasToken = sasBuilder.ToSasQueryParameters(this.blobStorageSettings.GeStorageKeyCredential());
 
-                var sasUri = blobClient.GenerateSasUri(sasBuilder);
-                var sasToken = sasUri.Query;
-                return sasToken;
+                return sasToken.ToString();
             }
         }
 
-        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1); //* add an hour to work even in BST
+        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1); 
 
         public async Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
@@ -264,22 +257,38 @@
         {
             private static BlobServiceClient blobServiceClient;
 
-            private static ConcurrentDictionary<string, BlobContainerClient> blobContainerClients =
+            private static ConcurrentDictionary<string, BlobContainerClient> BlobContainerClients =
                 new ConcurrentDictionary<string, BlobContainerClient>();
-            
+
+            private static string ConnectionString;
+
             public Settings(string connectionString, IMessageAggregator messageAggregator)
             {
                 MessageAggregator = messageAggregator;
                 blobServiceClient ??= new BlobServiceClient(connectionString);
+                ConnectionString ??= connectionString;
+            }
+
+            public StorageSharedKeyCredential GeStorageKeyCredential()
+            {
+                var parsedConnectionString = new Dictionary<string, string>();
+                foreach (var item in ConnectionString.Split(';'))
+                {
+                    if (string.IsNullOrWhiteSpace(item)) continue;
+                    var idx = item.IndexOf('=');
+                    parsedConnectionString[item.Substring(0, idx)] = item.Substring(idx + 1, item.Length - idx - 1);
+                }
+
+                return new StorageSharedKeyCredential(parsedConnectionString["AccountName"], parsedConnectionString["AccountKey"]);
             }
 
             public IMessageAggregator MessageAggregator { get; }
 
-            public BlobServiceClient GetServiceClient => blobServiceClient;
+            internal BlobServiceClient GetServiceClient => blobServiceClient;
             
             public BlobClient CreateBlobClient(string blobName, string containerName = "content")
             {
-                var containerClient = blobContainerClients.GetOrAdd(containerName, (key) => blobServiceClient.GetBlobContainerClient(key));
+                var containerClient = BlobContainerClients.GetOrAdd(containerName, (key) => blobServiceClient.GetBlobContainerClient(key));
                 containerClient.CreateIfNotExists(PublicAccessType.Blob);
 
                 var blobClient = containerClient.GetBlobClient(blobName);
