@@ -1,6 +1,7 @@
 ﻿namespace Soap.Bus
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
@@ -25,6 +26,9 @@
 
         private static ServiceBusClient serviceBusClient;
 
+        private static ConcurrentDictionary<string, ServiceBusSender> serviceBusSenders = new ConcurrentDictionary<string, ServiceBusSender>();
+        
+        
         private AzureBus(IMessageAggregator messageAggregator, Settings settings, IAsyncCollector<SignalRMessage> signalRBinding)
         {
             this.messageAggregator = messageAggregator;
@@ -70,7 +74,7 @@
 
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions))
             {
-                await BusBroadcastToAllSubscribers(serviceBusClient);
+                await BusBroadcastToAllSubscribers();
                 BusEventsPublished.Add(publishEvent.Clone());
             }
 
@@ -84,10 +88,11 @@
                 await this.signalRBinding.AddAsync(
                     CreateNewSignalRMessage(apiEvent).Op(s => { s.GroupName = this.settings.EnvironmentPartitionKey; }));
 
-            async Task BusBroadcastToAllSubscribers(ServiceBusClient serviceBusClient)
+            async Task BusBroadcastToAllSubscribers()
             {
                 var topic = publishEvent.Headers.GetTopic().ToLower();
-                var sender = serviceBusClient.CreateSender(topic);
+                
+                var sender = serviceBusSenders.GetOrAdd(topic, (key) => serviceBusClient.CreateSender(key));
 
                 publishEvent.Headers.ClearSessionHeaders(); /* HACK bus messages don't use sessionId it's invalid
                 this really should have been handled earlier another way, but its not the worst */
@@ -118,8 +123,10 @@
 
         public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
         {
-            var sender = serviceBusClient.CreateSender(sendCommand.Headers.GetQueue());
+            var queueName = sendCommand.Headers.GetQueue();
 
+            var sender = serviceBusSenders.GetOrAdd(queueName, (key) => serviceBusClient.CreateSender(key));
+            
             var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
             {
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),

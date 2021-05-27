@@ -1,6 +1,7 @@
 ﻿namespace Soap.Context.BlobStorage
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -262,26 +263,27 @@
         public class Settings
         {
             private static BlobServiceClient blobServiceClient;
+
+            private static ConcurrentDictionary<string, BlobContainerClient> blobContainerClients =
+                new ConcurrentDictionary<string, BlobContainerClient>();
             
             public Settings(string connectionString, IMessageAggregator messageAggregator)
             {
-                ConnectionString = connectionString;
                 MessageAggregator = messageAggregator;
                 blobServiceClient ??= new BlobServiceClient(connectionString);
             }
 
             public IMessageAggregator MessageAggregator { get; }
 
-            public string ConnectionString { get; }
-
             public BlobServiceClient GetServiceClient => blobServiceClient;
             
-            public BlobClient CreateBlobClient(string blobName, string containerName = "content", BlobClientOptions options = null)
+            public BlobClient CreateBlobClient(string blobName, string containerName = "content")
             {
-                var container = blobServiceClient.GetBlobContainerClient(containerName);
-                container.CreateIfNotExists(PublicAccessType.Blob);
-                var client = new BlobClient(ConnectionString, containerName, blobName, options);
-                return client;
+                var containerClient = blobContainerClients.GetOrAdd(containerName, (key) => blobServiceClient.GetBlobContainerClient(key));
+                containerClient.CreateIfNotExists(PublicAccessType.Blob);
+
+                var blobClient = containerClient.GetBlobClient(blobName);
+                return blobClient;
             }
         }
     }
