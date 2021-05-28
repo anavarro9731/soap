@@ -159,7 +159,7 @@
                 
                 var sasToken = sasBuilder.ToSasQueryParameters(this.blobStorageSettings.GeStorageKeyCredential());
 
-                return sasToken.ToString();
+                return "?" + sasToken.ToString();
             }
         }
 
