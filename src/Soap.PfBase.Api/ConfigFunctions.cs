@@ -27,25 +27,35 @@
 
     public static class ConfigFunctions
     {
+        private static ApplicationConfig cache;
+
         public static void LoadAppConfigFromRemoteRepo(out ApplicationConfig applicationConfig)
         {
-            string url = null;
-            try
             {
-                var webClient = new WebClient();
-                webClient.Headers.Add("Authorization", GetAuthorizationHeaderValue());
-                url = GetFileUrl();
-                var configToCompile = webClient.DownloadString(url);
-
-                var config = LoadAndExecute(configToCompile);
-                config.Validate();
-                applicationConfig = config;
-            }
-            catch (Exception e)
-            {
-                throw new ApplicationException($"Could not compile config from remote repo {url}", e);
+                cache ??= LoadInternal();
+                applicationConfig = cache;
             }
 
+            static ApplicationConfig LoadInternal()
+            {
+                string url = null;
+                try
+                {
+                    var webClient = new WebClient();
+                    webClient.Headers.Add("Authorization", GetAuthorizationHeaderValue());
+                    url = GetFileUrl();
+                    var configToCompile = webClient.DownloadString(url);
+
+                    var config = LoadAndExecute(configToCompile);
+                    config.Validate();
+                    return config;
+                }
+                catch (Exception e)
+                {
+                    throw new ApplicationException($"Could not compile config from remote repo {url}", e);
+                }    
+            }
+            
             static ApplicationConfig LoadAndExecute(string source)
             {
                 var compiledAssembly = Compile(source);
