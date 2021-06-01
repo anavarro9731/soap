@@ -18,6 +18,8 @@ namespace Soap.Auth0
     {
         private static ServiceLevelAuthority cache;
 
+        private static object cacheLock = new object();
+
         public delegate Task SchemeAuth<TUserProfile>(
             IBootstrapVariables bootstrapVariables,
             ApiMessage message,
@@ -150,12 +152,15 @@ namespace Soap.Auth0
         //it's possible in the future this could turn into an expensive operation that's why we have placed the cache
         public static ServiceLevelAuthority GetServiceLevelAuthority(IBootstrapVariables bootstrapVariables)
         {
-            cache ??= new ServiceLevelAuthority
+            lock (cacheLock)
             {
-                IdentityChainSegment = $"{AuthSchemePrefixes.Service}://" + bootstrapVariables.AppId,
-                AccessToken = RandomOps.RandomString(64),
-                IdentityToken = AesOps.Encrypt(bootstrapVariables.AppId, bootstrapVariables.EncryptionKey)
-            };  
+                cache ??= new ServiceLevelAuthority
+                {
+                    IdentityChainSegment = $"{AuthSchemePrefixes.Service}://" + bootstrapVariables.AppId,
+                    AccessToken = RandomOps.RandomString(64),
+                    IdentityToken = AesOps.Encrypt(bootstrapVariables.AppId, bootstrapVariables.EncryptionKey)
+                };
+            }
 
             return cache;
         }
