@@ -14,7 +14,8 @@ const publish = function(channel, schema, data, conversationId) {
   topic += `.${conversationId ?? "00000000-0000-0000-0000-000000000000"}`;
 
   config.logger.log(
-      `PUBLISHING ${JSON.stringify(data,null,2)} to channel: ${channel} topic: ${topic}`,
+      `PUBLISHING message\r\nchannel:${channel}\r\ntopic:${topic}`, 
+      config.showBusMessageContentInConsoleLogs ? data : undefined
   );
 
   postal.publish({
@@ -41,7 +42,7 @@ const subscribe = function(channel, schema, callback, conversationId) {
     callback: callback,
   });
 
-  config.logger.log(`SUBSCRIBED to channel: ${channel} topic: ${topic}`);
+  config.logger.log(`SUBSCRIBED to channel: ${channel}, topic: ${topic}`);
 
   return sub;
 };

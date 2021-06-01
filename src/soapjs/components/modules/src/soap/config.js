@@ -8,6 +8,7 @@ import _ from "lodash";
 import * as signalR from '@microsoft/signalr';
 
 const isTest = process.env.NODE_ENV === 'test';
+globalThis.Soap = {showStackTraceInConsoleLogs : false};
 
 const _logger = (function () { 
     //* the IIFE used is so that the "this.appInsights" expression will consider this to be the object-literal being constructed rather than the calling context
@@ -15,19 +16,17 @@ const _logger = (function () {
         appInsights: null,
         log: (logMsg, logObject, toAzure) => {
 
-            const stackTrace = new Error().stack.substring(5);
-
             if (typeof logMsg === types.object) logMsg = logMsg.toString();
-            if (typeof logObject === types.object) logObject = JSON.stringify(logObject, null, 2);
+            if (typeof logObject === types.object) logObject = JSON.parse(JSON.stringify(logObject, null, 2)); //* clone it to protect from mutation 
 
             validateArgs(
                 [{msg: logMsg}, types.string],
                 [{toAzure}, types.boolean, optional]
             );
-
-            logMsg += stackTrace;
+            
+            const stackTrace = globalThis.Soap.showStackTraceInConsoleLogs ? new Error().stack.substring(5) : null;
             if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
-            else toAzure ? console.warn(logMsg, logObject) : console.log(logMsg, logObject);
+            else toAzure ? console.warn(logMsg, logObject, stackTrace) : console.log(logMsg, logObject, stackTrace);
 
             if (toAzure && !isTest) {
 
@@ -86,7 +85,10 @@ async function loadConfigState() {
         });
         
         hubConnection.onreconnecting(err => console.warn("SignalR Reconnecting", err));
-        hubConnection.onreconnected(connectionId => console.warn("SignalR Reconnected"));
+        hubConnection.onreconnected(connectionId =>{
+            _sessionDetails.browserSessionId = connectionId;   
+            console.warn("SignalR Reconnected. New Session Id: " + connectionId)  
+        });
         hubConnection.onclose(err => console.warn("SignalR Closing", err))
 
         try {
@@ -125,7 +127,7 @@ async function loadConfigState() {
 
                 return response.json();
             });
-
+        
         registerMessageTypes(jsonArrayOfMessages);
         _logger.log(`Schema built for ${jsonArrayOfMessages.length} messages:`, getListOfRegisteredMessages());
 
@@ -217,7 +219,7 @@ function sendMessage(msg) {
                 const queue = getHeader(message, headerKeys.queueName);
                 const sender = _sessionDetails.serviceBusClient.createSender(queue);
 
-                _logger.log(`Sending message ${getHeader(message, headerKeys.schema)} id/conversation ${getHeader(message, headerKeys.messageId)}`, message);
+                _logger.log(`Sending message ${getHeader(message, headerKeys.schema)}\r\nid/conversation ${getHeader(message, headerKeys.messageId)}`, message);
 
                 setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
 
@@ -327,5 +329,6 @@ export default {
     logFormDetail: false,
     logClassDeclarations: false,
     debugSystemState: false,
-    showSignup: true
+    showSignup: true,
+    showBusMessageContentInConsoleLogs : false
 };
