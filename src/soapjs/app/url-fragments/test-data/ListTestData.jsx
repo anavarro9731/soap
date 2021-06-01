@@ -1,9 +1,7 @@
-import {AggregateList, AggregateView, useEvent, useQuery} from "@soap/modules";
+import {AggregateList, AggregateView, useEvent, useQuery, EntityMenu, getIdOfMessageEntity} from "@soap/modules";
 import React, {Fragment} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
-import {EntityMenu} from "../../../components/modules/src";
 import {EditTestData} from "./drawers/EditTestData";
-import {getIdOfMessageEntity} from "../../../components/modules/src";
 import {RemoveTestData} from "./modals/RemoveTestData";
 
 export function ListTestData() {
