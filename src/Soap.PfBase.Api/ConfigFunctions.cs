@@ -13,6 +13,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Providers.CosmosDb;
+    using Microsoft.Azure.Cosmos;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.Text;
@@ -103,6 +104,7 @@
                             MetadataReference.CreateFromFile(typeof(ApplicationConfig).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(AssemblyTargetedPatchBandAttribute).Assembly.Location),
                             MetadataReference.CreateFromFile(typeof(CSharpArgumentInfo).Assembly.Location),
+                            MetadataReference.CreateFromFile(typeof(CosmosClientOptions).Assembly.Location), 
                             MetadataReference.CreateFromFile(Assembly.Load("netstandard, Version=2.0.0.0").Location)
                         };
 
