@@ -2,6 +2,7 @@ import {useEffect} from 'react';
 import postal from 'postal';
 import bus from '../soap/bus';
 import {optional, types, validateArgs} from "../soap/util";
+import config from "../soap/config";
 
 export function useEvent(
     args,
@@ -22,6 +23,7 @@ export function useEvent(
 
         //* cleanup hook
         return () => {
+            config.logger.log(`UNSUBSCRIBED to channel:${sub.channel}, topic:${sub.topic}`);
             if (!!sub) postal.unsubscribe(sub);
         };
     }, [args]);
