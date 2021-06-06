@@ -249,6 +249,7 @@ $Excluded = @('bin', 'obj', 'published')
 Copy-Item .\Soap.Api.Sample\**.* "$ServiceRoot" -Recurse -Force
 Copy-Item .\pwsh-bootstrap.ps1 "$ServiceRoot" -Force
 Copy-Item .\configure-local-environment.ps1 "$ServiceRoot" -Force
+Copy-Item .\new-message.ps1 "$ServiceRoot" -Force
 Copy-Item ..\azure-pipelines.yml "$ServiceRoot" -Force
 #* cull src directory from paths
 (Get-Content $ServiceRoot\azure-pipelines.yml) | % { $_.replace('src\', '') } | Set-Content $ServiceRoot\azure-pipelines.yml

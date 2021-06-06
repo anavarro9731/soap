@@ -11,7 +11,7 @@
     impractical since there are many recipients planning different actions, but because it
     represents something that has already been done, not something that need to be done.
      */
-    public abstract class ApiEvent : ApiMessage
+    public abstract class ApiEvent : ApiMessage, IStartAProcess
     {
     }
 }

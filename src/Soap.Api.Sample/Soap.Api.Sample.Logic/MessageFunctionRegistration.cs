@@ -1,7 +1,6 @@
-﻿namespace Soap.Api.Sample.Logic
+namespace Soap.Api.Sample.Logic
 {
     using Soap.Api.Sample.Logic.MessageFunctions;
-    using Soap.Api.Sample.Messages.Events;
     using Soap.Context.MessageMapping;
 
     public partial class MessageFunctionRegistration : MapMessagesToFunctions
@@ -21,6 +20,7 @@
             Register(new C111v2Functions());
             Register(new C113v1Functions());
             Register(new C114v1Functions());
+            /* ##NEXT## */
         }
     }
 }
