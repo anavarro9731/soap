@@ -142,11 +142,21 @@ function Create-Command {
     {
         using Soap.PfBase.Messages;
         using Soap.Interfaces.Messages;
+        using FluentValidation;
+
 
         public class __commandname__ : ApiCommand
         {
             public override void Validate()
             {
+                new Validator().ValidateAndThrow(this);
+            }
+    
+            public class Validator : AbstractValidator<__commandname__>
+            {
+                public Validator()
+                {
+                }
             }
         }
     }"
@@ -283,6 +293,7 @@ function Create-Command {
     
             public void Validate(__commandname__ msg)
             {
+                msg.Validate();
             }
         }
     }"
@@ -339,11 +350,21 @@ function Create-Event {
         __commandnamespace__
         using Soap.PfBase.Messages;
         using Soap.Interfaces.Messages;
+        using FluentValidation;
+
 
         public class __eventname__ : $eventBaseClass
         {
             public override void Validate()
             {
+                new Validator().ValidateAndThrow(this);
+            }
+    
+            public class Validator : AbstractValidator<__eventname__>
+            {
+                public Validator()
+                {
+                }
             }
         }
     }"
@@ -423,6 +444,7 @@ function Create-Event {
         
                 public void Validate(__eventname__ msg)
                 {
+                    msg.Validate();
                 }
             }
         }"

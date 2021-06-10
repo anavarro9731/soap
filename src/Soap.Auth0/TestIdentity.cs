@@ -34,7 +34,7 @@ namespace Soap.Auth0
             get
             {
                 var profileId = UserProfile.id.ToString();
-                return cache_idTokens.GetOrAdd(profileId, RandomOps.RandomString(64));
+                return cache_accessTokens.GetOrAdd(profileId, RandomOps.RandomString(64));
             }
         }
 

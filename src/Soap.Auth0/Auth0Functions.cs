@@ -25,7 +25,7 @@ namespace Soap.Auth0
     {
         private static OpenIdConnectConfiguration cache_openIdConnectConfiguration;
 
-        private static ManagementApiClient managementApiClient;
+        private static (ManagementApiClient apiClient, DateTime expires) managementApiClient;
 
         public static async Task CheckAuth0Setup(
             ISecurityInfo securityInfo,
@@ -469,8 +469,12 @@ namespace Soap.Auth0
             ApplicationConfig applicationConfig,
             Action<ManagementApiClient> setClient)
         {
-            managementApiClient ??= new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2"));
-            setClient(managementApiClient);
+            if (managementApiClient == default || DateTime.UtcNow.Subtract(managementApiClient.expires).TotalHours > 23.0)
+            {
+                managementApiClient = (new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2")), DateTime.UtcNow);   
+            }
+
+            setClient(managementApiClient.apiClient);
         }
 
         private static async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
