@@ -7,6 +7,8 @@
         public string DataType { get; set; }
 
         public object InitialValue { get; set; }
+        
+        public object Options { get; set; }
 
         public string Label { get; set; }
 

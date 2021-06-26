@@ -33,7 +33,8 @@ namespace Soap.Api.Sample.Logic.Processes
                                 {
                                     E105_Guid = e.Guid,
                                     E105_Id = e.id,
-                                    E105_Label = e.String,
+                                    E105_Html = e.HtmlOptionalMultiline,
+                                    E105_Label = e.StringOptionalMultiline,
                                     E105_CreatedAt = e.Created,
                                     E105_CChild = e.CChild?.Map(c => new E105v1_GotRecentTestData.ChildC()
                                     {

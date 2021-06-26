@@ -52,10 +52,14 @@ namespace Soap.Api.Sample.Models.Aggregates
 
         public string PostCodesSingleOptionalKey { get; set; }
 
+        public List<string> Hashtags { get; set; } = new List<string>();    
+        
         public string String { get; set; }
 
         public string StringOptional { get; set; }
 
         public string StringOptionalMultiline { get; set; }
+        
+        public string HtmlOptionalMultiline { get; set; }
     }
 }

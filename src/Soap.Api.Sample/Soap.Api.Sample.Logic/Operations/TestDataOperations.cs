@@ -1,6 +1,7 @@
 namespace Soap.Api.Sample.Logic.Operations
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
@@ -58,11 +59,13 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    FileOptional = newState.C107_FileOptional,
                                                    StringOptionalMultiline = newState.C107_StringOptionalMultiline,
                                                    StringOptional = newState.C107_StringOptional,
+                                                   HtmlOptionalMultiline = newState.C107_StringOptionalJodit,
                                                    String = newState.C107_String,
                                                    PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys,
                                                    PostCodesSingleKey = newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault(),
                                                    PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys,
                                                    PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys.SingleOrDefault(),
+                                                   Hashtags = newState.C107_HashtagsOptional?.SelectedKeys ?? new List<string>(),
                                                    CChild = new TestChildC
                                                    {
                                                        BChild = new TestChildB
@@ -131,11 +134,13 @@ namespace Soap.Api.Sample.Logic.Operations
                                                data.FileOptional = newState.C107_FileOptional;
                                                data.StringOptionalMultiline = newState.C107_StringOptionalMultiline;
                                                data.StringOptional = newState.C107_StringOptional;
+                                               data.HtmlOptionalMultiline = newState.C107_StringOptionalJodit;
                                                data.String = newState.C107_String;
                                                data.PostCodesMultiKeys = newState.C107_PostCodesMulti.SelectedKeys;
                                                data.PostCodesSingleKey = newState.C107_PostCodesSingle.SelectedKeys.SingleOrDefault();
                                                data.PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys;
                                                data.PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys.SingleOrDefault();
+                                               data.Hashtags = newState.C107_HashtagsOptional.SelectedKeys;
                                                });
                 }
                 };

@@ -347,7 +347,7 @@
                                             _ when t == typeof(sbyte?) => false,
                                             _ when t == typeof(char) => false,
                                             _ when t == typeof(char?) => false,
-                                            _ when t == typeof(object) => property.DeclaringType == typeof(FieldMeta) && property.Name == nameof(FieldMeta.InitialValue) ? true : false,
+                                            _ when t == typeof(object) => property.DeclaringType == typeof(FieldMeta) && (property.Name == nameof(FieldMeta.InitialValue) || property.Name == nameof(FieldMeta.Options)) ? true : false,
                                             _ when t.InheritsOrImplements(typeof(ITuple)) => false,
                                             _ when t.InheritsOrImplements(typeof(IDynamicMetaObjectProvider)) => false,
 

@@ -53,18 +53,26 @@
 
         public EnumerationAndFlags C107_PostCodesMultiOptional { get; set; }
 
+        [AllowCreateAbleOptions]
+        public EnumerationAndFlags C107_HashtagsOptional { get; set; }
+        
         [Required]
         public EnumerationAndFlags C107_PostCodesSingle { get; set; }
 
         public EnumerationAndFlags C107_PostCodesSingleOptional { get; set; }
+        
+        
 
         [Required]
         public string C107_String { get; set; }
 
         public string C107_StringOptional { get; set; }
 
-        [MultiLine]
+        [MultiLine(PixelHeight = 150)]
         public string C107_StringOptionalMultiline { get; set; }
+        
+        [JoditEditor(PixelHeight = 500)]
+        public string C107_StringOptionalJodit { get; set; }
 
         public override void Validate()
         {

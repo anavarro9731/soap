@@ -8,7 +8,7 @@ import {CenterSpinner} from "./CenterSpinner";
 
 export function AggregateView(props) {
 
-    const {title, entityMenus, aggregate, propertyRenderer, refreshFunction, backFunction} = props;
+    const {title, entityMenus, aggregate, propertyRenderer, hiddenFields=[], expandedFields=[], refreshFunction, backFunction} = props;
 
     return (
         <Grid gridMaxWidth={1900}>
@@ -36,7 +36,7 @@ export function AggregateView(props) {
             </Cell>
             <Cell span={12}>
                 {aggregate ?
-                    <ObjectTableTop entityMenus={entityMenus} object={aggregate} propertyRenderer={propertyRenderer}/>
+                    <ObjectTableTop entityMenus={entityMenus} object={aggregate} hiddenFields={hiddenFields} expandedFields={expandedFields} propertyRenderer={propertyRenderer}/>
                     :
                     <CenterSpinner/>}
             </Cell>

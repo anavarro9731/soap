@@ -9,12 +9,14 @@ import {optional, types, validateArgs} from "../soap/util";
 
 export function AggregateList(props) {
 
-    const {title, entityMenus, aggregates, propertyRenderer, refreshFunction, backFunction} = props;
+    const {title, entityMenus, aggregates, propertyRenderer, hiddenFields=[], expandedFields=[], refreshFunction, backFunction} = props;
     
     validateArgs(
         [{title}, types.string], 
         [{entityMenus}, types.object, optional],
         [{propertyRenderer}, types.object, optional],
+        [{hiddenFields}, [types.string], optional],
+        [{expandedFields}, [types.string], optional],
         [{refreshFunction}, types.function, optional],
         [{backFunction}, types.function, optional]
     );
@@ -45,7 +47,7 @@ export function AggregateList(props) {
             </Cell>
             <Cell span={12}>
                 {aggregates ?
-                    <ArrayTableTop entityMenus={entityMenus} arrayOfObjects={aggregates} propertyRenderer={propertyRenderer}/>
+                    <ArrayTableTop entityMenus={entityMenus} arrayOfObjects={aggregates} hiddenFields={hiddenFields} expandedFields={expandedFields} propertyRenderer={propertyRenderer}/>
                     :
                     <CenterSpinner/>}
             </Cell>

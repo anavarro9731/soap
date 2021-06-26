@@ -6,7 +6,7 @@ import {optional, types, uuidv4, validateArgs} from "../soap/util";
 import {SecondaryActionMenu, ViewMenu} from "./ActionMenu";
 import {FileView} from "./FileView";
 import {Label2, Label3} from "baseui/typography";
-
+import DOMPurify from "dompurify";
 
 export class EntityMenu {
     constructor(viewAction, actions) {
@@ -22,9 +22,9 @@ export class EntityMenu {
 }
 
 export function ObjectTableNested(props) {
-    const {propertyKey, object, propertyRenderer, entityMenus} = props;
+    const {propertyKey, object, propertyRenderer, hiddenFields, expandedFields, entityMenus} = props;
 
-    return (<StatefulPanel overrides={{
+    return (<StatefulPanel initialState={{expanded: expandedFields.includes(propertyKey)}} overrides={{
             PanelContainer: {
                 style: ({$theme}) => ({
 
@@ -46,14 +46,14 @@ export function ObjectTableNested(props) {
             </div>
             <div>
                 <TwoColumnTableWithoutHeadersWithBorder
-                    data={getObjectTableData(object, propertyRenderer, entityMenus)}/>
+                    data={getObjectTableData(object, propertyRenderer, hiddenFields, expandedFields, entityMenus)}/>
             </div>
         </StatefulPanel>
     )
 }
 
 export function ObjectTableTop(props) {
-    const {object, propertyRenderer, entityMenus} = props;
+    const {object, propertyRenderer, hiddenFields, expandedFields, entityMenus} = props;
     
     return (
         <React.Fragment>
@@ -62,7 +62,7 @@ export function ObjectTableTop(props) {
                 {CreateActionsMenu("root", entityMenus, object)}
             </div>
             <div>
-                <TwoColumnTableWithoutHeadersOrBorder data={getObjectTableData(object, propertyRenderer, entityMenus)}/>
+                <TwoColumnTableWithoutHeadersOrBorder data={getObjectTableData(object, propertyRenderer, hiddenFields, expandedFields, entityMenus)}/>
             </div>
         </React.Fragment>
     );
@@ -70,8 +70,8 @@ export function ObjectTableTop(props) {
 
 
 export function ArrayTableNested(props) {
-    const {propertyKey, arrayOfObjects, propertyRenderer, entityMenus} = props;
-    return (<StatefulPanel overrides={{
+    const {propertyKey, arrayOfObjects, propertyRenderer, hiddenFields, expandedFields, entityMenus} = props;
+    return (<StatefulPanel  initialState={{expanded: expandedFields.includes(propertyKey)}}  overrides={{
             PanelContainer: {
                 style: ({$theme}) => ({
 
@@ -92,6 +92,7 @@ export function ArrayTableNested(props) {
             </div>
             <div>
                 <ArrayTable propertyKey={propertyKey} arrayOfObjects={arrayOfObjects}
+                            hiddenFields={hiddenFields} expandedFields={expandedFields}
                             propertyRenderer={propertyRenderer} entityMenus={entityMenus}/>
             </div>
         </StatefulPanel>
@@ -99,7 +100,7 @@ export function ArrayTableNested(props) {
 }
 
 export function ArrayTableTop(props) {
-    const {arrayOfObjects, propertyRenderer, entityMenus} = props;
+    const {arrayOfObjects, propertyRenderer, entityMenus, hiddenFields, expandedFields } = props;
     return (<React.Fragment>
             <div>
                 {CreateViewButton("root", entityMenus)}
@@ -107,7 +108,7 @@ export function ArrayTableTop(props) {
             </div>
             <div>
                 <ArrayTable propertyKey={"root"} arrayOfObjects={arrayOfObjects} propertyRenderer={propertyRenderer}
-                            entityMenus={entityMenus}/>
+                            entityMenus={entityMenus} hiddenFields={hiddenFields} expandedFields={expandedFields} />
             </div>
         </React.Fragment>
     )
@@ -155,11 +156,12 @@ function CreateViewButton(propertyKey, entityMenus, entity) {
     }
 }
 
-function getObjectTableData(object, propertyRenderer, entityMenus) {
+function getObjectTableData(object, propertyRenderer, hiddenFields, expandedFields, entityMenus) {
 
-    const labels = Object.keys(object).filter(nameOfProperty => nameOfProperty !== "validate" && nameOfProperty !== "types" && nameOfProperty !== "$type")
+    const labels = Object.keys(object).filter(nameOfProperty => nameOfProperty !== "validate" && nameOfProperty !== "types" && nameOfProperty !== "$type"  /* filter the ones i manually added*/ &&
+        !hiddenFields.includes(nameOfProperty))
         .map(k => k.substring(k.indexOf("_") + 1)).map(l => <Label3>{l}</Label3>);
-    const arrayOfComponentsFromObjectProperties = ConvertObjectToComponentArray(object, propertyRenderer, entityMenus);
+    const arrayOfComponentsFromObjectProperties = ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, expandedFields, entityMenus);
     const arrayWithLabels = arrayOfComponentsFromObjectProperties.map((item, index) => [labels[index], item]);
 
     return arrayWithLabels;
@@ -168,7 +170,8 @@ function getObjectTableData(object, propertyRenderer, entityMenus) {
 
 function ArrayTable(props) {
 
-    const {propertyKey, arrayOfObjects, propertyRenderer, entityMenus} = props;
+    const {propertyKey, arrayOfObjects, propertyRenderer, entityMenus, hiddenFields, expandedFields} = props;
+    
     const headers = [];
 
     const childrenPropertyKey = propertyKey + "-ArrayItems";
@@ -176,23 +179,27 @@ function ArrayTable(props) {
 
     if (arrayOfObjects.length > 0) {
         const firstObject = arrayOfObjects[0];
-        if (typeof firstObject === typeof "") {
-            headers.push("");
+        
+        if (typeof firstObject === typeof "") { //* this is an array of strings (nested inside a column which already has a header)
+            headers.push(""); 
         } else {
-            const keys = Object.keys(firstObject);
-            headers.push(...Object.keys(arrayOfObjects[0]).filter(x => x !== "$type").map(k => k.substring(k.indexOf("_") + 1)));
+            //* read property names from first object and use to create headers
+            
+            headers.push(...Object.keys(firstObject).filter(x => x !== "$type" && !hiddenFields.includes(x)).map(k => k.substring(k.indexOf("_") + 1)));
+            
             if (childrenHaveMenu) {
-                headers.push(""); //* column header for actions
+                headers.push(""); //* add column header for actions
             }    
         }
     }
 
     const arrayOfHorizontalTableControlArrays = [];
     for (const obj of arrayOfObjects) {
-        if (typeof obj === typeof "") {
-            arrayOfHorizontalTableControlArrays.push([obj]);
+        if (typeof obj === typeof "") { //* if this is an array of strings
+            arrayOfHorizontalTableControlArrays.push([obj]); //* just return the plain string as the only item in the control array for that field
         } else {
-            const componentArray = ConvertObjectToComponentArray(obj, propertyRenderer, entityMenus);
+            //*otherwise convert the object in that field into a control array
+            const componentArray = ConvertObjectToComponentArray(obj, propertyRenderer, hiddenFields, expandedFields, entityMenus);
             if (childrenHaveMenu) { //* actions column
                 componentArray.push(<div>
                     {CreateViewButton(childrenPropertyKey, entityMenus, obj)}
@@ -226,7 +233,7 @@ function TwoColumnTableWithoutHeadersOrBorder(props) {
         overrides={{
             Table: {
                 style: {
-                    minWidth: "min-content"
+                    minWidth: "100%"
                 }
             },
             TableHeadCell: {
@@ -325,22 +332,27 @@ function TableWithHeadersAndBorder(props) {
 
 const blobMetaMarkerGuid = "20fb62ff-9dd3-436e-a356-eceb335c2572";
 
-function ConvertObjectToComponentArray(object, propertyRenderer, entityMenus) {
+function ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, expandedFields, entityMenus) {
 
     const arrayOfComponentsFromObjectProperties = [];
 
     for (const nameOfProperty in object) {
-            if (nameOfProperty !== "validate" && nameOfProperty !== "types" && nameOfProperty !== "$type" && nameOfProperty !== "headers") { //* filter the ones i manually added
+            if (nameOfProperty !== "validate" && nameOfProperty !== "types" && nameOfProperty !== "$type" && nameOfProperty !== "headers" && //* filter the ones i manually added 
+            !hiddenFields.includes(nameOfProperty)) { 
 
                 const propertyValue = object[nameOfProperty];
 
                 if (propertyValue instanceof Array) {
                     arrayOfComponentsFromObjectProperties.push(<ArrayTableNested propertyKey={nameOfProperty}
                                                                                  arrayOfObjects={propertyValue}
+                                                                                 hiddenFields={hiddenFields}
+                                                                                 expandedFields={expandedFields}
                                                                                  propertyRenderer={propertyRenderer}
                                                                                  entityMenus={entityMenus}/>);
                 } else if (isChildObject(propertyValue)) {
                     arrayOfComponentsFromObjectProperties.push(<ObjectTableNested propertyKey={nameOfProperty}
+                                                                                  hiddenFields={hiddenFields}
+                                                                                  expandedFields={expandedFields}
                                                                                   object={propertyValue}
                                                                                   propertyRenderer={propertyRenderer}
                                                                                   entityMenus={entityMenus}/>)
@@ -363,7 +375,15 @@ function ConvertObjectToComponentArray(object, propertyRenderer, entityMenus) {
 
         if (typeof propertyValue === typeof '') {
             //string
-            value = propertyValue
+            if (propertyValue.includes("<")) {
+                if (propertyValue.includes("<td>")) {
+                    propertyValue = propertyValue.replaceAll("<td>", `<td style="border:1px solid black; white-space: pre;">`);
+                }
+                let clean = DOMPurify.sanitize( propertyValue , {USE_PROFILES: {html: true}} );
+                value = <div  dangerouslySetInnerHTML={{ __html: clean }}/>;   
+            } else {
+                value = <div style={{whiteSpace:"pre-wrap"}}>{propertyValue}</div>;
+            }
         } else if (typeof propertyValue === typeof true) {
             //true
             value = propertyValue.toString();

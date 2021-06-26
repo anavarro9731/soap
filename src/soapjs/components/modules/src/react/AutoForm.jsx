@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {useQuery} from '../hooks/useQuery';
 import {useCommand} from '../hooks/useCommand';
 import config from '../soap/config';
@@ -17,17 +17,26 @@ import {Textarea} from "baseui/textarea";
 import {useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
 import {toaster} from 'baseui/toast';
+import JoditEditor from "jodit-react";
+
+
+
+
 
 export function AutoForm(props) {
 
-    //* this logic should be redone with useReducer
-
-    const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
     const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText} = props;
+
+    //* jodit editor
+    const editor = useRef(null)
+    const [content, setContent] = useState('')
+
+    //* react-hook-form
+    const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
+    
     const {enqueue} = useSnackbar();
 
     const [showLoader, setShowLoader] = useState(false);
-
     const [submitted, setSubmitted] = useState(false);
     const [submitSucceeded, setSubmitSucceeded] = useState(false);
 
@@ -324,6 +333,41 @@ export function AutoForm(props) {
                             );
                         }}
                     />);
+            case "joditeditor":
+                /* all options from 
+                 https://xdsoft.net/jodit/doc/                 
+                 */
+                const config = {
+                    readonly: false,
+                    height: fieldMeta.options.height,
+                    uploader: {
+                        insertImageAsBase64URI: true
+                    },
+                    buttons: "bold,italic,underline, strikethrough, eraser, superscript, ul, ol, indent, outdent, left, font, fontsize, paragraph, brush, image, copyformat, cut, copy, paste, selectall, hr, table, link, symbol, undo, redo, find, preview, print"
+                }
+                return (
+                    <Controller
+                        control={control}
+                        name={fieldMeta.name}
+                        defaultValue={fieldMeta.initialValue ?? ''}
+                        rules={{required: fieldMeta.required}}
+                        render={({onChange, onBlur, value, name, ref}) => {
+                            return (
+                                <FormControl
+                                    disabled={submitted}
+                                    label={fieldMeta.label} caption={fieldMeta.caption}
+                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    <JoditEditor
+                                        ref={editor}
+                                        value={value}
+                                        config={config}
+                                        onBlur={onBlur} // preferred to use only this option to update the content for performance reasons
+                                        onChange={onChange}
+                                    />
+                                 </FormControl>
+                            );
+                        }}
+                    />);
             case "multilinestring":
                 return (
                     <Controller
@@ -344,6 +388,23 @@ export function AutoForm(props) {
                                         value={value}
                                         onChange={onChange}
                                         onBlur={onBlur}
+                                        overrides={{
+                                            Input: {
+                                                style: {
+                                                    maxHeight: '800px',
+                                                    minHeight: (fieldMeta.options.height > 0 ? fieldMeta.options.height : 100) + 'px',
+                                                    minWidth: '300px',
+                                                    width: '100vw', // fill all available space up to parent max-width
+                                                    resize: 'both',
+                                                },
+                                            },
+                                            InputContainer: {
+                                                style: {
+                                                    maxWidth: '100%',
+                                                    width: 'min-content',
+                                                },
+                                            },
+                                        }}
                                     /></FormControl>
                             );
                         }}
@@ -429,6 +490,7 @@ export function AutoForm(props) {
                 //* Note keys are UPPER CASE here since JSON.NET does not serialise objects (Enumeration) to pascal-case;
                 convertObjectKeysToPascalCase(fieldMeta.initialValue);
                 const allowMultiple = fieldMeta.initialValue.allowMultipleSelections;
+                const creatable = fieldMeta.options.creatable;
                 return (
                     <Controller
                         control={control}
@@ -442,13 +504,14 @@ export function AutoForm(props) {
                         render={({onChange, onBlur, value}) => {
                             const transform = {
                                 input: (value) => {
+                                    console.error("input", value);
                                     if (Array.isArray(value)) {
                                         return value;
                                     } else if (typeof value === 'object') {
                                         const result = value.selectedKeys.length > 0 ? value.selectedKeys.map(v => ({
                                             key: v,
                                             active: null,
-                                            value: fieldMeta.initialValue.allEnumerations.find(e => e.key === v).value
+                                            value: creatable ? v : fieldMeta.initialValue.allEnumerations.find(e => e.key === v).value
                                         })) : [];
                                         return result;
                                     } else {
@@ -456,6 +519,7 @@ export function AutoForm(props) {
                                     }
                                 }, // incoming input value
                                 output: (value) => {
+                                    console.error("output", value);
                                     if (Array.isArray(value)) {
                                         return {
                                             allEnumerations: [], //* clear this down we don't want to pass it back
@@ -474,6 +538,7 @@ export function AutoForm(props) {
                                     error={fieldHasErrored(fieldMeta.name)}>
                                     <Select
                                         error={fieldHasErrored(fieldMeta.name)}
+                                        creatable={creatable}
                                         options={fieldMeta.initialValue.allEnumerations}
                                         value={transform.input(value)}
                                         labelKey="value"

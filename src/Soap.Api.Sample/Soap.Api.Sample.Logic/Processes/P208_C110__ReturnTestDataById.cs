@@ -52,7 +52,8 @@ namespace Soap.Api.Sample.Logic.Processes
                             E102_PostCodesSingle = testData.PostCodesSingleKey,
                             E102_StringOptionalMultiline = testData.StringOptionalMultiline,
                             E102_PostCodesMultiOptional = testData.PostCodesMultiOptionalKeys,
-                            E102_PostCodesSingleOptional = testData.PostCodesSingleOptionalKey
+                            E102_PostCodesSingleOptional = testData.PostCodesSingleOptionalKey,
+                            E102_Hashtags = testData.Hashtags
                         }
                     };
 

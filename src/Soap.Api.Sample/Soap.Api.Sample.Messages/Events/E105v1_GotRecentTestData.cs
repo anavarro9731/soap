@@ -21,6 +21,7 @@
             public long? E105_BChildLong { get; set; }
 
             public string E105_BChildString { get; set; }
+            
         }
 
         public class ChildC
@@ -37,9 +38,11 @@
         public class TestData
         {
             public ChildC E105_CChild { get; set; } = new ChildC();
-
+            
             public List<ChildC> E105_CChildren { get; set; } = new List<ChildC>();
 
+            public string E105_Html { get; set; }
+            
             public DateTime? E105_CreatedAt { get; set; }
 
             public Guid? E105_Guid { get; set; }
@@ -47,6 +50,7 @@
             public Guid? E105_Id { get; set; }
 
             public string E105_Label { get; set; }
+            
         }
     }
 }

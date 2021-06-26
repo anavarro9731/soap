@@ -3,7 +3,7 @@ namespace Soap.Interfaces.Messages
     using System;
 
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
-    public class MultiLineAttribute : Attribute
+    public class JoditEditorAttribute : Attribute
     {
         public int PixelHeight { get; set; }
     }

@@ -33,7 +33,7 @@ export function ListTestData() {
                     "root": new EntityMenu(null, [
                         () => <CreateTestData/>
                     ]),
-                    "root-ArrayItems": new EntityMenu(null, [
+                    "root-ArrayItems": new EntityMenu(entity => location.href = "#/test-data/view/" + entity.e105_Id, [
                         (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>,
                         (entity) => <RemoveTestData entity={{id: entity.e105_Id , label: entity.e105_Label}}/>
                     ]),
@@ -44,7 +44,10 @@ export function ListTestData() {
                         (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
                     ])
                 }
-            } title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>
+            }
+                           expandedFields={["e105_BChildren"]}
+                           hiddenFields={["e105_BChildId", "e105_BChildLong"]}
+                           title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>
 
             <AggregateView title="An Aggregate" aggregate={e105?.e105_TestData[0]} refreshFunction={() => refresh()}/>
         </Fragment>);

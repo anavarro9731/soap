@@ -1874,6 +1874,11 @@ attr-accept@^1.1.3:
   dependencies:
     core-js "^2.5.0"
 
+autobind-decorator@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/autobind-decorator/-/autobind-decorator-2.4.0.tgz#ea9e1c98708cf3b5b356f7cf9f10f265ff18239c"
+  integrity sha512-OGYhWUO72V6DafbF8PM8rm3EPbfuyMZcJhtm5/n26IDwO18pohE4eNazLoCGhPiXOCD0gEGmrbU3849QvM8bbw==
+
 available-typed-arrays@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.2.tgz#6b098ca9d8039079ee3f77f7b783c4480ba513f5"
@@ -2562,6 +2567,11 @@ domexception@^2.0.1:
   integrity sha512-yxJ2mFy/sibVQlu5qHjOkf9J3K6zgmCxgJ94u2EdvDOV09H+32LtRswEcUsmUWN72pVLOEnTSRaIVVzVQgS0dg==
   dependencies:
     webidl-conversions "^5.0.0"
+
+dompurify@2.2.9:
+  version "2.2.9"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.9.tgz#4b42e244238032d9286a0d2c87b51313581d9624"
+  integrity sha512-+9MqacuigMIZ+1+EwoEltogyWGFTJZWU3258Rupxs+2CGs4H914G9er6pZbsme/bvb5L67o2rade9n21e4RW/w==
 
 ecc-jsbn@~0.1.1:
   version "0.1.2"
@@ -3903,6 +3913,20 @@ jest-worker@^26.6.2:
     "@types/node" "*"
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
+
+jodit-react@1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/jodit-react/-/jodit-react-1.1.1.tgz#62cf86641cc1ddd9c0e3eedb06d436d2ef8954bd"
+  integrity sha512-Lr4THBOL/07oTJVXglMHY1xfiVys7PBGQl9eeVAcr6Ivaq2mGRfVPT1CaBsTBJUPJ2cTjXjzqU2B40d1VzSIlA==
+  dependencies:
+    jodit "^3.7.1"
+
+jodit@^3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/jodit/-/jodit-3.7.1.tgz#a1a069fdcc306d8223d983d79ff00484dd88d0ae"
+  integrity sha512-C1DMa+ar47GJhubukhs6Q1VD6nvDK3JpSNszDnE3iVrkDk7mtu8N4bosos1Brhu4qaYMySlAOun8zz4KTePB1A==
+  dependencies:
+    autobind-decorator "^2.4.0"
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

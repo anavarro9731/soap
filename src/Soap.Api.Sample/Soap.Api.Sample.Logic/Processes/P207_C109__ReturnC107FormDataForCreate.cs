@@ -55,6 +55,7 @@ namespace Soap.Api.Sample.Logic.Processes
                         {
                             C107_Town = "Pontrilas"
                         },
+                         
                         C107_File = SampleBlobs.File1,
                         C107_Image = SampleBlobs.Image1
                     };

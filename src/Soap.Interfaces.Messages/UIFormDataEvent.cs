@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using System.Reflection.Emit;
     using CircuitBoard;
 
     public abstract class UIFormDataEvent<TApiCommand> : ApiEvent where TApiCommand: ApiCommand
@@ -133,20 +134,20 @@
                         fieldMeta = new FieldMeta
                         {
                             Name = GetPropertyPath(validProperty, typePath),
-                            Required = HasAttribute(validProperty, typeof(RequiredAttribute)),
+                            Required = HasAttribute<RequiredAttribute>(validProperty),
 
-                            Caption = HasAttribute(validProperty, typeof(RequiredAttribute)) ? "required" : string.Empty,
-                            Label = HasAttribute(validProperty, typeof(LabelAttribute))
+                            Caption = HasAttribute<RequiredAttribute>(validProperty) ? "required" : string.Empty,
+                            Label = HasAttribute<LabelAttribute>(validProperty)
                                         ? validProperty.GetCustomAttribute<LabelAttribute>().Label
                                         : defaultLabel,
                             DataType = validProperty.PropertyType switch
                             {
                                 var t when t == typeof(DateTime?) => "datetime", // -> datepicker
                                 var t when t == typeof(Guid?) => "guid", // -> guid textbox
-                                var t when t == typeof(string) => HasAttribute(validProperty, typeof(MultiLineAttribute))
-                                                                      ? "multilinestring"
-                                                                      : "string", // -> textbox or textarea
-                                var t when t == typeof(BlobMeta) => HasAttribute(validProperty, typeof(IsImageAttribute))
+                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => "multilinestring", //textarea
+                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => "joditeditor",
+                                var t when t == typeof(string) => "string", // -> textbox
+                                var t when t == typeof(BlobMeta) => HasAttribute<IsImageAttribute>(validProperty)
                                                                           ? "image"
                                                                           : "file", //-> fileupload //* we don't break down blobs, like other custom objects, they are considered primitives for form-building
                                 var t when t == typeof(long?) => "number", // -> number textbox
@@ -158,7 +159,16 @@
                                 _ => throw new ApplicationException(
                                          $"Unexpected Data Type {validProperty.PropertyType} on property {validProperty.Name} in command {commandName}. Please validate schema.")
                             },
-                            InitialValue = validProperty.GetValue(instance)
+                            InitialValue = validProperty.GetValue(instance),
+                            Options = validProperty.PropertyType switch
+                            {
+                                /*use lcase in anontype fields since they are not autocased by js serialiser */
+                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => new { height = validProperty.GetCustomAttribute<MultiLineAttribute>().PixelHeight},  
+                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => new { height = validProperty.GetCustomAttribute<JoditEditorAttribute>().PixelHeight},
+                                var t when t == typeof(EnumerationAndFlags) => new { creatable = HasAttribute<AllowCreateAbleOptions>(validProperty) },
+                                _ => null
+                            }
+                            
                         };
                     }
 
@@ -188,8 +198,9 @@
 
                     static string CamelCase(string s) => char.ToLower(s[0]) + s.Substring(1);
                     
-                    static bool HasAttribute(PropertyInfo prop, Type attributeType)
+                    static bool HasAttribute<TAttribute>(PropertyInfo prop)
                     {
+                        var attributeType = typeof(TAttribute);
                         var att = prop.GetCustomAttributes(attributeType).Where(x => x.GetType() == attributeType);
                         return att != null && att.Any();
                     }

@@ -52,6 +52,8 @@
 
             public string E102_PostCodesSingleOptional { get; set; }
 
+            public List<string> E102_Hashtags { get; set; }
+            
             public string E102_String { get; set; }
 
             public string E102_StringOptional { get; set; }

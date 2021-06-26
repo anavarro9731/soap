@@ -22,8 +22,10 @@ if (Test-Path dist) {
     Remove-Item -Recurse -Force dist    
 }
 
+
 if ($UpgradeRemoteSoap) {
     RepublishModules
+    #needs to be changed to upgrade package.json to exact soap version
     yarn upgrade @soap/modules@latest
 } elseif ($ToRemoteSoap) { # take from feed requires publishing
     if (Test-Path .\components)
@@ -42,6 +44,7 @@ if ($UpgradeRemoteSoap) {
     
     yarn install
     RepublishModules
+    #needs to be changed to upgrade package.json to exact soap version
     yarn upgrade @soap/modules@latest
 }
 elseif ($ToLocalSoap) # take from local folder, via symlink
