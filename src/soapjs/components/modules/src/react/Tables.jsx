@@ -57,7 +57,7 @@ export function ObjectTableTop(props) {
     
     return (
         <React.Fragment>
-            <div>
+            <div style={{marginBottom:"16px", marginLeft:"14px"}}>
                 {CreateViewButton("root", entityMenus, object)}
                 {CreateActionsMenu("root", entityMenus, object)}
             </div>
@@ -201,7 +201,7 @@ function ArrayTable(props) {
             //*otherwise convert the object in that field into a control array
             const componentArray = ConvertObjectToComponentArray(obj, propertyRenderer, hiddenFields, expandedFields, entityMenus);
             if (childrenHaveMenu) { //* actions column
-                componentArray.push(<div>
+                componentArray.push(<div style={{display:"flex"}}>
                     {CreateViewButton(childrenPropertyKey, entityMenus, obj)}
                     {CreateActionsMenu(childrenPropertyKey, entityMenus, obj)}
                 </div>)
