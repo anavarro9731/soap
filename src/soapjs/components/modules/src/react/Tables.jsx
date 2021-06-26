@@ -382,7 +382,7 @@ function ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, e
                 let clean = DOMPurify.sanitize( propertyValue , {USE_PROFILES: {html: true}} );
                 value = <div  dangerouslySetInnerHTML={{ __html: clean }}/>;   
             } else {
-                value = <div style={{whiteSpace:"pre-wrap"}}>{propertyValue}</div>;
+                value = <span style={{whiteSpace:"pre-wrap"}}>{propertyValue}</span>;
             }
         } else if (typeof propertyValue === typeof true) {
             //true
