@@ -12,6 +12,7 @@ export function EditTestData(props) {
                         $type: "C113v1_GetC107FormDataForEdit",
                         c113_TestDataId: id
                     }}
+                hiddenFields={["C107_Guid"]}
                 submitText="Create"
                 afterSubmit={() => bus.closeAllDialogs()}
             />

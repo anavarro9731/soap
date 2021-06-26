@@ -11,6 +11,7 @@ export function CreateTestData(props) {
                     $type: "C109v1_GetC107FormDataForCreate"
                 }}
                 submitText="Create"
+                
                 afterSubmit={() => bus.closeAllDialogs()}
             />
         </ActionDrawer>

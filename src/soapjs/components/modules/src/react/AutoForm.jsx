@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useQuery} from '../hooks/useQuery';
 import {useCommand} from '../hooks/useCommand';
 import config from '../soap/config';
@@ -18,14 +18,22 @@ import {useSnackbar,} from 'baseui/snackbar';
 import {Check} from "baseui/icon";
 import {toaster} from 'baseui/toast';
 import JoditEditor from "jodit-react";
-
-
-
+import {optional, types, validateArgs} from "../soap/util";
 
 
 export function AutoForm(props) {
 
-    const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText} = props;
+    const {afterSubmit, query, sendQuery = true, afterCancel, cancelText, submitText, hiddenFields = []} = props;
+
+    validateArgs(
+        [{afterSubmit}, types.function, optional],
+        [{query}, types.object],
+        [{sendQuery}, types.boolean],
+        [{afterCancel}, types.function, optional],
+        [{cancelText}, types.string, optional],
+        [{submitText}, types.string, optional],
+        [{hiddenFields}, [types.string], optional]
+    )
 
     //* jodit editor
     const editor = useRef(null)
@@ -33,7 +41,7 @@ export function AutoForm(props) {
 
     //* react-hook-form
     const {handleSubmit, control, errors} = useForm();  //* errors is used in eval
-    
+
     const {enqueue} = useSnackbar();
 
     const [showLoader, setShowLoader] = useState(false);
@@ -244,6 +252,10 @@ export function AutoForm(props) {
             return error;
         }
 
+        console.error(fieldMeta, hiddenFields);
+        const isHidden = hiddenFields.includes(fieldMeta.propertyName);
+        const inlineStyle = isHidden ? {display: "none"} : undefined;
+        console.error(isHidden, inlineStyle);
         switch (fieldMeta.dataType) {
             case "boolean":
                 return (
@@ -266,9 +278,11 @@ export function AutoForm(props) {
                          */
                         render={({onChange, onBlur, value, name}) => {
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     label={fieldMeta.label}
                                     disabled={submitted}
+                                    style={inlineStyle}
                                 >
                                     <Checkbox
                                         name={name}
@@ -278,10 +292,12 @@ export function AutoForm(props) {
                                         onBlur={onBlur}
                                     />
                                 </FormControl>
+                                </div>
                             );
                         }}
                     />);
             case "guid":
+
                 return (
                     <Controller
                         control={control}
@@ -290,10 +306,13 @@ export function AutoForm(props) {
                         rules={fieldMeta.required ? {validate: value => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)} : {}}
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <MaskedInput
                                         error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
@@ -305,6 +324,7 @@ export function AutoForm(props) {
                                         mask={"********-****-****-****-************"}
                                         maskChar="*"
                                     /></FormControl>
+                                </div>
                             );
                         }}
                     />);
@@ -318,10 +338,13 @@ export function AutoForm(props) {
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <Input
                                         error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
@@ -330,6 +353,7 @@ export function AutoForm(props) {
                                         onChange={onChange}
                                         onBlur={onBlur}
                                     /></FormControl>
+                                </div>
                             );
                         }}
                     />);
@@ -353,10 +377,12 @@ export function AutoForm(props) {
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}>
                                     <JoditEditor
                                         ref={editor}
                                         value={value}
@@ -364,7 +390,8 @@ export function AutoForm(props) {
                                         onBlur={onBlur} // preferred to use only this option to update the content for performance reasons
                                         onChange={onChange}
                                     />
-                                 </FormControl>
+                                </FormControl>
+                                </div>
                             );
                         }}
                     />);
@@ -377,10 +404,13 @@ export function AutoForm(props) {
                         rules={{required: fieldMeta.required}}
                         render={({onChange, onBlur, value, name, ref}) => {
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <Textarea
                                         error={fieldHasErrored(fieldMeta.name)}
                                         inputRef={ref}
@@ -406,6 +436,7 @@ export function AutoForm(props) {
                                             },
                                         }}
                                     /></FormControl>
+                                </div>
                             );
                         }}
                     />);
@@ -427,19 +458,24 @@ export function AutoForm(props) {
                                 }
                             };
                             return (
-                                <FormControl
-                                    disabled={submitted}
-                                    label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
-                                    <Input
+                                <div style={inlineStyle}>
+                                    <FormControl
+                                        disabled={submitted}
+                                        label={fieldMeta.label} caption={fieldMeta.caption}
                                         error={fieldHasErrored(fieldMeta.name)}
-                                        inputRef={ref}
-                                        name={name}
-                                        type="number"
-                                        value={transform.input(value)}
-                                        onChange={(v) => onChange(transform.output(v))}
-                                        onBlur={onBlur}
-                                    /></FormControl>
+
+                                    >
+                                        <Input
+                                            error={fieldHasErrored(fieldMeta.name)}
+                                            inputRef={ref}
+                                            name={name}
+                                            type="number"
+                                            value={transform.input(value)}
+                                            onChange={(v) => onChange(transform.output(v))}
+                                            onBlur={onBlur}
+                                        /></FormControl>
+                                </div>
+
                             );
                         }}
                     />);
@@ -473,17 +509,22 @@ export function AutoForm(props) {
                                 }
                             };
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <DatePicker
                                         error={fieldHasErrored(fieldMeta.name)}
                                         clearable
                                         value={transform.input(value)}
                                         onChange={v => onChange(transform.output(v))}
                                     />
-                                </FormControl>);
+                                </FormControl>
+                                </div>
+                            );
                         }}
                     />);
             case "enumeration": {
@@ -504,7 +545,7 @@ export function AutoForm(props) {
                         render={({onChange, onBlur, value}) => {
                             const transform = {
                                 input: (value) => {
-                                    console.error("input", value);
+
                                     if (Array.isArray(value)) {
                                         return value;
                                     } else if (typeof value === 'object') {
@@ -519,7 +560,7 @@ export function AutoForm(props) {
                                     }
                                 }, // incoming input value
                                 output: (value) => {
-                                    console.error("output", value);
+
                                     if (Array.isArray(value)) {
                                         return {
                                             allEnumerations: [], //* clear this down we don't want to pass it back
@@ -532,10 +573,13 @@ export function AutoForm(props) {
                                 }
                             };
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     disabled={submitted}
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <Select
                                         error={fieldHasErrored(fieldMeta.name)}
                                         creatable={creatable}
@@ -549,7 +593,9 @@ export function AutoForm(props) {
                                         }}
                                         onBlur={onBlur}
                                     />
-                                </FormControl>);
+                                </FormControl>
+                                </div>
+                                );
                         }}
                     />);
             }
@@ -568,9 +614,12 @@ export function AutoForm(props) {
                             and then only transform back to blobmeta at the end which saves having to redownload the blob every render
                              */
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <FileUpload
                                         disabled={submitted}
                                         error={fieldHasErrored(fieldMeta.name)}
@@ -578,7 +627,9 @@ export function AutoForm(props) {
                                         onBlur={onBlur}
                                         onChange={onChange}
                                     />
-                                </FormControl>);
+                                </FormControl>
+                                </div>
+                            );
                         }}
                     />);
             }
@@ -597,9 +648,12 @@ export function AutoForm(props) {
                             and then only transform back to blobmeta at the end which saves having to redownload the blob every render
                              */
                             return (
+                                <div style={inlineStyle}>
                                 <FormControl
                                     label={fieldMeta.label} caption={fieldMeta.caption}
-                                    error={fieldHasErrored(fieldMeta.name)}>
+                                    error={fieldHasErrored(fieldMeta.name)}
+                                    style={inlineStyle}
+                                >
                                     <FileUpload
                                         disabled={submitted}
                                         acceptedTypes=".jpg,.jpeg,.jfif,.png"
@@ -609,7 +663,9 @@ export function AutoForm(props) {
                                         value={value}
                                         onChange={onChange}
                                     />
-                                </FormControl>);
+                                </FormControl>
+                                </div>
+                            );
                         }}
                     />);
             }

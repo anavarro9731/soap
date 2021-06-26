@@ -146,8 +146,10 @@
                                 $"The contract for message type {messageType.Name} is invalid.",
                                 e);
                         }
-                        /* allowing duplicates will cause problems client-side in performing find and replace on properties which are meant to be unique based on the class structure
-                        may be other reason too that I have forgotten would need to do a test and see if you ever wanted to remove this */
+                        /* TODO allowing duplicates will cause problems client-side in performing find and replace on properties which are meant to be unique based on the class structure
+                         it also causes problems with the propertyRender, hiddenField, expandedField etc props on several reach controls like AggregateView/List and Autoform
+                         it does appear below though that you have now allowed (im not sure why unique names, per type, which seems to be defeating the purpose stated and im
+                         not sure when this would even trigger now, perhaps this was for convenience? but you need to re-visit/think this. */
                         var propNames = propNamesList.Values.ToList();
                         Guard.Against(
                             propNames.HasDuplicates(),

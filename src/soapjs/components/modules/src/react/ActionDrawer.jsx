@@ -6,11 +6,17 @@ import {ANCHOR, Drawer} from "baseui/drawer";
 import {Heading, HeadingLevel} from "baseui/heading";
 import {Cell, Grid} from "baseui/layout-grid";
 import {useStyletron} from "baseui";
+import {optional, types, validateArgs} from "../soap/util";
 
 
 export function ActionDrawer(props) {
 
-    const {title, auth, children} = props;
+    const {title, auth, children, viewHeight} = props;
+    
+    validateArgs(
+[{viewHeight}, types.number, optional]
+    );
+    
     const {requireAuth} = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [css, theme] = useStyletron();
@@ -40,6 +46,13 @@ export function ActionDrawer(props) {
             autoFocus
             size={SIZE.full}
             anchor={ANCHOR.top}
+            overrides={viewHeight ? ({
+                DrawerContainer: {
+                    style: ({ $theme }) => ({                         
+                        height:viewHeight+"vh"
+                    })
+                }}) : undefined
+            }
             >
             <div
                 className={css({

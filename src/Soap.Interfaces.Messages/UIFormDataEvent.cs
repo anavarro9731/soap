@@ -135,7 +135,7 @@
                         {
                             Name = GetPropertyPath(validProperty, typePath),
                             Required = HasAttribute<RequiredAttribute>(validProperty),
-
+                            PropertyName = validProperty.Name,
                             Caption = HasAttribute<RequiredAttribute>(validProperty) ? "required" : string.Empty,
                             Label = HasAttribute<LabelAttribute>(validProperty)
                                         ? validProperty.GetCustomAttribute<LabelAttribute>().Label
