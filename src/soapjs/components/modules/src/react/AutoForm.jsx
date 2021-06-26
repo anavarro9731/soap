@@ -117,10 +117,11 @@ export function AutoForm(props) {
                 {afterCancel ? (<Button
                     disabled={submitted}
                     type="button"
+                    style={{marginRight:"10px"}}
                     onClick={afterCancel}
                     kind={KIND.primary}>
                     {cancelText ?? "Cancel"}
-                </Button>) : null}&nbsp;&nbsp;&nbsp;
+                </Button>) : null}
                 <Button
                     disabled={submitted}
                     kind={KIND.primary}
@@ -252,10 +253,10 @@ export function AutoForm(props) {
             return error;
         }
 
-        console.error(fieldMeta, hiddenFields);
+        
         const isHidden = hiddenFields.includes(fieldMeta.propertyName);
         const inlineStyle = isHidden ? {display: "none"} : undefined;
-        console.error(isHidden, inlineStyle);
+        
         switch (fieldMeta.dataType) {
             case "boolean":
                 return (

@@ -11,7 +11,7 @@ import {optional, types, validateArgs} from "../soap/util";
 
 export function ActionDrawer(props) {
 
-    const {title, auth, children, viewHeight} = props;
+    const {title, auth, children, viewHeight=50} = props;
     
     validateArgs(
 [{viewHeight}, types.number, optional]
