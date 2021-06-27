@@ -254,7 +254,7 @@ export function AutoForm(props) {
         }
 
         
-        const isHidden = hiddenFields.includes(fieldMeta.propertyName);
+        const isHidden = hiddenFields.includes(fieldMeta.propertyName) || fieldMeta.options.hidden === true;
         const inlineStyle = isHidden ? {display: "none"} : undefined;
         
         switch (fieldMeta.dataType) {

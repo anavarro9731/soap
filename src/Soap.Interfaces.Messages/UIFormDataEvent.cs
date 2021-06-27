@@ -163,15 +163,31 @@
                             Options = validProperty.PropertyType switch
                             {
                                 /*use lcase in anontype fields since they are not autocased by js serialiser */
-                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => new { height = validProperty.GetCustomAttribute<MultiLineAttribute>().PixelHeight},  
-                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => new { height = validProperty.GetCustomAttribute<JoditEditorAttribute>().PixelHeight},
-                                var t when t == typeof(EnumerationAndFlags) => new { creatable = HasAttribute<AllowCreateAbleOptions>(validProperty) },
-                                _ => null
+                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => new
+                                {
+                                    height = validProperty.GetCustomAttribute<MultiLineAttribute>().PixelHeight,
+                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
+                                },  
+                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => new
+                                {
+                                    height = validProperty.GetCustomAttribute<JoditEditorAttribute>().PixelHeight,
+                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
+                                    
+                                },
+                                var t when t == typeof(EnumerationAndFlags) => new
+                                {
+                                    creatable = HasAttribute<AllowCreateAbleOptions>(validProperty),
+                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
+                                },
+                                _ => new
+                                {
+                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
+                                }
                             }
-                            
                         };
+                        
                     }
-
+                    
                     static void CheckFieldMetaToAvoidPassingEmptyEnumerations(
                         FieldMeta fieldMeta,
                         string commandName,
