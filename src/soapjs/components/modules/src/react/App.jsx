@@ -50,7 +50,7 @@ export function App(props) {
     return (<LocaleProvider locale={override}>
         <StyletronProvider value={engine}>
             <BaseProvider theme={props.theme}>
-                <ToasterContainer autoHideDuration={4000} placement={PLACEMENT_TOASTER.topRight}>
+                <ToasterContainer autoHideDuration={8000} placement={PLACEMENT_TOASTER.topRight}>
                     <SnackbarProvider defaultDuration={DURATION.short} placement={PLACEMENT_SNACKBAR.bottom}>
                         <Router>
                             {getContent()}
