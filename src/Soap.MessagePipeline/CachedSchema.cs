@@ -146,9 +146,10 @@
                                 $"The contract for message type {messageType.Name} is invalid.",
                                 e);
                         }
-                        /* TODO allowing duplicates will cause problems client-side in performing find and replace on properties which are meant to be unique based on the class structure
-                         it also causes problems with the propertyRender, hiddenField, expandedField etc props on several reach controls like AggregateView/List and Autoform
-                         it does appear below though that you have now allowed (im not sure why unique names, per type, which seems to be defeating the purpose stated and im
+                        /* TODO allowing duplicates will cause problems client-side in performing find and replace in js code on properties which are meant to be unique based on the class structure
+                         it will also cause problems with the propertyRender, hiddenField, expandedField etc props on several react controls like AggregateView/List and Autoform if you want to treat
+                         the fields with the common name differently.
+                         it does appear below though tha    t you have now allowed (im not sure why unique names, per type, which seems to be defeating the purpose stated and im
                          not sure when this would even trigger now, perhaps this was for convenience? but you need to re-visit/think this. */
                         var propNames = propNamesList.Values.ToList();
                         Guard.Against(
