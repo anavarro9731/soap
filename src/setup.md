@@ -145,10 +145,13 @@ with the required services which will occur after the script finishes and the az
 - https://plugins.jetbrains.com/plugin/11220-azure-toolkit-for-rider (This will install Azurite support)
 - https://plugins.jetbrains.com/plugin/10249-powershell
 
-2. Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
+2. Open the new solution in Rider and add the Soap Nuget feed
+https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json
+   
+3. Set Powershell x86 as the Rider Shell by editing the path located at: File > Settings > Tools > Terminal
    and pointing it at `C:\Program Files (x86)\PowerShell\7\pwsh.exe`
 
-3. The following are the cloud services that need to be considered in regards to **local development** when the function app is running in the cloud none of the following apply.
+4. The following are the cloud services that need to be considered in regards to **local development** when the function app is running in the cloud none of the following apply.
 
 Each azure service has a unique way of creating a developer-specific experience.
 Some are based on the EPK [Environment Partition Key] which you entered when creating a new service using the
@@ -180,7 +183,7 @@ Once this script, which will
 - create developer specific subscriptions and queues,
 completes the errors should stop.
 
-Last you need to build and run the client app.
+5. Last you need to build and run the client app.
 Before you can do that you need to import the files into the solution, 
 you can do that by using the "attach folder" feature.
 

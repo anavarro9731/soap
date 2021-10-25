@@ -53,12 +53,12 @@ Function Get-AzureDevopsOrganisationName([string] $s = $null) {
 	Return $OrgName
 }
 Function Get-ServiceName([string] $s = $null)  {
-	$ServiceName = EmptyConcat $s 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".")'
-	if (-Not ($ServiceName -match '^[A-Za-z\.]+$'))
+	$ServiceName = EmptyConcat $s 'Enter The New Service Name (Allowed Characters A-Z,a-z and ".") 5-18 chars'
+	if (-Not ($ServiceName -match '^[A-Za-z\.]{5,18}$'))
 	{
 		Write-Host "Service Name `"$ServiceName`" does not match regex"
 		Exit -1
-	}
+	}	
 	Return $ServiceName
 }
 Function Get-AzPersonalAccessToken([string] $s = $null)  {
