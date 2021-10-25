@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <AzureFunctionsVersion>V3</AzureFunctionsVersion>
-    <Version>7.29.0-alpha</Version>
+    <Version>7.29.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <!-- removing this direct reference causes errors even if the assembly is inherited -->
