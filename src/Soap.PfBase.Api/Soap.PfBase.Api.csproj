@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>V3</AzureFunctionsVersion>
-    <Version>7.22.0-alpha</Version>
+    <Version>7.23.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Auth0\Soap.Auth0.csproj" />
