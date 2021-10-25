@@ -5,6 +5,7 @@
         
         
         .\pwsh-bootstrap.ps1
+        git checkout master
         git push
         [System.Console]::ResetColor()
         git add -A
