@@ -84,7 +84,8 @@ function global:Run {
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
         -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
-        -repository "soap" 
+        -repository "soap" `
+		-push $push
 	}
 
 	# options
