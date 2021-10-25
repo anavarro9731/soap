@@ -67,7 +67,7 @@ function global:Run {
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" `
+        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
         -repository "soap" `
 		-forceVersion $forceVersion `
 		-push $push
@@ -83,7 +83,7 @@ function global:Run {
 		Create-Release -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia" `
+        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
         -repository "soap" 
 	}
 

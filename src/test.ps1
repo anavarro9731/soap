@@ -3,12 +3,13 @@
 
     if ($PackAndPublish) {
         
+        
         .\pwsh-bootstrap.ps1
         git push
         [System.Console]::ResetColor()
         git add -A
         git commit -a -m "build test"
-        Run -PrepareNewVersion
+        Run -PrepareNewVersion # need to update nugetApitKey in pwsh-bootstrap too because of this call
         Run -PackAndPublish `
        -nugetApiKey "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
        -azureDevopsPat "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
