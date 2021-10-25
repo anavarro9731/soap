@@ -1,5 +1,5 @@
     [cmdletbinding()]
-    param([switch]$PackAndPublish, [switch]$ConfigureLocalEnvironment, [switch] $CreateNewService)
+    param([switch]$PackAndPublish, [switch]$ConfigureLocalEnvironment, [switch] $CreateNewService, [switch]$ReleaseMode)
 
     if ($PackAndPublish) {
         
@@ -9,7 +9,10 @@
         [System.Console]::ResetColor()
         git add -A
         git commit -a -m "build test"
-        Run -PrepareNewVersion # need to update nugetApitKey in pwsh-bootstrap too because of this call
+        Run -PrepareNewVersion -push "SKIP" # need to update nugetApitKey in pwsh-bootstrap too because of this call
+        if ($ReleaseMode) {
+            Run -CreateRelease -push "SKIP"
+        }
         Run -PackAndPublish `
        -nugetApiKey "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
        -azureDevopsPat "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
