@@ -79,10 +79,16 @@ To obtain  az-clientid, az-tenantid, az-clientsecret values you will need to cre
 You will need to do this from the Azure CloudShell as global admin for the right permissions and
 Once logged into shell.azure.com as global admin run:
 ```
- az ad sp create-for-rbac --name SoapServicePrincipal
- make sure you are on the right subscription before running the command if not, change it first!
- az account list
- az account set -s "SubscriptionNameOrIdHere"
+
+make sure you are on the right subscription before running the command if not, change it first!
+az account list
+az account set -s "SubscriptionNameOrIdHere"
+
+then 
+az ad sp create-for-rbac --name SoapServicePrincipal
+ 
+to verify 
+az ad sp list --display-name SoapServicePrincipal
 ```
 See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
 
@@ -224,6 +230,12 @@ Finally, it will leave you on the master branch afterwards.
 - We are stuck using the -no-source-maps flag in parcel v1 because auth0 library wont work otherwise, parcel team not fixing
   the issue before v2, at present parcel v2 still buggy and doesn't work for us. 1. won't cancel properly, random errors
   
+- Sometimes you may want to test by connecting your local dev environment to production data. The right way to do this
+is to edit the DEV/Config.cs file and for the db connection set the Container and DB property values manually. The container
+  should be set to "REL" and the db to "cdb-{yourappname}-rel". Ideally everything else can stay the same. The one thing 
+  you must check first, is that the version of the code running locally will not corrupt the data in the production database
+  by using a newer schema (including via a new Db upgrade task)
+
 # Common Errors 
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azurite has been known to generate errors that are a different problem underlying. CORS is set for Azurite dev instance server-side on startup see BlobStorage.DevStorageSetup IF NOT ALREADY SET
