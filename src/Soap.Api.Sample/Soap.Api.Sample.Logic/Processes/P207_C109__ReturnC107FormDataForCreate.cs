@@ -51,6 +51,7 @@ namespace Soap.Api.Sample.Logic.Processes
                         C107_PostCodesSingleOptional = new EnumerationAndFlags(this.postCodes.Last(), this.postCodes, false),
                         C107_PostCodesMulti = new EnumerationAndFlags(this.postCodes.First(), this.postCodes),
                         C107_PostCodesMultiOptional = c107PostCodesMultiOptional,
+                        C107_HashtagsOptional = new EnumerationAndFlags(),
                         C107_CustomObject = new C107v1_CreateOrUpdateTestDataTypes.Address
                         {
                             C107_Town = "Pontrilas"
