@@ -53,7 +53,7 @@ npm install -g yarn
 lodctr /R (corrupted perf counters will cause azurite emulator errors, run this command twice in succession)
 npm install -g azurite
 ```
-###Install DotNet 5
+###Install DotNet 3.1
 ```
 https://dotnet.microsoft.com/download
 or via choco install 
@@ -83,9 +83,10 @@ Once logged into shell.azure.com as global admin run:
 make sure you are on the right subscription before running the command if not, change it first!
 az account list
 az account set -s "SubscriptionNameOrIdHere"
+az account show
 
 then 
-az ad sp create-for-rbac --name SoapServicePrincipal
+az ad sp create-for-rbac --name SoapServicePrincipal (OrProjectSpecificNameIfYouWantToSegregateSecurity) 
  
 to verify 
 az ad sp list --display-name SoapServicePrincipal
@@ -128,6 +129,8 @@ then run
 
 test with `az devops project list`
 cls
+
+Now goto the directory where the Soap repo was created
 
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
 Next you must edit the pipeline variables for the new build.
