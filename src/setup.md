@@ -111,7 +111,8 @@ You need to obtain three 3 values.
 #### Devops key
 
 You will need to create a Personal Access Token(s) with proper permissions to satisfy to variables
-For the ado-pat variable you need a PAT which must be able to read from the source repo for the ```.version``` file and the config repo for the ```Config.cs``` file.
+For the ado-pat variable you need a PAT which must be able to read from the source repo for the ```.version``` 
+file and the config repo for the ```Config.cs``` file.
 For the nuget-key variable the PAT must be able to read/write from the package feed.
 Both variables can use the same PAT.
 
@@ -251,5 +252,4 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
   against a packaged version of soap. e.g. srv.ps1 -ToRemoteSoap. Both these problems should alert you through issues
   when publishing but its good to note them.
 - Had some very wierd situation on a new machine where I was getting an error about now being able to find the local.settings.json file when starting the function app locally. Closing ALL instances of Rider and reloading seemed to fix it.
-  
-
+- Be careful about accidentally upgrade the Azure Functions Runtime to a version that doesn't support your current configuration. It's easy todo because upgrading the Core Tools plugin in Rider will upgrade the runtime too.
