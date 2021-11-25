@@ -134,8 +134,6 @@ cls
 Now goto the directory where the Soap repo was created
 
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
-Next you must edit the pipeline variables for the new build.
-These are listed in the ```azure-pipelines.yml``` file in the root of the new project.
 
 Now wait for the resource group you defined when you ran ```.\create-new-service.psm1``` to be populated
 with the required services which will occur after the script finishes and the azure devops build runs this can take 
