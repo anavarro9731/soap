@@ -138,7 +138,7 @@ if (IsEmpty($var_AzureBusNamespace)) { throw "Property `"AzureBusNamespace`" cou
 if (IsEmpty($var_AzureSignalRConnectionString)) { throw "AzureSignalRConnectionString `"Property`" could not be found in App Settings" }
 if (IsEmpty($var_CosmosDbEndpointUri)) { throw "Property `"CosmosDbEndpointUri`" could not be found in App Settings" }
 if (IsEmpty($var_CosmosDbKey)) { throw "Property `"CosmosDbKey`" could not be found in App Settings" }
-if (IsEmpty($var_CosmosDbDatabasename)) { throw "Property `"CosmosDbDatabasename`" could not be found in App Settings" }
+if (IsEmpty($var_CosmosDbDatabasename)) { throw "Property `"CosmosDbDatabaseName`" could not be found in App Settings" }
 if (IsEmpty($var_APPINSIGHTS_INSTRUMENTATIONKEY)) { throw "Property `"APPINSIGHTS_INSTRUMENTATIONKEY`" could not be found in App Settings" }
 
 Log-Step "Downloading ServiceBus Connection String"
@@ -165,7 +165,7 @@ $LocalSettingsJson = @"
         `"AzureSignalRConnectionString`": `"$var_AzureSignalRConnectionString`",
         `"AzureSignalRServiceTransportType`": `"Transient`",
         `"CosmosDbEndpointUri`": `"$var_CosmosDbEndpointUri`",
-        `"CosmosDbDatabasename`": `"$var_CosmosDbDatabasename`",
+        `"CosmosDbDatabaseName`": `"$var_CosmosDbDatabasename`",
         `"CosmosDbKey`": `"$var_CosmosDbKey`",
         `"CorsOrigin`": `"http://localhost:1234`"                                  	 
     },

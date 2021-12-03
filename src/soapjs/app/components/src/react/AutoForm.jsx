@@ -11,7 +11,7 @@ import {Checkbox, LABEL_PLACEMENT} from 'baseui/checkbox'
 import {Controller, useForm} from "react-hook-form";
 import {FormControl} from "baseui/form-control";
 import {Label3} from 'baseui/typography';
-import ReactErrorBoundary from "./ReactErrorBoundary";
+import { ReactErrorBoundary } from "./ReactErrorBoundary";
 import {Select} from "baseui/select";
 import {Textarea} from "baseui/textarea";
 import {useSnackbar,} from 'baseui/snackbar';

@@ -1,0 +1,35 @@
+{
+  "name": "soap-app-sample",
+  "version": "1.0.0",
+  "dependencies": {
+    "@auth0/auth0-react": "1.4.0",
+    "@azure/service-bus": "7.0.0",
+    "@azure/storage-blob": "12.3.0",
+    "@microsoft/applicationinsights-web": "2.5.10",
+    "@microsoft/signalr": "5.0.1",
+    "baseui": "9.112.0",
+    "compressorjs": "1.0.7",
+    "dompurify": "2.2.9",
+    "i18next": "17.0.7",
+    "i18next-xhr-backend": "3.0.0",
+    "jodit-react": "1.1.1",
+    "lodash": "4.17.20",
+    "postal": "2.0.5",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
+    "react-hook-form": "6.15.3",
+    "react-router-dom": "5.2.0",
+    "styletron-engine-atomic": "1.4.7",
+    "styletron-react": "5.2.7"
+  },
+  "devDependencies": {
+    "parcel": "2.0.1"
+  },
+  "alias": {
+    "@soap/modules": "./components/src"
+  },
+  "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
+  "scripts": {    
+    "serve": "parcel serve ./index.html"
+  }
+}
