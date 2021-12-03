@@ -15,7 +15,7 @@ export { JsonView } from './react/JsonView';
 export { FileUpload } from './react/FileUpload';
 export { FileView } from './react/FileView';
 export { AutoForm } from './react/AutoForm';
-export { default as ReactErrorBoundary } from './react/ReactErrorBoundary';
+export { ReactErrorBoundary } from './react/ReactErrorBoundary';
 export { Login, ProtectedRoute } from './react/Login';
 export { ActionDrawer } from './react/ActionDrawer';
 export { PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewMenu, ViewMenuButton } from './react/ActionMenu';

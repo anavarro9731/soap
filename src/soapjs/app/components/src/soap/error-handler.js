@@ -3,7 +3,7 @@ import config from './config'
 
 export default function wireErrorHandlerOfLastResort(finalGlobalCallback) {
 
-    window.onerror = function (message, url, line, col, error) {
+    global.onerror = function (message, url, line, col, error) {
         // col & error are new to the HTML 5 spec and may not be 
         // supported in every browser.
         var extra = !col ? '' : '\ncolumn: ' + col;

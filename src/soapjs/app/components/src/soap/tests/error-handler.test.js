@@ -12,7 +12,7 @@ test("unhandled errors are caught", () => {
         //act 
         throw new Error("Whoa!");
     } catch (e) {
-        window.onerror.call(window, e.toString());
+        global.onerror.call(global, e.toString());
     }
 
 

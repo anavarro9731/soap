@@ -1,7 +1,7 @@
 import React from 'react';
-import {addTranslations, App, Login, config, ReactErrorBoundary} from '@soap/modules';
+import {addTranslations, App, Login, ReactErrorBoundary} from '@soap/modules';
 import {LightTheme} from 'baseui';
-import {H2} from "baseui/typography";
+import {H2} from "baseui/typography";   
 import ReactDOM from "react-dom";
 import translations from "./translations/en-soap.app.sample-default";
 import {ALIGN, HeaderNavigation, StyledNavigationItem, StyledNavigationList} from "baseui/header-navigation";
@@ -13,6 +13,7 @@ addTranslations(translations);
 
 function Index() {
     return (
+        
         <ReactErrorBoundary>
         <App theme={LightTheme}>
                 <HeaderNavigation>
@@ -43,6 +44,7 @@ function Index() {
                 </Switch>
         </App>
         </ReactErrorBoundary>
+        
     );
 }
 

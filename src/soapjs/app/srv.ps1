@@ -1,66 +1,64 @@
 ﻿param(
-    [switch]$ToRemoteSoap,
-    [switch]$ToLocalSoap,
-    [switch]$UpgradeRemoteSoap
+    [switch]$UpgradeSoap,
+    [switch]$UseSoapPackage,
+    [switch]$UseSoapSource
 )
 
-function RepublishModules {
-    cd ..\components\modules
-    npm version minor
-    npm publish
-    cd ..\..\app
-}
-
-#kill -name node
 if (Test-Path .parcel-cache) {
-    Remove-Item -Recurse -Force .parcel-cache #v2    
-}
-if (Test-Path .cache) {
-    Remove-Item -Recurse -Force .cache #v1    
+    Remove-Item -Recurse -Force .parcel-cache     
 }
 if (Test-Path dist) {
     Remove-Item -Recurse -Force dist    
 }
 
+if ($UpgradeSoap) {
+    
+    cd components
+    yarn install #could be missing depending on scenario
+    $v = npm view @soap/modules version
+    Write-Host "Current Version: $v"
+    $v = npm version minor
+    Write-Host "New Version: $v"
+    npm publish
+    cd ..
+    
+    iex "yarn upgrade @soap/modules@$v"
+    
+} elseif ($UseSoapPackage) { 
 
-if ($UpgradeRemoteSoap) {
-    RepublishModules
-    #needs to be changed to upgrade package.json to exact soap version
-    yarn upgrade @soap/modules@latest
-} elseif ($ToRemoteSoap) { # take from feed requires publishing
-    if (Test-Path .\components)
-    {
-        Remove-Item .\components
-    }
-    if (Test-Path .\babel.config.json)
-    {
-        Remove-Item .\babel.config.json
-    }
-    
     Remove-Item .\node_modules\ -Recurse
     Remove-Item .\yarn.lock
-    
-    Copy-Item -Path .\package.json.apponly -Destination .\package.json
-    
+
+    cd components
+    Copy-Item -Path .\package.json.lib -Destination .\package.json
+    yarn install #could be missing depending on scenario
+    $v = npm view @soap/modules version
+    Write-Host "Current Version: $v"
+    npm version $v #set to current version since package.json was just overwritten
+    $v = npm version minor
+    Write-Host "New Version: $v"
+    npm publish
+    cd ..
+
+
+    Copy-Item -Path .\package.json.soappackage -Destination .\package.json
     yarn install
-    RepublishModules
-    #needs to be changed to upgrade package.json to exact soap version
-    yarn upgrade @soap/modules@latest
+    iex "yarn upgrade @soap/modules@$v"
 }
-elseif ($ToLocalSoap) # take from local folder, via symlink
+elseif ($UseSoapSource) 
 {
-    if (-Not (Test-Path .\components))
-    {
-        Write-Host "creating symlink"
-        New-Item -Path .\components -ItemType SymbolicLink -Value ..\components\modules\src
-    }
-    
     Remove-Item .\node_modules\ -Recurse
     Remove-Item .\yarn.lock
     
-    Copy-Item -Path .\package.json.withsoap -Destination .\package.json
-    Copy-Item ..\components\modules\babel.config.json
+    cd components
+    Remove-Item .\node_modules\ -Recurse
+    Remove-Item .\yarn.lock
+    Remove-Item .\dist\ -Recurse
+    Remove-Item .\package.json
+    cd..
     
+    Copy-Item -Path .\package.json.soapsource -Destination .\package.json
     yarn install
 }
-yarn run serve
+
+yarn serve
