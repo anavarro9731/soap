@@ -4,12 +4,10 @@
     [switch]$UseSoapSource
 )
 
-if (Test-Path .parcel-cache) {
-    Remove-Item -Recurse -Force .parcel-cache     
-}
-if (Test-Path dist) {
-    Remove-Item -Recurse -Force dist    
-}
+
+Remove-Item -Recurse -Force .\.parcel-cache\
+Remove-Item -Recurse -Force .\dist\    
+
 
 if ($UpgradeSoap) {
     
@@ -30,6 +28,8 @@ if ($UpgradeSoap) {
     
 } elseif ($UseSoapPackage) {
 
+    del package.json #otherwise parcel reads this one when compiling the components and it really screws up the import of @soap/vars and the .env stuff
+    
     cd components
     Copy-Item -Path .\package.json.bak -Destination .\package.json
     yarn install #could be missing depending on scenario
@@ -40,8 +40,7 @@ if ($UpgradeSoap) {
     Write-Host "New Version: $v"
     npm publish
     cd ..
-
-
+    
     Copy-Item -Path .\package.json.soappackage -Destination .\package.json
     yarn install
     iex "yarn upgrade @soap/modules@$v"
