@@ -32,6 +32,7 @@
   },
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
   "scripts": {    
-    "serve": "parcel"
+    "serve": "parcel",
+    "build": "parcel build --public-url ./"
   }
 }
