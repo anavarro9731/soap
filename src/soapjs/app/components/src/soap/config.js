@@ -6,6 +6,8 @@ import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from './m
 import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
 import * as signalR from '@microsoft/signalr';
+import soapVars from '@soap/vars';
+
 
 const isTest = process.env.NODE_ENV === 'test';
 globalThis.Soap = {showStackTraceInConsoleLogs : false};
@@ -109,7 +111,7 @@ async function loadConfigState() {
         const endpoint = `${vars().functionAppRoot}/GetJsonSchema`;
         let auth0Info;
 
-        const jsonArrayOfMessages = await global.fetch(endpoint)
+        const jsonArrayOfMessages = await fetch(endpoint)
             .then(response => {
 
                 const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
@@ -285,17 +287,17 @@ function getSasUrl(message) {
 }
 
 function vars() {
-
-    const functionAppRoot = process.env.FUNCTIONAPP_ROOT;
-    functionAppRoot || _logger.log("process.env.FUNCTIONAPP_ROOT not defined check .env file.");
-    const appInsightsKey = process.env.APPINSIGHTS_KEY;
-    appInsightsKey || _logger.log("process.env.APPINSIGHTS_KEY not defined check .env file.");
-    const serviceBusConnectionString = process.env.SERVICEBUS_CONN;
-    serviceBusConnectionString || _logger.log("process.env.SERVICEBUS_CONN not defined check .env file.");
-    const blobStorageUri = process.env.BLOBSTORAGE_URI;
-    blobStorageUri || _logger.log("process.env.BLOBSTORAGE_URI not defined check .env file.");
-    const envPartitionKey = process.env.ENVIRONMENT_PARTITION_KEY;
-    envPartitionKey || _logger.log("process.env.ENVIRONMENT_PARTITION_KEY not defined check .env file.")
+    
+    const functionAppRoot = soapVars.FUNCTIONAPP_ROOT;
+    functionAppRoot || _logger.log("FUNCTIONAPP_ROOT not defined.");
+    const appInsightsKey = soapVars.APPINSIGHTS_KEY;
+    appInsightsKey || _logger.log("APPINSIGHTS_KEY not defined.");
+    const serviceBusConnectionString = soapVars.SERVICEBUS_CONN;
+    serviceBusConnectionString || _logger.log("SERVICEBUS_CONN not defined.");
+    const blobStorageUri = soapVars.BLOBSTORAGE_URI;
+    blobStorageUri || _logger.log("BLOBSTORAGE_URI not defined.");
+    const envPartitionKey = soapVars.ENVIRONMENT_PARTITION_KEY;
+    envPartitionKey || _logger.log("ENVIRONMENT_PARTITION_KEY not defined.")
 
     return {
         functionAppRoot,

@@ -14,6 +14,9 @@
     "parcel": "2.0.1"
   },
   "source": "index.html",
+    "alias": {
+      "@soap/vars": "./soap-vars.js"
+    },
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
   "scripts": {
     "build": "parcel build --public-url ./",

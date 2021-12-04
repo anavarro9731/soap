@@ -252,3 +252,4 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
 - Had some very wierd situation on a new machine where I was getting an error about now being able to find the local.settings.json file when starting the function app locally. Closing ALL instances of Rider and reloading seemed to fix it.
 - Be careful about accidentally upgrade the Azure Functions Runtime to a version that doesn't support your current configuration. It's easy todo because upgrading the Core Tools plugin in Rider will upgrade the runtime too.
 - if you get node-gyp errors while running yarn install check this page https://github.com/nodejs/node-gyp#on-windows you may need to install python and vs build tools for mspackr-extract to work
+- 401 and 404 mean the same thing, bad PAT when you get an error saying it can't read the config from the service. check the local.settings.json file

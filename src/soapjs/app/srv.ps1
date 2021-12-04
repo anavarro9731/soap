@@ -13,24 +13,25 @@ if (Test-Path dist) {
 
 if ($UpgradeSoap) {
     
+    del package.json #otherwise parcel reads this one when compiling the components and it really screws up the import of @soap/vars and the .env stuff
+    
     cd components
-    yarn install #could be missing depending on scenario
+    yarn install #node_modules could be missing depending on scenario
     $v = npm view @soap/modules version
     Write-Host "Current Version: $v"
     $v = npm version minor
     Write-Host "New Version: $v"
     npm publish
     cd ..
-    
-    iex "yarn upgrade @soap/modules@$v"
-    
-} elseif ($UseSoapPackage) { 
 
-    Remove-Item .\node_modules\ -Recurse
-    Remove-Item .\yarn.lock
+    Copy-Item -Path .\package.json.soappackage -Destination .\package.json
+    yarn install #update outdated lock file
+    iex "yarn upgrade @soap/modules@$v" #get the new version of soap
+    
+} elseif ($UseSoapPackage) {
 
     cd components
-    Copy-Item -Path .\package.json.lib -Destination .\package.json
+    Copy-Item -Path .\package.json.bak -Destination .\package.json
     yarn install #could be missing depending on scenario
     $v = npm view @soap/modules version
     Write-Host "Current Version: $v"
@@ -47,14 +48,15 @@ if ($UpgradeSoap) {
 }
 elseif ($UseSoapSource) 
 {
-    Remove-Item .\node_modules\ -Recurse
+    Remove-Item .\node_modules\@soap -Recurse
     Remove-Item .\yarn.lock
     
     cd components
-    Remove-Item .\node_modules\ -Recurse
-    Remove-Item .\yarn.lock
+    #cleanup crap from when it wasn't being used as source, package.json and node_modules will screw things up, the others are just messy
     Remove-Item .\dist\ -Recurse
+    Remove-Item .\node_modules\ -Recurse
     Remove-Item .\package.json
+    Remove-Item .\yarn.lock
     cd..
     
     Copy-Item -Path .\package.json.soapsource -Destination .\package.json

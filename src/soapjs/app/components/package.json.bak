@@ -21,7 +21,8 @@
     "react-hook-form": "6.15.3",
     "react-router-dom": "5.2.0",
     "styletron-engine-atomic": "1.4.7",
-    "styletron-react": "5.2.7"
+    "styletron-react": "5.2.7",
+    "@soap/vars": "1.1.0"
   },
   "devDependencies": {
     "cross-env": "7.0.3",
@@ -38,5 +39,8 @@
   "scripts": {
     "prepare": "parcel build",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
   }
 }
