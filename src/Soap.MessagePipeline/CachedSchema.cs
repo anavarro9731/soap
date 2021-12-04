@@ -89,8 +89,10 @@
                     }
 
                     var j = jsonSchemaBuilder.ToString();
-                    j = j.Remove(j.Length - 3, 2); //remove \r\n
-                    j += "]";
+                    j = j.TrimEnd('\n');
+                    j = j.TrimEnd('\r');
+                    j = j.TrimEnd(',');
+                    j += Environment.NewLine + "]";
                     json = j;
 
                     text = plainTextBuilder.ToString();
