@@ -2,13 +2,13 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "1.421.0",
+    "@soap/modules": "1.426.0",
     "baseui": "9.112.0",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-router-dom": "5.2.0",
-    "styletron-engine-atomic": "1.4.7",
-    "styletron-react": "5.2.7"
+    "styletron-engine-atomic": "1.4.8",
+    "styletron-react": "6.0.2"
   },
   "devDependencies": {
     "parcel": "2.0.1"
