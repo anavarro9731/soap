@@ -245,10 +245,11 @@ export function AutoForm(props) {
                     fullPath += '?.' + part;
                 }
             } else {
-                fullPath += '.' + fieldName;
+                fullPath += '?.' + fieldName;
             }
-
-            let error = eval(fullPath);
+            
+            let error = new Function('fullPath','errors', `return ${fullPath};`)(fullPath, errors);
+            
             error = typeof error === 'object' ? 'required' : undefined;
             return error;
         }

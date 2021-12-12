@@ -37,7 +37,8 @@
         .\create-new-service.ps1 `
 	    -Arg_AzureDevopsOrganisationName "anavarro9731" `
         -Arg_ServiceName "TestProject.$RandomSuffix" `
-        -Arg_AzPersonalAccessToken "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq"`
+        -Arg_RepoAndPackaging   AzPersonalAccessToken "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq"`
+        -Arg_AdminAzPersonalAccessToken "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq"`
         -Arg_AzResourceGroup "rg-testproject-$RandomSuffix" `
         -Arg_AzLocation "uksouth" `
         -Arg_TenantId "f8d686ac-a87f-4d1c-bbcf-d08873871dcd" `

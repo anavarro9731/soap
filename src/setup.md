@@ -85,8 +85,11 @@ az account list
 az account set -s "SubscriptionNameOrIdHere"
 az account show
 
-then 
-az ad sp create-for-rbac --name SoapServicePrincipal (OrProjectSpecificNameIfYouWantToSegregateSecurity) 
+# then 
+az ad sp create-for-rbac --name SoapServicePrincipal{or ProjectSpecificNameIfYouWantToSegregateSecurity} --role Contributor --scopes /subscriptions/{SubscriptionId}  
+# it's important to set the subscription if there is more than one
+# if you want to lock it down beyond the subscription to a resource group for example, you will need to create the resource-group
+# in advance before you execute this line and then you can append it to the scope like --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
  
 to verify 
 az ad sp list --display-name SoapServicePrincipal
@@ -142,10 +145,18 @@ with the required services which will occur after the script finishes and the az
 
 ###Running Locally
 
-1. Install the following Rider plugins:
+1. Open Rider and Install the following Rider plugins from the File -> Settings -> Plugins window:
 - https://plugins.jetbrains.com/plugin/9525--env-files-support
 - https://plugins.jetbrains.com/plugin/11220-azure-toolkit-for-rider (This will install Azurite support)
 - https://plugins.jetbrains.com/plugin/10249-powershell
+
+Then install Azure Functions Core Tools. Since there is an Azure Functions project you should see a notification
+with a link to install it in the event log which is located in the lower right hand corner next to a green bubble.
+It's important to make sure however that you install the version of the runtime that works with the version of 
+.NET that you are running. You can see the match [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions?tabs=in-process%2Cv4&pivots=programming-language-csharp)
+
+Rider comes default with Resharper features builtin so you may want to check that the keyboard map is to your liking.
+You can check this from File -> Settings -> Keymap
 
 2. Open the new solution in Rider and add the Soap Nuget feed
 https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json

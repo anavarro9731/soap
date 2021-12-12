@@ -1,7 +1,8 @@
 Param(
 	[string] $Arg_AzureDevopsOrganisationName,
 	[string] $Arg_ServiceName,
-	[string] $Arg_AzPersonalAccessToken,
+	[string] $Arg_AdminAzPersonalAccessToken,
+	[string] $Arg_RepoAndPackagingAzPersonalAccessToken,
 	[string] $Arg_AzResourceGroup,
 	[string] $Arg_AzLocation,
 	[string] $Arg_TenantId,
@@ -23,10 +24,15 @@ Function Test-IsGitInstalled
 {
 	return -Not ((Get-Command git 2>$null) -eq $null)
 }
-Function Replace-ConfigLine([string] $old, [string] $new)
+Function Replace-TextWithinALineOfPwshBootstrap([string] $old, [string] $new)
 {
 	(Get-Content .\pwsh-bootstrap.ps1) | % { $_.replace($old, $new) } | Set-Content .\pwsh-bootstrap.ps1
 }
+Function Replace-ALineOfPwshBootstrapThatContains([string] $searchString, [string] $replacementLine)
+{
+(Get-Content .\pwsh-bootstrap.ps1) | % { if ($_.contains($searchString)) { $replacementLine } else { $_ } } | Set-Content .\pwsh-bootstrap.ps1
+}
+
 Function Remove-ConfigLine([string] $old)
 {
 	(Get-Content .\pwsh-bootstrap.ps1) | Where-Object {$_ -notmatch $old } | Set-Content .\pwsh-bootstrap.ps1
@@ -40,7 +46,7 @@ Function Test-PreReqs {
 Function IsEmpty([string] $s)  {
 	Return [String]::IsNullOrWhiteSpace($s)
 }
-Function EmptyConcat([string] $s, [string] $prompt) {
+Function EmptyConcat([string] $s, [string] $prompt) { #if nothing is passed in then prompt for it, this is for when this script is called externally by test.ps1
 	$result = (IsEmpty $s) ? $(Read-Host -Prompt "$prompt") : $s
 	return $result
 }
@@ -61,8 +67,19 @@ Function Get-ServiceName([string] $s = $null)  {
 	}	
 	Return $ServiceName
 }
-Function Get-AzPersonalAccessToken([string] $s = $null)  {
-	$PAT = EmptyConcat $s 'Enter An Azure Devops Personal Access Token with Admin permissions'
+Function Get-RepoAndPackagingAzPersonalAccessToken([string] $s = $null)  {
+	$PAT = EmptyConcat $s 'Enter An Azure Devops Personal Access Token with permissions to read from the repo to read the config and permission to read and push packages to/from the associated package feed'
+	# it may seem like this token should be able to write to the repo too, but that is left up to the git config
+	# the current soap feed shouldn't need auth, so technically read permission for packages is not needed but that could change in future
+	# we will also have to consider in future how to handle additional feeds that are providing messages packages for other services
+	if (IsEmpty $PAT) {
+		Write-Host 'Personal Access Token cannot be blank'
+		Exit -1
+	}
+	Return $PAT
+}
+Function Get-AdminAzPersonalAccessToken([string] $s = $null)  {
+	$PAT = EmptyConcat $s 'Enter An Azure Devops Personal Access Token with Admin permissions required to create the repo. This will only be used by the script and will NOT be stored.'
 	if (IsEmpty $PAT) {
 		Write-Host 'Personal Access Token cannot be blank'
 		Exit -1
@@ -146,8 +163,9 @@ $AzureDevopsOrganisationName = Get-AzureDevopsOrganisationName $Arg_AzureDevopsO
 $AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
 $ServiceName = Get-ServiceName $Arg_ServiceName
 $AzureDevopsName = $ServiceName.Replace(".", "-")
-$AzPersonalAccessToken = Get-AzPersonalAccessToken $Arg_AzPersonalAccessToken
-$env:AZURE_DEVOPS_EXT_PAT = $AzPersonalAccessToken
+$RepoAndPackagingAzPersonalAccessToken = Get-RepoAndPackagingAzPersonalAccessToken $Arg_RepoAndPackagingAzPersonalAccessToken
+$AdminAzPersonalAccessToken = Get-RepoAndPackagingAzPersonalAccessToken $Arg_AdminAzPersonalAccessToken
+$env:AZURE_DEVOPS_EXT_PAT = $AdminAzPersonalAccessToken #this is how the az devops command authenticates and why admin priveleges are needed
 $AzResourceGroup = Get-AzResourceGroup $Arg_AzResourceGroup
 $AzLocation = Get-AzLocation $Arg_AzLocation
 $PathOnDisk = Get-PathOnDisk $Arg_PathOnDisk
@@ -163,7 +181,7 @@ $vars = "AzureDevopsOrganisationName:$AzureDevopsOrganisationName`r`n"+
 "AzureDevopsOrganisationUrl:$AzureDevopsOrganisationUrl`r`n"+ 
 "ServiceName:$ServiceName`r`n"+  
 "AzureDevopsName:$AzureDevopsName`r`n"+ 
-"AzPersonalAccessToken:$AzPersonalAccessToken`r`n"+ 
+"AzPersonalAccessToken:$RepoAndPackagingAzPersonalAccessToken`r`n"+ 
 "env:AZURE_DEVOPS_EXT_PAT:$env:AZURE_DEVOPS_EXT_PAT`r`n"+ 
 "AzResourceGroup:$AzResourceGroup`r`n"+ 
 "AzLocation:$AzLocation`r`n"+
@@ -221,7 +239,7 @@ Log "Uploading Config Repo"
 git add -A
 git commit -m "initial"
 git remote add origin "https://dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config"
-$gitPushCmd = "git push https://whatever:$AzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config master --set-upstream"
+$gitPushCmd = "git push https://whatever:$RepoAndPackagingAzPersonalAccessToken@dev.azure.com/$AzureDevopsOrganisationName/$AzureDevopsName/_git/$AzureDevopsName.config master --set-upstream"
 Write-Host $gitPushCmd
 iex $gitPushCmd
 
@@ -258,7 +276,7 @@ Set-Location $ServiceRoot
 
 Log "Customizing Project Files"
 
-Replace-ConfigLine '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
+Replace-TextWithinALineOfPwshBootstrap '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js,*.jsx | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$ServiceName") | Set-Content $_
@@ -310,15 +328,15 @@ Remove-ConfigLine '"Soap.PfBase.Models"' ""
 Remove-ConfigLine '"Soap.PfBase.Messages"' ""
 Remove-ConfigLine '"Soap.Utility"' ""
 #* give tests project a new name
-Replace-ConfigLine '"Soap.UnitTests"' "`"$ServiceName.Tests`""
+Replace-TextWithinALineOfPwshBootstrap '"Soap.UnitTests"' "`"$ServiceName.Tests`""
 #* populate correct build script vars
-Replace-ConfigLine "-azureDevopsOrganisation `"anavarro9731`" ``" "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
-Replace-ConfigLine "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureDevopsName`" ``"
-Replace-ConfigLine "-azureDevopsPat  `"j35ssqoabmwviu7du4yin6lmw3l2nc4okz37tcdmpirl3ftgyiia`" ``" "-azureDevopsPat `"$AzPersonalAccessToken`" ``"
-Replace-ConfigLine "-repository `"soap`" ``" "-repository `"$AzureDevopsName`" ``"
-Replace-ConfigLine "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureDevopsName`" ``"
-Replace-ConfigLine "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzResourceGroup`" ``"
-Replace-ConfigLine "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzLocation`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-azureDevopsOrganisation `"anavarro9731`" ``" "-azureDevopsOrganisation `"$AzureDevopsOrganisationName`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-azureDevopsProject `"soap`" ``" "-azureDevopsProject `"$AzureDevopsName`" ``"
+Replace-ALineOfPwshBootstrapThatContains "-azureDevopsPat  `"" "		-azureDevopsPat `"$RepoAndPackagingAzPersonalAccessToken`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-repository `"soap`" ``" "-repository `"$AzureDevopsName`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-azureAppName `"soap-api-sample`" ``" "-azureAppName `"$AzureDevopsName`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-azureResourceGroup `"rg-soap`" ``" "-azureResourceGroup `"$AzResourceGroup`" ``"
+Replace-TextWithinALineOfPwshBootstrap "-azureLocation `"uksouth`" ``" "-azureLocation `"$AzLocation`" ``"
 #* run it and load the modules
 ./pwsh-bootstrap.ps1
 
@@ -336,12 +354,12 @@ Run -PrepareNewVersion -forceVersion 0.1.0-alpha -Push SILENT
 Log-Step "Creating Pipeline"
 
 az pipelines create --name "$AzureDevopsName" --description "Pipeline for $AzureDevopsName" --yaml-path "./azure-pipelines.yml" -p "$AzureDevopsName" -p "$AzureDevopsName" --repository "$AzureDevopsName" --repository-type tfsgit --skip-run #* must come after files committed to repo, variables need to be added for this to work
-az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$AzPersonalAccessToken"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "ado-pat" --value "$RepoAndPackagingAzPersonalAccessToken"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-tenantid" --value "$TenantId"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-clientid" --value "$ClientId"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "az-clientsecret" --value "$ClientSecret"
 az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "healthcheck-url" --value "$HealthCheckUrl"
-az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$AzPersonalAccessToken"
+az pipelines variable create --pipeline-name "$AzureDevopsName" --project "$AzureDevopsName" --org "$AzureDevopsOrganisationUrl" --name "nuget-key" --value "$RepoAndPackagingAzPersonalAccessToken"
 
 Log-Step "Triggering Infrastructure Creation"
 
