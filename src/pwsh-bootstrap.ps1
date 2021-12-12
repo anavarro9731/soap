@@ -82,7 +82,7 @@ function global:Run {
 	if ($CreateRelease) {
 		Create-Release -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
-        -azureDevopsProject "soap" `
+		-azureDevopsProject "soap" `
         -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
         -repository "soap" `
 		-push $push

@@ -5,6 +5,7 @@ namespace Soap.PfBase.Api.Functions
     using System.Text;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Options;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
@@ -20,7 +21,8 @@ namespace Soap.PfBase.Api.Functions
             MapMessagesToFunctions messageFunctionRegistration,
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
-            ILogger log) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
+            ILogger log,
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -37,7 +39,8 @@ namespace Soap.PfBase.Api.Functions
                                  securityInfo,
                                  logger,
                                  appConfig,
-                                 signalRBinding);
+                                 signalRBinding, 
+                                 dataStoreOptions);
 
                 if (result.Success == false)
                 {

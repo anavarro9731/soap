@@ -124,7 +124,7 @@ committed or rolled back together.
   fail to generate if the convention is not followed, an error will result and the health check will not pass.
 - Each message instance has a Unique Id and no service can receive the same message twice, if it does it will be discarded.
 - Messages are unique to a service. While shared, they are always owned by a single service.
-- Using a message from another service requires importing that services' message library from your Enterprise Feed-(TODO)
+- Using a message from another service requires importing that services' message library from your Enterprise Feed-(TODO) this also has to occur in the pack and publish script
 
 The message pipeline follows a pipes and filters pattern and all messages can only be sent/published from either 
 a Process or StatefulProcess step.

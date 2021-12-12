@@ -175,6 +175,11 @@ $LocalSettingsJson = @"
     }
 }
 "@
+
+#remove the published directory in case it exists as this will mean potentially finding the wrong local.settings.json file
+
+Get-ChildItem -Exclude 'soapjs' | Get-ChildItem -Recurse -Force -Directory -Include 'published' | Remove-Item -Recurse -Confirm:$false -Force
+
 $LocalSettingsJsonPath = Join-Path (Get-ChildItem -Path "$PSScriptRoot" -Recurse host.json -Depth 2 | Select-Object -ExpandProperty FullName | Split-Path) "local.settings.json"
 Set-Content -Path "$LocalSettingsJsonPath" -Value $LocalSettingsJson
 
