@@ -620,7 +620,7 @@ It is not enabled by default and is optional. To enable this follow these steps:
 #### Setup
 
 1. Create auth0 account (free level is fine)
-    1. Change the universal login to the new style from the dashboard main nav, here you can set your company logo
+    1. Change the universal login to the new style from the Branding Menu, here you can set your company logo
        and configure any other specifics that will apply to all services
     1. Enable MFA from the left-nav if desired
 1. Create 3 tenant(s) in that account
@@ -643,7 +643,11 @@ devops security associated with it so that only the few persons with the need to
 do so. Except in cases of small teams, developers should not have access to the config repo.
 If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
 
-Once the Auth0 integration is active in the config, you then need to consider the following
+Once the Auth0 integration is active in the config, you then need to start the service
+and run the Health Check. THis will sync Auth0 permissions with the permissions in your SecurityInfo.cs
+file.
+
+After that consider the following
 
 #### Authorisation 
 
