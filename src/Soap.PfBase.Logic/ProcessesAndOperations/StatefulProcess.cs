@@ -39,6 +39,8 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected ILogger Logger => context.Logger;
 
+        protected MessageMeta Meta => context.MessageLogEntry.MessageMeta;
+
         protected NotificationServer NotificationServer => context.NotificationServer;
 
         protected dynamic References => this.processState.References;
