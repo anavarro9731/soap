@@ -34,7 +34,7 @@ namespace Soap.Auth0
                     {
                         Auth0Id = auth0User.UserId,
                         Email = auth0User.Email,
-                        FirstName = !string.IsNullOrEmpty(auth0User.FirstName) ? auth0User.FirstName : auth0User.FullName.SubstringBeforeLast(' '),
+                        FirstName = !string.IsNullOrEmpty(auth0User.FirstName) ? auth0User.FirstName : (auth0User.FullName.Contains(' ') ? auth0User.FullName.SubstringBeforeLast(' ') : auth0User.FullName),
                         LastName = !string.IsNullOrEmpty(auth0User.LastName) ? auth0User.LastName : auth0User.FullName.SubstringAfterLast(' ')
                     };
 
