@@ -34,8 +34,8 @@ namespace Soap.Auth0
                     {
                         Auth0Id = auth0User.UserId,
                         Email = auth0User.Email,
-                        FirstName = !string.IsNullOrEmpty(auth0User.FirstName) ? auth0User.FirstName : (auth0User.FullName.Contains(' ') ? auth0User.FullName.SubstringBeforeLast(' ') : auth0User.FullName),
-                        LastName = !string.IsNullOrEmpty(auth0User.LastName) ? auth0User.LastName : auth0User.FullName.SubstringAfterLast(' ')
+                        FirstName = FirstName(auth0User),
+                        LastName = LastName(auth0User)
                     };
 
                     return await dataStore.Create(newUser);
@@ -46,13 +46,18 @@ namespace Soap.Auth0
                             x =>
                                 {
                                 x.Email = auth0User.Email;
-                                x.FirstName = !string.IsNullOrEmpty(auth0User.FirstName)
-                                                  ? auth0User.FirstName
-                                                  : auth0User.FullName.SubstringBeforeLast(' ');
-                                x.LastName = !string.IsNullOrEmpty(auth0User.LastName)
-                                                 ? auth0User.LastName
-                                                 : auth0User.FullName.SubstringAfterLast(' ');
+                                x.FirstName = FirstName(auth0User);
+                                x.LastName = LastName(auth0User);
                                 })).Single();
+
+                string FirstName(User auth0User) =>
+                    !string.IsNullOrEmpty(auth0User.FirstName)
+                        ? auth0User.FirstName
+                        : (auth0User.FullName.Contains(' ') ? auth0User.FullName.SubstringBeforeLast(' ') : auth0User.FullName);
+
+                string LastName(User auth0User) =>
+                    !string.IsNullOrEmpty(auth0User.LastName) ? auth0User.LastName : auth0User.FullName.SubstringAfterLast(' ');
+                
             }
 
             private static async Task<User> GetUserProfileFromIdentityServer(ApplicationConfig applicationConfig, string auth0Id)
