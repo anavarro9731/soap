@@ -61,7 +61,7 @@ function Set-WorkingDirectory {
 function Set-WorkingDirectoryToProjectRoot {
 
     $folder = Get-ProjectRoot
-    
+
     Set-WorkingDirectory $folder
 }
 
@@ -122,21 +122,21 @@ function Create-Menu {
 function Create-Command {
 
     Param(
-    [string] $commandName,
-    [string] $eventName,
-    [string] $formCommandName
+        [string] $commandName,
+        [string] $eventName,
+        [string] $formCommandName
     )
-    
+
     Set-WorkingDirectoryToProjectRoot
-    
+
     # create command object
     Log-Step "Creating Command"
     cd $messagesFolder
     cd Commands
-    $nextCommandNumber =  $(ls | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
+    $nextCommandNumber =  $(Get-ChildItem | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
     $commandName1 = Get-MessageName $commandName
     $commandName2 = 'C' + $nextCommandNumber + "v1_" + $commandName1
-    $commandNamespace = $(ls | Select-Object -First 1 | Get-Content | Select-Object -First 1)
+    $commandNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1)
     $commandContent="
     __commandnamespace__
     {
@@ -170,9 +170,9 @@ function Create-Command {
     Set-WorkingDirectoryToProjectRoot
     cd $logicFolder
     cd Processes
-    $nextProcessNumber =  $(ls | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
+    $nextProcessNumber =  $(Get-ChildItem | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
     $processName1 = "P" + $nextProcessNumber + "_C" + $nextCommandNumber + "__Handle" + $commandName1
-    
+
     $eventContent="
                     {
                         var queryData = await GetData();
@@ -224,7 +224,7 @@ function Create-Command {
                         //* todo
                     }
     "
-            
+
     $processContent="
     __processnamespace__
     {
@@ -245,14 +245,14 @@ function Create-Command {
         }
     }
     "
-    $processNamespace = $(ls | Select-Object -First 1 | Get-Content | Select-Object -First 1)
+    $processNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1)
     if ([string]::IsNullOrEmpty($eventName)) {
         $processContent = $processContent.Replace("__content__", $standardContent);
         $processContent = $processContent.Replace("__eventnamespace__", "");
     } else {
         if ($eventName.Contains("FormData")) {
             $processContent = $processContent.Replace("__content__", $formDataEventContent);
-            
+
         } else {
             $processContent = $processContent.Replace("__content__", $eventContent);
         }
@@ -267,7 +267,7 @@ function Create-Command {
     $processContent = $processContent.Replace("__commandnumber__", $nextCommandNumber)
     $processName2 = $processName1 + ".cs"
     Set-Content -Path $processName2 -Value $processContent
-    
+
     #create message functions
     Log-Step "Creating Message Functions"
     Set-WorkingDirectoryToProjectRoot
@@ -297,7 +297,7 @@ function Create-Command {
             }
         }
     }"
-    $functionsNamespace = $(ls | Select-Object -First 1 | Get-Content | Select-Object -First 1)
+    $functionsNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1)
     $functionsContent = $functionsContent.Replace("__functionsnamespace__", $functionsNamespace)
     $functionsContent = $functionsContent.Replace("__commandnamespace__", $commandNamespace.Replace("namespace", "using"))
     $functionsContent = $functionsContent.Replace("__processnamespace__", $processNamespace.Replace("namespace", "using"))
@@ -306,44 +306,44 @@ function Create-Command {
     $functionsContent = $functionsContent.Replace("__commandnumber__", $nextCommandNumber)
     $functionsName = 'C' + $nextCommandNumber + "v1Functions.cs"
     Set-Content -Path $functionsName -Value $functionsContent
-    
+
     #register command functions
     Log-Step "Registering Functions"
     Set-WorkingDirectoryToProjectRoot
     cd $logicFolder
     Set-Content -Path "MessageFunctionRegistration.cs" -Value $(Get-Content -Path "MessageFunctionRegistration.cs").Replace("/* ##NEXT## */", "Register(new C" + $nextCommandNumber + "v1Functions());`r`n            /* ##NEXT## */")
-    
+
     #print permissions to give
     Log "New Permission"
     Write-Host "nameof($commandName2),"
-    
+
     Set-WorkingDirectoryToProjectRoot
     return $commandName2
 }
 function Create-Event {
-    
+
     Param(
         [string] $eventName,
         [ValidateSet($null, $true, $false)]
         [object] $createHandlers,
         [string] $formCommandName
     )
-    
+
     Set-WorkingDirectoryToProjectRoot
 
     if ($null -eq $createHandlers) {
         $createHandlers = Ask-YesNo("Create Handlers?")
     }
-    
+
     # create event object
     Log-Step "Creating Event"
     cd $messagesFolder
     cd Events
-    $nextEventNumber =  $(ls | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
+    $nextEventNumber =  $(Get-ChildItem | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1,3) } | measure -Maximum | Select-Object -ExpandProperty Maximum) + 1
     $eventName1 = Get-MessageName $eventName
     $eventName2 = 'E' + $nextEventNumber + "v1_" + $eventName1
-    $eventNamespace = $(ls | Select-Object -First 1 | Get-Content | Select-Object -First 1)
-    $eventBaseClass = if ($eventName1.Contains("FormData")) { "UIFormDataEvent<$formCommandName>"  } else { "ApiEvent" } 
+    $eventNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1)
+    $eventBaseClass = if ($eventName1.Contains("FormData")) { "UIFormDataEvent<$formCommandName>"  } else { "ApiEvent" }
     $eventContent="
     __eventnamespace__
     {
@@ -381,7 +381,7 @@ function Create-Event {
         Set-WorkingDirectoryToProjectRoot
         cd $logicFolder
         cd Processes
-        $nextProcessNumber = $( ls | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1, 3) } | measure -Maximum | Select-Object -ExpandProperty Maximum ) + 1
+        $nextProcessNumber = $(Get-ChildItem | Select-Object -ExpandProperty "Name" | ForEach-Object { $_.Substring(1, 3) } | measure -Maximum | Select-Object -ExpandProperty Maximum ) + 1
         $processName1 = "P" + $nextProcessNumber + "_E" + $nextEventNumber + "__Handle" + $eventName1
 
         $processContent = "
@@ -408,7 +408,7 @@ function Create-Event {
             }
         }
         "
-        $processNamespace = $( ls | Select-Object -First 1 | Get-Content | Select-Object -First 1 )
+        $processNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1 )
         $processContent = $processContent.Replace("__processnamespace__", $processNamespace)
         $processContent = $processContent.Replace("__eventnamespace__",$eventNamespace.Replace("namespace", "using"))
         $processContent = $processContent.Replace("__processname1__", $processName1)
@@ -448,7 +448,7 @@ function Create-Event {
                 }
             }
         }"
-        $functionsNamespace = $( ls | Select-Object -First 1 | Get-Content | Select-Object -First 1 )
+        $functionsNamespace = $(Get-ChildItem | Select-Object -First 1 | Get-Content | Select-Object -First 1 )
         $functionsContent = $functionsContent.Replace("__functionsnamespace__", $functionsNamespace)
         $functionsContent = $functionsContent.Replace("__eventnamespace__",$eventNamespace.Replace("namespace", "using"))
         $functionsContent = $functionsContent.Replace("__processnamespace__",$processNamespace.Replace("namespace", "using"))
@@ -472,42 +472,42 @@ function Create-Event {
     return $eventName2
 }
 function Create-Query {
-    
+
     Log "Creating Query"
-    
+
     $dataName = Get-QueryDataName
-    
+
     $eventName = Create-Event "Got$dataName" $false
-    
+
     $ignore = Create-Command "Get$dataName" $eventName
-    
+
     Log-Ok
 }
 function Create-Form {
 
     Log "Creating Auto Form Messages"
-    
+
     $finalCommandName = Get-MessageName
 
     $finalCommandNameComplete = Create-Command $finalCommandName #* final command
-    
+
     #* query for form data
 
     $dataName = "$($finalCommandNameComplete.Substring(0,4))FormData"
-    
+
     $eventName = Create-Event "Got$dataName" $false $finalCommandNameComplete
 
     $ignore = Create-Command "Get$dataName" $eventName $finalCommandNameComplete
-    
+
     Log-Ok
 }
 
 Log-Step "Initialising Environment"
 # Set Project Root Folder
 
-$logicFolder = $(ls -Path .\* -Include *.Logic -Directory -Recurse -Depth 2 -Exclude  Soap.PfBase.*)
-$functionAppFolder = $(ls -Path .\* -Include *.Afs -Directory -Recurse -Depth 2 -Exclude  Soap.PfBase.*)
-$messagesFolder = $(ls -Path .\* -Include *.Messages -Directory -Recurse -Depth 2 -Exclude Soap.Interfaces.*, Soap.PfBase.*)
+$logicFolder = $(Get-ChildItem -Path .\* -Include *.Logic -Directory -Recurse -Depth 2 -Exclude  Soap.PfBase.*)
+$functionAppFolder = $(Get-ChildItem -Path .\* -Include *.Afs -Directory -Recurse -Depth 2 -Exclude  Soap.PfBase.*)
+$messagesFolder = $(Get-ChildItem -Path .\* -Include *.Messages -Directory -Recurse -Depth 2 -Exclude Soap.Interfaces.*, Soap.PfBase.*)
 
 Log "Logic: $($logicFolder | Select-Object -ExpandProperty Name)"
 Log "Function App: $($functionAppFolder | Select-Object -ExpandProperty Name)"
