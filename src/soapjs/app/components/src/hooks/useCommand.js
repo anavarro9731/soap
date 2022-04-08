@@ -1,7 +1,7 @@
 import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
 import {useIsConfigLoaded} from "./systemStateHooks";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useAuth} from "./useAuth";
 import {toTypeName} from "../soap/messages";
 
@@ -9,8 +9,8 @@ export function useCommand(command, sendCommand = true, closeConversation = true
     
     const configLoaded = useIsConfigLoaded("useCommand.js");
     const { authReady } = useAuth();
-    
-    let conversationId;
+
+    const [conversationId, setConversationId] = useState();
     
     useEffect(() => {
         
@@ -22,7 +22,10 @@ export function useCommand(command, sendCommand = true, closeConversation = true
             if (!command.headers) {
                 command.headers = [];
             }
-            conversationId = commandHandler.handle(command, () => null, 0);
+            
+            const conversationId = commandHandler.handle(command, () => null, 0);
+            setConversationId(conversationId);
+            
             if (closeConversation) {
                 bus.closeConversation(conversationId);
             }
