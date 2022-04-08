@@ -154,6 +154,7 @@ Then install Azure Functions Core Tools. Since there is an Azure Functions proje
 with a link to install it in the event log which is located in the lower right hand corner next to a green bubble.
 It's important to make sure however that you install the version of the runtime that works with the version of 
 .NET that you are running. You can see the match [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions?tabs=in-process%2Cv4&pivots=programming-language-csharp)
+and find the correct link to install [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v3%2Cwindows%2Ccsharp%2Cportal%2Cbash#v2)
 
 Rider comes default with Resharper features builtin so you may want to check that the keyboard map is to your liking.
 You can check this from File -> Settings -> Keymap
@@ -253,6 +254,10 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
   by using a newer schema (including via a new Db upgrade task)
 
 # Common Errors 
+- If you are getting errors in frontend, building or running that suddenly appear, check that
+    - make sure you don't accidentally have another package.json higher up in the folder structure where your app is located
+    - you have used fixed versions of all packages in your package.json. i.e. "x.x.x" rather than "^x.x.x"
+- If your having trouble with build server suddenly failing to build, even without a code change, check the image is not set to "win-latest" for example in you azure-pipelines.yml file. if so, fix it to the last version e.g. "win-2019" 
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azurite has been known to generate errors that are a different problem underlying. CORS is set for Azurite dev instance server-side on startup see BlobStorage.DevStorageSetup IF NOT ALREADY SET
 - When using Jetbrains Rider [@2020.3] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
@@ -264,3 +269,6 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
 - Be careful about accidentally upgrade the Azure Functions Runtime to a version that doesn't support your current configuration. It's easy todo because upgrading the Core Tools plugin in Rider will upgrade the runtime too.
 - if you get node-gyp errors while running yarn install check this page https://github.com/nodejs/node-gyp#on-windows you may need to install python and vs build tools for mspackr-extract to work
 - 401 and 404 mean the same thing, bad PAT when you get an error saying it can't read the config from the service. check the local.settings.json file
+- If you get an error when accessing the API about not being able to compile the config due to the wrong
+version of System.Runtime dll, make sure you are not running the wrong version of Azure functions core tools.
+  Reread the instructions about that above and you can check in Rider -> Settings -> Azure -> Functions
