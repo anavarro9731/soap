@@ -482,7 +482,7 @@
         internal const string Schema = nameof(Schema);
 
         //* server side conversation id 
-        internal const string StatefulProcessId = nameof(StatefulProcessId);
+        public const string StatefulProcessId = nameof(StatefulProcessId);
 
         //* dest topic when its an event
         internal const string Topic = nameof(Topic);
