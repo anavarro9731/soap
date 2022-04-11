@@ -2,7 +2,7 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "1.427.0",
+    "@soap/modules": "1.428.0",
     "baseui": "10.6.0",
     "react": "16.14.0",
     "react-dom": "16.14.0",
