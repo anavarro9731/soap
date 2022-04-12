@@ -54,17 +54,6 @@
                
                 var messageAsJson = message.ToJson(SerialiserIds.ApiBusMessage);
 
-                if (!messageLogEntry.SerialisedMessage.Deserialise<ApiMessage>().Headers.GetStatefulProcessId().HasValue)
-                {
-                    /* exclude statefulprocessid because it is sometimes added after receipt by the pipeline which would cause this check to fail
-                    ideally this should probably be passed to the Bus (where it is needed to xfer to outbound messages) some other way than via the message itself, but this was by far the easiest option
-                    to fix the issue caused by not excluding this which is that the original error when a statefulprocess message fails is masked by the retry failing this guard. */
-
-                    var cloned = messageAsJson.FromJson<ApiMessage>(SerialiserIds.ApiBusMessage);
-                    cloned.Headers.RemoveAll(x => x.Key == Keys.StatefulProcessId);
-                    messageAsJson = cloned.ToJson(SerialiserIds.ApiBusMessage);    
-                }
-                
                 var hashMatches = messageAsJson.Verify(messageLogEntry.MessageHash);
                
                 return !hashMatches;

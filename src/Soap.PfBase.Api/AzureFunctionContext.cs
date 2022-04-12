@@ -177,6 +177,7 @@
 
                     var remainingRuns = retries;
                     var currentRun = 1;
+                    var hadProcessIdWhenReceived = message.Headers.GetStatefulProcessId().HasValue;
                     do
                     {
                         if (currentRun > 1) remainingRuns -= 1;
@@ -191,6 +192,13 @@
                         }
                         catch (Exception e)
                         {
+                            
+                            if (!hadProcessIdWhenReceived)
+                            {
+                                /* the SPID could be mutated during processing and any mutations
+                                would cause the hash check to fail  */
+                                message.Headers.RemoveAll(x => x.Key == Keys.StatefulProcessId);
+                            }
                             x.UnhandledError = e;
                         }
 
