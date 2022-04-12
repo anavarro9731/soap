@@ -6,6 +6,7 @@
     using DataStore.Models.PureFunctions.Extensions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class MessageFunctionsBridge<T> : IMessageFunctionsServerSide where T : ApiMessage
@@ -24,6 +25,8 @@
                 foreach (var process in this.messageFunctionsTyped.HandleWithTheseStatefulProcesses)
                 {
                     var asIContinueStatefulProcess = (IContinueStatefulProcess)process;
+                    
+                    Guard.Against(asIContinueStatefulProcess == null, $"This message contains a Stateful Process Id but no matching stateful process could be found in the {nameof(IMessageFunctionsClientSide<ApiMessage>.HandleWithTheseStatefulProcesses)} collection", "This message continues a workflow but data from the previous steps could not be retrieved");
                     
                     if (IsOfCorrectType(asIContinueStatefulProcess))
                     {
