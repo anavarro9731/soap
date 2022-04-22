@@ -163,8 +163,8 @@ $AzureDevopsOrganisationName = Get-AzureDevopsOrganisationName $Arg_AzureDevopsO
 $AzureDevopsOrganisationUrl = "https://dev.azure.com/$AzureDevopsOrganisationName/"
 $ServiceName = Get-ServiceName $Arg_ServiceName
 $AzureDevopsName = $ServiceName.Replace(".", "-")
-$RepoAndPackagingAzPersonalAccessToken = Get-RepoAndPackagingAzPersonalAccessToken $Arg_RepoAndPackagingAzPersonalAccessToken
 $AdminAzPersonalAccessToken = Get-AdminAzPersonalAccessToken $Arg_AdminAzPersonalAccessToken
+$RepoAndPackagingAzPersonalAccessToken = Get-RepoAndPackagingAzPersonalAccessToken $Arg_RepoAndPackagingAzPersonalAccessToken
 $env:AZURE_DEVOPS_EXT_PAT = $AdminAzPersonalAccessToken #this is how the az devops command authenticates and why admin priveleges are needed
 $AzResourceGroup = Get-AzResourceGroup $Arg_AzResourceGroup
 $AzLocation = Get-AzLocation $Arg_AzLocation
@@ -230,10 +230,10 @@ dotnet add package Soap.Config -s $SoapFeedUri
 cd $ConfigRepoRoot
 
 Log "Creating Azure Devops Project"
-az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName
+az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName --detect false
 
 Log "Creating Azure Devops Config Repo"
-az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureDevopsName --name "$AzureDevopsName.config"
+az repos create  --organization $AzureDevopsOrganisationUrl --project $AzureDevopsName --name "$AzureDevopsName.config"  --detect false
 
 Log "Uploading Config Repo"
 git add -A

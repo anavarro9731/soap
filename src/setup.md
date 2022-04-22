@@ -131,12 +131,15 @@ If you have multiple organisations/accounts be careful that your are logged into
 
 then run 
 
-`echo YOURADMINPAT | az devops login --org https://dev.azure.com/YOURORGANISATION/ --verbose`
+`echo YOURADMINPAT | az devops login --org https://dev.azure.com/YOURORGANISATION/ --verbose
+az devops configure --defaults organization=https://YOURORGANIZATION/`
+`
 
-test with `az devops project list`
+test with `az devops project list --detect false` the detect may be needed whenever the current folder is an 
+azure devops git repo as those credentials and org will always trump what you enter on CLI without it 
 
 cls
-
+~~~~
 Now goto the directory where the Soap repo was created
 be aware that in powershell 
 
