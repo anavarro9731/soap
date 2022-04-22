@@ -3,7 +3,7 @@ import {Table} from "baseui/table-semantic";
 import {StatefulPanel} from "baseui/accordion";
 import {Button, KIND, SIZE} from "baseui/button";
 import {optional, types, uuidv4, validateArgs} from "../soap/util";
-import {SecondaryActionMenu, ViewMenu} from "./ActionMenu";
+import {PrimaryActionMenu, SecondaryActionMenu, TertiaryActionMenu, ViewLink} from "./ActionMenu";
 import {FileView} from "./FileView";
 import {Label2, Label3} from "baseui/typography";
 import DOMPurify from "dompurify";
@@ -42,7 +42,7 @@ export function ObjectTableNested(props) {
         }}>
             <div>
                 {CreateViewButton(propertyKey, entityMenus, object)}
-                {CreateActionsMenu(propertyKey, entityMenus, object)}
+                {CreateSecondaryActionsMenu(propertyKey, entityMenus, object)}
             </div>
             <div>
                 <TwoColumnTableWithoutHeadersWithBorder
@@ -59,7 +59,7 @@ export function ObjectTableTop(props) {
         <React.Fragment>
             <div style={{marginBottom:"16px", marginLeft:"14px"}}>
                 {CreateViewButton("root", entityMenus, object)}
-                {CreateActionsMenu("root", entityMenus, object)}
+                {CreatePrimaryActionsMenu("root", entityMenus, object)}
             </div>
             <div>
                 <TwoColumnTableWithoutHeadersOrBorder data={getObjectTableData(object, propertyRenderer, hiddenFields, expandedFields, entityMenus)}/>
@@ -88,7 +88,7 @@ export function ArrayTableNested(props) {
             }
         }}>
             <div>
-                {CreateActionsMenu(propertyKey, entityMenus)}
+                {CreateSecondaryActionsMenu(propertyKey, entityMenus)}
             </div>
             <div>
                 <ArrayTable propertyKey={propertyKey} arrayOfObjects={arrayOfObjects}
@@ -104,7 +104,7 @@ export function ArrayTableTop(props) {
     return (<React.Fragment>
             <div>
                 {CreateViewButton("root", entityMenus)}
-                {CreateActionsMenu("root", entityMenus)}
+                {CreatePrimaryActionsMenu("root", entityMenus)}
             </div>
             <div>
                 <ArrayTable propertyKey={"root"} arrayOfObjects={arrayOfObjects} propertyRenderer={propertyRenderer}
@@ -114,7 +114,25 @@ export function ArrayTableTop(props) {
     )
 }
 
-function CreateActionsMenu(propertyKey, entityMenus, entity) {
+function CreatePrimaryActionsMenu(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+    if (entityMenus && entityMenus[propertyKey]?.actions) {
+        const actions = entityMenus[propertyKey]?.actions;
+
+        return (<PrimaryActionMenu>
+            {actions.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+        </PrimaryActionMenu>);
+    } else {
+        return null;
+    }
+}
+
+function CreateSecondaryActionsMenu(propertyKey, entityMenus, entity) {
 
     validateArgs(
         [{propertyKey}, types.string],
@@ -132,6 +150,24 @@ function CreateActionsMenu(propertyKey, entityMenus, entity) {
     }
 }
 
+function CreateTertiaryActionsMenu(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+    if (entityMenus && entityMenus[propertyKey]?.actions) {
+        const actions = entityMenus[propertyKey]?.actions;
+
+        return (<TertiaryActionMenu>
+            {actions.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+        </TertiaryActionMenu>);
+    } else {
+        return null;
+    }
+}
+
 function CreateViewButton(propertyKey, entityMenus, entity) {
 
     validateArgs(
@@ -144,12 +180,20 @@ function CreateViewButton(propertyKey, entityMenus, entity) {
         const viewAction = entityMenus[propertyKey]?.viewAction;
         
         if (viewAction instanceof Array) {
-            return (<ViewMenu>
+            return (<ViewLink>
                 {viewAction.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
-            </ViewMenu>);
+            </ViewLink>);
         } else {
-            return (<Button kind={KIND.secondary} size={SIZE.compact}
-                                      onClick={() => viewAction(entity)}>View</Button>);    
+            return (<Button kind={KIND.secondary} size={SIZE.compact}  overrides={{
+                BaseButton: {
+                    style: {
+                        fontSize:"x-large",
+                        paddingLeft:"5px",
+                        paddingRight: "5px"
+                    }
+                }
+            }}
+                            onClick={() => viewAction(entity)}>{"\uD83D\uDC41"}</Button>);    
         }
     } else {
         return null;
@@ -160,16 +204,22 @@ function getObjectTableData(object, propertyRenderer, hiddenFields, expandedFiel
 
     const labels = Object.keys(object).filter(nameOfProperty => nameOfProperty !== "validate" && nameOfProperty !== "types" && nameOfProperty !== "$type"  /* filter the ones i manually added*/ &&
         !hiddenFields.includes(nameOfProperty))
-        .map(k => k.substring(k.indexOf("_") + 1)).map(l => <Label3>{l}</Label3>);
+        .map(k => k.substring(k.indexOf("_") + 1)).map(l => <Label3>{convertPascalToPhrase(l)}</Label3>);
     const arrayOfComponentsFromObjectProperties = ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, expandedFields, entityMenus);
     const arrayWithLabels = arrayOfComponentsFromObjectProperties.map((item, index) => [labels[index], item]);
 
     return arrayWithLabels;
 }
 
+function convertPascalToPhrase(pascal) {
+    const result = pascal.replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1);
+}
 
 function ArrayTable(props) {
 
+
+    
     const {propertyKey, arrayOfObjects, propertyRenderer, entityMenus, hiddenFields, expandedFields} = props;
     
     const headers = [];
@@ -185,7 +235,7 @@ function ArrayTable(props) {
         } else {
             //* read property names from first object and use to create headers
             
-            headers.push(...Object.keys(firstObject).filter(x => x !== "$type" && !hiddenFields.includes(x)).map(k => k.substring(k.indexOf("_") + 1)));
+            headers.push(...Object.keys(firstObject).filter(x => x !== "$type" && !hiddenFields.includes(x)).map(k => k.substring(k.indexOf("_") + 1)).map(z => convertPascalToPhrase(z)));
             
             if (childrenHaveMenu) {
                 headers.push(""); //* add column header for actions
@@ -203,7 +253,7 @@ function ArrayTable(props) {
             if (childrenHaveMenu) { //* actions column
                 componentArray.push(<div style={{display:"flex"}}>
                     {CreateViewButton(childrenPropertyKey, entityMenus, obj)}
-                    {CreateActionsMenu(childrenPropertyKey, entityMenus, obj)}
+                    {CreateTertiaryActionsMenu(childrenPropertyKey, entityMenus, obj)}
                 </div>)
             }
             arrayOfHorizontalTableControlArrays.push(componentArray);

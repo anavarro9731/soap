@@ -49,7 +49,9 @@ export function ActionDrawer(props) {
             overrides={viewHeight ? ({
                 DrawerContainer: {
                     style: ({ $theme }) => ({                         
-                        height:viewHeight+"vh"
+                        height:viewHeight+"vh",
+                        maxWidth:"fit-content",
+                        width:"auto"
                     })
                 }}) : undefined
             }
@@ -75,3 +77,7 @@ export function ActionDrawer(props) {
     
     
 }
+
+
+
+  

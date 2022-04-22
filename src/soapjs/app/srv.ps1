@@ -17,6 +17,7 @@ if ($UpgradeSoap) {
     yarn install #node_modules could be missing depending on scenario
     $v = npm view @soap/modules version
     Write-Host "Current Version: $v"
+    npm version $v --allow-same-version #sometimes you have published versions that don't get checked in, this ensures you always bump from the latest remote version
     $v = npm version minor
     Write-Host "New Version: $v"
     npm publish

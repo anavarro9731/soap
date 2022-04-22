@@ -1,5 +1,5 @@
 import React from 'react';
-import {addTranslations, App, Login, ReactErrorBoundary} from '@soap/modules';
+import {addTranslations, App, Login, ReactErrorBoundary, config} from '@soap/modules';
 import {LightTheme} from 'baseui';
 import {H2} from "baseui/typography";   
 import ReactDOM from "react-dom";
@@ -10,7 +10,7 @@ import {Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
-
+config.showSignup = false;
 function Index() {
     return (
         

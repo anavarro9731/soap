@@ -18,7 +18,7 @@ export { AutoForm } from './react/AutoForm';
 export { ReactErrorBoundary } from './react/ReactErrorBoundary';
 export { Login, ProtectedRoute } from './react/Login';
 export { ActionDrawer } from './react/ActionDrawer';
-export { PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewMenu, ViewMenuButton } from './react/ActionMenu';
+export { PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewLink, ViewLinkButton } from './react/ActionMenu';
 export { ActionModal } from './react/ActionModal';
 export { AggregateList } from './react/AggregateList';
 export { EntityMenu } from './react/Tables';

@@ -40,7 +40,7 @@ export function ListTestData() {
                     "e105_CChild": new EntityMenu((entity) => alert(entity), [
                         
                     ]),
-                    "e105_CChildren-ArrayItems": new EntityMenu((entity) => alert(entity), [
+                    "e105_CChildren-ArrayItems": new EntityMenu( [(entity)=> <EditTestData />, (entity) => <EditTestData />], [
                         (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
                     ])
                 }

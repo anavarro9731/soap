@@ -123,18 +123,22 @@ Both variables can use the same PAT.
 
 Open powershell.
 
-run `az login` followed by `az devops login` to make sure the CLI is authenticated.
+run `az login`  to make sure the CLI is authenticated.
 If you have multiple organisations/accounts be careful that your are logged into the right one.
  az account list
  az account set -s "SubscriptionNameOrIdHere"
+ az devops configure --defaults organization=https://dev.azure.com/YOURORGANIZATION/
 
 then run 
-`az devops configure --defaults organization=https://dev.azure.com/YOURORGANIZATION/`
+
+`echo YOURADMINPAT | az devops login --org https://dev.azure.com/YOURORGANISATION/ --verbose`
 
 test with `az devops project list`
+
 cls
 
 Now goto the directory where the Soap repo was created
+be aware that in powershell 
 
 Running the ```.\create-new-service.psm1``` script will create a Devops project and pipeline.  
 

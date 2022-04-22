@@ -1,15 +1,15 @@
 import {useStyletron} from "baseui";
 import {PLACEMENT, StatefulPopover} from "baseui/popover";
 import {Button, KIND, SIZE} from "baseui/button";
-import {ChevronRight} from "baseui/icon";
+
 import React from 'react';
 import bus from "../soap/bus";
 
 export const PrimaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
 export function PrimaryActionMenu(props) {
-    const {buttonText = "Act"} = props;
+    const {buttonText = "\u2630"} = props;
     return (
-        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
+        <ActionMenu children={props.children} button={<Button kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
             Body: {
                 style: {
                     borderWidth: "0px"
@@ -21,9 +21,9 @@ export function PrimaryActionMenu(props) {
 
 export const SecondaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
 export function SecondaryActionMenu(props) {
-    const {buttonText = "Act"} = props;
+    const {buttonText = "\uFE19"} = props;
     return (
-        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
+        <ActionMenu children={props.children} button={<Button kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
             Body: {
                 style: {
                     borderWidth: "1px"
@@ -33,11 +33,33 @@ export function SecondaryActionMenu(props) {
     );
 }
 
-export const ViewMenuButton =(props) => <Button kind={KIND.secondary} size={SIZE.compact} {...props} />;
-export function ViewMenu(props) {
-    const {buttonText = "View"} = props;
+export const TertiaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
+export function TertiaryActionMenu(props) {
+    const {buttonText = "\uFE19"} = props;
     return (
-        <ActionMenu children={props.children} button={<Button endEnhancer={ChevronRight} kind={KIND.secondary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
+        <ActionMenu children={props.children} button={<Button kind={KIND.primary} size={SIZE.compact}>{buttonText}</Button>} overrides={{
+            Body: {
+                style: {
+                    borderWidth: "1px"
+                }
+            }
+        }}/>
+    );
+}
+
+export const ViewLinkButton =(props) => <Button kind={KIND.secondary} size={SIZE.compact} {...props} />;
+export function ViewLink(props) {
+    const {buttonText = "\uD83D\uDC41"} = props;
+    return (
+        <ActionMenu children={props.children} button={<Button kind={KIND.secondary} size={SIZE.compact} overrides={{
+            BaseButton: {
+                style: {
+                    fontSize:"x-large",
+                    paddingLeft:"5px",
+                    paddingRight: "5px"
+                }
+            }
+        }}>{buttonText}</Button>} overrides={{
             Body: {
                 style: {
                     borderWidth: "1px"
