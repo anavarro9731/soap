@@ -392,14 +392,27 @@
                                     out int totalIndent)
                                 {
                                     var fieldIndent = new string(' ', indent + 5);
-                                    var propertyTypeName = property.PropertyType.ToTypeNameString();
+                                    var pt = property.PropertyType;
+                                    var propertyTypeName = ' '  + pt switch
+                                    {
+                                        _ when pt == typeof(string) => "String",
+                                        _ when pt == typeof(bool?) => "Boolean",
+                                        _ when pt == typeof(long?) => "Number",
+                                        _ when pt == typeof(decimal?) => "Number",
+                                        _ when pt == typeof(DateTime?) => "Date",
+                                        _ when pt == typeof(Guid?) => "String",
+                                        _ when pt == typeof(MessageHeaders) => "[] of Headers",
+                                        _ when pt.InheritsOrImplements(typeof(IEnumerable<>)) => $"[] of {(pt.GenericTypeArguments[0].IsSystemType() ? pt.GenericTypeArguments[0].Name : "Object")}",
+                                        _ => "Object"
+                                    };
 
-                                    var typeIndentLength = 50 - propertyTypeName.Length;
-                                    typeIndentLength = typeIndentLength < 0 ? 0 : typeIndentLength;
+                                    var typeIndentLength = 40;
+                                    //typeIndentLength = typeIndentLength < 0 ? 0 : typeIndentLength;
                                     plainTextBuilder.AppendLine();
     
-                                    plainTextBuilder.Append(fieldIndent + "|-")
-                                                    .Append(property.Name.PadRight(typeIndentLength, '-'))
+                                    plainTextBuilder
+                                            .Append(fieldIndent)
+                                                    .Append((property.Name + " |").PadRight(typeIndentLength, '-'))
                                                     .Append(propertyTypeName);
                                     plainTextBuilder.AppendLine();
 
