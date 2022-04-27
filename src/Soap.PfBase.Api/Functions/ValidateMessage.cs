@@ -42,7 +42,7 @@ namespace Soap.PfBase.Api.Functions
             }
             catch (Exception e)
             {
-                logger.Error("An Error Occurred Validating The Form", e);
+                logger.Error("An Error Occurred Validating The Form: {@error}", e);
                 return new OkObjectResult("An Error Occurred Validating The Form");
             }
         }
