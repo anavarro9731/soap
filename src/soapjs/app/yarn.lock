@@ -935,6 +935,35 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
+"@soap/modules@1.476.0":
+  version "1.476.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.476.0.tgz#e6c5ae87d043dabb26890826478c64f934079cf6"
+  integrity sha1-5sWuh9BD2rsmiQgmR4xk+TQHnPY=
+  dependencies:
+    "@auth0/auth0-react" "1.4.0"
+    "@azure/service-bus" "7.0.0"
+    "@azure/storage-blob" "12.3.0"
+    "@microsoft/applicationinsights-web" "2.5.10"
+    "@microsoft/signalr" "5.0.1"
+    "@soap/vars" "1.1.0"
+    baseui "10.6.0"
+    compressorjs "1.0.7"
+    dompurify "2.2.9"
+    i18next "17.0.7"
+    i18next-xhr-backend "3.0.0"
+    jodit-react "1.1.15"
+    lodash "4.17.20"
+    postal "2.0.5"
+    react "16.14.0"
+    react-dom "16.14.0"
+    react-hook-form "6.15.3"
+    react-router-dom "5.2.0"
+
+"@soap/vars@1.1.0":
+  version "1.1.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/vars/-/vars-1.1.0.tgz#fc6e7250ae0faff0aa7fa8883a0e59c69907447d"
+  integrity sha1-/G5yUK4Pr/Cqf6iIOg5ZxpkHRH0=
+
 "@swc/helpers@^0.3.6":
   version "0.3.8"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.3.8.tgz#5b9ecf4ee480ca00f1ffbc2d1a5d4eed0d1afe81"

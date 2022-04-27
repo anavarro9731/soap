@@ -1,4 +1,4 @@
-import {useEffect, useState } from 'react';
+import {useEffect, useState, useCallback } from 'react';
 import bus from '../soap/bus';
 import commandHandler from '../soap/command-handler';
 import {useIsConfigLoaded} from "./systemStateHooks";
@@ -44,10 +44,10 @@ export function useQuery({query, sendQuery = true, acceptableStalenessFactorInSe
         
     }, [sendQuery, configLoaded, authReady, refreshIndex]);
 
-    function refresh() {
-        setRefreshIndex(refreshIndex + 1);
+    const refresh = useCallback(() => {
+        setRefreshIndex(index => index + 1);
         setQueryResult(null);
-    }
+    }, []);
     
     return [queryResult, refresh];
 }
