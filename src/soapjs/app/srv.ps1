@@ -40,6 +40,11 @@ if ($UpgradeSoap) {
     $v = npm version minor
     Write-Host "New Version: $v"
     npm publish
+    #cleanup 
+    Remove-Item .\dist\ -Recurse
+    Remove-Item .\node_modules\ -Recurse
+    Remove-Item .\package.json
+    Remove-Item .\yarn.lock
     cd ..
     
     Copy-Item -Path .\package.json.soappackage -Destination .\package.json
