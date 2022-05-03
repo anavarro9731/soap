@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "dependencies": {
     "@auth0/auth0-react": "1.4.0",
-    "@azure/service-bus": "7.0.0",
+    "@azure/service-bus": "7.5.1",
     "@azure/storage-blob": "12.3.0",
     "@microsoft/applicationinsights-web": "2.5.10",
-    "@microsoft/signalr": "5.0.1",
-    "baseui": "10.6.0",
+    "@microsoft/signalr": "6.0.4",
+    "baseui": "10.12.1",
     "compressorjs": "1.0.7",
     "dompurify": "2.2.9",
     "i18next": "17.0.7",
@@ -23,15 +23,18 @@
     "styletron-react": "6.0.2"
   },
   "devDependencies": {
-    "parcel": "2.0.1"
+    "os-browserify": "0.3.0",
+    "parcel": "2.5.0",
+    "path-browserify": "1.0.1"
   },
   "source": "index.html",
   "alias": {
     "@soap/vars": "./soap-vars.js",
-    "@soap/modules": "./components/src"
+    "@soap/modules": "./components/src",
+    "**/deep-merge.js": "./deep-merge.js"
   },
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
-  "scripts": {    
+  "scripts": {
     "serve": "parcel",
     "build": "parcel build --public-url ./"
   }

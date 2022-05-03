@@ -2,8 +2,8 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "1.476.0",
-    "baseui": "10.6.0",
+    "@soap/modules": "1.478.0",
+    "baseui": "10.12.1",
     "react": "16.14.0",
     "react-dom": "16.14.0",
     "react-router-dom": "5.2.0",
@@ -17,7 +17,8 @@
   },
   "source": "index.html",
   "alias": {
-    "@soap/vars": "./soap-vars.js"
+    "@soap/vars": "./soap-vars.js",
+    "**/deep-merge.js": "./deep-merge.js"
   },
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
   "scripts": {

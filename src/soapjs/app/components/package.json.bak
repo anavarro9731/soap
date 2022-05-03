@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "dependencies": {
     "@auth0/auth0-react": "1.4.0",
-    "@azure/service-bus": "7.0.0",
+    "@azure/service-bus": "7.5.1",
     "@azure/storage-blob": "12.3.0",
     "@microsoft/applicationinsights-web": "2.5.10",
-    "@microsoft/signalr": "5.0.1",
-    "baseui": "10.6.0",
+    "@microsoft/signalr": "6.0.4",
+    "baseui": "10.12.1",
     "compressorjs": "1.0.7",
     "dompurify": "2.2.9",
     "i18next": "17.0.7",
@@ -24,7 +24,9 @@
   "devDependencies": {
     "cross-env": "7.0.3",
     "jest-cli": "27.4.3",
-    "parcel": "2.0.1"
+    "os-browserify": "0.3.0",
+    "parcel": "2.5.0",
+    "path-browserify": "1.0.1"
   },
   "peerDependencies": {
     "styletron-engine-atomic": "1.4.8",
@@ -37,6 +39,9 @@
   "files": [
     "./dist/"
   ],
+  "alias": {      
+    "**/deep-merge.js": "./deep-merge.js"
+  },
   "scripts": {
     "prepare": "parcel build",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
