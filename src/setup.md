@@ -267,6 +267,7 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
 - If your having trouble with build server suddenly failing to build, even without a code change, check the image is not set to "win-latest" for example in you azure-pipelines.yml file. if so, fix it to the last version e.g. "win-2019" 
 - Pkgs take 15 mins to be available to nuget clients on azure devops feed even after being visible in AzureDevops. This means when you release a new version of the Soap packages, create-new-service won't use them for 15 mins.
 - Azurite has been known to generate errors that are a different problem underlying. CORS is set for Azurite dev instance server-side on startup see BlobStorage.DevStorageSetup IF NOT ALREADY SET
+- Errors about CORS on Azurite seem to occur if you upgrade past 12.3.0 of     "@azure/storage-blob": "12.3.0", dependency, this may be fixed in future but as of 12.9.0 is was not
 - When using Jetbrains Rider [@2020.3] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
 - Changing the .env variables requires restarting parcel
 - When publishing the soap project itself, make sure that pwsh-bootstrap is loaded for the soap project and not another project which could happen if for example you were running test.ps1 recently. Second make sure the client app is running
