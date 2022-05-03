@@ -425,14 +425,10 @@ export function AutoForm(props) {
                                                 style: {
                                                     maxHeight: '800px',
                                                     minHeight: (fieldMeta.options.height > 0 ? fieldMeta.options.height : 100) + 'px',
-                                                    minWidth: '300px',
-                                                    resize: 'both',
                                                 },
                                             },
                                             InputContainer: {
                                                 style: {
-                                                    maxWidth: 'fit-content',
-                                                    width: 'min-content',
                                                 },
                                             },
                                         }}
