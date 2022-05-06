@@ -40,7 +40,7 @@
     "./dist/"
   ],
   "alias": {      
-    "**/deep-merge.js": "./deep-merge.js"
+    "**/deep-merge.js": "baseui/utils/deep-merge.js"
   },
   "scripts": {
     "prepare": "parcel build",

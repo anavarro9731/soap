@@ -31,7 +31,7 @@
   "alias": {
     "@soap/vars": "./soap-vars.js",
     "@soap/modules": "./components/src",
-    "**/deep-merge.js": "./deep-merge.js"
+    "**/deep-merge.js": "baseui/utils/deep-merge.js"
   },
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
   "scripts": {
