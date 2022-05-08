@@ -1,6 +1,7 @@
 ﻿namespace Soap.PfBase.Logic.ProcessesAndOperations
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using CircuitBoard;
     using DataStore;
@@ -24,6 +25,7 @@
     /// </summary>
     public abstract class Process : IProcess
     {
+        
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
         protected BusWrapper Bus => new BusWrapper(this.context.Bus, this.context.Message);
@@ -40,6 +42,7 @@
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
+            
             var process = this as IBeginProcess<TMessage>;
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");

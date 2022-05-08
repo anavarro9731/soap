@@ -1,6 +1,7 @@
 ﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
@@ -9,6 +10,9 @@
 
     public class P205_C100__RespondToPing : Process, IBeginProcess<C100v1_Ping>
     {
+        
+        
+            
         public Func<C100v1_Ping, Task> BeginProcess =>
             async message =>
                 {

@@ -20,7 +20,8 @@ namespace Soap.Auth0
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
     using System.Text.RegularExpressions;
-    
+    using CircuitBoard;
+
     public static partial class Auth0Functions
     {
         private static OpenIdConnectConfiguration cache_openIdConnectConfiguration;
@@ -32,6 +33,7 @@ namespace Soap.Auth0
             ApplicationConfig applicationConfig,
             Func<string, ValueTask> writeLine)
         {
+            
             {
                 string managementApiToken = null;
                 ManagementApiClient client = null;
@@ -87,6 +89,8 @@ namespace Soap.Auth0
                 }
             }
 
+            
+
             static async Task UpdateAuth0Registration(
                 ManagementApiClient client,
                 string apiId,
@@ -94,77 +98,241 @@ namespace Soap.Auth0
                 Func<string, ValueTask> writeLine,
                 ApplicationConfig applicationConfig)
             {
-                await writeLine(
-                    $"Updating Auth0 Api for this service in environment {applicationConfig.Environment.Value} with the latest permissions.");
-
-                var allScopes = await MergeLatestPermissionsFromOurPartitionWithTheSetOnline();
-
-                var r = new ResourceServerUpdateRequest
                 {
-                    Scopes = allScopes,
-                    TokenDialect =
-                        TokenDialect.AccessTokenAuthZ //couldn't be 100% this wasnt overwritten so set it here as well as create
-                };
+                    await writeLine(
+                        $"Updating Auth0 Api for this service in environment {applicationConfig.Environment.Value} with the latest permissions.");
 
-                await client.ResourceServers.UpdateAsync(apiId, r);
-
-                async Task<List<ResourceServerScope>> MergeLatestPermissionsFromOurPartitionWithTheSetOnline()
-                {
-                    var resourceServer = await client.ResourceServers.GetAsync(apiId);
-                    var onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions = resourceServer.Scopes;
+                    //TODO write diagnostics
+                    await UpdateApiPermissions(client, securityInfo, apiId, writeLine);
                     
-                    SeparateOnlinePermissionsIntoGroups(onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
-                        out var onlinePermissionsFromOurPartition, out var onlinePermissionsFromOtherPartitions);
+                    //TODO write diagnostics
+                    await UpdateApiRoles(client, securityInfo, apiId, writeLine);
+                }
 
-                    var currentPermissionsInOurPartition = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
-                    var updatedPermissionsToBeSavedOnline = currentPermissionsInOurPartition
-                                                  .Union(onlinePermissionsFromOtherPartitions)
-                                                  .ToList();
 
-                    var onlinePermissionsBeingRemoved = onlinePermissionsFromOurPartition
-                                              .Where(x => !currentPermissionsInOurPartition.Exists(y => y.Value == x.Value))
-                                              .ToList();
-                    if (onlinePermissionsBeingRemoved.Any())
+                static async Task UpdateApiRoles(ManagementApiClient client, ISecurityInfo securityInfo, string apiId, Func<string, ValueTask> writeLine)
+                {
+                    
+                    var environmentPartitionKey = EnvVars.EnvironmentPartitionKey;
                     {
-                        await writeLine(
-                            "Removing Permissions:" + Environment.NewLine + onlinePermissionsBeingRemoved.Select(x => x.Value)
-                                .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
+                        var serverRoles = await GetAllRoles(client);
+                        
+                        var localRoleDefinitions = securityInfo.BuiltInRoles;
+
+                        //* add roles
+                        var serverRolesToRemove = serverRoles.Where(r => localRoleDefinitions.All(lr => lr.AsAuth0Name(environmentPartitionKey) != r.Name)).ToList();
+                        var removeTasks = serverRolesToRemove.Select(async sr => await RemoveServerRole(client, sr));
+                        await Task.WhenAll(removeTasks);
+                        
+                        //* remove roles
+                        var localRolesToAdd = localRoleDefinitions.Where(lr =>
+                            serverRoles.All(sr => sr.Name != lr.AsAuth0Name(environmentPartitionKey))).ToList();
+                        var addTasks = localRolesToAdd.Select(async lr => await CreateRoleOnServer(client,apiId, securityInfo, lr));
+                        await Task.WhenAll(addTasks);
+                        
+                        //* update permissions on existing roles
+                        var serverCopyOfRolesThatAreStillRelevant = serverRoles.Where(sr => localRoleDefinitions.Exists(lr => lr.AsAuth0Name(environmentPartitionKey) == sr.Name)).ToList();
+                        var updateTasks = serverCopyOfRolesThatAreStillRelevant.Select(async sr =>
+                            {
+                                var matchingLocalRole = localRoleDefinitions.Single(x => x.AsAuth0Name(EnvVars.EnvironmentPartitionKey) == sr.Id);
+                                await UpdateRoleApiPermissions(client, apiId, matchingLocalRole, sr);
+                            });
+                        await Task.WhenAll(updateTasks);
                     }
 
-                    var newPermissionsBeingAddedOnline = currentPermissionsInOurPartition.Where(
-                                                                  x => !onlinePermissionsFromOurPartition
-                                                                           .Exists(y => y.Value == x.Value))
-                                                              .ToList();
-                    if (newPermissionsBeingAddedOnline.Any())
+                    static async Task UpdateRoleApiPermissions(
+                        ManagementApiClient client,
+                        string apiId,
+                        global::Soap.Interfaces.Role matchingLocalCopy,
+                        global::Auth0.ManagementApi.Models.Role serverRoleThatNeedsItsApiPermissionsChecked)
                     {
-                        await writeLine(
-                            "Adding Permissions:" + Environment.NewLine + newPermissionsBeingAddedOnline.Select(x => x.Value)
-                                .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
-                    }
+                        var serverSidePermissionsForTheRole = await GetAllServerApiPermissionsForARole(client, serverRoleThatNeedsItsApiPermissionsChecked);
+                        var localPermissions = matchingLocalCopy.ApiPermissions;
+                        
+                        //* remove permissions
+                        var removeTasks = serverSidePermissionsForTheRole.Where(
+                            sp =>
+                                localPermissions.All(localPermission => AsAuth0Claim(localPermission, EnvVars.EnvironmentPartitionKey) != sp.Name))
+                                                                                       .Select(async p => await client.Roles.RemovePermissionsAsync(serverRoleThatNeedsItsApiPermissionsChecked.Id, new AssignPermissionsRequest()
+                                                                                       {
+                                                                                           Permissions = new List<PermissionIdentity>()
+                                                                                           {
+                                                                                               new PermissionIdentity()
+                                                                                               {
+                                                                                                   Identifier = p.Identifier, //TODO check this equals the apiID
+                                                                                                   Name = p.Name
+                                                                                               }
+                                                                                           }
+                                                                                       }));
+                        await Task.WhenAll(removeTasks);
 
-                    if (!newPermissionsBeingAddedOnline.Any() && !onlinePermissionsBeingRemoved.Any())
-                    {
-                        await writeLine("No Permissions Changes.");
-                    }
+                        //* add permissions
+                        var addTasks = localPermissions
+                                       .Where(
+                                           lp => serverSidePermissionsForTheRole.All(
+                                               sp => sp.Name != AsAuth0Claim(lp, EnvVars.EnvironmentPartitionKey)))
+                                       .Select(async p => await client.Roles.AssignPermissionsAsync(
+                                                              serverRoleThatNeedsItsApiPermissionsChecked.Id,
+                                                              new AssignPermissionsRequest()
+                                                              {
+                                                                  Permissions = new List<PermissionIdentity>()
+                                                                  {
+                                                                    new PermissionIdentity()
+                                                                    {
+                                                                        Identifier = apiId,
+                                                                        Name = AsAuth0Claim(p, EnvVars.EnvironmentPartitionKey)
+                                                                    }
+                                                                  }
+                                                              }));
+                        await Task.WhenAll(addTasks);
 
-                    return updatedPermissionsToBeSavedOnline;
-
-                    static void SeparateOnlinePermissionsIntoGroups(List<ResourceServerScope> onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions, 
-                        out List<ResourceServerScope> onlinePermissionsFromOurPartition, out List<ResourceServerScope> onlinePermissionsFromOtherPartitions)
-                    {
-                        if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
+                        static string AsAuth0Claim(Enumeration apiPermission, string environmentPartitionKey)
                         {
-                            onlinePermissionsFromOtherPartitions = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
-                                                                   .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
-                                                                   .ToList();
-                            onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
-                                                                .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
-                                                                .ToList();
+                            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) + "execute:"
+                                   + Regex.Replace(apiPermission.Key.ToLower(), "[^a-z0-9.]", string.Empty);
                         }
-                        else
+                    }
+                    
+                    static async Task RemoveServerRole(ManagementApiClient client, global::Auth0.ManagementApi.Models.Role role)
+                    {
+                        await client.Roles.DeleteAsync(role.Id);
+                    }
+
+                    static async Task<List<Permission>> GetAllServerApiPermissionsForARole(
+                        ManagementApiClient client,
+                        global::Auth0.ManagementApi.Models.Role role)
+                    {
+                        var allPermissions = await RetrieveAllPermissionsOnePageAtATime(client, role.Id, 1, new List<global::Auth0.ManagementApi.Models.Permission>());
+                        return allPermissions;
+                        
+                        static async Task<List<global::Auth0.ManagementApi.Models.Permission>> RetrieveAllPermissionsOnePageAtATime(
+                            ManagementApiClient client,
+                            string roleId,
+                            int pageNo,
+                            List<global::Auth0.ManagementApi.Models.Permission> permissions)
                         {
-                            onlinePermissionsFromOtherPartitions = new List<ResourceServerScope>();
-                            onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions;
+                            var page = await client.Roles.GetPermissionsAsync(
+                                           roleId,                   
+                                           new PaginationInfo(pageNo, 50, true));
+
+                            permissions.AddRange(page.ToList());
+
+                            var thereAreMoreItems = page.Paging.Total == page.Paging.Limit;
+                            return thereAreMoreItems switch
+                            {
+                                true => await RetrieveAllPermissionsOnePageAtATime(client, roleId, ++pageNo, permissions),
+                                _ => null
+                            };
+                        }
+                    }
+                    
+                    static  async Task<List<global::Auth0.ManagementApi.Models.Role>> GetAllRoles(ManagementApiClient client)
+                    {
+                        var allRoles = await RetrieveAllRolesOnePageAtATime(client, 1, new List<global::Auth0.ManagementApi.Models.Role>());
+                        var filteredByTheCurrentPartitionKey = allRoles.Where(x => x.Name.StartsWith($"{EnvVars.EnvironmentPartitionKey}::")).ToList();
+                        return filteredByTheCurrentPartitionKey;
+                        
+                        static async Task<List<global::Auth0.ManagementApi.Models.Role>> RetrieveAllRolesOnePageAtATime(
+                            ManagementApiClient client,
+                            int pageNo,
+                            List<global::Auth0.ManagementApi.Models.Role> roles)
+                        {
+                            var page = await client.Roles.GetAllAsync(
+                                           new GetRolesRequest()
+                                           {
+                                           },
+                                           new PaginationInfo(pageNo, 50, true));
+
+                            roles.AddRange(page.ToList());
+
+                            var thereAreMoreItems = page.Paging.Total == page.Paging.Limit;
+                            return thereAreMoreItems switch
+                            {
+                                true => await RetrieveAllRolesOnePageAtATime(client, ++pageNo, roles),
+                                _ => null
+                            };
+                        }
+                    }
+                }
+
+                static async Task UpdateApiPermissions(ManagementApiClient client, ISecurityInfo securityInfo, string apiId, Func<string, ValueTask> writeLine)
+                {
+                    {
+                        var allScopes = await GetSetOfLatestPermissionSchemaIncludingThoseFromOtherPartitions();
+
+                        var r = new ResourceServerUpdateRequest
+                        {
+                            Scopes = allScopes,
+                            TokenDialect = TokenDialect.AccessTokenAuthZ //couldn't be 100% this wasn't overwritten so set it here as well as create
+                        };
+                        
+                        await client.ResourceServers.UpdateAsync(apiId, r);
+                    }
+
+                    async Task<List<ResourceServerScope>> GetSetOfLatestPermissionSchemaIncludingThoseFromOtherPartitions()
+                    {
+                        /* seems there is not way just to update a partial set, you have to update the complete set for the whole API,
+                        this means we have to calculate that and update only those for our environment partition. Thankfully as long as the
+                        key isn't changing this doesn't wipe out existing assignments */
+
+                        var resourceServer = await client.ResourceServers.GetAsync(apiId);
+                        var onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions = resourceServer.Scopes;
+
+                        SeparateOnlinePermissionsIntoGroups(
+                            onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
+                            out var onlineApiPermissionsFromOurPartition,
+                            out var onlinePermissionsFromOtherPartitions);
+
+                        var currentApiPermissionsInOurPartition = GetLocalApiPermissions(securityInfo);
+                        var updatedApiPermissionsToBeSavedOnline = currentApiPermissionsInOurPartition.Union(onlinePermissionsFromOtherPartitions).ToList();
+
+                        var onlineApiPermissionsBeingRemoved = onlineApiPermissionsFromOurPartition
+                                                            .Where(x => !currentApiPermissionsInOurPartition.Exists(y => y.Value == x.Value))
+                                                            .ToList();
+                        if (onlineApiPermissionsBeingRemoved.Any())
+                        {
+                            await writeLine(
+                                "Removing Permissions:" + Environment.NewLine + onlineApiPermissionsBeingRemoved.Select(x => x.Value)
+                                    .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
+                        }
+
+                        var newApiPermissionsBeingAddedOnline = currentApiPermissionsInOurPartition.Where(
+                                                                                                 x => !onlineApiPermissionsFromOurPartition.Exists(
+                                                                                                     y => y.Value == x.Value))
+                                                                                             .ToList();
+                        if (newApiPermissionsBeingAddedOnline.Any())
+                        {
+                            await writeLine(
+                                "Adding Permissions:" + Environment.NewLine + newApiPermissionsBeingAddedOnline.Select(x => x.Value)
+                                    .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
+                        }
+
+                        if (!newApiPermissionsBeingAddedOnline.Any() && !onlineApiPermissionsBeingRemoved.Any())
+                        {
+                            await writeLine("No Permissions Changes.");
+                        }
+
+                        return updatedApiPermissionsToBeSavedOnline;
+
+                        static void SeparateOnlinePermissionsIntoGroups(
+                            List<ResourceServerScope> onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
+                            out List<ResourceServerScope> onlinePermissionsFromOurPartition,
+                            out List<ResourceServerScope> onlinePermissionsFromOtherPartitions)
+                        {
+                            if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
+                            {
+                                onlinePermissionsFromOtherPartitions = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
+                                                                       .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                       .ToList();
+                                onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
+                                                                    .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                    .ToList();
+                            }
+                            else
+                            {
+                                onlinePermissionsFromOtherPartitions = new List<ResourceServerScope>();
+                                onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions;
+                            }
                         }
                     }
                 }
@@ -178,64 +346,123 @@ namespace Soap.Auth0
                 Func<string, ValueTask> writeLine,
                 ApplicationConfig applicationConfig)
             {
-                await writeLine(
-                    $"Auth0 Api for this service in environment {applicationConfig.Environment.Value} does not exist. Creating it now.");
+                {
+                    var resourceServerScopes = GetLocalApiPermissions(securityInfo);
+                    
+                    await writeLine(
+                        $"Auth0 Api for this service in environment {applicationConfig.Environment.Value} does not exist. Creating it now.");
+
+                    await CreateApiWithPermissions(resourceServerScopes);
+
+                    await GrantMachineTokenAccessToApi(resourceServerScopes);
+
+                    await CreateFrontEnd();
+
+                    await CreateRoles();
+                }
 
                 //* register api 
-                var resourceServerScopes = GetPermissionsFromMessagesBasedOnOurParitionKey(securityInfo);
-                var r = new ResourceServerCreateRequest
+                async Task CreateApiWithPermissions(List<ResourceServerScope> resourceServerScopes)
                 {
-                    Identifier = apiId,
-                    Name = apiName,
-                    Scopes = resourceServerScopes,
-                    TokenDialect = TokenDialect.AccessTokenAuthZ,
-                    EnforcePolicies = true, //RBAC ENABLED
-                    AllowOfflineAccess = true,
-                    SkipConsentForVerifiableFirstPartyClients = true
-                };
-
-                await client.ResourceServers.CreateAsync(r);
-
-                //* give enterprise admin access to for inter-service calls
-                await client.ClientGrants.CreateAsync(
-                    new ClientGrantCreateRequest
+                    
+                    var r = new ResourceServerCreateRequest
                     {
-                        Audience = apiId,
-                        Scope = resourceServerScopes.Select(x => x.Value).ToList(),
-                        ClientId = applicationConfig.Auth0EnterpriseAdminClientId //* enterprise admin clientid
-                    });
-
-                //* give frontend access by creating frontend app
-                var result = await client.Clients.CreateAsync(
-                                 new ClientCreateRequest
-                                 {
-                                     Name = GetAppName(apiName),
-                                     Description = $"{apiName} front end",
-                                     ApplicationType = ClientApplicationType.Spa,
-                                     IsFirstParty = true,
-                                     Callbacks = new[] { applicationConfig.CorsOrigin },
-                                     AllowedLogoutUrls = new[] { applicationConfig.CorsOrigin },
-                                     AllowedOrigins = new[] { applicationConfig.CorsOrigin },
-                                     WebOrigins = new[] { applicationConfig.CorsOrigin },
-                                     JwtConfiguration = new JwtConfiguration
+                        Identifier = apiId,
+                        Name = apiName,
+                        Scopes = resourceServerScopes,
+                        TokenDialect = TokenDialect.AccessTokenAuthZ,
+                        EnforcePolicies = true, //RBAC ENABLED
+                        AllowOfflineAccess = true,
+                        SkipConsentForVerifiableFirstPartyClients = true
+                    };
+                    await client.ResourceServers.CreateAsync(r);
+                }
+                
+                //* give enterprise admin access to for inter-service calls
+                 async Task GrantMachineTokenAccessToApi(List<ResourceServerScope> resourceServerScopes)
+                {
+                    
+                    await client.ClientGrants.CreateAsync(
+                        new ClientGrantCreateRequest
+                        {
+                            Audience = apiId,
+                            Scope = resourceServerScopes.Select(x => x.Value).ToList(),
+                            ClientId = applicationConfig.Auth0EnterpriseAdminClientId //* enterprise admin clientid
+                        });
+                }
+                
+                 //* give frontend access by creating frontend app
+                async Task CreateFrontEnd()
+                {
+                    var result = await client.Clients.CreateAsync(
+                                     new ClientCreateRequest
                                      {
-                                         SigningAlgorithm = "RS256"
-                                     }
-                                 });
+                                         Name = GetAppName(apiName),
+                                         Description = $"{apiName} front end",
+                                         ApplicationType = ClientApplicationType.Spa,
+                                         IsFirstParty = true,
+                                         Callbacks = new[] { applicationConfig.CorsOrigin },
+                                         AllowedLogoutUrls = new[] { applicationConfig.CorsOrigin },
+                                         AllowedOrigins = new[] { applicationConfig.CorsOrigin },
+                                         WebOrigins = new[] { applicationConfig.CorsOrigin },
+                                         JwtConfiguration = new JwtConfiguration
+                                         {
+                                             SigningAlgorithm = "RS256"
+                                         }
+                                     });
+                }
+                
+                //* create builtin roles //* TODO TEST
+                async Task CreateRoles()
+                {
+                    
+                    if (securityInfo.BuiltInRoles != default)
+                    {
+                        foreach (var role in securityInfo.BuiltInRoles)
+                        {
+                            await CreateRoleOnServer(client, apiId, securityInfo, role);
+                        }
+                        
+                    }
+                }
+                
             }
 
-            static List<ResourceServerScope> GetPermissionsFromMessagesBasedOnOurParitionKey(ISecurityInfo securityInfo)
+            static List<ResourceServerScope> GetLocalApiPermissions(ISecurityInfo securityInfo)
             {
-                var scopes = securityInfo.PermissionGroups.Select(
+                var scopes = securityInfo.ApiPermissions.Select(
                                              x => new ResourceServerScope
                                              {
-                                                 Description = x.Description ?? x.Name,
-                                                 Value = x.AsEnvironmentPartitionAwareClaim(EnvVars.EnvironmentPartitionKey)
+                                                 Description = x.Description ?? x.Id.Value,
+                                                 Value = x.AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
                                              })
                                          .ToList();
 
                 return scopes;
             }
+        }
+
+        private static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, global::Soap.Interfaces.Role role)
+        {
+            var newRole = await client.Roles.CreateAsync(
+                              new RoleCreateRequest()
+                              {
+                                  Description = role.Description ?? role.Id.Value,
+                                  Name = role.AsAuth0Name(EnvVars.EnvironmentPartitionKey)
+                              });
+
+            await client.Roles.AssignPermissionsAsync(
+                newRole.Id,
+                new AssignPermissionsRequest()
+                {
+                    Permissions = role.ApiPermissions.Select(
+                                          apiPermissionEnum => new PermissionIdentity()
+                                          {
+                                              Identifier = apiId,
+                                              Name = securityInfo.ApiPermissionFromEnum(apiPermissionEnum).AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
+                                          })
+                                      .ToList()
+                });
         }
 
         public static async Task<IdentityPermissions> GetPermissionsFromAccessToken(
@@ -266,35 +493,35 @@ namespace Soap.Auth0
 
                     var principal = tokenHandler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
 
-                    ExtractPermissionsFromClaims(principal, out var apiPermissionGroupsAsStrings, out var dbPermissionsAsStrings);
+                    ExtractPermissionsFromClaims(principal, out var apiPermissionsAsStrings, out var dbPermissionsAsStrings);
 
-                    FilterOutBadPermissions(apiPermissionGroupsAsStrings, out var cleanPermissionGroups);
+                    FilterOutBadApiPermissions(apiPermissionsAsStrings, out var cleanedApiPermissions);
 
-                    GetApiPermissionGroups(cleanPermissionGroups, securityInfo, out var permissionGroups);
+                    GetApiPermissions(cleanedApiPermissions, securityInfo, out var apiPermissions);
 
                     GetDbPermissionsList(dbPermissionsAsStrings, out var dbPermissions);
 
-                    GetApiPermissionsList(permissionGroups, out var permissions);
+                    GetDeveloperPermissionsList(apiPermissions, out var developerPermissions);
 
-                    CreateIdentityPermissions(permissions, dbPermissions, out var identityPermissions);
+                    CreateIdentityPermissions(developerPermissions, dbPermissions, out var identityPermissions);
 
                     return identityPermissions;
 
                     static void CreateIdentityPermissions(
-                        List<string> apiPermissions,
+                        List<string> developerPermissions,
                         List<DatabasePermissionInstance> dbPermissions,
                         out IdentityPermissions permissions)
                     {
                         permissions = new IdentityPermissions
                         {
-                            ApiPermissions = apiPermissions,
+                            ApiPermissions = developerPermissions,
                             DatabasePermissions = dbPermissions
                         };
                     }
 
-                    static void GetApiPermissionsList(List<ApiPermissionGroup> permissionGroups, out List<string> permissions)
+                    static void GetDeveloperPermissionsList(List<ApiPermission> apiPermissions, out List<string> permissions)
                     {
-                        permissions = permissionGroups.SelectMany(x => x.ApiPermissions).ToList();
+                        permissions = apiPermissions.SelectMany(x => x.DeveloperPermissions).ToList();
                     }
 
                     static void GetDbPermissionsList(
@@ -345,13 +572,13 @@ namespace Soap.Auth0
                 }
             }
 
-            static void FilterOutBadPermissions(string[] permissionsArray, out List<string> cleanPermissions)
+            static void FilterOutBadApiPermissions(string[] apiPermissionsArray, out List<string> cleanApiPermissions)
             {
                 /* if there are bad permissions data in auth0, we dont want to disable all users from logging in,
                 we will just ignore those permissions and log the problem */
                 var permissionRegex =
                     "^(" + DbPermissionsRegex() + "):[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}|(execute:[a-z0-9]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12})$";
-                cleanPermissions = permissionsArray.Select(x => x.ToLower().Trim())
+                cleanApiPermissions = apiPermissionsArray.Select(x => x.ToLower().Trim())
                                                    .Where(x => Regex.IsMatch(x, permissionRegex))
                                                    .ToList();
             }
@@ -360,7 +587,7 @@ namespace Soap.Auth0
             
             static void ExtractPermissionsFromClaims(
                 ClaimsPrincipal principal,
-                out string[] apiPermissionGroupsArray,
+                out string[] apiPermissionsArray,
                 out string[] dbPermissionsArray)
             {
                 var permissionGroupsAsStrings =
@@ -368,7 +595,7 @@ namespace Soap.Auth0
 
                 permissionGroupsAsStrings = FilterToAppropriateEnvironmentPartition(permissionGroupsAsStrings);
                 
-                apiPermissionGroupsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute")).ToArray();
+                apiPermissionsArray = permissionGroupsAsStrings.Where(x => x.Contains("execute")).ToArray();
                 
                 dbPermissionsArray = permissionGroupsAsStrings.Where(x => !x.Contains("execute")).ToArray();
             }
@@ -392,17 +619,17 @@ namespace Soap.Auth0
                 }
             }
             
-            static void GetApiPermissionGroups(
-                List<string> permissionGroupsAsStrings,
+            static void GetApiPermissions(
+                List<string> apiPermissionsAsStrings,
                 ISecurityInfo securityInfo,
-                out List<ApiPermissionGroup> permissionGroups)
+                out List<ApiPermission> apiPermissions)
             {
-                //* api permission format, execute:pingpong:134446A7-DA29-412F-AA1B-5FF9D1D0086C
+                //* api permission format, execute:pingpong:ping-pong
 
-                var permissionGroupIdsAsStrings = permissionGroupsAsStrings.Where(x => x.StartsWith("execute"))
+                var apiPermissionIdsAsStrings = apiPermissionsAsStrings.Where(x => x.StartsWith("execute"))
                                                                            .Select(x => x.SubstringAfterLast(':'));
-                permissionGroups = securityInfo.PermissionGroups
-                                               .Where(pg => permissionGroupIdsAsStrings.Contains(pg.Id.ToString().ToLower()))
+                apiPermissions = securityInfo.ApiPermissions
+                                               .Where(pg => apiPermissionIdsAsStrings.Contains(pg.Id.ToString().ToLower()))
                                                .ToList();
             }
         }

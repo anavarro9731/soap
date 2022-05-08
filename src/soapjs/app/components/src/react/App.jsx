@@ -31,7 +31,7 @@ export function App(props) {
         if (!!appState?.returnTo) {
             window.location.href = appState?.returnTo
         }
-    };
+    }
 
     useEvent({
         eventName: "Soap.Interfaces.Messages.E001v1_MessageFailed",

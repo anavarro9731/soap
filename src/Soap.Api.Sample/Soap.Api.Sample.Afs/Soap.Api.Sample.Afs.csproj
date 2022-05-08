@@ -26,4 +26,7 @@
     <None Remove="soap.jpg" />
     <None Remove="soap.zip" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Security" />
+  </ItemGroup>
 </Project>

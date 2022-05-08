@@ -23,6 +23,8 @@
 
         public ILogger Logger => this.context.Logger;
 
+        protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
+        
         protected BlobStorageWrapper BlobOperations => new BlobStorageWrapper(this.context);
 
         protected TDerivedConfig GetConfig<TDerivedConfig>() where TDerivedConfig : class, IBootstrapVariables => this.context.AppConfig.DirectCast<TDerivedConfig>();

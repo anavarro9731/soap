@@ -163,4 +163,4 @@ export function FileView(props) {
         }
     }
 
-};
+}

@@ -16,7 +16,15 @@ namespace Soap.Api.Sample.Logic.Operations
             async newState =>
                 {
                 {
-                    await DataWriter.DeleteById<TestData>(newState.C114_TestDataId.Value);
+                    await DataWriter.DeleteById<TestData>(
+                        newState.C114_TestDataId.Value,
+                        o =>
+                            {
+                            if (Meta.IdentityPermissionsOrNull?.ApiPermissions.Contains(CustomDeveloperPermissions.CanHardDelete) == true)
+                            {
+                                o.Permanently();
+                            }
+                            });
                 }
                 };
 
@@ -81,29 +89,32 @@ namespace Soap.Api.Sample.Logic.Operations
                                                                                      Bool = true,
                                                                                      Long = 123456789,
                                                                                      String = "101 Anywhere St."
-                                                                                 }) 
-                                                                             .ToList(),
-                                                       String = "C String"
-                                                   },
-                                                   CChildren = Enumerable.Range(1, 10).Select(x => new TestChildC()
-                                                   {
-                                                       BChild = new TestChildB
-                                                       {
-                                                           Bool = true,
-                                                           Long = 123456789,
-                                                           String = "456 Anywhere St."
-                                                       },
-                                                       BChildren = Enumerable.Range(1, 10)
-                                                                             .Select(
-                                                                                 x => new TestChildB
-                                                                                 {
-                                                                                     Bool = true,
-                                                                                     Long = 123456789,
-                                                                                     String = "789 Anywhere St."
                                                                                  })
                                                                              .ToList(),
                                                        String = "C String"
-                                                   }).ToList()
+                                                   },
+                                                   CChildren = Enumerable.Range(1, 10)
+                                                                         .Select(
+                                                                             x => new TestChildC
+                                                                             {
+                                                                                 BChild = new TestChildB
+                                                                                 {
+                                                                                     Bool = true,
+                                                                                     Long = 123456789,
+                                                                                     String = "456 Anywhere St."
+                                                                                 },
+                                                                                 BChildren = Enumerable.Range(1, 10)
+                                                                                     .Select(
+                                                                                         x => new TestChildB
+                                                                                         {
+                                                                                             Bool = true,
+                                                                                             Long = 123456789,
+                                                                                             String = "789 Anywhere St."
+                                                                                         })
+                                                                                     .ToList(),
+                                                                                 String = "C String"
+                                                                             })
+                                                                         .ToList()
                                                });
                     }
 
@@ -144,5 +155,10 @@ namespace Soap.Api.Sample.Logic.Operations
                                                });
                 }
                 };
+
+        public static class CustomDeveloperPermissions
+        {
+            public const string CanHardDelete = nameof(CanHardDelete);
+        }
     }
 }

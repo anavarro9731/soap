@@ -12,6 +12,8 @@ namespace Soap.Api.Sample.Logic.Processes
 
     public class P209_C107__CreateOrUpdateTestData : Process, IBeginProcess<C107v1_CreateOrUpdateTestDataTypes>
     {
+        
+        
         public Func<C107v1_CreateOrUpdateTestDataTypes, Task> BeginProcess =>
             async msg =>
                 {

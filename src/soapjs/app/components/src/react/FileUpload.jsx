@@ -258,4 +258,4 @@ export function FileUpload (props) {
         }
     }
 
-};
+}
