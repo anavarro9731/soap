@@ -17,6 +17,7 @@ namespace Soap.Api.Sample.Afs
         public static readonly RoleEnum TestDataAnalyst = Create("test-data-analyst", "Test Data Analyst");
 
         public static readonly RoleEnum TestDataManager = Create("test-data-manager", "Test Data Manager");
+        public static readonly RoleEnum TestDataManager2 = Create("test-data-manager2", "Test Data Manager2");
     }
 
     public class ApiPermissionEnum : TypedEnumeration<ApiPermissionEnum>
@@ -32,6 +33,8 @@ namespace Soap.Api.Sample.Afs
         public static readonly ApiPermissionEnum TestData__Restricted = Create("test-data/restricted", "Test Data: Restricted");
 
         public static readonly ApiPermissionEnum TestData__Write = Create("test-data/write", "Test Data: Write");
+        
+        public static readonly ApiPermissionEnum TestData__Write2 = Create("test-data/write2", "Test Data: Write2");
     }
 
     public class SecurityInfo : ISecurityInfo

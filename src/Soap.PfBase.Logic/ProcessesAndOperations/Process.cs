@@ -42,7 +42,6 @@
 
         public async Task BeginProcess<TMessage>(TMessage message, MessageMeta meta) where TMessage : ApiCommand
         {
-            
             var process = this as IBeginProcess<TMessage>;
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");

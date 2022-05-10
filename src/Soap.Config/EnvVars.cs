@@ -46,6 +46,7 @@
 
         public static string CosmosDbKey => Environment.GetEnvironmentVariable(nameof(CosmosDbKey));
 
+        //* only applicable in DEV environment
         public static string EnvironmentPartitionKey => Environment.GetEnvironmentVariable("EnvironmentPartitionKey");
 
         public static string SoapEnvironmentKey => Environment.GetEnvironmentVariable(nameof(SoapEnvironmentKey));

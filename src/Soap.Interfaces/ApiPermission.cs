@@ -17,8 +17,8 @@
     {
         public static string AsAuth0Claim(this ApiPermission apiPermissionGroup, string environmentPartitionKey)
         {
-            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) + "execute:"
-                   + Regex.Replace(apiPermissionGroup.Id.Key.ToLower(), "[^a-z0-9.]", string.Empty);
+            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
+                   + Regex.Replace(apiPermissionGroup.Id.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
     }
 }

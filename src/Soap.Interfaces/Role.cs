@@ -20,7 +20,7 @@
         public static string AsAuth0Name(this Role role, string environmentPartitionKey)
         {
             return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) + "builtin:"
-                   + Regex.Replace(role.Id.Key.ToLower(), "[^a-z0-9./]", string.Empty);
+                   + Regex.Replace(role.Id.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
         
         
