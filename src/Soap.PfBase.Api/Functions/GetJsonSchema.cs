@@ -24,6 +24,7 @@ namespace Soap.PfBase.Api.Functions
                 var tasks = new List<Task>();
 
                 dynamic result = null;
+                
                 tasks.Add(
                     Task.Run(
                         () =>
@@ -49,7 +50,6 @@ namespace Soap.PfBase.Api.Functions
             {
                 AddHeader(req, "Access-Control-Expose-Headers", "*");
                 AddHeader(req, "Auth0-Enabled", appConfig.AuthEnabled.ToString().ToLower());
-
                 
                 if (appConfig.AuthEnabled)
                 {

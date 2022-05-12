@@ -180,8 +180,8 @@ namespace Soap.Auth0
 
             var identityPermissions = new IdentityPermissions
             {
-                ApiPermissions = GetAllApiPermissions(message)
-                //TODO Databasepermissions = allDbPermissions()
+                ApiPermissions = GetAllApiPermissions(message),
+                //DatabasePermissions = if full RBAC it's the scopes on the users' roles mixed with the message perms by attr, otherwise its the message perms by attr and the scope have to be added to the identity permissions some other way yet undefined 
             };
             setPermissions(identityPermissions);
             //* user profile remains null
@@ -220,7 +220,8 @@ namespace Soap.Auth0
 
             setPermissions(identityPermissions);
 
-            var userProfile = await Auth0Functions.Profiles.GetUserProfileOrNull<TUserProfile>(
+            
+            var userProfile = idToken == null ? null : await Auth0Functions.GetOrAddUserProfile<TUserProfile>(
                                   bootstrapVariables
                                       .DirectCast<ApplicationConfig
                                       >(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code

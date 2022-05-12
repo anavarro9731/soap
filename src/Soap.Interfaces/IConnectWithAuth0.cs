@@ -5,6 +5,7 @@ namespace Soap.Interfaces
         public string Auth0TenantDomain { get; set; }
         public string Auth0EnterpriseAdminClientSecret { get; set; } 
         public string Auth0EnterpriseAdminClientId { get; set; }
+        public string Auth0NewUserConnection { get; set; }
         
     }
 }

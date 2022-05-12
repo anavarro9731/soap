@@ -5,36 +5,30 @@ namespace Soap.Api.Sample.Afs
     using System.Collections.Generic;
     using CircuitBoard;
     using Soap.Api.Sample.Logic.Operations;
-    using Soap.Api.Sample.Logic.Processes;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Interfaces;
 
-    
-
-    public class RoleEnum : TypedEnumeration<RoleEnum>
+    public static class RolesIds
     {
-        public static readonly RoleEnum TestDataAnalyst = Create("test-data-analyst", "Test Data Analyst");
+        public static readonly RoleId TestDataAnalyst = new RoleId("test-data-analyst", "Test Data Analyst");
 
-        public static readonly RoleEnum TestDataManager = Create("test-data-manager", "Test Data Manager");
-        public static readonly RoleEnum TestDataManager2 = Create("test-data-manager2", "Test Data Manager2");
+        public static readonly RoleId TestDataManager = new RoleId("test-data-manager", "Test Data Manager");
     }
 
-    public class ApiPermissionEnum : TypedEnumeration<ApiPermissionEnum>
+    public static class ApiPermissionIds
     {
         /* Beware changing any of these keys will result in removing the permission, if anyone has assigned
         permissions directly in Auth0 which they really shouldn't do, or in the case of custom roles, any replacement
-        permission will be missing */ 
-        
-        public static readonly ApiPermissionEnum PingPong__Execute = Create("ping-pong/execute", "Ping Pong: Execute");
+        permission will be missing */
 
-        public static readonly ApiPermissionEnum TestData__Read = Create("test-data/read", "Test Data: Read");
+        public static readonly ApiPermissionId PingPong__Execute = new ApiPermissionId("ping-pong/execute", "Ping Pong: Execute");
 
-        public static readonly ApiPermissionEnum TestData__Restricted = Create("test-data/restricted", "Test Data: Restricted");
+        public static readonly ApiPermissionId TestData__Read = new ApiPermissionId("test-data/read", "Test Data: Read");
 
-        public static readonly ApiPermissionEnum TestData__Write = Create("test-data/write", "Test Data: Write");
-        
-        public static readonly ApiPermissionEnum TestData__Write2 = Create("test-data/write2", "Test Data: Write2");
+        public static readonly ApiPermissionId TestData__Restricted = new ApiPermissionId("test-data/restricted", "Test Data: Restricted");
+
+        public static readonly ApiPermissionId TestData__Write = new ApiPermissionId("test-data/write", "Test Data: Write");
     }
 
     public class SecurityInfo : ISecurityInfo
@@ -43,7 +37,7 @@ namespace Soap.Api.Sample.Afs
         {
             new ApiPermission
             {
-                Id = ApiPermissionEnum.PingPong__Execute,
+                Id = ApiPermissionIds.PingPong__Execute,
                 Description = "Test Messages",
                 DeveloperPermissions = new List<string>
                 {
@@ -54,7 +48,7 @@ namespace Soap.Api.Sample.Afs
             },
             new ApiPermission
             {
-                Id = ApiPermissionEnum.TestData__Read,
+                Id = ApiPermissionIds.TestData__Read,
                 DeveloperPermissions = new List<string>
                 {
                     nameof(C111v1_GetRecentTestData),
@@ -63,7 +57,7 @@ namespace Soap.Api.Sample.Afs
             },
             new ApiPermission
             {
-                Id = ApiPermissionEnum.TestData__Write,
+                Id = ApiPermissionIds.TestData__Write,
                 DeveloperPermissions = new List<string>
                 {
                     nameof(C109v1_GetC107FormDataForCreate),
@@ -73,28 +67,28 @@ namespace Soap.Api.Sample.Afs
             },
             new ApiPermission
             {
-                Id = ApiPermissionEnum.TestData__Restricted,
+                Id = ApiPermissionIds.TestData__Restricted,
                 DeveloperPermissions = new List<string>
                 {
                     nameof(C114v1_DeleteTestDataById),
-                    TestDataOperations.CustomDeveloperPermissions.CanHardDelete 
+                    TestDataOperations.CustomDeveloperPermissions.CanHardDelete
                 }
             }
-        };  
+        };
 
         public List<Role> BuiltInRoles { get; } = new List<Role>
         {
             new Role
             {
-                Id = RoleEnum.TestDataAnalyst,
+                Id = RolesIds.TestDataAnalyst,
                 Description = "Access to View All Test Data",
-                ApiPermissions = new List<Enumeration> { ApiPermissionEnum.TestData__Read }
+                ApiPermissions = new List<ApiPermissionId> { ApiPermissionIds.TestData__Read }
             },
             new Role
             {
-                Id = RoleEnum.TestDataManager,
+                Id = RolesIds.TestDataManager,
                 Description = "Access to Change All Test Data",
-                ApiPermissions = new List<Enumeration> { ApiPermissionEnum.TestData__Read, ApiPermissionEnum.TestData__Write }
+                ApiPermissions = new List<ApiPermissionId> { ApiPermissionIds.TestData__Read, ApiPermissionIds.TestData__Write }
             }
         };
     }

@@ -69,6 +69,7 @@
                 string itAlertsEmailAddress,
                 IReadOnlyList<string> allowedTo = null)
             {
+                
                 Guard.Against(string.IsNullOrEmpty(genericSenderAddress), $"{nameof(MailJetEmailSenderSettings)}.{nameof(genericSenderAddress)} cannot be null. You must provide a backup from address, in case the user does not specify one with the Notification");
                 Guard.Against(string.IsNullOrEmpty(itAlertsEmailAddress), $"{nameof(MailJetEmailSenderSettings)}.{nameof(itAlertsEmailAddress)} cannot be null. You must provide an address for IT alerts");
                 Guard.Against(
@@ -105,6 +106,7 @@
 
         public class SendingEmail : IChangeState
         {
+        
             public SendingEmail(string text, string subject, string[] sendTo)
             {
                 Text = text;

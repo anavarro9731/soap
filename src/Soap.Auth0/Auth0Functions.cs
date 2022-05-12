@@ -21,28 +21,24 @@ namespace Soap.Auth0
     using Soap.Utility.Functions.Extensions;
     using System.Text.RegularExpressions;
     using CircuitBoard;
+    using DataStore;
+    using Soap.Utility;
 
     public static partial class Auth0Functions
     {
-        private static OpenIdConnectConfiguration cache_openIdConnectConfiguration;
-
-        private static (ManagementApiClient apiClient, DateTime expires) managementApiClient;
-
+        private static OpenIdConnectConfiguration openIdConnectConfigurationCache;
+        
         public static async Task CheckAuth0Setup(
             ISecurityInfo securityInfo,
             ApplicationConfig applicationConfig,
             Func<string, ValueTask> writeLine)
         {
-            
             {
-                string managementApiToken = null;
                 ManagementApiClient client = null;
 
                 if (ConfigIsEnabledForAuth0Integration(applicationConfig))
                 {
-                    await Tokens.GetManagementApiToken(applicationConfig, v => managementApiToken = v);
-
-                    GetManagementApiClient(managementApiToken, applicationConfig, v => client = v);
+                    await Internal.GetManagementApiClientCached(applicationConfig, var => client = var);
 
                     GetApiName(applicationConfig, out var apiName);
 
@@ -166,7 +162,7 @@ namespace Soap.Auth0
                         var localPermissions = matchingLocalCopy.ApiPermissions;
                         
                         //* remove permissions
-                        var permissionsToRemove = serverSidePermissionsForTheRole.Where(sp => localPermissions.All(localPermission => AsAuth0Claim(localPermission, EnvVars.EnvironmentPartitionKey) != sp.Name));
+                        var permissionsToRemove = serverSidePermissionsForTheRole.Where(sp => localPermissions.All(localPermission => localPermission.AsAuth0Claim(EnvVars.EnvironmentPartitionKey) != sp.Name));
                         if (permissionsToRemove.Any())
                         {
                             await writeLine(
@@ -190,7 +186,7 @@ namespace Soap.Auth0
                         var permissionsToAdd = localPermissions
                             .Where(
                                 lp => serverSidePermissionsForTheRole.All(
-                                    sp => sp.Name != AsAuth0Claim(lp, EnvVars.EnvironmentPartitionKey))).ToList();
+                                    sp => sp.Name != lp.AsAuth0Claim(EnvVars.EnvironmentPartitionKey))).ToList();
                         var addTasks = permissionsToAdd
                                        .Select(async p => await client.Roles.AssignPermissionsAsync(
                                                               serverRoleThatNeedsItsApiPermissionsChecked.Id,
@@ -201,7 +197,7 @@ namespace Soap.Auth0
                                                                     new PermissionIdentity()
                                                                     {
                                                                         Identifier = apiId,
-                                                                        Name = AsAuth0Claim(p, EnvVars.EnvironmentPartitionKey)
+                                                                        Name = p.AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
                                                                     }
                                                                   }
                                                               }));
@@ -213,11 +209,7 @@ namespace Soap.Auth0
                         }
                         await Task.WhenAll(addTasks);
 
-                        static string AsAuth0Claim(Enumeration apiPermission, string environmentPartitionKey)
-                        {
-                            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
-                                   + Regex.Replace(apiPermission.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
-                        }
+            
                     }
                     
                     static async Task RemoveServerRole(ManagementApiClient client, global::Auth0.ManagementApi.Models.Role role)
@@ -468,32 +460,32 @@ namespace Soap.Auth0
 
                 return scopes;
             }
-        }
-
-        private static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, global::Soap.Interfaces.Role role)
-        {
-            var newRole = await client.Roles.CreateAsync(
-                              new RoleCreateRequest()
-                              {
-                                  Description = role.Description ?? role.Id.Value,
-                                  Name = role.AsAuth0Name(EnvVars.EnvironmentPartitionKey)
-                              });
-
-            if (role.ApiPermissions.Any())
+            
+            static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, global::Soap.Interfaces.Role role)
             {
-                await client.Roles.AssignPermissionsAsync(
-                    newRole.Id,
-                    new AssignPermissionsRequest()
-                    {
-                        Permissions = role.ApiPermissions.Select(
-                                              apiPermissionEnum => new PermissionIdentity()
-                                              {
-                                                  Identifier = apiId,
-                                                  Name = securityInfo.ApiPermissionFromEnum(apiPermissionEnum)
-                                                                     .AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
-                                              })
-                                          .ToList()
-                    });
+                var newRole = await client.Roles.CreateAsync(
+                                  new RoleCreateRequest()
+                                  {
+                                      Description = role.Description ?? role.Id.Value,
+                                      Name = role.AsAuth0Name(EnvVars.EnvironmentPartitionKey)
+                                  });
+
+                if (role.ApiPermissions.Any())
+                {
+                    await client.Roles.AssignPermissionsAsync(
+                        newRole.Id,
+                        new AssignPermissionsRequest()
+                        {
+                            Permissions = role.ApiPermissions.Select(
+                                                  apiPermissionEnum => new PermissionIdentity()
+                                                  {
+                                                      Identifier = apiId,
+                                                      Name = securityInfo.ApiPermissionFromEnum(apiPermissionEnum)
+                                                                         .AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
+                                                  })
+                                              .ToList()
+                        });
+                }
             }
         }
 
@@ -666,15 +658,15 @@ namespace Soap.Auth0
             }
         }
 
+
+        
         public static async Task<string> GetUiApplicationClientId(ApplicationConfig applicationConfig, Assembly messagesAssembly)
         {
             {
-                string mgmtToken = null;
+                
                 ManagementApiClient client = null;
 
-                await Tokens.GetManagementApiToken(applicationConfig, v => mgmtToken = v);
-
-                GetManagementApiClient(mgmtToken, applicationConfig, v => client = v);
+                await Internal.GetManagementApiClientCached(applicationConfig, v => client = v);
 
                 GetApiName(applicationConfig, out var apiName);
 
@@ -723,26 +715,13 @@ namespace Soap.Auth0
 
         private static string GetAppName(string apiName) => $"{apiName}.ui";
 
-        private static void GetManagementApiClient(
-            string mgmtToken,
-            ApplicationConfig applicationConfig,
-            Action<ManagementApiClient> setClient)
-        {
-            if (managementApiClient == default || DateTime.UtcNow.Subtract(managementApiClient.expires).TotalHours > 23.0)
-            {
-                managementApiClient = (new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2")), DateTime.UtcNow);   
-            }
-
-            setClient(managementApiClient.apiClient);
-        }
-
         private static async Task<OpenIdConnectConfiguration> GetOpenIdConfig(string tenantDomain)
         {
             //* Get the public keys from the jwks endpoint   
 
             //* cache til static expires in azure functions, as its expensive
-            cache_openIdConnectConfiguration ??= await GetOpenIdConfigInternal(tenantDomain);
-            return cache_openIdConnectConfiguration;
+            openIdConnectConfigurationCache ??= await GetOpenIdConfigInternal(tenantDomain);
+            return openIdConnectConfigurationCache;
 
             static async Task<OpenIdConnectConfiguration> GetOpenIdConfigInternal(string tenantDomain)
             {

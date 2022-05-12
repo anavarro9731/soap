@@ -2,6 +2,7 @@ namespace Soap.Auth0
 {
     using System;
     using System.Threading.Tasks;
+    using global::Auth0.ManagementApi;
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.IdentityModel.Protocols.OpenIdConnect;
     using Newtonsoft.Json;
@@ -10,11 +11,29 @@ namespace Soap.Auth0
 
     public static partial class Auth0Functions
     {
-        public static class Tokens
+        public static class Internal
         {
             private static RestClient restClient;
+            private static (ManagementApiClient apiClient, DateTime expires) managementApiClientCache;
             
-            public static async Task GetEnterpriseAdminM2MTokenForThisApi(ApplicationConfig applicationConfig, Action<string> setToken)
+            internal static async Task GetManagementApiClientCached(
+                ApplicationConfig applicationConfig,
+                Action<ManagementApiClient> set)
+            {
+                var mgmtToken = await Internal.GetManagementApiTokenViaHttp(applicationConfig);
+            
+                if (managementApiClientCache == default || DateTime.UtcNow.Subtract(managementApiClientCache.expires).TotalHours > 23.0)
+                {
+                    managementApiClientCache = (new ManagementApiClient(mgmtToken, new Uri($"https://{applicationConfig.Auth0TenantDomain}/api/v2")), DateTime.UtcNow);   
+                }
+
+                set(managementApiClientCache.apiClient);
+            }
+            
+            /* admin token for making calls to our API
+             depending on your Auth0plan, these can be limited in number you can acquire without incurring extra costs
+             last check the free plan only supported 1K/mo this is why we use the internal servicetoken instead but im keeping the function here for reference */
+            internal static async Task<string> GetEnterpriseAdminM2MTokenForThisApi(ApplicationConfig applicationConfig)
             {
                 string adminM2MToken = null;
                 await GetApiAccessToken(
@@ -22,10 +41,11 @@ namespace Soap.Auth0
                     v => adminM2MToken = v,
                     applicationConfig.FunctionAppHostUrlWithTrailingSlash);
 
-                setToken(adminM2MToken);
+                return adminM2MToken;
             }
 
-            public static async Task GetManagementApiToken(ApplicationConfig applicationConfig, Action<string> setToken)
+            //* admin token for making calls to the Auth0 Mgmt API
+            private static async Task<string> GetManagementApiTokenViaHttp(ApplicationConfig applicationConfig)
             {
                 string adminToken = null;
                 await GetApiAccessToken(
@@ -33,7 +53,7 @@ namespace Soap.Auth0
                     v => adminToken = v,
                     $"https://{applicationConfig.Auth0TenantDomain}/api/v2/");
 
-                setToken(adminToken);
+                return adminToken;
             }
             
             private static async Task GetApiAccessToken(
