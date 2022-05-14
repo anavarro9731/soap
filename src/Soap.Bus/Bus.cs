@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
+    using Serilog;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -79,14 +80,21 @@
             {
                 if (string.IsNullOrEmpty(contextMessage.Headers.GetSessionId()))
                 {
-                    throw new ApplicationException(
-                        "Outgoing message is set to reply to web socket sender, but the sender has not set a sessionId");
+                    /* Outgoing message is set to reply to web socket sender, but the sender has not set a sessionId
+                     originally i was throwing an error here, but sometimes you want to send the same command from webclient
+                     and another service and then you will get this problem. because this is basically an infrastructure concern
+                     , as in apart from the Bus.Publish statement no other business logic can cause this problem, i think we
+                     can probably adopt an approach of just ignoring messages like this and writing a log entry */
+                    Log.Logger.Warning("Outgoing message was set to reply to web socket sender, but the sender has not set a sessionId, ignoring");
+                    eventVisibility.RemoveFlag(IBusClient.EventVisibility.ReplyToWebSocketSender);
                 }
-
-                //* transfer from incoming command to outgoing event for websocket clients
-                eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
-                eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
-                eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);
+                else
+                {
+                    //* transfer from incoming command to outgoing event for websocket clients
+                    eventToPublish.Headers.SetSessionId(contextMessage.Headers.GetSessionId());
+                    eventToPublish.Headers.SetCommandHash(contextMessage.Headers.GetCommandHash());
+                    eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);    
+                }
             }
 
             eventToPublish.Validate();
