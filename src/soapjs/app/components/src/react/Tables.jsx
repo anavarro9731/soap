@@ -392,22 +392,26 @@ function ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, e
 
                 const propertyValue = object[nameOfProperty];
 
-                if (propertyValue instanceof Array) {
-                    arrayOfComponentsFromObjectProperties.push(<ArrayTableNested propertyKey={nameOfProperty}
-                                                                                 arrayOfObjects={propertyValue}
-                                                                                 hiddenFields={hiddenFields}
-                                                                                 expandedFields={expandedFields}
-                                                                                 propertyRenderer={propertyRenderer}
-                                                                                 entityMenus={entityMenus}/>);
-                } else if (isChildObject(propertyValue)) {
-                    arrayOfComponentsFromObjectProperties.push(<ObjectTableNested propertyKey={nameOfProperty}
-                                                                                  hiddenFields={hiddenFields}
-                                                                                  expandedFields={expandedFields}
-                                                                                  object={propertyValue}
-                                                                                  propertyRenderer={propertyRenderer}
-                                                                                  entityMenus={entityMenus}/>)
+                if (propertyRenderer && propertyRenderer[nameOfProperty]) {
+                    arrayOfComponentsFromObjectProperties.push(propertyRenderer[nameOfProperty](propertyValue));
                 } else {
-                    arrayOfComponentsFromObjectProperties.push(ConvertPropertyToComponent(nameOfProperty, propertyValue, propertyRenderer));
+                    if (propertyValue instanceof Array) {
+                        arrayOfComponentsFromObjectProperties.push(<ArrayTableNested propertyKey={nameOfProperty}
+                                                                                     arrayOfObjects={propertyValue}
+                                                                                     hiddenFields={hiddenFields}
+                                                                                     expandedFields={expandedFields}
+                                                                                     propertyRenderer={propertyRenderer}
+                                                                                     entityMenus={entityMenus}/>);
+                    } else if (isChildObject(propertyValue)) {
+                        arrayOfComponentsFromObjectProperties.push(<ObjectTableNested propertyKey={nameOfProperty}
+                                                                                      hiddenFields={hiddenFields}
+                                                                                      expandedFields={expandedFields}
+                                                                                      object={propertyValue}
+                                                                                      propertyRenderer={propertyRenderer}
+                                                                                      entityMenus={entityMenus}/>)
+                    } else {
+                        arrayOfComponentsFromObjectProperties.push(ConvertPropertyToComponent(nameOfProperty, propertyValue, propertyRenderer));
+                    }
                 }
             }
     }
@@ -419,7 +423,7 @@ function ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, e
             propertyValue.blobMetaMarker !== blobMetaMarkerGuid;
     }
 
-    function ConvertPropertyToComponent(nameOfProperty, propertyValue, propertyRenderer) {
+    function ConvertPropertyToComponent(nameOfProperty, propertyValue) {
 
         let value;
 
@@ -453,11 +457,6 @@ function ConvertObjectToComponentArray(object, propertyRenderer, hiddenFields, e
             } else {
                 value = "## error ##";
             }
-        }
-        if (propertyRenderer && propertyRenderer[nameOfProperty]) {
-            return propertyRenderer[nameOfProperty](value);
-        } else {
-            return value;
         }
     }
 }
