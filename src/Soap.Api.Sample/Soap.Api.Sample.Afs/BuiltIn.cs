@@ -72,6 +72,16 @@
             ILogger log) =>
             PlatformFunctions.PrintSchema(log, typeof(C100v1_Ping).Assembly);
 
+        [FunctionName("ReceiveMessageHttp")]
+        public static async  Task ReceiveMessageHttp(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]
+            HttpRequest req,
+            [SignalR(HubName = "SoapApiSampleHub", ConnectionStringSetting = "AzureSignalRConnectionString")]
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            ILogger log) =>
+            await PlatformFunctions.HandleMessage<UserProfile>(req, new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log);
+
+        
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
             [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus")]
