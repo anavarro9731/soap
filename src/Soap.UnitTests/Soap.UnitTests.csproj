@@ -9,6 +9,7 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.2" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Soap.Client\Soap.Client.csproj" />
         <ProjectReference Include="..\Soap.Interfaces.Messages\Soap.Interfaces.Messages.csproj" />
         <ProjectReference Include="..\Soap.Utility\Soap.Utility.csproj" />
     </ItemGroup>

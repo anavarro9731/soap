@@ -27,6 +27,7 @@ function global:Run {
 	$libraryProjects = @(
 		"Soap.Auth0"
 		"Soap.Bus"
+		"Soap.Client"
 		"Soap.Config"
 		"Soap.Context"
 		"Soap.Interfaces"

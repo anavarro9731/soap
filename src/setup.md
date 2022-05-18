@@ -89,10 +89,13 @@ az account show
 az ad sp create-for-rbac --name SoapServicePrincipal{or ProjectSpecificNameIfYouWantToSegregateSecurity} --role Contributor --scopes /subscriptions/{SubscriptionId}  
 # it's important to set the subscription if there is more than one
 # if you want to lock it down beyond the subscription to a resource group for example, you will need to create the resource-group
-# in advance before you execute this line and then you can append it to the scope like --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+# in advance before you execute this line and then you can replace the scope param with --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
  
 to verify 
 az ad sp list --display-name SoapServicePrincipal
+or to see all existing you could try
+az ad sp list --all --query "[?contains(displayName,'Soap')||contains(displayName,'Principal')].{Name: displayName, Id: objectId}" --output table
+
 ```
 See [here](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli?view=azure-cli-latest) for details 
 
