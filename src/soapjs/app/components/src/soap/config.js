@@ -47,6 +47,7 @@ const _logger = (function () {
     }
 })();
 
+let _sendByDirectHttp = false;
 let _auth0, _sessionDetails;
 const _onLoadedCallbacks = [];
 (async function () {
@@ -211,8 +212,12 @@ function sendMessage(msg) {
         (async function (typedMessage) {
 
             try {
-                await sendByHttp(typedMessage);
-
+                if (_sendByDirectHttp) {
+                    await sendByHttp(typedMessage);    
+                } else {
+                    await sendByBus(typedMessage);
+                }
+                
             } catch (e) {
                 _logger.log(e);
             }
@@ -335,6 +340,8 @@ function vars() {
     };
 }
 
+
+
 export default {
     get vars() {
         return vars();
@@ -347,6 +354,12 @@ export default {
     },
     get auth0() {
         return _auth0;
+    },
+    get sendByDirectHttp() {
+        return _sendByDirectHttp;
+    },
+    set sendByDirectHttp(value) {
+        _sendByDirectHttp = value;
     },
     onLoaded(callback) {
         _onLoadedCallbacks.push(callback);
