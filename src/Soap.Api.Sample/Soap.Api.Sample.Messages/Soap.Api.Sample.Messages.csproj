@@ -1,17 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>8.12.0-alpha</Version>
+    <Version>8.13.0-alpha</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="9.2.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Soap.PfBase.Messages\Soap.PfBase.Messages.csproj" />
     <ProjectReference Include="..\Soap.Api.Sample.Constants\Soap.Api.Sample.Constants.csproj" />
   </ItemGroup>
-  
 </Project>
