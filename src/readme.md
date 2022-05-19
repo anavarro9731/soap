@@ -832,9 +832,10 @@ Most of this is taken care of for you automatically by the devops scripts, but i
 - If you need to add custom config properties and they are common to all environments just add them as constants in the logic
 assembly
 - If you have custom config that differs per environment (e.g. a third party api with its own environments and separate urls)
-then you will need to add a property to the Config classes via a new interface or base class in your service.config repo and
-  then in the Logic code you need to cast the generic ApplicationConfig to your new custom type. You can do this using 
-  the following code in any Process or Operation `GetConfig<MyConfigType>()`
+then you will need to add a property to the Config classes, and at this time you need to add that property to each class, you
+  can't use a base class or interface because the runtime compilation only downloads and compiles the single .cs file for that
+  environment so everything needed has to be in that single file.  Once you have added the property then you can retrieve 
+  it from any Process or Operation using the GetCustomConfigVariable<T>(string propertyName)
 
 ### Pushing Changes
 
@@ -894,6 +895,3 @@ any given moment.
 #### Publishing to Production
 
 TODO
-
-In many cases these scripts will give you errors if you are trying to do something you should not
-and you just need to follow the instructions given.

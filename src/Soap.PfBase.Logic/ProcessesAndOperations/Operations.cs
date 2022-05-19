@@ -9,6 +9,7 @@
     using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Interfaces;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     public class Operations<TAggregate> : IOperation where TAggregate : class, IAggregate, new()
@@ -25,7 +26,12 @@
 
         protected BlobStorageWrapper BlobOperations => new BlobStorageWrapper(this.context);
 
-        protected TDerivedConfig GetConfig<TDerivedConfig>() where TDerivedConfig : class, IBootstrapVariables => this.context.AppConfig.DirectCast<TDerivedConfig>();
+        protected T GetCustomConfigVariable<T>(string propertyName)
+        {
+            var propertyInfo = this.context.AppConfig.GetType().GetProperty(propertyName);
+            Guard.Against(propertyInfo == null, $"Custom config property {propertyName} not found");
+            return (T)propertyInfo.GetValue(this.context.AppConfig, null);
+        }
 
         protected class BlobStorageWrapper
         {
