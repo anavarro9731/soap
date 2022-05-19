@@ -39,7 +39,8 @@ function global:Run {
 		"Soap.PfBase.Tests"
 		"Soap.PfBase.Models"
 		"Soap.PfBase.Messages"
-		"Soap.Utility"
+		"Soap.Utility",
+		"Soap.Api.Sample\Soap.Api.Sample.Messages"
 	)
 
 	# the relative path on disk without the trailing slash to this file of all xUnit test projects / can be an empty array
