@@ -85,11 +85,10 @@ az account list
 az account set -s "SubscriptionNameOrIdHere"
 az account show
 
-# then 
-az ad sp create-for-rbac --name SoapServicePrincipal{or ProjectSpecificNameIfYouWantToSegregateSecurity} --role Contributor --scopes /subscriptions/{SubscriptionId}  
-# it's important to set the subscription if there is more than one
-# if you want to lock it down beyond the subscription to a resource group for example, you will need to create the resource-group
-# in advance before you execute this line and then you can replace the scope param with --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+# then you will need to identify or create the resource-group 
+# finally you can execute
+az ad sp create-for-rbac --name SoapServicePrincipal{or ProjectSpecificNameIfYouWantToSegregateSecurity} --role Contributor --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}  
+
  
 to verify 
 az ad sp list --display-name SoapServicePrincipal
