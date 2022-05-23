@@ -4,20 +4,19 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
-    using System.Reflection.Emit;
     using CircuitBoard;
 
-    public abstract class UIFormDataEvent<TApiCommand> : ApiEvent where TApiCommand: ApiCommand
+    public abstract class UIFormDataEvent<TApiCommand> : ApiEvent where TApiCommand : ApiCommand
     {
+        public Guid? E000_CommandBlobId { get; set; }
+
         public string E000_CommandName { get; set; }
 
-        public Guid? E000_CommandBlobId { get; set; }
-        
-        public string E000_ValidationEndpoint { get; set; }
-        
-        public string E000_SasStorageTokenForCommand { get; set; }
-        
         public List<FieldMeta> E000_FieldData { get; set; }
+
+        public string E000_SasStorageTokenForCommand { get; set; }
+
+        public string E000_ValidationEndpoint { get; set; }
 
         /*
            we need to build out the structure of the command in the field data graph
@@ -60,186 +59,194 @@
                                 
             */
 
-        
         public void SetProperties(string sasTokenForCommand, Guid idOfCommand, TApiCommand command)
         {
             {
                 E000_CommandName = ToShortAssemblyTypeName(command.GetType());
-                
+
                 var fieldData = new List<FieldMeta>();
 
-                BuildFieldAndObjectStructureData(
-                    command.GetType(),
-                    command,
-                    string.Empty,
-                    fieldData,
-                    E000_CommandName);
+                BuildFieldAndObjectStructureData(command.GetType(), command, string.Empty, fieldData, E000_CommandName);
 
                 E000_FieldData = fieldData;
                 E000_SasStorageTokenForCommand = sasTokenForCommand;
                 E000_CommandBlobId = idOfCommand;
-                
             }
-            
-            static string ToShortAssemblyTypeName(Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
+        }
 
-            static void BuildFieldAndObjectStructureData(
-                Type type,
-                object instance,
-                string typePath,
-                List<FieldMeta> fieldData,
-                string commandName)
-            {
+        private static void BuildFieldAndObjectStructureData(
+            Type type,
+            object instance,
+            string typePath,
+            List<FieldMeta> fieldData,
+            string commandName)
+        {
+            //* FRAGILE if you add another property like Headers to ApiMessage base class it should be excluded too, no strong link
+            foreach (var validProperty in type.GetProperties().Where(t => t.Name != nameof(Headers)))
+                /* You can be confident that the ApiCommand returned from UserDefinedValues does not have any invalid properties
+                    since it would already be checked by cached schema, which processes commands before events (which this is) ensuring the command
+                    you are parsings' schema has already been validated */
+
+                if (PropertyTypeIsMessagePrimitive(validProperty))
                 {
-                    //* FRAGILE if you add another property like Headers to ApiMessage base class it should be excluded too, no strong link
-                    foreach (var validProperty in type.GetProperties().Where(t => t.Name != nameof(Headers)))
-                    {
-                        /* You can be confident that the ApiCommand returned from UserDefinedValues does not have any invalid properties
-                        since it would already be checked by cached schema, which processes commands before events (which this is) ensuring the command
-                        you are parsings' schema has already been validated */
+                    CreateFieldMetaObjectFromProperty(validProperty, typePath, instance, commandName, out var fieldMeta);
 
-                        if (PropertyTypeIsMessagePrimitive(validProperty))
-                        {
-                            CreateFieldMetaObjectFromProperty(validProperty, typePath, instance, commandName, out var fieldMeta);
+                    CheckFieldMetaToAvoidPassingEmptyEnumerations(fieldMeta, commandName, validProperty);
 
-                            CheckFieldMetaToAvoidPassingEmptyEnumerations(fieldMeta, commandName, validProperty);
+                    fieldData.Add(fieldMeta);
+                }
+                else
+                {
+                    //* recurse
+                    BuildFieldAndObjectStructureData(
+                        validProperty.PropertyType,
+                        validProperty.GetValue(instance)
+                        ?? Activator.CreateInstance(
+                            validProperty
+                                .PropertyType), //* all custom types should have parameterless constructors, and not be nullables see CachedSchema check
+                        GetPropertyPath(validProperty, typePath),
+                        fieldData,
+                        commandName); //* will flatten property list
+                }
 
-                            fieldData.Add(fieldMeta);
+           
+        }
 
-                        }
-                        else
-                        {
-                            //* recurse
-                            BuildFieldAndObjectStructureData(
-                                validProperty.PropertyType,
-                                validProperty.GetValue(instance)
-                                ?? Activator.CreateInstance(
-                                    validProperty
-                                        .PropertyType), //* all custom types should have parameterless constructors, and not be nullables see CachedSchema check
-                                GetPropertyPath(validProperty, typePath),
-                                fieldData,
-                                commandName); //* will flatten property list
-                        }
-                    }
+        private static string ToShortAssemblyTypeName(Type t)
+        {
+            return $"{t.FullName}, {t.Assembly.GetName().Name}";
+        }
+        
+         static void CreateFieldMetaObjectFromProperty(
+                PropertyInfo validProperty,
+                string typePath,
+                object instance,
+                string commandName,
+                out FieldMeta fieldMeta)
+            {
+                GetADefaultPropertyLabel(validProperty, out var defaultLabel);
 
-                    static void CreateFieldMetaObjectFromProperty(
-                        PropertyInfo validProperty,
-                        string typePath,
-                        object instance,
-                        string commandName,
-                        out FieldMeta fieldMeta)
-                    {
-                        GetADefaultPropertyLabel(validProperty, out var defaultLabel);
+                fieldMeta = new FieldMeta
+                {
+                    Name = GetPropertyPath(validProperty, typePath),
+                    Required = HasAttribute<RequiredAttribute>(validProperty),
+                    PropertyName = validProperty.Name,
+                    Caption = HasAttribute<RequiredAttribute>(validProperty) ? "required" : string.Empty,
+                    Label = HasAttribute<LabelAttribute>(validProperty) ? validProperty.GetCustomAttribute<LabelAttribute>().Label : defaultLabel,
+                    DataType = GetDataType(validProperty, commandName),
+                    InitialValue = validProperty.GetValue(instance),
+                    Options = GetOptions(validProperty)
+                };
+            }
 
-                        fieldMeta = new FieldMeta
-                        {
-                            Name = GetPropertyPath(validProperty, typePath),
-                            Required = HasAttribute<RequiredAttribute>(validProperty),
-                            PropertyName = validProperty.Name,
-                            Caption = HasAttribute<RequiredAttribute>(validProperty) ? "required" : string.Empty,
-                            Label = HasAttribute<LabelAttribute>(validProperty)
-                                        ? validProperty.GetCustomAttribute<LabelAttribute>().Label
-                                        : defaultLabel,
-                            DataType = validProperty.PropertyType switch
-                            {
-                                var t when t == typeof(DateTime?) => "datetime", // -> datepicker
-                                var t when t == typeof(Guid?) => "guid", // -> guid textbox
-                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => "multilinestring", //textarea
-                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => "joditeditor",
-                                var t when t == typeof(string) => "string", // -> textbox
-                                var t when t == typeof(BlobMeta) => HasAttribute<IsImageAttribute>(validProperty)
-                                                                          ? "image"
-                                                                          : "file", //-> fileupload //* we don't break down blobs, like other custom objects, they are considered primitives for form-building
-                                var t when t == typeof(long?) => "number", // -> number textbox
-                                var t when t == typeof(decimal?) => "number", // -> number textbox
-                                var t when t == typeof(bool?) => "boolean", // -> toggle
-                                var t when t == typeof(EnumerationAndFlags)
-                                    => //* we don't break down enumerations, like other custom objects, they are considered primitives for form-building
-                                    "enumeration", //-> select (single or multi) 
-                                _ => throw new CircuitException(
-                                         $"Unexpected Data Type {validProperty.PropertyType} on property {validProperty.Name} in command {commandName}. Please validate schema.")
-                            },
-                            InitialValue = validProperty.GetValue(instance),
-                            Options = validProperty.PropertyType switch
-                            {
-                                /*use lcase in anontype fields since they are not autocased by js serialiser */
-                                var t when t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty) => new
-                                {
-                                    height = validProperty.GetCustomAttribute<MultiLineAttribute>().PixelHeight,
-                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
-                                },  
-                                var t when t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty) => new
-                                {
-                                    height = validProperty.GetCustomAttribute<JoditEditorAttribute>().PixelHeight,
-                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
-                                    
-                                },
-                                var t when t == typeof(EnumerationAndFlags) => new
-                                {
-                                    creatable = HasAttribute<AllowCreateAbleOptions>(validProperty),
-                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
-                                },
-                                _ => new
-                                {
-                                    hidden = HasAttribute<HiddenAttribute>(validProperty)
-                                }
-                            }
-                        };
-                        
-                    }
-                    
-                    static void CheckFieldMetaToAvoidPassingEmptyEnumerations(
-                        FieldMeta fieldMeta,
-                        string commandName,
-                        PropertyInfo validProperty)
-                    {
-                        if (fieldMeta.DataType == "enumeration" && fieldMeta.Required.GetValueOrDefault()
-                                                                && (fieldMeta.InitialValue == null
-                                                                    || ((EnumerationAndFlags)fieldMeta.InitialValue)
-                                                                       .AllEnumerations.Count == 0))
-                        {
-                            throw new CircuitException(
-                                $"Cannot present enumeration for property {validProperty.Name} in command {commandName} because the list of options is null or empty but the field is required.");
-                        }
-                    }
+         static string GetDataType(PropertyInfo validProperty, string commandName)
+         {
+             Type t = validProperty.PropertyType;
 
-                    //* FRAGILE CachedSchema checks format, but this is still tying that check to this code in a weak way
-                    static void GetADefaultPropertyLabel(PropertyInfo validProperty, out string defaultLabel) =>
-                        defaultLabel = validProperty.Name.Substring(validProperty.Name.IndexOf('_') + 1);
+             if (t == typeof(DateTime?)) return "datetime"; // -> datepicker
+             else if (t == typeof(Guid?)) return "guid"; // -> guid textbox
+             else if (t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty)) return "multilinestring"; //textarea
+             else if (t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty)) return "joditeditor"; //richtext
+             else if (t == typeof(string)) return "string"; // -> textbox
+             else if (t == typeof(BlobMeta)) return HasAttribute<IsImageAttribute>(validProperty) ? "image" : "file"; //-> fileupload //* we don't break down blobs, like other custom objects, they are considered primitives for form-building
+             else if (t == typeof(long?)) return "number"; // -> number textbox
+             else if (t == typeof(decimal?)) return "number"; // -> number textbox
+             else if (t == typeof(bool?)) return "boolean"; // -> toggle
+             else if (t == typeof(EnumerationAndFlags))
+                 return //* we don't break down enumerations, like other custom objects, they are considered primitives for form-building
+                     "enumeration"; //-> select (single or multi) 
+             else
+                 throw new CircuitException(
+                     $"Unexpected Data Type {validProperty.PropertyType} on property {validProperty.Name} in command {commandName}. Please validate schema.");
+        }
+         
+         
+         static object GetOptions(PropertyInfo validProperty)
+         {
+             Type t = validProperty.PropertyType;
+             
+                 /*use lcase in anontype fields since they are not autocased by js serialiser */
+                 if (t == typeof(string) && HasAttribute<MultiLineAttribute>(validProperty))
+                 {
+                     return new
+                     {
+                         height = validProperty.GetCustomAttribute<MultiLineAttribute>().PixelHeight,
+                         hidden = HasAttribute<HiddenAttribute>(validProperty)
+                     };
+                 } else if (t == typeof(string) && HasAttribute<JoditEditorAttribute>(validProperty))
+                 {
+                     return new
+                     {
+                         height = validProperty.GetCustomAttribute<JoditEditorAttribute>().PixelHeight,
+                         hidden = HasAttribute<HiddenAttribute>(validProperty)
+                     };
+                 } else if (t == typeof(EnumerationAndFlags))
+                 {
+                     return new
+                     {
+                         creatable = HasAttribute<AllowCreateAbleOptions>(validProperty),
+                         hidden = HasAttribute<HiddenAttribute>(validProperty)
+                     };
+                 }
+                 else
+                 {
+                     return new
+                     {
+                         hidden = HasAttribute<HiddenAttribute>(validProperty)
+                     };
+                 }
+         }
 
-
-
-                    static string GetPropertyPath(PropertyInfo validProperty, string typePath) =>
-                        !string.IsNullOrEmpty(typePath) ? typePath + '.' + CamelCase(validProperty.Name) : CamelCase(validProperty.Name);
-
-                    static string CamelCase(string s) => char.ToLower(s[0]) + s.Substring(1);
-                    
-                    static bool HasAttribute<TAttribute>(PropertyInfo prop)
-                    {
-                        var attributeType = typeof(TAttribute);
-                        var att = prop.GetCustomAttributes(attributeType).Where(x => x.GetType() == attributeType);
-                        return att != null && att.Any();
-                    }
-
-                    static bool PropertyTypeIsMessagePrimitive(PropertyInfo propertyInfo)
-                    {
-                        static bool IsSystemType(Type type)
-                        {
-                            char[] SystemTypeChars =
-                            {
-                                '<', '>', '+'
-                            };
-
-                            return type.Namespace == null || type.Namespace.StartsWith("System")
-                                                          || type.Name.IndexOfAny(SystemTypeChars) >= 0;
-                        }
-
-                        return IsSystemType(propertyInfo.PropertyType)
-                               || typeof(EnumerationFlags).IsAssignableFrom(propertyInfo.PropertyType)
-                               || propertyInfo.PropertyType == typeof(BlobMeta);
-                    }
+            static void CheckFieldMetaToAvoidPassingEmptyEnumerations(FieldMeta fieldMeta, string commandName, PropertyInfo validProperty)
+            {
+                if (fieldMeta.DataType == "enumeration" && fieldMeta.Required.GetValueOrDefault()
+                                                        && (fieldMeta.InitialValue == null
+                                                            || ((EnumerationAndFlags)fieldMeta.InitialValue).AllEnumerations.Count == 0))
+                {
+                    throw new CircuitException(
+                        $"Cannot present enumeration for property {validProperty.Name} in command {commandName} because the list of options is null or empty but the field is required.");
                 }
             }
-        } 
+
+            //* FRAGILE CachedSchema checks format, but this is still tying that check to this code in a weak way
+            static void GetADefaultPropertyLabel(PropertyInfo validProperty, out string defaultLabel)
+            {
+                defaultLabel = validProperty.Name.Substring(validProperty.Name.IndexOf('_') + 1);
+            }
+
+            static string GetPropertyPath(PropertyInfo validProperty, string typePath)
+            {
+                return !string.IsNullOrEmpty(typePath) ? typePath + '.' + CamelCase(validProperty.Name) : CamelCase(validProperty.Name);
+            }
+
+            static string CamelCase(string s)
+            {
+                return char.ToLower(s[0]) + s.Substring(1);
+            }
+
+            static bool HasAttribute<TAttribute>(PropertyInfo prop)
+            {
+                var attributeType = typeof(TAttribute);
+                var att = prop.GetCustomAttributes(attributeType).Where(x => x.GetType() == attributeType);
+                return att != null && att.Any();
+            }
+
+            static bool PropertyTypeIsMessagePrimitive(PropertyInfo propertyInfo)
+            {
+               
+                return IsSystemType(propertyInfo.PropertyType) || typeof(EnumerationFlags).IsAssignableFrom(propertyInfo.PropertyType)
+                                                               || propertyInfo.PropertyType == typeof(BlobMeta);
+            }
+            
+            static bool IsSystemType(Type type)
+            {
+                char[] SystemTypeChars =
+                {
+                    '<', '>', '+'
+                };
+
+                return type.Namespace == null || type.Namespace.StartsWith("System") || type.Name.IndexOfAny(SystemTypeChars) >= 0;
+            }
+
     }
 }
