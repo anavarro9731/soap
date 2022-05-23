@@ -41,7 +41,7 @@ namespace Soap.UnitTests
                 };
 
                 result = client.Send(
-                                   "http://localhost",
+                                   "http://localhost/",
                                    x,
                                    new SoapClient.Options
                                    {
@@ -65,6 +65,9 @@ namespace Soap.UnitTests
             [Fact]
             public void ItShouldSerialiseIt()
             {
+                result.HttpResponseMessage.RequestMessage.RequestUri.Should()
+                      .Be(
+                          $"http://localhost/api/ReceiveMessageHttp?id={result.MessageId}&type=Soap.UnitTests.SoapClientTest%2BC100_TestCommand%2C%20Soap.UnitTests");
                 result.Should().NotBeNull();
                 result.MessageId.Should().NotBeEmpty();
                 result.JsonSent.Should().NotBeEmpty();

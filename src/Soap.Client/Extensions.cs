@@ -17,6 +17,8 @@ namespace Soap.Client
             return m;
         }
 
+        public static string ToShortAssemblyTypeName(this Type t) => $"{t.FullName}, {t.Assembly.GetName().Name}";
+        
         public static List<Enumeration> SetSchema(this List<Enumeration> m, string schema)
         {
             if (!m.Exists(v => v.Key == Keys.Schema))

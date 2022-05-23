@@ -84,7 +84,7 @@
 
             headers.SetSchema(commandToSend.GetType().FullName);
 
-            var uri = new Uri($"{soapHost}/api/ReceiveMessageHttp");
+            var uri = new Uri($"{soapHost.TrimEnd('/')}/api/ReceiveMessageHttp?id={messageId}&type={Uri.EscapeDataString(commandToSend.GetType().ToShortAssemblyTypeName())}");
 
             var json = JsonConvert.SerializeObject(commandToSend,  new JsonSerializerSettings
             {
@@ -105,7 +105,10 @@
 
             var httpClient = new HttpClient();
 
-            var result = options.TestMode ? new HttpResponseMessage() : await httpClient.PostAsync(uri, new StringContent(json));
+            var result = options.TestMode ? new HttpResponseMessage()
+            {
+                RequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+            } : await httpClient.PostAsync(uri, new StringContent(json));
 
             return new SendResult
             {
