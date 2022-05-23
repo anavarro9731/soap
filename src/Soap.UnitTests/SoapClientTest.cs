@@ -46,18 +46,8 @@ namespace Soap.UnitTests
                                    new SoapClient.Options
                                    {
                                        TestMode = true,
-                                       RequiresAuth = new SoapClient.Options.Auth
-                                       {
-                                           Username = "user",
-                                           AccessToken = "accesstoken",
-                                           IdentityToken = "idtoken"
-                                       },
-                                       SignalRSession = new SoapClient.Options.SignalRSessionInfo
-                                       {
-                                           CommandHash = "hash",
-                                           ConversationId = Guid.NewGuid(),
-                                           SignalRSessionId = "sessionid"
-                                       }
+                                       RequiresAuth = new SoapClient.Options.Auth("accesstoken", "idtoken", "user"),
+                                       SignalRSession = new SoapClient.Options.SignalRSessionInfo("hash", Guid.NewGuid(), "sessionid")
                                    })
                                .Result;
             }

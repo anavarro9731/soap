@@ -130,39 +130,53 @@
 
             public class Auth
             {
+                public Auth(string accessToken, string identityToken, string username)
+                {
+                    this.AccessToken = accessToken;
+                    this.IdentityToken = identityToken;
+                    this.Username = username;
+                }
+
                 /// <summary>
                 ///     Oauth bearer token with rights to perform this action
                 /// </summary>
-                public string AccessToken;
+                public string AccessToken { get; }
 
                 /// <summary>
                 ///     Openid id token
                 /// </summary>
-                public string IdentityToken;
+                public string IdentityToken { get; }
 
                 /// <summary>
                 ///     IDAAM provider username, usually email address
                 /// </summary>
-                public string Username;
+                public string Username { get; }
             }
 
             public class SignalRSessionInfo
             {
+                public SignalRSessionInfo(string commandHash, Guid conversationId, string signalRSessionId)
+                {
+                    this.CommandHash = commandHash;
+                    this.ConversationId = conversationId;
+                    this.SignalRSessionId = signalRSessionId;
+                }
+
                 /// <summary>
                 ///     Events resulting from this command sent back on the websocket conn will be contain this property, it is used for
                 ///     caching results
                 /// </summary>
-                public string CommandHash;
+                public string CommandHash { get; }
 
                 /// <summary>
                 ///     Events resulting from this command sent back on the websocket conn will be tagged with this identifier
                 /// </summary>
-                public Guid ConversationId;
+                public Guid ConversationId { get; }
 
                 /// <summary>
                 ///     Session id to be able to send return events
                 /// </summary>
-                public string SignalRSessionId;
+                public string SignalRSessionId { get; }
             }
         }
 
