@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
-    <Version>8.17.0-alpha</Version>
+    <Version>9.0.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CircuitBoard" Version="5.5.0-alpha" />
