@@ -107,11 +107,11 @@ You need to obtain three 3 values.
 3. tenant , retain as, tenantId
 ```javascript
 {
-"appId": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
+"appId": "00000000-0000-0000-0000-000000000000",
 "displayName": "SoapServicePrincipal",
 "name": "http://SoapServicePrincipal",
-"password": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e",
-"tenant": "12ac9ab7-931a-4fb9-b04b-9e686d75f33e"
+"password": "00000000-0000-0000-0000-000000000000",
+"tenant": "00000000-0000-0000-0000-000000000000"
 }
 ```
 #### Devops key
@@ -272,7 +272,7 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
 - Azurite has been known to generate errors that are a different problem underlying. CORS is set for Azurite dev instance server-side on startup see BlobStorage.DevStorageSetup IF NOT ALREADY SET
 - Errors about CORS on Azurite seem to occur if you upgrade past 12.3.0 of     "@azure/storage-blob": "12.3.0", dependency, this may be fixed in future but as of 12.9.0 is was not
 - When using Jetbrains Rider [@2020.3] after upgrading a nuget package which is both directly and implicitly installed in projects. (e.g. Datastore) You need to invalidate caches/restart for it to properly display the implicit imports
-- Changing the .env variables requires restarting parcel
+- Changing the .env variables requires restarting parcel and clearing the cache, so just run srv.ps1 and it will do it for you rather than yarn serve
 - When publishing the soap project itself, make sure that pwsh-bootstrap is loaded for the soap project and not another project which could happen if for example you were running test.ps1 recently. Second make sure the client app is running
   against a packaged version of soap. e.g. srv.ps1 -ToRemoteSoap. Both these problems should alert you through issues
   when publishing but its good to note them.

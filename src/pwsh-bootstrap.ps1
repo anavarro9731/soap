@@ -14,6 +14,7 @@ function global:Run {
 		[switch]$PackAndPublish,
 		[switch]$CreateRelease,
 		[string] $nugetApiKey,
+		[Alias('ado-pat')]
 		[string] $azureDevopsPat,
 		[string] $azClientId,
 		[string] $azClientSecret,
@@ -69,7 +70,7 @@ function global:Run {
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
+        -azureDevopsPat  $azureDevopsPat `
         -repository "soap" `
 		-forceVersion $forceVersion `
 		-push $push
@@ -85,7 +86,7 @@ function global:Run {
 		Create-Release -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
 		-azureDevopsProject "soap" `
-        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
+        -azureDevopsPat  $azureDevopsPat `
         -repository "soap" `
 		-push $push
 	}
