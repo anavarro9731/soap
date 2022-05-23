@@ -11,6 +11,7 @@ namespace Soap.MessagePipeline
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Soap.Context.Context;
     using Soap.Context.Logging;
     using Soap.Interfaces;
@@ -61,7 +62,7 @@ namespace Soap.MessagePipeline
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Could not write message {message.Headers.GetMessageId()} to store", e);
+                    throw new CircuitException($"Could not write message {message.Headers.GetMessageId()} to store", e);
                 }
             }
 
@@ -84,7 +85,7 @@ namespace Soap.MessagePipeline
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Could not read message {message.Headers.GetMessageId()} from store at {ctx.DataStore.DocumentRepository.ConnectionSettings.ToString()}", e);
+                    throw new CircuitException($"Could not read message {message.Headers.GetMessageId()} from store at {ctx.DataStore.DocumentRepository.ConnectionSettings.ToString()}", e);
                 }
             }
         }

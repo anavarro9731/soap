@@ -373,7 +373,7 @@
                                             _ when t == typeof(DateTime?) => true,
                                             _ when t == typeof(Guid?) => true,
 
-                                            _ => throw new ApplicationException(
+                                            _ => throw new CircuitException(
                                                      $"Unaccounted for system type when preparing message contract: {t.FullName}") //* this will include any System.Nullable<> of any type of than whats listed above
                                         };
 

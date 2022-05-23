@@ -90,7 +90,7 @@
             }
             catch (RequestFailedException r)
             {
-                throw new ApplicationException($"Could not read blob with id {id} from storage", r);
+                throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
 
             static async Task<Blob> Download(Events.BlobDownloadEvent @event)
@@ -120,7 +120,7 @@
             }
             catch (RequestFailedException r)
             {
-                throw new ApplicationException($"Could not read blob with id {id} from storage", r);
+                throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
 
             static async Task<bool> Exists(Events.BlobDownloadEvent @event)
@@ -154,7 +154,7 @@
                         _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.ReadAndDelete) => BlobSasPermissions.Read
                             | BlobSasPermissions.Delete,
                         _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => BlobSasPermissions.Create,
-                        _ => throw new ApplicationException("Must specify an accepted set of blob permissions")
+                        _ => throw new CircuitException("Must specify an accepted set of blob permissions")
                     });
                 
                 var sasToken = sasBuilder.ToSasQueryParameters(this.blobStorageSettings.GeStorageKeyCredential());

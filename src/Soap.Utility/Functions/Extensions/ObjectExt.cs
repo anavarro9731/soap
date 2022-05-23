@@ -86,7 +86,7 @@
         public static void CopyProperties(this object source, object destination, params string[] exclude)
         {
             // If any this null throw an exception
-            if (source == null || destination == null) throw new ApplicationException("Source or/and Destination Objects are null");
+            if (source == null || destination == null) throw new CircuitException("Source or/and Destination Objects are null");
 
             // Getting the Types of the objects
             var typeDest = destination.GetType();
@@ -159,7 +159,7 @@
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None,
                     JsonNetSettings.MessageSchemaSerialiserSettings),
-                _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
+                _ => throw new CircuitException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
 
             };
             return json;

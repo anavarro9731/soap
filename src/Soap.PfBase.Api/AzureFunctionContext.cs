@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
@@ -238,7 +239,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Cannot deserialise message", e);
+                    throw new CircuitException("Cannot deserialise message", e);
                 }
             }
 
@@ -316,7 +317,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Could not verify message type", e);
+                    throw new CircuitException("Could not verify message type", e);
                 }
             }
         }
@@ -333,7 +334,7 @@
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error retrieving config", e);
+                throw new CircuitException("Error retrieving config", e);
             }
 
             static void EnsureEnvironmentVars()

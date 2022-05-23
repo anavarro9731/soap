@@ -1,6 +1,7 @@
 namespace Soap.MessagePipeline.MessageAggregator
 {
     using System;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -26,7 +27,7 @@ namespace Soap.MessagePipeline.MessageAggregator
             }
             catch (InvalidCastException e)
             {
-                throw new ApplicationException(
+                throw new CircuitException(
                     $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                     But the object you have registered as a return value for this function is of the wrong type. 
                     You registered a return value of type {this.toReturn.GetType().ToTypeNameString()} but the function requires a type of {
@@ -38,7 +39,7 @@ namespace Soap.MessagePipeline.MessageAggregator
                     e);
             }
 
-            throw new ApplicationException(
+            throw new CircuitException(
                 $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                 But none has been set. Use the .When<{typeof(TMessage).ToTypeNameString()}>({typeof(TOut).ToTypeNameString()}) function to set one.");
         }

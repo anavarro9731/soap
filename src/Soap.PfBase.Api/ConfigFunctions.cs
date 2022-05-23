@@ -52,7 +52,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException($"Could not compile config from remote repo {url}", e);
+                    throw new CircuitException($"Could not compile config from remote repo {url}", e);
                 }    
             }
             
@@ -84,7 +84,7 @@
                                              .Select(x => x.GetMessage())
                                              .ToList();
                         var error = string.Join(' ', failures);
-                        throw new ApplicationException(error);
+                        throw new CircuitException(error);
                     }
 
                     peStream.Seek(0, SeekOrigin.Begin);

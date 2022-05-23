@@ -372,7 +372,7 @@
 
             catch (Exception e)
             {
-                throw new ApplicationException(
+                throw new CircuitException(
                     $"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore",
                     e);
             }

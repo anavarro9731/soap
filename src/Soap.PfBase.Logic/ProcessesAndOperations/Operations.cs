@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
@@ -51,7 +52,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Could not deserialise blob to type " + typeof(TBlobType).FullName, e);
+                    throw new CircuitException("Could not deserialise blob to type " + typeof(TBlobType).FullName, e);
                 }
             }
 

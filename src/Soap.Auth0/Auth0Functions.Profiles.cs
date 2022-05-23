@@ -4,6 +4,7 @@ namespace Soap.Auth0
     using System.IdentityModel.Tokens.Jwt;
     using System.Linq;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using DataStore;
     using DataStore.Interfaces.LowLevel;
     using global::Auth0.ManagementApi;
@@ -110,11 +111,11 @@ namespace Soap.Auth0
                 }
                 catch (SecurityTokenExpiredException ex)
                 {
-                    throw new ApplicationException("The id token is expired.", ex);
+                    throw new CircuitException("The id token is expired.", ex);
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("The id token is invalid.", e);
+                    throw new CircuitException("The id token is invalid.", e);
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿namespace Soap.Interfaces.Messages
 {
     using System;
+    using CircuitBoard;
 
     /// <summary>
     /// Sent to queue of OWNING service when processing failed to handle the message max number of times
@@ -35,9 +36,9 @@
 
         public override void Validate()
         {
-            if (string.IsNullOrEmpty(TypeName)) throw new ApplicationException($"Error while handling {nameof(MessageFailedAllRetries)}, {nameof(TypeName)} property cannot be null");
-            if (string.IsNullOrEmpty(SerialisedMessage)) throw new ApplicationException($"Error while handling {nameof(MessageFailedAllRetries)}, {nameof(SerialisedMessage)} property cannot be null");
-            if (string.IsNullOrEmpty(SerialiserId)) throw new ApplicationException($"Error while handling {nameof(MessageFailedAllRetries)} {nameof(SerialiserId)} property cannot be null");
+            if (string.IsNullOrEmpty(TypeName)) throw new CircuitException($"Error while handling {nameof(MessageFailedAllRetries)}, {nameof(TypeName)} property cannot be null");
+            if (string.IsNullOrEmpty(SerialisedMessage)) throw new CircuitException($"Error while handling {nameof(MessageFailedAllRetries)}, {nameof(SerialisedMessage)} property cannot be null");
+            if (string.IsNullOrEmpty(SerialiserId)) throw new CircuitException($"Error while handling {nameof(MessageFailedAllRetries)} {nameof(SerialiserId)} property cannot be null");
         }
     }
 }

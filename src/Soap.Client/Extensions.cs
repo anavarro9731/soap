@@ -27,7 +27,7 @@ namespace Soap.Client
             }
             else
             {
-                throw new ApplicationException($"Cannot set header {Keys.Schema} because it has already been set");
+                throw new CircuitException($"Cannot set header {Keys.Schema} because it has already been set");
             }
 
             return m;
@@ -41,7 +41,7 @@ namespace Soap.Client
             }
             else
             {
-                throw new ApplicationException($"Cannot set header {Keys.Sessions.SessionId} because it has already been set");
+                throw new CircuitException($"Cannot set header {Keys.Sessions.SessionId} because it has already been set");
             }
 
             return m;
@@ -55,7 +55,7 @@ namespace Soap.Client
             }
             else
             {
-                throw new ApplicationException($"Cannot set header {Keys.StatefulProcessId} because it has already been set");
+                throw new CircuitException($"Cannot set header {Keys.StatefulProcessId} because it has already been set");
             }
 
             return m;
@@ -70,7 +70,7 @@ namespace Soap.Client
             }
             else
             {
-                throw new ApplicationException($"Cannot set header {Keys.TimeOfCreationAtOrigin} because it has already been set");
+                throw new CircuitException($"Cannot set header {Keys.TimeOfCreationAtOrigin} because it has already been set");
             }
 
             return m;
@@ -82,7 +82,7 @@ namespace Soap.Client
             {
                 m.Add(new Enumeration(Keys.Sessions.CommandConversationId, conversationId.ToString()));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Sessions.CommandConversationId} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Sessions.CommandConversationId} because it has already been set");
 
             return m;
         }
@@ -93,7 +93,7 @@ namespace Soap.Client
             {
                 m.Add(new Enumeration(Keys.Sessions.CommandHash, commandHash));
             }            
-            else throw new ApplicationException($"Cannot set header {Keys.Sessions.CommandHash} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Sessions.CommandHash} because it has already been set");
 
             return m;
         }
@@ -104,7 +104,7 @@ namespace Soap.Client
             {
                 m.Add(new Enumeration(Keys.Auth.IdentityToken, identityToken));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Auth.IdentityToken} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Auth.IdentityToken} because it has already been set");
             
             return m;
         }
@@ -115,7 +115,7 @@ namespace Soap.Client
             {
                 m.Add(new Enumeration(Keys.Auth.AccessToken, identityToken));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Auth.AccessToken} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Auth.AccessToken} because it has already been set");
             
             return m;
         }
@@ -126,7 +126,7 @@ namespace Soap.Client
             {
                 m.Add(new Enumeration(Keys.Auth.IdentityChain, identityChain));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Auth.IdentityChain} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Auth.IdentityChain} because it has already been set");
             
             return m;
         }

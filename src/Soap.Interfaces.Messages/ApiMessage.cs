@@ -4,9 +4,10 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Reflection;
     using CircuitBoard;
     using CircuitBoard.Messages;
-    using Microsoft.VisualBasic;
+    
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
@@ -54,11 +55,11 @@
 
             if (message is MessageFailedAllRetries m)
             {
-                messageHeaders.SetQueueName(Type.GetType(m.TypeName).Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
+                messageHeaders.SetQueueName(Type.GetType(m.TypeName).GetTypeInfo().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
             }
             else
             {
-                messageHeaders.SetQueueName(message.GetType().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
+                messageHeaders.SetQueueName(message.GetType().GetTypeInfo().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
             }
 
             messageHeaders.SetSchema(message.GetType().FullName);
@@ -176,7 +177,7 @@
 
         private static void Ensure(bool acceptable, string errorMessage)
         {
-            if (!acceptable) throw new ApplicationException(errorMessage);
+            if (!acceptable) throw new CircuitException(errorMessage);
         }
     }
 
@@ -287,7 +288,7 @@
             {
                 m.Add(new Enumeration(Keys.BlobId, blobId.ToString()));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.BlobId} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.BlobId} because it has already been set");
             
 
             return m;
@@ -299,7 +300,7 @@
             {
                 m.Add(new Enumeration(Keys.CommandConversationId, conversationId.ToString()));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.CommandConversationId} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.CommandConversationId} because it has already been set");
 
             return m;
         }
@@ -310,7 +311,7 @@
             {
                 m.Add(new Enumeration(Keys.CommandHash, commandHash));
             }            
-            else throw new ApplicationException($"Cannot set header {Keys.CommandHash} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.CommandHash} because it has already been set");
 
             return m;
         }
@@ -321,7 +322,7 @@
             {
                 m.Add(new Enumeration(Keys.IdentityToken, identityToken));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.IdentityToken} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.IdentityToken} because it has already been set");
             
             return m;
         }
@@ -332,7 +333,7 @@
             {
                 m.Add(new Enumeration(Keys.AccessToken, identityToken));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.AccessToken} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.AccessToken} because it has already been set");
             
             return m;
         }
@@ -343,7 +344,7 @@
             {
                 m.Add(new Enumeration(Keys.IdentityChain, identityChain));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.IdentityChain} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.IdentityChain} because it has already been set");
             
             return m;
         }
@@ -364,7 +365,7 @@
             {
                 m.Add(new Enumeration(Keys.QueueName, queueName));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.QueueName} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.QueueName} because it has already been set");
             
             return m;
         }
@@ -375,7 +376,7 @@
             {
                 m.Add(new Enumeration(Keys.SasStorageToken, sasStorageToken));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.SasStorageToken} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.SasStorageToken} because it has already been set");
             
             return m;
         }
@@ -386,7 +387,7 @@
             {
                 m.Add(new Enumeration(Keys.Schema, schema));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Schema} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Schema} because it has already been set");
             
             return m;
         }
@@ -397,7 +398,7 @@
             {
                 m.Add(new Enumeration(Keys.SessionId, sessionId));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.SessionId} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.SessionId} because it has already been set");
             
             return m;
         }
@@ -416,7 +417,7 @@
             {
                 m.Add(new Enumeration(Keys.StatefulProcessId, id.ToString()));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.StatefulProcessId} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.StatefulProcessId} because it has already been set");
             
             return m;
         }
@@ -428,7 +429,7 @@
             {
                 m.Add(new Enumeration(Keys.TimeOfCreationAtOrigin, s));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.TimeOfCreationAtOrigin} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.TimeOfCreationAtOrigin} because it has already been set");
             
             return m;
         }
@@ -439,7 +440,7 @@
             {
                 m.Add(new Enumeration(Keys.Topic, topic));
             }
-            else throw new ApplicationException($"Cannot set header {Keys.Topic} because it has already been set");
+            else throw new CircuitException($"Cannot set header {Keys.Topic} because it has already been set");
             
             return m;
         }

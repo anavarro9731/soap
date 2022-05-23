@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using CircuitBoard;
     using FluentValidation;
     using Soap.Context.Context;
     using Soap.Interfaces;
@@ -63,7 +64,7 @@
                             internalErrorMessage));
                 }
             }
-            else if (exception is ApplicationException)
+            else if (exception is CircuitException)
             {
                 AllErrors.Add((ErrorSourceType.RAW, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));
             }

@@ -1,11 +1,13 @@
 ﻿namespace Soap.PfBase.Tests
 {
     using System;
+    using CircuitBoard.MessageAggregator;
     using DataStore;
     using FluentAssertions;
     using Soap.Context;
     using Soap.Context.Exceptions;
     using Soap.Interfaces;
+    using Soap.MessagePipeline.MessageAggregator;
     using Soap.NotificationServer;
     using Soap.PfBase.Logic.ProcessesAndOperations;
     using Soap.Utility;
@@ -28,6 +30,8 @@
     
     public class Result
     {
+        public IMessageAggregator MessageAggregator;
+        
         public ProcessState ActiveProcessState;
 
         public DataStore DataStore;

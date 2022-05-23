@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
     using DataStore.Interfaces.Operations;
@@ -40,7 +41,7 @@
 
             if (this.ReturnValues.ContainsKey(eventType) && this.ReturnValues[eventType].Count == 0)
             {
-                throw new ApplicationException(
+                throw new CircuitException(
                     $@"Requested a return value from a CollectAndForward function while using the GatedMessagePropogator. 
                     The return value has been registered by a call to When<{
                             typeof(TMessage).Name

@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Reflection;
     using System.Text;
+    using CircuitBoard;
     using Soap.Interfaces.Messages;
 
     public static class ApiMessageExt
@@ -24,7 +25,7 @@
             AccumulateErrors(errors, message.GetType(), message);
             if (errors.Length > 0)
             {
-                throw new ApplicationException("The message has required properties that are null" + Environment.NewLine + errors);
+                throw new CircuitException("The message has required properties that are null" + Environment.NewLine + errors);
             }
 
             static void AccumulateErrors(StringBuilder errors, Type aType, object o)

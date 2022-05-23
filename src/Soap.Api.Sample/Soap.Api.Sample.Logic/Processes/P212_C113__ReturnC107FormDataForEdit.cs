@@ -60,14 +60,15 @@ namespace Soap.Api.Sample.Logic.Processes
                     C107_DateTimeOptional = testData.DateTimeOptional,
                     C107_StringOptionalMultiline = testData.StringOptionalMultiline,
                     C107_StringOptionalJodit = testData.HtmlOptionalMultiline,
-                    C107_HashtagsOptional = new EnumerationAndFlags(allEnumerations: testData.Hashtags.Select(x => new Enumeration(x,x)).ToList(), allowMultipleSelections: true)
+                    C107_HashtagsOptional = new EnumerationAndFlags(allEnumerations: testData.Hashtags.Select(x => new Enumeration(x,x)).ToList())
+                        {
+                            AllowMultipleSelections = true
+                        }
                         .AddFlagsIfTheyExistInAllEnumerations(testData.Hashtags),
                     C107_PostCodesSingle = new EnumerationAndFlags(
-                        allEnumerations: this.postCodes,
-                        allowMultipleSelections: false).AddFlagIfItExistsInAllEnumerations(testData.PostCodesSingleKey),
+                        allEnumerations: this.postCodes).AddFlagIfItExistsInAllEnumerations(testData.PostCodesSingleKey),
                     C107_PostCodesSingleOptional = new EnumerationAndFlags(
-                        allEnumerations: this.postCodes,
-                        allowMultipleSelections: false).AddFlagIfItExistsInAllEnumerations(testData.PostCodesSingleOptionalKey),
+                        allEnumerations: this.postCodes).AddFlagIfItExistsInAllEnumerations(testData.PostCodesSingleOptionalKey),
                     C107_PostCodesMulti =
                         new EnumerationAndFlags(allEnumerations: this.postCodes).AddFlagsIfTheyExistInAllEnumerations(
                             testData.PostCodesMultiKeys),

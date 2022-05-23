@@ -167,7 +167,8 @@
                             x.MessageBus = bus;
                             x.DataStore = dataStore;
                             x.NotificationServer = notificationServer;
-
+                            x.MessageAggregator = messageAggregator;
+                            
                             logger.Information(
                                 Environment.NewLine
                                 + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
@@ -186,7 +187,8 @@
                             x.MessageBus = bus;
                             x.DataStore = dataStore;
                             x.NotificationServer = notificationServer;
-
+                            x.MessageAggregator = messageAggregator;
+                            
                             logger.Error(e, "Unhandled Error");
                             x.Success = false;
                             x.UnhandledError = e;

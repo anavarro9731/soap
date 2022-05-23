@@ -156,7 +156,7 @@
                                 var t when t == typeof(EnumerationAndFlags)
                                     => //* we don't break down enumerations, like other custom objects, they are considered primitives for form-building
                                     "enumeration", //-> select (single or multi) 
-                                _ => throw new ApplicationException(
+                                _ => throw new CircuitException(
                                          $"Unexpected Data Type {validProperty.PropertyType} on property {validProperty.Name} in command {commandName}. Please validate schema.")
                             },
                             InitialValue = validProperty.GetValue(instance),
@@ -198,7 +198,7 @@
                                                                     || ((EnumerationAndFlags)fieldMeta.InitialValue)
                                                                        .AllEnumerations.Count == 0))
                         {
-                            throw new ApplicationException(
+                            throw new CircuitException(
                                 $"Cannot present enumeration for property {validProperty.Name} in command {commandName} because the list of options is null or empty but the field is required.");
                         }
                     }
