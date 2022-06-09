@@ -6,6 +6,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using FluentAssertions;
     using Soap.Context;
     using Soap.Context.Logging;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Xunit;
     using Xunit.Abstractions;
@@ -30,13 +31,13 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             await TestMessage(c104TestUnitOfWork, Identities.JohnDoeAllPermissions, 1, (BeforeRunHook,default));
 
             //assert
-            var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-            CountDataStoreOperationsSaved(log);
-            CountMessagesSaved(log);
+            var uow = Result.GetUnitOfWork();
+            CountDataStoreOperationsSaved(uow);
+            CountMessagesSaved(uow);
             CountMessagesSent();
         }
 
-        private async Task BeforeRunHook(DataStore store, int run)
+        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
         {
             await AssertGuardFail();
 

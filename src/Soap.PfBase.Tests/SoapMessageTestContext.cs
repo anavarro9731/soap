@@ -44,14 +44,18 @@
             byte retries,
             bool authEnabled,
             bool enableSlaWhenSecurityContextIsMissing,
+            IBlobStorage rollingStorage,
             IDocumentRepository rollingRepo,
-            (Func<DataStore, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
+            (Func<DataStore, IBlobStorage, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
             DataStoreOptions dataStoreOptions,
             Action<MessageAggregatorForTesting> setup)
 
         {
             {
-                var x = new Result();
+                var x = new Result()
+                {
+                    FromMessage = message
+                };
 
                 CreateAppConfig(retries, authEnabled, enableSlaWhenSecurityContextIsMissing, out var appConfig);
 
@@ -79,9 +83,7 @@
                         
                     CreateNotificationServer(appConfig.NotificationServerSettings, messageAggregator, out var notificationServer);
 
-                    CreateBlobStorage(messageAggregator, out var blobStorage);
-
-                    CreateBusContext(messageAggregator, appConfig, blobStorage, out var bus);
+                    CreateBusContext(messageAggregator, appConfig, rollingStorage, out var bus);
 
                     var context = new BoostrappedContext(
                         messageMapper: messageMapper,
@@ -91,7 +93,7 @@
                         notificationServer: notificationServer,
                         dataStore: dataStore,
                         messageAggregator: messageAggregator,
-                        blobStorage: blobStorage);
+                        blobStorage: rollingStorage);
 
                     byte currentRun = 1;
                     var remainingRuns = retries;
@@ -121,6 +123,7 @@
                                                                                 .SpecifyUnitOfWorkId(
                                                                                     beforeRunHook.RunHookUnitOfWorkId.Value)
                                                               : null),
+                                    context.BlobStorage,
                                     currentRun);
                             }
                             catch (Exception e)
@@ -132,6 +135,7 @@
                                     + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in FAILURE DURING BEFORE RUN HOOK, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
                                 x.Success = false;
                                 x.UnhandledError = e;
+
                                 return x;
                             }
                         }
@@ -139,6 +143,7 @@
                         logger.Information(
                             @"---------------------- EXECUTING MESSAGE HANDLER ----------------------" + Environment.NewLine);
 
+                        
                         try
                         {
                             await MessagePipeline.Execute(message, meta, context);
@@ -168,6 +173,7 @@
                             x.DataStore = dataStore;
                             x.NotificationServer = notificationServer;
                             x.MessageAggregator = messageAggregator;
+                            x.BlobStorage = rollingStorage;
                             
                             logger.Information(
                                 Environment.NewLine
@@ -188,6 +194,7 @@
                             x.DataStore = dataStore;
                             x.NotificationServer = notificationServer;
                             x.MessageAggregator = messageAggregator;
+                            x.BlobStorage = rollingStorage;
                             
                             logger.Error(e, "Unhandled Error");
                             x.Success = false;
@@ -321,12 +328,7 @@
 
                 dataStore = new DataStore(rollingRepo, messageAggregator, dataStoreOptions);
             }
-
-            static void CreateBlobStorage(IMessageAggregator messageAggregator, out BlobStorage blobStorage)
-            {
-                var connectionString = "UseDevelopmentStorage=true"; //* doesn't get called, gets mocked, just used to prevent client .ctor failing
-                blobStorage = new BlobStorage(new BlobStorage.Settings(connectionString, messageAggregator));
-            }
+            
         }
     }
 }

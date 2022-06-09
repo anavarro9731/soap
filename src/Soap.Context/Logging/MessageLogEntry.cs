@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces;
@@ -17,15 +18,30 @@
 
     public sealed class MessageLogEntry : Aggregate
     {
-        public MessageLogEntry(ApiMessage message, MessageMeta meta, bool optimisticConcurrency, int numberOfRetries)
+        public MessageLogEntry(ApiMessage message, MessageMeta meta, int numberOfRetries)
         {
+            //* the UOW, the LogEntry and the Message All have the Same GUID
             id = message.Headers.GetMessageId();
             MessageMeta = meta;
             MaxRetriesAllowed = numberOfRetries + 1;
-            SerialisedMessage = message.ToSerialisableObject();
+            var serialisedMessage = message.ToSerialisableObject();
+            var byteCount = Encoding.UTF8.GetByteCount(serialisedMessage.ObjectData);
+            var indexingAndOtherMessageLogEntryData = Convert.ToInt32(byteCount / 0.8M);
+            if (indexingAndOtherMessageLogEntryData > 2000000 /*2MB */)
+            {
+                //* HTTP Direct will allow large messages over 256KB, not in blob storage
+                //* Cosmos wont take records over 2MB, better I suppose to process it rather than reject it, throw a CircuitException here if you change your mind 
+                //* another option is too save large items to blob storage, though that will add to processing time
+                SerialisedMessage = null;
+            }
             MessageHash = message.ToJson(SerialiserIds.ApiBusMessage).ToMd5Hash();
-            UnitOfWork = new UnitOfWork(optimisticConcurrency); //* determines how uow will behave
+            
+            
+                
+            
         }
+        
+
 
         public MessageLogEntry()
         {
@@ -50,12 +66,6 @@
         [JsonProperty]
         public SerialisableObject SerialisedMessage { get; internal set; }
         
-        [JsonProperty]
-        public SerialisableObject SerialisedMessageFromBlob { get; internal set; }
-
-        [JsonProperty]
-        public UnitOfWork UnitOfWork { get; set; }
-
         public class Attempt
         {
             public Attempt(FormattedExceptionInfo errors = null)
@@ -83,28 +93,13 @@
             messageLogItem.Attempts.Insert(0, new MessageLogEntry.Attempt(errors));
         }
 
-        public static Task CompleteUnitOfWork(this MessageLogEntry messageLogEntry, IDatabaseSettings databaseSettings)
+        public static async Task CompleteUnitOfWork(this MessageLogEntry messageLogEntry, IDocumentRepository documentRepository)
         {
             messageLogEntry.ProcessingComplete = true;
 
-            return UpdateMessageLogEntry(messageLogEntry, databaseSettings);
-        }
-
-        public static Task UpdateUnitOfWork(
-            this MessageLogEntry messageLogEntry,
-            UnitOfWork u,
-            IDatabaseSettings databaseSettings)
-        {
-            messageLogEntry.UnitOfWork = u;
-            return messageLogEntry.UpdateMessageLogEntry(databaseSettings);
-        }
-
-        private static async Task UpdateMessageLogEntry(this MessageLogEntry messageLogEntry, IDatabaseSettings databaseSettings)
-        {
             /* update immediately, you would need find a way to get it to be persisted
-             first so use different instance of ds instead*/
-            var d = new DataStore(
-                databaseSettings.CreateRepository(),
+            first so use different instance of ds instead*/
+            var d = new DataStore(documentRepository,
                 dataStoreOptions: DataStoreOptions.Create().DisableOptimisticConcurrency());
             await d.Update(messageLogEntry);
             await d.CommitChanges();

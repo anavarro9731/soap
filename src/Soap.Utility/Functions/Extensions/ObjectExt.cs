@@ -13,18 +13,23 @@
     {
         public static SerialiserIds ApiBusMessage = Create(nameof(ApiBusMessage), "Bus Messages");
 
+        public static SerialiserIds UnitOfWork = Create(nameof(UnitOfWork), "Unit Of Work");
+        
         public static SerialiserIds ClientSideMessageSchemaGeneraton = Create(
             nameof(ClientSideMessageSchemaGeneraton),
             "Schema for JS client");
 
         public static SerialiserIds JsonDotNetDefault = Create(nameof(JsonDotNetDefault), "Json.NET Defaults");
         
-        
-        
     }
 
     internal static class JsonNetSettings
     {
+        
+        public static JsonSerializerSettings UnitOfWorkSettings => new JsonSerializerSettings
+        {
+        };
+        
         public static JsonSerializerSettings ApiMessageSerialiserSettings => new JsonSerializerSettings
         {
             DefaultValueHandling =
@@ -151,6 +156,10 @@
                 var x when x == SerialiserIds.JsonDotNetDefault => JsonConvert.SerializeObject(
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None),
+                var x when x == SerialiserIds.UnitOfWork => JsonConvert.SerializeObject(
+                    instance,
+                    prettyPrint ? Formatting.Indented : Formatting.None,
+                    JsonNetSettings.UnitOfWorkSettings),
                 var x when x == SerialiserIds.ApiBusMessage => JsonConvert.SerializeObject(
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None,

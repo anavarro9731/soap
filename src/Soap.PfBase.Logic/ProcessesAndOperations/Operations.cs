@@ -43,12 +43,13 @@
                 this.context = context;
             }
 
-            public async Task<TBlobType> DownloadAs<TBlobType>(Guid id, string containerName = "content") where TBlobType : class, new()
+            public async Task<TBlobType> DownloadAs<TBlobType>(Guid id, string containerName = "content", SerialiserIds serialiserId = null) where TBlobType : class, new()
             {
-                var blob = await this.context.BlobStorage.GetBlob(id, containerName);
+                var blob = await this.context.BlobStorage.GetBlobOrNull(id, containerName);
+                if (blob == null) return null;
                 try
                 {
-                    return blob.ToObject<TBlobType>(SerialiserIds.JsonDotNetDefault);
+                    return blob.ToObject<TBlobType>(serialiserId ?? SerialiserIds.JsonDotNetDefault);
                 }
                 catch (Exception e)
                 {
@@ -59,8 +60,8 @@
             public Task<bool> Exists(Guid id, string containerName = "content") =>
                 this.context.BlobStorage.Exists(id, containerName);
 
-            public Task Upload<TBlobType>(TBlobType @object, Func<TBlobType, Guid> getId, SerialiserIds serialiserId, string containerName = "content") =>
-                this.context.BlobStorage.SaveObjectAsBlob(@object, getId, SerialiserIds.JsonDotNetDefault, containerName);
+            public Task Upload<TBlobType>(TBlobType @object, Func<TBlobType, Guid> getId, string containerName = "content", SerialiserIds serialiserId = null) =>
+                this.context.BlobStorage.SaveObjectAsBlob(@object, getId, serialiserId ?? SerialiserIds.JsonDotNetDefault, containerName);
         }
     }
 }

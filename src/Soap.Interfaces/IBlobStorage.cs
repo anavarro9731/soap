@@ -10,7 +10,9 @@
     {
         Task<ApiMessage> GetApiMessageFromBlob(Guid blobId);
 
-        Task<Blob> GetBlob(Guid id, string containerName = "content");
+        Task<Blob> GetBlobOrError(Guid id, string containerName = "content");
+        
+        Task<Blob> GetBlobOrNull(Guid id, string containerName = "content"); 
         
         Task<bool> Exists(Guid id, string containerName = "content");
 

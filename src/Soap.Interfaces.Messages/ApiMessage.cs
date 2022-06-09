@@ -24,7 +24,7 @@
     {
         /* ALL messages must adhere to the following rules:
          1. only contain public properties with both getters and setters (never computed properties)
-         2. always have a public paramaterless constructors 
+         2. always have a public parameterless constructors 
          3. never have any logic in their paramaterless construtor or any of its base classes
          Failure to follow these rules will produce erratic behaviour in multiple areas of the system including: serialisation, client side schema production.
          */

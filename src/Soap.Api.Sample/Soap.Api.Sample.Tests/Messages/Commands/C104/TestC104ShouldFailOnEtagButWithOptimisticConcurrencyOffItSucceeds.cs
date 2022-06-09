@@ -4,7 +4,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using DataStore.Options;
     using FluentAssertions;
     using Soap.Context;
+    using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces.Messages;
     using Xunit;
     using Xunit.Abstractions;
@@ -34,9 +36,10 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
                 DataStoreOptions.Create().DisableOptimisticConcurrency());
 
             //assert
-            var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-            CountDataStoreOperationsSaved(log);
-            CountMessagesSaved(log);
+            var uow = Result.GetUnitOfWork();
+            
+            CountDataStoreOperationsSaved(uow);
+            CountMessagesSaved(uow);
             CountMessagesSent();
         }
 

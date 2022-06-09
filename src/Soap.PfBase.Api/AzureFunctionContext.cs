@@ -45,6 +45,7 @@
          and keep an eye on though. I am not sure if there is a performance
          hit if you have too many clients at once, ie. is there any state
          or locking on the client? */
+        
         private static IDocumentRepository lifetimeRepositoryClient;
 
         public static void CreateLogger(out ILogger logger)

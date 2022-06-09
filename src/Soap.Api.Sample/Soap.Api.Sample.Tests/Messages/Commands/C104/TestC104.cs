@@ -10,6 +10,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context.Logging;
+    using Soap.Context.UnitOfWork;
     using Xunit.Abstractions;
 
     public class TestC104 : Test
@@ -24,20 +25,20 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             SetupTestByAddingADatabaseEntry(Aggregates.LukeSkywalker);
         }
 
-        protected void CountDataStoreOperationsSaved(MessageLogEntry log)
+        protected void CountDataStoreOperationsSaved(UnitOfWork uow)
         {
-            log.UnitOfWork.DataStoreCreateOperations.Count.Should().Be(2);
-            log.UnitOfWork.DataStoreUpdateOperations.Count.Should().Be(3); //* includes soft delete
-            log.UnitOfWork.DataStoreDeleteOperations.Count.Should().Be(1);
+            uow.DataStoreCreateOperations.Count.Should().Be(2);
+            uow.DataStoreUpdateOperations.Count.Should().Be(3); //* includes soft delete
+            uow.DataStoreDeleteOperations.Count.Should().Be(1);
         }
 
-        protected void CountMessagesSaved(MessageLogEntry log)
+        protected void CountMessagesSaved(UnitOfWork uow)
         {
-            var c100wrapped = log.UnitOfWork.BusCommandMessages.Single();
+            var c100wrapped = uow.BusCommandMessages.Single();
             var c100 = c100wrapped.Deserialise<C100v1_Ping>();
             c100.C000_PingedBy.Should().Be(nameof(P201_C104__TestUnitOfWork));
 
-            var e150wrapped = log.UnitOfWork.BusEventMessages.Single();
+            var e150wrapped = uow.BusEventMessages.Single();
             var e150 = e150wrapped.Deserialise<E100v1_Pong>();
             e150.E000_PongedBy.Should().Be(nameof(P201_C104__TestUnitOfWork));
         }

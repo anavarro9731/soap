@@ -12,9 +12,6 @@
 
     public static class ApiMessageExtensions
     {
-
-        
-
         internal static string GetSchema(this ApiMessage m) => m.GetType().ToShortAssemblyTypeName();
 
         internal static void ValidateOrThrow(this ApiMessage message, ContextWithMessageLogEntry context)
@@ -42,7 +39,7 @@
 
             bool HasAlreadyBeenProcessedSuccessfully(MessageLogEntry messageLogEntry) =>
                 //- safeguard, cannot think of a reason it would happen 
-                messageLogEntry.UnitOfWork != null && messageLogEntry.ProcessingComplete;
+                messageLogEntry.ProcessingComplete;
 
             bool HasAlreadyFailedTheMaximumNumberOfTimesAllowed(MessageLogEntry messageLogEntry) =>
                 //should never happen, unless message broker/bus it configured to retry message more times

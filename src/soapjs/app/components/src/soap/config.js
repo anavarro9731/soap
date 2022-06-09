@@ -254,7 +254,6 @@ function sendMessage(msg) {
                 _logger.log(`Sending message ${getHeader(message, headerKeys.schema)}\r\nid/conversation ${getHeader(message, headerKeys.messageId)}`, message);
 
                 //* http doesn't require us to use blob storage
-                
                 _.remove(message.headers, h => h.key == headerKeys.blobId);
                 _.remove(message.headers, h => h.key == headerKeys.sasStorageToken);
                 

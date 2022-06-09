@@ -26,10 +26,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             await TestMessage(Commands.TestUnitOfWork(), Identities.JohnDoeAllPermissions);
 
             //assert
-            var log = await Result.DataStore.ReadById<MessageLogEntry>(
-                          Commands.TestUnitOfWork().Headers.GetMessageId());
-            CountMessagesSaved(log);
-            CountDataStoreOperationsSaved(log);
+            var uow = Result.GetUnitOfWork();
+            CountMessagesSaved(uow);
+            CountDataStoreOperationsSaved(uow);
         }
     }
 }

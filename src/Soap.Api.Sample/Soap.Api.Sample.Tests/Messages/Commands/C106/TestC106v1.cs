@@ -26,6 +26,8 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C106
             }
 
             var c106FromBlobStorage = new C106v1_LargeCommand().Op(SetHeaders);
+            
+            SetupTestByAddingABlobStorageEntry(c106FromBlobStorage.ToBlob(), CommonContainerNames.LargeMessages);
 
             var c106In = new C106v1_LargeCommand().Op(
                 c =>
@@ -37,12 +39,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C106
             TestMessage(
                 c106In,
                 Identities.JohnDoeAllPermissions,
-                0,
-                setupMocks: messageAggregatorForTesting => messageAggregatorForTesting.When<BlobStorage.Events.BlobDownloadEvent>()
-                                                                                 .Return(
-                                                                                     Task.FromResult(
-                                                                                         c106FromBlobStorage.ToBlob()))).Wait();
+                0).Wait();
         }
+        
 
         [Fact]
         public async void ItShouldNotFailToRetrieveTheValuesFromBlobStorage()

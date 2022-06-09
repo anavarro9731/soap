@@ -7,6 +7,7 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
+    using Soap.Utility.Functions.Extensions;
 
     public class P206_C105__SendLargeMessage : Process, IBeginProcess<C105v1_SendLargeMessage>
     {
@@ -16,7 +17,12 @@
             {
                 return async message =>
                     {
-                        await Bus.Send(new C106v1_LargeCommand());
+                        await Bus.Send(new C106v1_LargeCommand().Op(x =>
+                            {
+                            var messageC105C106Id = message.C105_C106Id ?? Guid.NewGuid(); 
+                            
+                            x.Headers.SetMessageId(messageC105C106Id);
+                            }));
                     };
             }
         }

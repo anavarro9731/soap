@@ -64,16 +64,10 @@ namespace Soap.Api.Sample.Logic.Processes
                         C107_Image = SampleBlobs.Image1
                     };
 
-                    if (BlobsNeedToBeSaved())
-                    {
-                        await SaveTestBlobs();
-                    }
-
+                    await SaveTestBlobs();
+                    
                     await PublishFormDataEvent(new E103v1_GotC107FormData(), formData);
                 }
-
-                static bool BlobsNeedToBeSaved() =>
-                    ContextWithMessageLogEntry.Current.AppConfig.Environment != SoapEnvironments.InMemory;
 
                 static async Task SaveTestBlobs()
                 {

@@ -183,7 +183,8 @@ export function AutoForm(props) {
             } = formDataEvent;
 
             obj.$type = commandAssemblyTypeName;  //* set root type
-            //* add blob headers (the rest are added by command handler)
+            //* add blob headers here since the values are obtained here when using autoform, they will be checked and the rest are added by command handler
+            //* the reason you get blobid here along with saasstoragetoken when blobid is always = messageid, is that in times past blobid != messageid and you need the blobid that matches the sastoken, i.e. you can't create any old guid 
             obj.headers = [
                 {active: null, key: headerKeys.sasStorageToken, value: sasToken},
                 {active: null, key: headerKeys.blobId, value: blobId}

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
@@ -10,17 +11,18 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
+    using Soap.Utility.Functions.Extensions;
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, MessageMeta meta, BoostrappedContext bootstrappedContext)
+        public static async Task Execute(ApiMessage originalMessage, MessageMeta meta, BoostrappedContext bootstrappedContext)
         {
             {
-                await FillMessageFromStorageIfApplicable();
+                var message = await FillMessageFromStorageIfApplicable(originalMessage);
 
                 ContextWithMessageLogEntry matureContext = null;
 
-                await PrepareContext(bootstrappedContext, meta, v => matureContext = v);
+                await PrepareContext(bootstrappedContext, meta, originalMessage, message, v => matureContext = v);
 
                 try
                 {
@@ -38,35 +40,42 @@
                 }
             }
 
-            async Task PrepareContext(
+            static async Task PrepareContext(
                 BoostrappedContext boostrappedContext,
                 MessageMeta meta,
+                ApiMessage originalMessage,
+                ApiMessage message,
                 Action<ContextWithMessageLogEntry> setContext)
             {
                 MessageLogEntry messageLogEntry = null;
+                UnitOfWork unitOfWork = null;
 
                 try
                 {
-                    var contextAfterMessageObtained = boostrappedContext.Upgrade(message);
+                    
+                    await boostrappedContext.CreateOrFindLogEntryAndMatchingUnitOfWork(meta, originalMessage, message, v => messageLogEntry = v, v => unitOfWork = v);
 
-                    await contextAfterMessageObtained.CreateOrFindLogEntry(meta, v => messageLogEntry = v);
-
-                    var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
+                    var contextWithMessageLogEntry = boostrappedContext.Upgrade(message, messageLogEntry, unitOfWork);
 
                     setContext(contextWithMessageLogEntry);
                 }
                 catch (Exception e)
                 {
-                    Guard.Against(true, $"Cannot complete context preparation: error {e}");
+                    //* don't use guards in the pipeline code, it will mask the underlying error
+                    throw new CircuitException("Cannot complete context preparation", e);
                 }
             }
 
-            async Task FillMessageFromStorageIfApplicable()
+            async Task<ApiMessage> FillMessageFromStorageIfApplicable(ApiMessage originalMessage)
             {
-                var blobId = message.Headers.GetBlobId();
+                var blobId = originalMessage.Headers.GetBlobId();
                 if (blobId.HasValue)
                 {
-                    message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
+                    return await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
+                }
+                else
+                {
+                    return originalMessage;
                 }
             }
 

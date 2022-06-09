@@ -25,6 +25,7 @@
             var obj = serialiserId switch
             {
                 var x when x == SerialiserIds.JsonDotNetDefault  => JsonConvert.DeserializeObject(json, type),
+                var x when x == SerialiserIds.UnitOfWork  => JsonConvert.DeserializeObject(json, type, JsonNetSettings.UnitOfWorkSettings),
                 var x when x == SerialiserIds.ClientSideMessageSchemaGeneraton => JsonConvert.DeserializeObject(json, type, JsonNetSettings.MessageSchemaSerialiserSettings),
                 var x when x == SerialiserIds.ApiBusMessage => JsonConvert.DeserializeObject(json, type, JsonNetSettings.ApiMessageSerialiserSettings),
                 _ => throw new CircuitException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")

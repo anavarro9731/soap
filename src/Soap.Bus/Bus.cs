@@ -214,7 +214,7 @@
 
             void SetBlobIdAndSasStorageTokenHeader()
             {
-                var blobId = Guid.NewGuid();
+                var blobId = message.Headers.GetMessageId();
                 message.Headers.SetBlobId(blobId);
 
                 var sasStorageToken = this.blobStorage.GetStorageSasTokenForBlob(

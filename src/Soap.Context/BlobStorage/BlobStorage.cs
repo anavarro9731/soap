@@ -15,6 +15,7 @@
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
@@ -75,11 +76,11 @@
 
         public async Task<ApiMessage> GetApiMessageFromBlob(Guid blobId)
         {
-            var blob = await GetBlob(blobId, "large-messages");
+            var blob = await GetBlobOrError(blobId, "large-messages");
             return blob.ToMessage();
         }
 
-        public async Task<Blob> GetBlob(Guid id, string containerName = "content")
+        public async Task<Blob> GetBlobOrError(Guid id, string containerName = "content")
         {
             try
             {
@@ -88,24 +89,41 @@
                                      .To(Download);
                 return blob;
             }
-            catch (RequestFailedException r)
+            catch (Exception r)
             {
                 throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
 
-            static async Task<Blob> Download(Events.BlobDownloadEvent @event)
+
+        }
+        
+        static async Task<Blob> Download(Events.BlobDownloadEvent @event)
+        {
+            var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
+            var result = await client.DownloadAsync();
+            await using var memoryStream = new MemoryStream();
+            await result.Value.Content.CopyToAsync(memoryStream);
+            var allBytes = memoryStream.ToArray();
+            var typeString = result.Value.Details.Metadata["typeString"];
+            var typeClass = result.Value.Details.Metadata["typeClass"];
+            return new Blob(
+                @event.BlobId,
+                allBytes,
+                new Blob.BlobType(typeString, TypedEnumeration<Blob.TypeClass>.GetInstanceFromKey(typeClass)));
+        }
+
+        public Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
+        {
+            try
             {
-                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
-                var result = await client.DownloadAsync();
-                await using var memoryStream = new MemoryStream();
-                await result.Value.Content.CopyToAsync(memoryStream);
-                var allBytes = memoryStream.ToArray();
-                var typeString = result.Value.Details.Metadata["typeString"];
-                var typeClass = result.Value.Details.Metadata["typeClass"];
-                return new Blob(
-                    @event.BlobId,
-                    allBytes,
-                    new Blob.BlobType(typeString, TypedEnumeration<Blob.TypeClass>.GetInstanceFromKey(typeClass)));
+                var blob = this.blobStorageSettings.MessageAggregator
+                                     .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
+                                     .To(Download);
+                return blob;
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<Blob>(null);
             }
         }
 
@@ -288,7 +306,9 @@
             
             public BlobClient CreateBlobClient(string blobName, string containerName = "content")
             {
-                var containerClient = BlobContainerClients.GetOrAdd(containerName, (key) => blobServiceClient.GetBlobContainerClient(key));
+                var containerClient = BlobContainerClients.GetOrAdd(containerName, containerName => blobServiceClient.GetBlobContainerClient(containerName));
+                
+                //* sadly CreateIfNotExists works by trying to make a call to see if it exists and fills the azure logs with errors that aren't real errors
                 containerClient.CreateIfNotExists(PublicAccessType.Blob);
 
                 var blobClient = containerClient.GetBlobClient(blobName);
