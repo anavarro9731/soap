@@ -11,7 +11,7 @@
 
         public static readonly ErrorCode ItemIsADifferentMessageWithTheSameId = Create(
             Guid.Parse("cc1841e5-d0b9-4781-9c50-137496d4e959"),
-            "A message with this id has already been processed. This message will be discarded. If this is not a duplicate message please resend with a unique MessageId property value");
+            "A message with this id but a different payload has already been processed. This message will be discarded. If this is not a duplicate message please resend with a unique MessageId property value");
 
         public static readonly ErrorCode MessageAlreadyFailedMaximumNumberOfTimes = Create(
             Guid.Parse("dd4f97b0-e659-4709-a7d2-881c59974fba"),

@@ -18,7 +18,7 @@
         public static async Task Execute(ApiMessage originalMessage, MessageMeta meta, BoostrappedContext bootstrappedContext)
         {
             {
-                var message = await FillMessageFromStorageIfApplicable(originalMessage);
+                var message = await FillMessageFromStorageIfApplicable(originalMessage); //* replaces with message from blob
 
                 ContextWithMessageLogEntry matureContext = null;
 
@@ -43,19 +43,14 @@
             static async Task PrepareContext(
                 BoostrappedContext boostrappedContext,
                 MessageMeta meta,
-                ApiMessage originalMessage,
+                ApiMessage messageAtPerimeter,
                 ApiMessage message,
                 Action<ContextWithMessageLogEntry> setContext)
             {
-                MessageLogEntry messageLogEntry = null;
-                UnitOfWork unitOfWork = null;
-
                 try
                 {
                     
-                    await boostrappedContext.CreateOrFindLogEntryAndMatchingUnitOfWork(meta, originalMessage, message, v => messageLogEntry = v, v => unitOfWork = v);
-
-                    var contextWithMessageLogEntry = boostrappedContext.Upgrade(message, messageLogEntry, unitOfWork);
+                    var contextWithMessageLogEntry = await boostrappedContext.Upgrade(message, messageAtPerimeter, meta);
 
                     setContext(contextWithMessageLogEntry);
                 }
@@ -88,16 +83,24 @@
                 switch (result)
                 {
                     case UnitOfWork.State.AllComplete:
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         context.SerilogSuccess();
                         return;
                     case UnitOfWork.State.AllRolledBack:
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         //* don't try again after a rollback as you may be out of retries to rollback again
                         throw new DomainExceptionWithErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
 
                     case UnitOfWork.State.New:
 
-                        /* validate here rather than beginning of method because there can be variant validation logic and you want
-                                 to attempt to finish an unfinished uow if possible */
+                        /* validate here rather than beginning of method because there can be validation logic that varies between attempts and you want
+                                 to attempt to finish an unfinished uow if possible first */
                         msg.ValidateOrThrow(context);
                         
                         switch (msg)
@@ -118,7 +121,10 @@
                         will fall into the catch block below and result in the message being retried
                         from the beginning but there will be no unit of work on the MessageLogEntry */
                         await context.CommitChanges();
-
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         context.SerilogSuccess();
                         break;
                 }

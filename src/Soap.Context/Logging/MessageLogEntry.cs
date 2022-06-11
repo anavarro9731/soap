@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
     using DataStore;
@@ -18,36 +20,25 @@
 
     public sealed class MessageLogEntry : Aggregate
     {
-        public MessageLogEntry(ApiMessage message, MessageMeta meta, int numberOfRetries)
+        public MessageLogEntry(SerialisableObject serialisedMessage, MessageMeta meta, int numberOfRetries, bool skeletonOnly)
         {
             //* the UOW, the LogEntry and the Message All have the Same GUID
-            id = message.Headers.GetMessageId();
+            id = meta.MessageId;
             MessageMeta = meta;
+            SkeletonOnly = skeletonOnly;
             MaxRetriesAllowed = numberOfRetries + 1;
-            var serialisedMessage = message.ToSerialisableObject();
-            var byteCount = Encoding.UTF8.GetByteCount(serialisedMessage.ObjectData);
-            var indexingAndOtherMessageLogEntryData = Convert.ToInt32(byteCount / 0.8M);
-            if (indexingAndOtherMessageLogEntryData > 2000000 /*2MB */)
-            {
-                //* HTTP Direct will allow large messages over 256KB, not in blob storage
-                //* Cosmos wont take records over 2MB, better I suppose to process it rather than reject it, throw a CircuitException here if you change your mind 
-                //* another option is too save large items to blob storage, though that will add to processing time
-                SerialisedMessage = null;
-            }
-            MessageHash = message.ToJson(SerialiserIds.ApiBusMessage).ToMd5Hash();
-            
-            
-                
-            
+            SerialisedMessage = serialisedMessage;
+            MessageHash = serialisedMessage.ObjectData.ToMd5Hash();
         }
         
-
-
         public MessageLogEntry()
         {
             //* satisfy DataStore new() constraint and serialiser
+            
         }
 
+        //* attrib to ensure serialise internal setters?
+        
         [JsonProperty]
         public List<Attempt> Attempts { get; internal set; } = new List<Attempt>();
 
@@ -59,6 +50,9 @@
 
         [JsonProperty]
         public MessageMeta MessageMeta { get; internal set; }
+
+        [JsonProperty]
+        public bool SkeletonOnly { get; internal set; }
 
         [JsonProperty]
         public bool ProcessingComplete { get; internal set; }

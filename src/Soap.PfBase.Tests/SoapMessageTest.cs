@@ -11,35 +11,32 @@ namespace Soap.PfBase.Tests
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
     using Soap.Auth0;
+    using Soap.Client;
     using Soap.Context.BlobStorage;
-    using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
-    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
-    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
-    using Soap.Utility.Functions.Operations;
     using Xunit.Abstractions;
 
     public class SoapMessageTest
     {
         private readonly MapMessagesToFunctions mappingRegistration;
 
-        private readonly ISecurityInfo securityInfo;
+        private readonly IMessageAggregator messageAggregatorForTesting = new MessageAggregatorForTesting();
 
         private readonly ITestOutputHelper output;
 
+        //* copies over each call of Add and Execute retaining state across the whole test
+        private readonly IDocumentRepository rollingRepo;
+
+        private readonly InMemoryBlobStorage rollingStorage;
+
+        private readonly ISecurityInfo securityInfo;
+
         private readonly SoapMessageTestContext soapTestContext = new SoapMessageTestContext();
 
-        //* copies over each call of Add and Execute retaining state across the whole test
-        private IDocumentRepository rollingRepo = new TestConfig().DatabaseSettings.CreateRepository();
-
-        private InMemoryBlobStorage rollingStorage = new InMemoryBlobStorage(new InMemoryBlobStorage.Settings());
-
-        private IMessageAggregator messageAggregatorForTesting = new MessageAggregatorForTesting();
-        
         protected SoapMessageTest(
             ITestOutputHelper output,
             MapMessagesToFunctions mappingRegistration,
@@ -50,33 +47,32 @@ namespace Soap.PfBase.Tests
             this.mappingRegistration = mappingRegistration;
             this.securityInfo = securityInfo;
             SoapMessageTestContext.TestIdentities = testIdentities;
+
+            this.rollingRepo = new TestConfig().DatabaseSettings.CreateRepository();
+            this.rollingStorage = new InMemoryBlobStorage(new InMemoryBlobStorage.Settings(this.messageAggregatorForTesting));
         }
 
         protected Result? Result { get; private set; }
-        
-        protected void SetupTestByAddingABlobStorageEntry(Blob blob, string containerName) 
+
+        protected void SetupTestByAddingABlobStorageEntry(Blob blob, string containerName)
         {
-            
             this.output.WriteLine($"Test Setup: Stored Blob of type {blob.Type.TypeString}");
 
-            this.rollingStorage.Upload(new InMemoryBlobStorage.Events.BlobUploadEvent(new InMemoryBlobStorage.Settings(), blob, containerName));
+            this.rollingStorage.Upload(
+                new InMemoryBlobStorage.Events.BlobUploadEvent(
+                    new InMemoryBlobStorage.Settings(this.messageAggregatorForTesting),
+                    blob,
+                    containerName));
         }
 
-        protected class CommonContainerNames : TypedEnumeration<CommonContainerNames>
-        {
-            public static CommonContainerNames LargeMessages = Create("large-messages", "large-messages");
-            public static CommonContainerNames Content = Create("content", "content");
-            public static CommonContainerNames UnitsOfWork = Create("units-of-work", "units-of-work");
-        }
-        protected void SetupTestByAddingABlobStorageEntry(Blob blob, CommonContainerNames containerName) 
+        protected void SetupTestByAddingABlobStorageEntry(Blob blob, CommonContainerNames containerName)
         {
             SetupTestByAddingABlobStorageEntry(blob, containerName.Key);
         }
-        
+
         protected void SetupTestByAddingADatabaseEntry<TAggregate>(TAggregate aggregate) where TAggregate : Aggregate, new()
         {
-            
-            var dataStore = new DataStore(this.rollingRepo, messageAggregatorForTesting);
+            var dataStore = new DataStore(this.rollingRepo, this.messageAggregatorForTesting);
 
             this.output.WriteLine($"Test Setup: Created {typeof(TAggregate).Name}");
 
@@ -92,7 +88,7 @@ namespace Soap.PfBase.Tests
             bool enableSlaWhenSecurityContextIsMissing = true) where TMessage : ApiMessage
         {
             this.output.WriteLine($"Test Setup: Received Message {typeof(TMessage).Name}");
-            
+
             /* unlike blobstorage and datastore there is no need to keep the bus state from previous messages
              but you do need to make sure any state they create in datastore or blobs is retained */
             Result = ExecuteMessage(
@@ -114,7 +110,8 @@ namespace Soap.PfBase.Tests
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setupMocks = null,
             bool authEnabled = true,
-            bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
+            bool enableSlaWhenSecurityContextIsMissing = false,
+            Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
         {
             Result = await ExecuteMessage(
                          msg,
@@ -124,7 +121,8 @@ namespace Soap.PfBase.Tests
                          dataStoreOptions,
                          setupMocks,
                          authEnabled,
-                         enableSlaWhenSecurityContextIsMissing);
+                         enableSlaWhenSecurityContextIsMissing,
+                         clientTransport);
         }
 
         private async Task<Result> ExecuteMessage<TMessage>(
@@ -135,11 +133,12 @@ namespace Soap.PfBase.Tests
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setup = null,
             bool authEnabled = true,
-            bool enableSlaWhenSecurityContextIsMissing = false) where TMessage : ApiMessage
+            bool enableSlaWhenSecurityContextIsMissing = false,
+            Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
         {
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 
-            if (identity != null && msg is ApiCommand)
+            if (msg is ApiCommand && identity != null && msg.Headers.GetIdentityChain() == null)
             {
                 msg.Headers.SetIdentityChain(identity.IdChainSegment);
                 msg.Headers.SetIdentityToken(identity.IdToken(new TestConfig().EncryptionKey));
@@ -147,6 +146,15 @@ namespace Soap.PfBase.Tests
             }
 
             msg.SetDefaultHeadersForIncomingTestMessages();
+
+            if (msg is ApiCommand && clientTransport == Transport.ServiceBus
+                                  && ((object)msg).ToBlob(Guid.NewGuid(), SerialiserIds.ApiBusMessage).Bytes.Length > 256000)
+            {
+                //* simulate what the js or soap clients would do
+                msg.Headers.SetBlobId(msg.Headers.GetMessageId());
+                SetupTestByAddingABlobStorageEntry(msg.ToBlob(), CommonContainerNames.LargeMessages);
+                msg.ClearAllPublicPropertyValuesExceptHeaders();
+            }
 
             return await this.soapTestContext.Execute(
                        msg,
@@ -161,6 +169,15 @@ namespace Soap.PfBase.Tests
                        beforeRunHook,
                        dataStoreOptions,
                        setup);
+        }
+
+        protected class CommonContainerNames : TypedEnumeration<CommonContainerNames>
+        {
+            public static CommonContainerNames Content = Create("content", "content");
+
+            public static CommonContainerNames LargeMessages = Create("large-messages", "large-messages");
+
+            public static CommonContainerNames UnitsOfWork = Create("units-of-work", "units-of-work");
         }
     }
 }

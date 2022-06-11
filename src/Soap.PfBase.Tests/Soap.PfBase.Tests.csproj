@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Auth0\Soap.Auth0.csproj" />
+    <ProjectReference Include="..\Soap.Client\Soap.Client.csproj" />
     <ProjectReference Include="..\Soap.Context\Soap.Context.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />

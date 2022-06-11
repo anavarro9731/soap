@@ -52,7 +52,7 @@
                 && context.MessageLogEntry.Attempts.Count == 0,
                 SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully.ToString());
 
-            //* messages may be resent but will be thrown out if they have already been sent, importantly they will not change ids
+            //* messages may be resent but will be thrown out if they have already been sent, because most importantly they will not change ids the second time they are sent
             await context.Bus.CommitChanges();
 
             Guard.Against(

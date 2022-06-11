@@ -19,9 +19,9 @@
                     {
                         await Bus.Send(new C106v1_LargeCommand().Op(x =>
                             {
-                            var messageC105C106Id = message.C105_C106Id ?? Guid.NewGuid(); 
+                            var messageId = message.C105_C106Id ?? Guid.NewGuid(); 
                             
-                            x.Headers.SetMessageId(messageC105C106Id);
+                            x.Headers.SetMessageId(messageId);
                             }));
                     };
             }

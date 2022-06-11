@@ -2,12 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Reflection;
     using CircuitBoard;
     using CircuitBoard.Messages;
-    
 
     /*
     NEVER add any logic to these classes, or you may risk conflicts between versions of message 
@@ -40,7 +38,6 @@
          as the system grows, however, it also causes an issue with dictionary keys changing case and then not matching again 
          since they are modeled as objects. which is why we have the naming strategy set to ignore dictionary keys on
          message serialisation. this could also be checked in the header extensions methods (e.g. toLower()) if need be */
-        
     }
 
     public static class MessageHeaderExtensionsA
@@ -52,10 +49,10 @@
             bool commandRequiresAuth,
             string envPartitionKey)
         {
-
             if (message is MessageFailedAllRetries m)
             {
-                messageHeaders.SetQueueName(Type.GetType(m.TypeName).GetTypeInfo().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
+                messageHeaders.SetQueueName(
+                    Type.GetType(m.TypeName).GetTypeInfo().Assembly.GetName().Name + "." + envPartitionKey); //* send to owners queue
             }
             else
             {
@@ -81,8 +78,7 @@
             Ensure(messageHeaders.GetQueue() != null, $"All outgoing Api commands must have a {Keys.QueueName} header set");
 
             Ensure(messageHeaders.GetSchema() != null, $"All outgoing Api commands must have a {nameof(Keys.Schema)} header set");
-            
-            
+
             /* NOT SET
             identity token optionally present, some message are anonymous though most aren't
             access token optionally present, some messages are anonymous
@@ -98,7 +94,6 @@
 
         public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
         {
-            
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
                 $"All outgoing Api messages must have a valid {nameof(Keys.MessageId)} header");
@@ -107,7 +102,7 @@
                 $"All outgoing Api messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
-            
+
             if (messageHeaders.GetSessionId() != null)
             {
                 Ensure(
@@ -132,6 +127,18 @@
             */
         }
 
+        public static ApiMessage ClearAllPublicPropertyValuesExceptHeaders(this ApiMessage msg)
+        {
+            var publicProperties = msg.GetType().GetRuntimeProperties().Where(p => p.Name != nameof(ApiMessage.Headers) && p.CanRead && p.CanWrite);
+
+            foreach (var publicProperty in publicProperties) publicProperty.SetValue(msg, null);
+
+            var publicFields = msg.GetType().GetRuntimeFields();
+
+            foreach (var publicField in publicFields) publicField.SetValue(msg, null);
+
+            return msg;
+        }
 
         public static void ValidateIncomingMessageHeaders(this ApiMessage msg)
         {
@@ -143,23 +150,29 @@
                 messageHeaders.GetTimeOfCreationAtOrigin() != null,
                 $"All incoming messages must have a {nameof(Keys.TimeOfCreationAtOrigin)} header set");
 
-            if (messageHeaders.GetSessionId() != null || messageHeaders.GetCommandHash() != null ||messageHeaders.GetCommandConversationId() != null) 
+            if (messageHeaders.GetSessionId() != null || messageHeaders.GetCommandHash() != null || messageHeaders.GetCommandConversationId() != null)
             {
-                Ensure(msg is ApiCommand, $"All incoming messages with session headers (sessionid, commandhash, commandconversationid) can only be commands");
-                
-                Ensure(messageHeaders.GetCommandHash() != null && messageHeaders.GetCommandConversationId() != null && messageHeaders.GetSessionId() != null,
+                Ensure(
+                    msg is ApiCommand,
+                    $"All incoming messages with session headers (sessionid, commandhash, commandconversationid) can only be commands");
+
+                Ensure(
+                    messageHeaders.GetCommandHash() != null && messageHeaders.GetCommandConversationId() != null
+                                                            && messageHeaders.GetSessionId() != null,
                     $"If providing  session headers (sessionid, commandhash, commandconversationid) you must set all 3");
             }
 
             if (messageHeaders.GetIdentityToken() != null || messageHeaders.GetAccessToken() != null || messageHeaders.GetIdentityChain() != null)
             {
-                Ensure(msg is ApiCommand, $"All incoming messages with auth headers (accesstoken, identitytoken, identitychain) can only be commands");
-                
+                Ensure(
+                    msg is ApiCommand,
+                    $"All incoming messages with auth headers (accesstoken, identitytoken, identitychain) can only be commands");
+
                 Ensure(
                     messageHeaders.GetAccessToken() != null && messageHeaders.GetIdentityChain() != null && messageHeaders.GetIdentityToken() != null,
                     $"If providing auth headers (accesstoken, identitytoken, identitychain) you must set all 3");
             }
-            
+
             Ensure(messageHeaders.GetSchema() != null, $"All incoming Api messages must have a {nameof(Keys.Schema)} header set");
 
             //* not validated
@@ -174,7 +187,6 @@
             //* sasstoragetoken only present on outgoing UIFormEvents or large incoming commands
         }
 
-
         private static void Ensure(bool acceptable, string errorMessage)
         {
             if (!acceptable) throw new CircuitException(errorMessage);
@@ -183,6 +195,18 @@
 
     public static class MessageHeaderExtensionsB
     {
+        public static MessageHeaders ClearSessionHeaders(this MessageHeaders m)
+        {
+            m.RemoveAll(h => h.Key == Keys.SessionId || h.Key == Keys.CommandHash || h.Key == Keys.CommandConversationId);
+            return m;
+        }
+
+        public static string GetAccessToken(this MessageHeaders m)
+        {
+            m.TryGetValue(Keys.AccessToken, out var x);
+            return x;
+        }
+
         public static Guid? GetBlobId(this MessageHeaders m)
         {
             m.TryGetValue(Keys.BlobId, out var x);
@@ -203,21 +227,15 @@
             return x;
         }
 
-        public static string GetIdentityToken(this MessageHeaders m)
-        {
-            m.TryGetValue(Keys.IdentityToken, out var x);
-            return x;
-        }
-        
         public static string GetIdentityChain(this MessageHeaders m)
         {
             m.TryGetValue(Keys.IdentityChain, out var x);
             return x;
         }
-        
-        public static string GetAccessToken(this MessageHeaders m)
+
+        public static string GetIdentityToken(this MessageHeaders m)
         {
-            m.TryGetValue(Keys.AccessToken, out var x);
+            m.TryGetValue(Keys.IdentityToken, out var x);
             return x;
         }
 
@@ -253,7 +271,7 @@
             m.TryGetValue(Keys.SessionId, out var x);
             return x;
         }
-        
+
         public static StatefulProcessId? GetStatefulProcessId(this MessageHeaders m)
         {
             m.TryGetValue(Keys.StatefulProcessId, out var x);
@@ -281,15 +299,24 @@
 
         public static bool HasStatefulProcessId(this MessageHeaders m) => m.Exists(v => v.Key == Keys.StatefulProcessId);
 
+        public static MessageHeaders SetAccessToken(this MessageHeaders m, string identityToken)
+        {
+            if (!m.Exists(v => v.Key == Keys.AccessToken))
+            {
+                m.Add(new Enumeration(Keys.AccessToken, identityToken));
+            }
+            else throw new CircuitException($"Cannot set header {Keys.AccessToken} because it has already been set");
+
+            return m;
+        }
+
         public static MessageHeaders SetBlobId(this MessageHeaders m, Guid blobId)
         {
-            
             if (!m.Exists(v => v.Key == Keys.BlobId))
             {
                 m.Add(new Enumeration(Keys.BlobId, blobId.ToString()));
             }
             else throw new CircuitException($"Cannot set header {Keys.BlobId} because it has already been set");
-            
 
             return m;
         }
@@ -310,8 +337,19 @@
             if (!m.Exists(v => v.Key == Keys.CommandHash))
             {
                 m.Add(new Enumeration(Keys.CommandHash, commandHash));
-            }            
+            }
             else throw new CircuitException($"Cannot set header {Keys.CommandHash} because it has already been set");
+
+            return m;
+        }
+
+        public static MessageHeaders SetIdentityChain(this MessageHeaders m, string identityChain)
+        {
+            if (!m.Exists(v => v.Key == Keys.IdentityChain))
+            {
+                m.Add(new Enumeration(Keys.IdentityChain, identityChain));
+            }
+            else throw new CircuitException($"Cannot set header {Keys.IdentityChain} because it has already been set");
 
             return m;
         }
@@ -323,29 +361,7 @@
                 m.Add(new Enumeration(Keys.IdentityToken, identityToken));
             }
             else throw new CircuitException($"Cannot set header {Keys.IdentityToken} because it has already been set");
-            
-            return m;
-        }
-        
-        public static MessageHeaders SetAccessToken(this MessageHeaders m, string identityToken)
-        {
-            if (!m.Exists(v => v.Key == Keys.AccessToken))
-            {
-                m.Add(new Enumeration(Keys.AccessToken, identityToken));
-            }
-            else throw new CircuitException($"Cannot set header {Keys.AccessToken} because it has already been set");
-            
-            return m;
-        }
-        
-        public static MessageHeaders SetIdentityChain(this MessageHeaders m, string identityChain)
-        {
-            if (!m.Exists(v => v.Key == Keys.IdentityChain))
-            {
-                m.Add(new Enumeration(Keys.IdentityChain, identityChain));
-            }
-            else throw new CircuitException($"Cannot set header {Keys.IdentityChain} because it has already been set");
-            
+
             return m;
         }
 
@@ -366,7 +382,7 @@
                 m.Add(new Enumeration(Keys.QueueName, queueName));
             }
             else throw new CircuitException($"Cannot set header {Keys.QueueName} because it has already been set");
-            
+
             return m;
         }
 
@@ -377,10 +393,10 @@
                 m.Add(new Enumeration(Keys.SasStorageToken, sasStorageToken));
             }
             else throw new CircuitException($"Cannot set header {Keys.SasStorageToken} because it has already been set");
-            
+
             return m;
         }
-        
+
         public static MessageHeaders SetSchema(this MessageHeaders m, string schema)
         {
             if (!m.Exists(v => v.Key == Keys.Schema))
@@ -388,7 +404,7 @@
                 m.Add(new Enumeration(Keys.Schema, schema));
             }
             else throw new CircuitException($"Cannot set header {Keys.Schema} because it has already been set");
-            
+
             return m;
         }
 
@@ -399,16 +415,8 @@
                 m.Add(new Enumeration(Keys.SessionId, sessionId));
             }
             else throw new CircuitException($"Cannot set header {Keys.SessionId} because it has already been set");
-            
+
             return m;
-        }
-        
-        public static MessageHeaders ClearSessionHeaders(this MessageHeaders m)
-        {
-                m.RemoveAll(h => h.Key == Keys.SessionId 
-                                 || h.Key == Keys.CommandHash
-                                 ||h.Key == Keys.CommandConversationId);
-                return m;
         }
 
         public static MessageHeaders SetStatefulProcessId(this MessageHeaders m, StatefulProcessId id)
@@ -418,7 +426,7 @@
                 m.Add(new Enumeration(Keys.StatefulProcessId, id.ToString()));
             }
             else throw new CircuitException($"Cannot set header {Keys.StatefulProcessId} because it has already been set");
-            
+
             return m;
         }
 
@@ -430,7 +438,7 @@
                 m.Add(new Enumeration(Keys.TimeOfCreationAtOrigin, s));
             }
             else throw new CircuitException($"Cannot set header {Keys.TimeOfCreationAtOrigin} because it has already been set");
-            
+
             return m;
         }
 
@@ -441,7 +449,7 @@
                 m.Add(new Enumeration(Keys.Topic, topic));
             }
             else throw new CircuitException($"Cannot set header {Keys.Topic} because it has already been set");
-            
+
             return m;
         }
 
@@ -457,37 +465,41 @@
         //* uniqueId of message
         public const string MessageId = nameof(MessageId);
 
+        //* server side conversation id 
+        public const string StatefulProcessId = nameof(StatefulProcessId);
+
         //* time when message was created / sent
         public const string TimeOfCreationAtOrigin = nameof(TimeOfCreationAtOrigin);
 
+        internal const string AccessToken = nameof(AccessToken); //* oauth bearer token
+
         //* id of blob if message is large
         internal const string BlobId = nameof(BlobId);
-        
+
         //* SESSIONS
         internal const string CommandConversationId = nameof(CommandConversationId); //* id of client side conversation
-        internal const string CommandHash = nameof(CommandHash); //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
-        internal const string SessionId = nameof(SessionId); //* sessionid for web socket client 
-        
+
+        internal const string
+            CommandHash = nameof(CommandHash); //* hash of message that started a client side conversation to link it up again (conversationId too specific for cache)
+
+        internal const string
+            IdentityChain = nameof(IdentityChain); //* comma separated list of identities that have handled messages in this workflow
+
         //* AUTH
         internal const string IdentityToken = nameof(IdentityToken); //* openid identity token
-        internal const string AccessToken = nameof(AccessToken); //* oauth bearer token
-        internal const string IdentityChain = nameof(IdentityChain); //* comma separated list of identities that have handled messages in this workflow
-        
+
         //* dest queue when its a command
         internal const string QueueName = nameof(QueueName);
 
         //* token used for uploading and downloading event message blobs 
         internal const string SasStorageToken = nameof(SasStorageToken);
-        
+
         //* short type name
         internal const string Schema = nameof(Schema);
 
-        //* server side conversation id 
-        public const string StatefulProcessId = nameof(StatefulProcessId);
+        internal const string SessionId = nameof(SessionId); //* sessionid for web socket client 
 
         //* dest topic when its an event
         internal const string Topic = nameof(Topic);
-        
-        
     }
 }

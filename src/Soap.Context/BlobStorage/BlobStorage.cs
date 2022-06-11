@@ -3,22 +3,17 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Threading.Tasks;
-    using Azure;
     using Azure.Storage;
     using Azure.Storage.Blobs;
     using Azure.Storage.Blobs.Models;
-    using Azure.Storage.Blobs.Specialized;
     using Azure.Storage.Sas;
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using CircuitBoard.Messages;
-    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
-    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
 
     /* doesn't need it's own project right now because it is not needed by the Soap.Config repo
@@ -34,16 +29,31 @@
             this.blobStorageSettings = blobStorageSettings;
         }
 
+        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1);
+
+        public async Task DeleteIfExists(Guid id, string containerName = "content")
+        {
+            await this.blobStorageSettings.MessageAggregator
+                      .CollectAndForward(new Events.BlobDeleteEvent(this.blobStorageSettings, id, containerName))
+                      .To(Delete);
+
+            static async Task Delete(Events.BlobDeleteEvent @event)
+            {
+                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
+                await client.DeleteIfExistsAsync();
+            }
+        }
+
         public async Task DevStorageSetup()
         {
             var blobServiceClient = this.blobStorageSettings.GetServiceClient;
             var properties = await blobServiceClient.GetPropertiesAsync();
-            int sasTokenExpiryInSecondsFromNow = 1000;
+            var sasTokenExpiryInSecondsFromNow = 1000;
             if (properties.Value.Cors.Count == 0)
             {
-                properties.Value.Cors = new List<BlobCorsRule>()
+                properties.Value.Cors = new List<BlobCorsRule>
                 {
-                    new BlobCorsRule()
+                    new BlobCorsRule
                     {
                         AllowedMethods = "GET,PUT,POST,DELETE,OPTIONS",
                         AllowedOrigins = "*",
@@ -54,24 +64,43 @@
                 };
                 await blobServiceClient.SetPropertiesAsync(properties);
             }
-            
+
             // Create a SAS token that's valid for one hour.
-            AccountSasBuilder sasBuilder = new AccountSasBuilder()
+            var sasBuilder = new AccountSasBuilder
             {
                 Services = AccountSasServices.All,
                 ResourceTypes = AccountSasResourceTypes.All,
                 ExpiresOn = GetSasExpiry,
                 Protocol = SasProtocol.HttpsAndHttp
             };
-            
-            sasBuilder.SetPermissions(AccountSasPermissions.Read |
-                                      AccountSasPermissions.Write);
-            
-            // Use the key to get the SAS token.
-            string sasToken = sasBuilder.ToSasQueryParameters(new StorageSharedKeyCredential("devstoreaccount1","Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==")).ToString();
-            
-            Console.WriteLine($"Azurite Test SasToken Valid For The Timespan [days:hours:minutes:seconds] {new TimeSpan(0,0,0,sasTokenExpiryInSecondsFromNow):g} : {sasToken}");
 
+            sasBuilder.SetPermissions(AccountSasPermissions.Read | AccountSasPermissions.Write);
+
+            // Use the key to get the SAS token.
+            var sasToken = sasBuilder.ToSasQueryParameters(
+                                         new StorageSharedKeyCredential(
+                                             "devstoreaccount1",
+                                             "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="))
+                                     .ToString();
+
+            Console.WriteLine(
+                $"Azurite Test SasToken Valid For The Timespan [days:hours:minutes:seconds] {new TimeSpan(0, 0, 0, sasTokenExpiryInSecondsFromNow):g} : {sasToken}");
+        }
+
+        public async Task<bool> Exists(Guid id, string containerName = "content")
+        {
+            var exists = await this.blobStorageSettings.MessageAggregator
+                                   .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
+                                   .To(Exists);
+            return exists;
+
+            static async Task<bool> Exists(Events.BlobDownloadEvent @event)
+            {
+                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
+                var result = await client.ExistsAsync();
+
+                return result;
+            }
         }
 
         public async Task<ApiMessage> GetApiMessageFromBlob(Guid blobId)
@@ -93,23 +122,6 @@
             {
                 throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
-
-
-        }
-        
-        static async Task<Blob> Download(Events.BlobDownloadEvent @event)
-        {
-            var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
-            var result = await client.DownloadAsync();
-            await using var memoryStream = new MemoryStream();
-            await result.Value.Content.CopyToAsync(memoryStream);
-            var allBytes = memoryStream.ToArray();
-            var typeString = result.Value.Details.Metadata["typeString"];
-            var typeClass = result.Value.Details.Metadata["typeClass"];
-            return new Blob(
-                @event.BlobId,
-                allBytes,
-                new Blob.BlobType(typeString, TypedEnumeration<Blob.TypeClass>.GetInstanceFromKey(typeClass)));
         }
 
         public Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
@@ -117,8 +129,8 @@
             try
             {
                 var blob = this.blobStorageSettings.MessageAggregator
-                                     .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
-                                     .To(Download);
+                               .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
+                               .To(Download);
                 return blob;
             }
             catch (Exception)
@@ -127,32 +139,9 @@
             }
         }
 
-        public async Task<bool> Exists(Guid id, string containerName = "content")
-        {
-            try
-            {
-                var exists = await this.blobStorageSettings.MessageAggregator
-                                     .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
-                                     .To(Exists);
-                return exists;
-            }
-            catch (RequestFailedException r)
-            {
-                throw new CircuitException($"Could not read blob with id {id} from storage", r);
-            }
-
-            static async Task<bool> Exists(Events.BlobDownloadEvent @event)
-            {
-                var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
-                var result = await client.ExistsAsync();
-                return result;
-            }
-        }
-
         public string GetStorageSasTokenForBlob(Guid blobId, EnumerationFlags permissions, string containerName = "content")
         {
-            return this.blobStorageSettings.MessageAggregator
-                       .CollectAndForward(new Events.BlobGetSasTokenEvent(blobId.ToString(), containerName))
+            return this.blobStorageSettings.MessageAggregator.CollectAndForward(new Events.BlobGetSasTokenEvent(blobId.ToString(), containerName))
                        .To(GetToken);
 
             string GetToken(Events.BlobGetSasTokenEvent args)
@@ -174,14 +163,12 @@
                         _ when permissions.HasFlag(IBlobStorage.BlobSasPermissions.CreateNew) => BlobSasPermissions.Create,
                         _ => throw new CircuitException("Must specify an accepted set of blob permissions")
                     });
-                
+
                 var sasToken = sasBuilder.ToSasQueryParameters(this.blobStorageSettings.GeStorageKeyCredential());
 
-                return "?" + sasToken.ToString();
+                return "?" + sasToken;
             }
         }
-
-        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1); 
 
         public async Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
@@ -213,6 +200,18 @@
                       .To(Upload);
         }
 
+        private static async Task<Blob> Download(Events.BlobDownloadEvent @event)
+        {
+            var client = @event.StorageSettings.CreateBlobClient(@event.BlobId.ToString(), @event.ContainerName);
+            var result = await client.DownloadAsync();
+            await using var memoryStream = new MemoryStream();
+            await result.Value.Content.CopyToAsync(memoryStream);
+            var allBytes = memoryStream.ToArray();
+            var typeString = result.Value.Details.Metadata["typeString"];
+            var typeClass = result.Value.Details.Metadata["typeClass"];
+            return new Blob(@event.BlobId, allBytes, new Blob.BlobType(typeString, TypedEnumeration<Blob.TypeClass>.GetInstanceFromKey(typeClass)));
+        }
+
         private static async Task Upload(Events.BlobUploadEvent args)
         {
             var client = args.StorageSettings.CreateBlobClient(args.Blob.Id.ToString(), args.ContainerName);
@@ -225,6 +224,22 @@
 
         public static class Events
         {
+            public class BlobDeleteEvent : IMessage
+            {
+                public readonly Guid BlobId;
+
+                public BlobDeleteEvent(Settings storageSettings, Guid blobId, string containerName)
+                {
+                    StorageSettings = storageSettings;
+                    ContainerName = containerName;
+                    this.BlobId = blobId;
+                }
+
+                public string ContainerName { get; }
+
+                public Settings StorageSettings { get; }
+            }
+
             public class BlobDownloadEvent : IMessage
             {
                 public readonly Guid BlobId;
@@ -273,10 +288,10 @@
 
         public class Settings
         {
-            private static BlobServiceClient blobServiceClient;
-
-            private static ConcurrentDictionary<string, BlobContainerClient> BlobContainerClients =
+            private static readonly ConcurrentDictionary<string, BlobContainerClient> BlobContainerClients =
                 new ConcurrentDictionary<string, BlobContainerClient>();
+
+            private static BlobServiceClient blobServiceClient;
 
             private static string ConnectionString;
 
@@ -285,6 +300,23 @@
                 MessageAggregator = messageAggregator;
                 blobServiceClient ??= new BlobServiceClient(connectionString);
                 ConnectionString ??= connectionString;
+            }
+
+            public IMessageAggregator MessageAggregator { get; }
+
+            internal BlobServiceClient GetServiceClient => blobServiceClient;
+
+            public BlobClient CreateBlobClient(string blobName, string containerName = "content")
+            {
+                var containerClient = BlobContainerClients.GetOrAdd(
+                    containerName,
+                    containerName => blobServiceClient.GetBlobContainerClient(containerName));
+
+                //* sadly CreateIfNotExists works by trying to make a call to see if it exists and fills the azure logs with errors that aren't real errors
+                containerClient.CreateIfNotExists(PublicAccessType.Blob);
+
+                var blobClient = containerClient.GetBlobClient(blobName);
+                return blobClient;
             }
 
             public StorageSharedKeyCredential GeStorageKeyCredential()
@@ -298,21 +330,6 @@
                 }
 
                 return new StorageSharedKeyCredential(parsedConnectionString["AccountName"], parsedConnectionString["AccountKey"]);
-            }
-
-            public IMessageAggregator MessageAggregator { get; }
-
-            internal BlobServiceClient GetServiceClient => blobServiceClient;
-            
-            public BlobClient CreateBlobClient(string blobName, string containerName = "content")
-            {
-                var containerClient = BlobContainerClients.GetOrAdd(containerName, containerName => blobServiceClient.GetBlobContainerClient(containerName));
-                
-                //* sadly CreateIfNotExists works by trying to make a call to see if it exists and fills the azure logs with errors that aren't real errors
-                containerClient.CreateIfNotExists(PublicAccessType.Blob);
-
-                var blobClient = containerClient.GetBlobClient(blobName);
-                return blobClient;
             }
         }
     }

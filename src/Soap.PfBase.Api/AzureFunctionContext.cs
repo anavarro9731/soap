@@ -225,7 +225,7 @@
             {
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
-                meta = new MessageMeta(timeStamp, permissions, userProfile);
+                meta = new MessageMeta(timeStamp, permissions, userProfile, message.Headers.GetMessageId());
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)

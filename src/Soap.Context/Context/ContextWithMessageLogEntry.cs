@@ -13,11 +13,19 @@
 
         private readonly IMessageFunctionsServerSide functions;
 
-        public ContextWithMessageLogEntry(MessageLogEntry messageLogEntry, ApiMessage message, BoostrappedContext current, UnitOfWork unitOfWork)
-            : base(current)
+        public ContextWithMessageLogEntry(
+            MessageLogEntry messageLogEntry,
+            ApiMessage message,
+            ApiMessage messageAtPerimeter,
+            BoostrappedContext context,
+            Task hasBeenUploadedToBlobStorageIfNecessary,
+            UnitOfWork unitOfWork)
+            : base(context)
         {
             MessageLogEntry = messageLogEntry;
             Message = message;
+            MessageAtPermimeter = messageAtPerimeter;
+            HasBeenUploadedToBlobStorageIfNecessary = hasBeenUploadedToBlobStorageIfNecessary;
             UnitOfWork = unitOfWork;
             this.functions = this.MessageMapper.MapMessage(message);
         }
@@ -26,6 +34,10 @@
 
         public ApiMessage Message { get; }
         
+        public ApiMessage MessageAtPermimeter { get; }
+
+        public Task HasBeenUploadedToBlobStorageIfNecessary { get; }
+
         public MessageLogEntry MessageLogEntry { get; }
 
         public UnitOfWork UnitOfWork { get; }

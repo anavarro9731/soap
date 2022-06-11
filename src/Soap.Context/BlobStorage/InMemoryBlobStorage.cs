@@ -13,7 +13,16 @@
 
     /* doesn't need it's own project right now because it is not needed by the Soap.Config repo
      since at present config only stores connection string and not a settings object and that 
-     is because there are no settings right now. that could all change of course */
+     is because there are no settings right now. that could all change of course 
+     
+     the use within this file of the CollectAndForward().To() pattern for testing is arguably
+     redundant since the purpose of this class is to provide a fake blob storage for the testing
+     framework so there is no need to setup mocks anymore for the blob storage calls (we didn't
+     always have a fake blob storage provider).
+     
+     But I have left it here for backwards compatability with testing code that was written before
+     the inmemory(fake)blobstorage was added 
+     */
 
     public class InMemoryBlobStorage : IBlobStorage
     {
@@ -26,35 +35,26 @@
             this.blobStorageSettings = blobStorageSettings;
         }
 
-        private DateTimeOffset GetSasExpiry => DateTimeOffset.UtcNow.AddHours(1);
-
-        public Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
+        public Task DeleteIfExists(Guid id, string containerName = "content")
         {
-            try
-            {
-                return Task.FromResult(Download(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName)));
-            }
-            catch (KeyNotFoundException)
-            {
-                return Task.FromResult<Blob>(null);
-            }
+            return Delete(new Events.BlobDeleteEvent(this.blobStorageSettings, id, containerName));
 
-            Blob Download(Events.BlobDownloadEvent @event)
+            Task Delete(Events.BlobDeleteEvent @event)
             {
-                return this.blobs[@event.BlobId + @event.ContainerName];
+                var key = @event.BlobId + @event.ContainerName;
+                this.blobs.Remove(key);
+                return Task.CompletedTask;
             }
         }
 
         public Task<bool> Exists(Guid id, string containerName = "content")
         {
-            try
+            return Exists(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName));
+
+            Task<bool> Exists(Events.BlobDownloadEvent @event)
             {
-                var exists = this.blobs.ContainsKey(id + containerName);
+                var exists = this.blobs.ContainsKey(@event.BlobId + @event.ContainerName);
                 return Task.FromResult(exists);
-            }
-            catch (RequestFailedException r)
-            {
-                throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
         }
 
@@ -68,16 +68,23 @@
         {
             try
             {
-                return Task.FromResult(Download(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName)));
+                return Download(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName));
             }
             catch (RequestFailedException r)
             {
                 throw new CircuitException($"Could not read blob with id {id} from storage", r);
             }
+        }
 
-            Blob Download(Events.BlobDownloadEvent @event)
+        public Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
+        {
+            try
             {
-                return this.blobs[@event.BlobId + @event.ContainerName];
+                return Download(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName));
+            }
+            catch (KeyNotFoundException)
+            {
+                return Task.FromResult<Blob>(null);
             }
         }
 
@@ -94,37 +101,27 @@
 
         public Task SaveApiMessageAsBlob<T>(T message) where T : ApiMessage
         {
-            Upload(new Events.BlobUploadEvent(this.blobStorageSettings, message.ToBlob(), "large-messages"));
-
-            return Task.CompletedTask;
+            return Upload(new Events.BlobUploadEvent(this.blobStorageSettings, message.ToBlob(), "large-messages"));
         }
 
         public Task SaveBase64StringAsBlob(string base64, Guid id, string mimeType, string containerName = "content")
         {
-            Upload(new Events.BlobUploadEvent(this.blobStorageSettings, base64.ToBlob(id, mimeType), containerName));
-
-            return Task.CompletedTask;
+            return Upload(new Events.BlobUploadEvent(this.blobStorageSettings, base64.ToBlob(id, mimeType), containerName));
         }
 
         public Task SaveByteArrayAsBlob(byte[] bytes, Guid id, string mimeType, string containerName = "content")
         {
-            Upload(new Events.BlobUploadEvent(this.blobStorageSettings, bytes.ToBlob(id, mimeType), containerName));
-
-            return Task.CompletedTask;
+            return Upload(new Events.BlobUploadEvent(this.blobStorageSettings, bytes.ToBlob(id, mimeType), containerName));
         }
 
         public Task SaveObjectAsBlob<T>(T @object, Func<T, Guid> getId, SerialiserIds serialiserId, string containerName = "content")
         {
             var objectId = getId(@object);
-
-            Upload(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId, serialiserId), containerName));
-
-            return Task.CompletedTask;
+            return Upload(new Events.BlobUploadEvent(this.blobStorageSettings, @object.ToBlob(objectId, serialiserId), containerName));
         }
 
         public Task Upload(Events.BlobUploadEvent args)
         {
-            
             var key = args.Blob.Id + args.ContainerName;
             if (this.blobs.ContainsKey(key))
             {
@@ -134,13 +131,33 @@
             {
                 this.blobs.Add(key, args.Blob);
             }
-            
-            
+
             return Task.CompletedTask;
+        }
+
+        private Task<Blob> Download(Events.BlobDownloadEvent @event)
+        {
+            return Task.FromResult(this.blobs[@event.BlobId + @event.ContainerName]);
         }
 
         public static class Events
         {
+            public class BlobDeleteEvent : IMessage
+            {
+                public readonly Guid BlobId;
+
+                public BlobDeleteEvent(Settings storageSettings, Guid blobId, string containerName)
+                {
+                    StorageSettings = storageSettings;
+                    ContainerName = containerName;
+                    this.BlobId = blobId;
+                }
+
+                public string ContainerName { get; }
+
+                public Settings StorageSettings { get; }
+            }
+
             public class BlobDownloadEvent : IMessage
             {
                 public readonly Guid BlobId;
@@ -189,10 +206,12 @@
 
         public class Settings
         {
-            public Settings()
+            public Settings(IMessageAggregator messageAggregator)
             {
-                
+                MessageAggregator = messageAggregator;
             }
+
+            public IMessageAggregator MessageAggregator { get; }
         }
     }
 }
