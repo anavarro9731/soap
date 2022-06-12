@@ -148,7 +148,7 @@ namespace Soap.PfBase.Tests
             msg.SetDefaultHeadersForIncomingTestMessages();
 
             if (msg is ApiCommand && clientTransport == Transport.ServiceBus
-                                  && ((object)msg).ToBlob(Guid.NewGuid(), SerialiserIds.ApiBusMessage).Bytes.Length > 256000)
+                                  && msg.ToBlob().Bytes.Length > 256000)
             {
                 //* simulate what the js or soap clients would do
                 msg.Headers.SetBlobId(msg.Headers.GetMessageId());

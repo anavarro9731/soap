@@ -38,7 +38,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C106
         }
         
         [Fact]
-        public async void TheMessageLogEntryShouldBeASkeleton()
+        public void TheMessageLogEntryShouldBeASkeleton()
         {
             Result.GetMessageLogEntry().SkeletonOnly.Should().BeTrue();
             Result.GetMessageLogEntry().SerialisedMessage.Deserialise<C106v1_LargeCommand>().C106_Large256KbString.Should().BeNullOrWhiteSpace();

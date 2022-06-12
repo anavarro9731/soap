@@ -45,7 +45,7 @@
             return blob;
         }
 
-        public static Blob ToBlob(this ApiMessage o) => o.ToBlob(o.Headers.GetBlobId().Value, SerialiserIds.ApiBusMessage);
+        public static Blob ToBlob(this ApiMessage o) => o.ToBlob(o.Headers.GetBlobId().HasValue ? o.Headers.GetBlobId().Value : o.Headers.GetMessageId(), SerialiserIds.ApiBusMessage);
         
         public static ApiMessage ToMessage(this Blob b)
         {

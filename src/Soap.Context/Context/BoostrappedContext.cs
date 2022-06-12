@@ -135,7 +135,7 @@
                         serialisedMessage = messageAtPerimeter.ToSerialisableObject(SerialiserIds.ApiBusMessage);
                         savedSkeletonOnly = true;
                     }
-                    else if (Exceeds256K(message.ToBlob(Guid.NewGuid() /* just any id to test size not all will have blobids */, SerialiserIds.ApiBusMessage)))
+                    else if (Exceeds256K(message.ToBlob()))
                     {
                         //* upload to blob storage
                         needsToBeBlobbed = true;
