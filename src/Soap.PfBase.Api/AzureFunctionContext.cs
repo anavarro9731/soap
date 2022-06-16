@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Security;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using DataStore.Interfaces;
@@ -44,6 +45,7 @@
          and keep an eye on though. I am not sure if there is a performance
          hit if you have too many clients at once, ie. is there any state
          or locking on the client? */
+        
         private static IDocumentRepository lifetimeRepositoryClient;
 
         public static void CreateLogger(out ILogger logger)
@@ -223,7 +225,7 @@
             {
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
-                meta = new MessageMeta(timeStamp, permissions, userProfile);
+                meta = new MessageMeta(timeStamp, permissions, userProfile, message.Headers.GetMessageId());
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -238,7 +240,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Cannot deserialise message", e);
+                    throw new CircuitException("Cannot deserialise message", e);
                 }
             }
 
@@ -316,7 +318,7 @@
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("Could not verify message type", e);
+                    throw new CircuitException("Could not verify message type", e);
                 }
             }
         }
@@ -333,7 +335,7 @@
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Error retrieving config", e);
+                throw new CircuitException("Error retrieving config", e);
             }
 
             static void EnsureEnvironmentVars()

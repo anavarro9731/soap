@@ -205,7 +205,7 @@ namespace Soap.Auth0
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
-            string schemeValue,
+            string schemeValue,  //* currently not used for securing request with user scheme, apart from visual debug, if this changes consider how it is set by various clients 
             Action<IdentityPermissions> setPermissions,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {

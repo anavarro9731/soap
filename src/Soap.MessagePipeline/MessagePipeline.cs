@@ -2,6 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
+    using CircuitBoard;
     using Soap.Context;
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
@@ -10,17 +11,18 @@
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
+    using Soap.Utility.Functions.Extensions;
 
     public static class MessagePipeline
     {
-        public static async Task Execute(ApiMessage message, MessageMeta meta, BoostrappedContext bootstrappedContext)
+        public static async Task Execute(ApiMessage originalMessage, MessageMeta meta, BoostrappedContext bootstrappedContext)
         {
             {
-                await FillMessageFromStorageIfApplicable();
+                var message = await FillMessageFromStorageIfApplicable(originalMessage); //* replaces with message from blob
 
                 ContextWithMessageLogEntry matureContext = null;
 
-                await PrepareContext(bootstrappedContext, meta, v => matureContext = v);
+                await PrepareContext(bootstrappedContext, meta, originalMessage, message, v => matureContext = v);
 
                 try
                 {
@@ -38,35 +40,37 @@
                 }
             }
 
-            async Task PrepareContext(
+            static async Task PrepareContext(
                 BoostrappedContext boostrappedContext,
                 MessageMeta meta,
+                ApiMessage messageAtPerimeter,
+                ApiMessage message,
                 Action<ContextWithMessageLogEntry> setContext)
             {
-                MessageLogEntry messageLogEntry = null;
-
                 try
                 {
-                    var contextAfterMessageObtained = boostrappedContext.Upgrade(message);
-
-                    await contextAfterMessageObtained.CreateOrFindLogEntry(meta, v => messageLogEntry = v);
-
-                    var contextWithMessageLogEntry = contextAfterMessageObtained.Upgrade(messageLogEntry);
+                    
+                    var contextWithMessageLogEntry = await boostrappedContext.Upgrade(message, messageAtPerimeter, meta);
 
                     setContext(contextWithMessageLogEntry);
                 }
                 catch (Exception e)
                 {
-                    Guard.Against(true, $"Cannot complete context preparation: error {e}");
+                    //* don't use guards in the pipeline code, it will mask the underlying error
+                    throw new CircuitException("Cannot complete context preparation", e);
                 }
             }
 
-            async Task FillMessageFromStorageIfApplicable()
+            async Task<ApiMessage> FillMessageFromStorageIfApplicable(ApiMessage originalMessage)
             {
-                var blobId = message.Headers.GetBlobId();
+                var blobId = originalMessage.Headers.GetBlobId();
                 if (blobId.HasValue)
                 {
-                    message = await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
+                    return await bootstrappedContext.BlobStorage.GetApiMessageFromBlob(blobId.Value);
+                }
+                else
+                {
+                    return originalMessage;
                 }
             }
 
@@ -79,16 +83,24 @@
                 switch (result)
                 {
                     case UnitOfWork.State.AllComplete:
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         context.SerilogSuccess();
                         return;
                     case UnitOfWork.State.AllRolledBack:
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         //* don't try again after a rollback as you may be out of retries to rollback again
                         throw new DomainExceptionWithErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
 
                     case UnitOfWork.State.New:
 
-                        /* validate here rather than beginning of method because there can be variant validation logic and you want
-                                 to attempt to finish an unfinished uow if possible */
+                        /* validate here rather than beginning of method because there can be validation logic that varies between attempts and you want
+                                 to attempt to finish an unfinished uow if possible first */
                         msg.ValidateOrThrow(context);
                         
                         switch (msg)
@@ -109,7 +121,10 @@
                         will fall into the catch block below and result in the message being retried
                         from the beginning but there will be no unit of work on the MessageLogEntry */
                         await context.CommitChanges();
-
+                        
+                        //* give this time to churn in the background, but by this time it needs to be done otherwise you shouldn't log success
+                        await context.HasBeenUploadedToBlobStorageIfNecessary;
+                        
                         context.SerilogSuccess();
                         break;
                 }

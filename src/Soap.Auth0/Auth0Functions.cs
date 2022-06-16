@@ -571,7 +571,7 @@ namespace Soap.Auth0
                                                                               DatabasePermissions.UPDATE,
                                                                           nameof(DatabasePermissions.DELETE) =>
                                                                               DatabasePermissions.DELETE,
-                                                                          _ => throw new ApplicationException(
+                                                                          _ => throw new CircuitException(
                                                                                    "Database permission type not valid")
                                                                       };
 
@@ -588,11 +588,11 @@ namespace Soap.Auth0
                 }
                 catch (SecurityTokenExpiredException ex)
                 {
-                    throw new ApplicationException("The access token is expired.", ex);
+                    throw new CircuitException("The access token is expired.", ex);
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("The access token is invalid.", e);
+                    throw new CircuitException("The access token is invalid.", e);
                 }
             }
 

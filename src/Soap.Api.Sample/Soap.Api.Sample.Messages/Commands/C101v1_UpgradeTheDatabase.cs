@@ -9,7 +9,7 @@
     {
         public C101v1_UpgradeTheDatabase(ReleaseVersions releaseVersion)
         {
-            C101_ReleaseVersion = new TypedEnumerationFlags<ReleaseVersions>(releaseVersion, false);
+            C101_ReleaseVersion = new TypedEnumerationFlags<ReleaseVersions>(releaseVersion);
         }
 
         public C101v1_UpgradeTheDatabase()
@@ -18,7 +18,7 @@
         }
 
         public TypedEnumerationFlags<ReleaseVersions> C101_ReleaseVersion { get; set; } =
-            new TypedEnumerationFlags<ReleaseVersions>(null, false);
+            new TypedEnumerationFlags<ReleaseVersions>();
 
         public override void Validate()
         {

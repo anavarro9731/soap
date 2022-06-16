@@ -13,18 +13,23 @@
     {
         public static SerialiserIds ApiBusMessage = Create(nameof(ApiBusMessage), "Bus Messages");
 
+        public static SerialiserIds UnitOfWork = Create(nameof(UnitOfWork), "Unit Of Work");
+        
         public static SerialiserIds ClientSideMessageSchemaGeneraton = Create(
             nameof(ClientSideMessageSchemaGeneraton),
             "Schema for JS client");
 
         public static SerialiserIds JsonDotNetDefault = Create(nameof(JsonDotNetDefault), "Json.NET Defaults");
         
-        
-        
     }
 
     internal static class JsonNetSettings
     {
+        
+        public static JsonSerializerSettings UnitOfWorkSettings => new JsonSerializerSettings
+        {
+        };
+        
         public static JsonSerializerSettings ApiMessageSerialiserSettings => new JsonSerializerSettings
         {
             DefaultValueHandling =
@@ -86,7 +91,7 @@
         public static void CopyProperties(this object source, object destination, params string[] exclude)
         {
             // If any this null throw an exception
-            if (source == null || destination == null) throw new ApplicationException("Source or/and Destination Objects are null");
+            if (source == null || destination == null) throw new CircuitException("Source or/and Destination Objects are null");
 
             // Getting the Types of the objects
             var typeDest = destination.GetType();
@@ -151,6 +156,10 @@
                 var x when x == SerialiserIds.JsonDotNetDefault => JsonConvert.SerializeObject(
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None),
+                var x when x == SerialiserIds.UnitOfWork => JsonConvert.SerializeObject(
+                    instance,
+                    prettyPrint ? Formatting.Indented : Formatting.None,
+                    JsonNetSettings.UnitOfWorkSettings),
                 var x when x == SerialiserIds.ApiBusMessage => JsonConvert.SerializeObject(
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None,
@@ -159,7 +168,7 @@
                     instance,
                     prettyPrint ? Formatting.Indented : Formatting.None,
                     JsonNetSettings.MessageSchemaSerialiserSettings),
-                _ => throw new ApplicationException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
+                _ => throw new CircuitException($"Serialiser Id Not Found. Valid values are {SerialiserIds.GetAllInstances().Select(x => x.Key).Aggregate((x,y) => $"{x},{y}")}")
 
             };
             return json;

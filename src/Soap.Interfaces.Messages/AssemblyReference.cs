@@ -4,6 +4,6 @@
 
     public static class SoapInterfacesMessages
     {
-        public static Assembly GetAssembly => Assembly.GetAssembly(typeof(SoapInterfacesMessages));
+        public static Assembly GetAssembly => typeof(SoapInterfacesMessages).GetTypeInfo().Assembly;
     }
 }

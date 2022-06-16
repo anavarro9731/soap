@@ -22,9 +22,10 @@ export function ActionDrawer(props) {
     const [css, theme] = useStyletron();
     
     useEffect(() => {
-        //* would be published by children
+        //* register to close yourself, if your children publish closeAllDialogs
         bus.onCloseAllDialogs(() => setIsOpen(false));
     }, []); //* run once
+
     
     return (<Fragment>
         <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.secondary} onClick={() => {
@@ -35,6 +36,7 @@ export function ActionDrawer(props) {
             } else {
                 setIsOpen(false)
             }
+            
         }} children={title} />
         
         <Drawer 
@@ -42,6 +44,7 @@ export function ActionDrawer(props) {
             onClose={() => {
             //* when closing via corner X
             setIsOpen(false);
+            bus.closeAllDialogs(); //if you close yourself, close anything behind you (e.g. popover menus). this could be a problem if there were double layered drawers but I don't think we have any, you could always make it a parameter if there were.
             }}
             autoFocus
             size={SIZE.full}

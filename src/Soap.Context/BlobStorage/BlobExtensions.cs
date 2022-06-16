@@ -5,6 +5,7 @@
     using System.Text.RegularExpressions;
     using DataStore.Models.PureFunctions.Extensions;
     using Newtonsoft.Json;
+    using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
@@ -44,13 +45,20 @@
             return blob;
         }
 
-        public static Blob ToBlob(this ApiMessage o) => o.ToBlob(o.Headers.GetBlobId().Value, SerialiserIds.ApiBusMessage);
+        public static Blob ToBlob(this ApiMessage o) => o.ToBlob(o.Headers.GetBlobId().HasValue ? o.Headers.GetBlobId().Value : o.Headers.GetMessageId(), SerialiserIds.ApiBusMessage);
         
         public static ApiMessage ToMessage(this Blob b)
         {
             var json = Encoding.UTF8.GetString(b.Bytes);
             var message = json.FromJson<ApiMessage>(SerialiserIds.ApiBusMessage, b.Type.TypeString);
             return message;
+        }
+        
+        public static UnitOfWork ToUnitOfWork(this Blob b)
+        {
+            var json = Encoding.UTF8.GetString(b.Bytes);
+            var uow = json.FromJson<UnitOfWork>(SerialiserIds.JsonDotNetDefault, b.Type.TypeString);
+            return uow;
         }
 
         public static T ToObject<T>(this Blob b, SerialiserIds serialiserId) where T : class, new()

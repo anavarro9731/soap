@@ -4,7 +4,10 @@
     using System.Collections.Generic;
     using System.Linq;
     using CircuitBoard;
+    using CircuitBoard.Messages;
     using FluentAssertions;
+    using Serilog;
+    using Serilog.Core;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
@@ -19,6 +22,7 @@
         public TestC107v1(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
+            
             var postCodes = new List<Enumeration>
             {
                 new Enumeration("hr20dn", "HR2 0DN"),
@@ -26,7 +30,10 @@
                 new Enumeration("ox29ju", "OX2 9JU")
             };
 
-            var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: postCodes);
+            var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: postCodes)
+            {
+                AllowMultipleSelections = true
+            };
             c107PostCodesMultiOptional.AddFlag(postCodes.First());
             c107PostCodesMultiOptional.AddFlag(postCodes.Last());
 
@@ -39,8 +46,8 @@
                     C107_DateTime = DateTime.UtcNow,
                     C107_Long = 0,
                     C107_String = "test default",
-                    C107_PostCodesSingle = new EnumerationAndFlags(postCodes.First(), postCodes, false),
-                    C107_PostCodesSingleOptional = new EnumerationAndFlags(postCodes.Last(), postCodes, false),
+                    C107_PostCodesSingle = new EnumerationAndFlags(postCodes.First(), postCodes),
+                    C107_PostCodesSingleOptional = new EnumerationAndFlags(postCodes.Last(), postCodes),
                     C107_PostCodesMulti = new EnumerationAndFlags(postCodes.First(), postCodes),
                     C107_PostCodesMultiOptional = c107PostCodesMultiOptional,
                     C107_CustomObject = new C107v1_CreateOrUpdateTestDataTypes.Address
@@ -65,6 +72,13 @@
             Result.MessageBus.BusEventsPublished.Should().ContainSingle();
             Result.MessageBus.BusEventsPublished.Single().Should().BeOfType<E104v1_TestDataUpserted>();
             Result.MessageBus.BusEventsPublished.Single().As<E104v1_TestDataUpserted>().E104_TestDataId.Should().Be(testDataId);
+        }
+        
+        [Fact]
+        public void ItShouldNotLogTheHouseNameField()
+        {
+            Result.MessageAggregator.AllMessages.OfType<ILogMessage>().Any(x => x.Text.Contains(nameof(C107v1_CreateOrUpdateTestDataTypes.Address.C107_House))).Should().BeFalse();
+
         }
 
         [Fact]

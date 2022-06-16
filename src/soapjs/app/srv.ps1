@@ -14,6 +14,7 @@ if ($UpgradeSoap) {
     del package.json #otherwise parcel reads this one when compiling the components and it really screws up the import of @soap/vars and the .env stuff
     
     cd components
+    Copy-Item -Path .\package.json.bak -Destination .\package.json
     yarn install #node_modules could be missing depending on scenario
     $v = npm view @soap/modules version
     Write-Host "Current Version: $v"

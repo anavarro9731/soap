@@ -2,7 +2,11 @@ namespace Soap.Auth0
 {
     using System;
     using System.Threading.Tasks;
+<<<<<<< HEAD:src/Soap.Auth0/Auth0Functions.Internal.cs
     using global::Auth0.ManagementApi;
+=======
+    using CircuitBoard;
+>>>>>>> origin/master:src/Soap.Auth0/Auth0Functions.Tokens.cs
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.IdentityModel.Protocols.OpenIdConnect;
     using Newtonsoft.Json;
@@ -78,13 +82,13 @@ namespace Soap.Auth0
                 }
                 catch (RuntimeBinderException)
                 {
-                    throw new ApplicationException(
+                    throw new CircuitException(
                         "Response was invalid when attempting to obtain Auth0 Management Api access token");
                 }
 
                 if (string.IsNullOrWhiteSpace(accessToken))
                 {
-                    throw new ApplicationException("Could not retrieve Auth0 access token for management api, it was blank");
+                    throw new CircuitException("Could not retrieve Auth0 access token for management api, it was blank");
                 }
 
                 setApiAccessToken(accessToken);

@@ -47,7 +47,7 @@
                     (this.HasFlag(EventVisibility.ReplyToWebSocketSender) && 
                     eventVisibility == EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId))
                 {
-                    throw new ApplicationException(
+                    throw new CircuitException(
                         "Cannot send to all web socket clients and the message sender at the same time. These options are mutually exclusive, please choose one or the other.");
                 }
                 EnumerationFlagsMethods.AddFlag(this, eventVisibility);

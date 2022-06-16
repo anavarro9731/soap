@@ -5,7 +5,7 @@
     
     public class C106v1_LargeCommand : ApiCommand
     {
-        public string C106_Large256KbString { get; set; } = new string('*', 256000);
+        public string C106_Large256KbString { get; set; } = new string('*', 256001); //* force it to upload to blob storage
 
         public override void Validate()
         {

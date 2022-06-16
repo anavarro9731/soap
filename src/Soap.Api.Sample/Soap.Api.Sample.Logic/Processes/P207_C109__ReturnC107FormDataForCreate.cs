@@ -36,7 +36,10 @@ namespace Soap.Api.Sample.Logic.Processes
             async message =>
                 {
                 {
-                    var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: this.postCodes);
+                    var c107PostCodesMultiOptional = new EnumerationAndFlags(allEnumerations: this.postCodes)
+                    {
+                        AllowMultipleSelections = true
+                    };
                     c107PostCodesMultiOptional.AddFlag(this.postCodes.First());
                     c107PostCodesMultiOptional.AddFlag(this.postCodes.Last());
 
@@ -47,8 +50,8 @@ namespace Soap.Api.Sample.Logic.Processes
                         C107_DateTime = DateTime.UtcNow,
                         C107_Long = 0,
                         C107_String = "test default",
-                        C107_PostCodesSingle = new EnumerationAndFlags(this.postCodes.First(), this.postCodes, false),
-                        C107_PostCodesSingleOptional = new EnumerationAndFlags(this.postCodes.Last(), this.postCodes, false),
+                        C107_PostCodesSingle = new EnumerationAndFlags(this.postCodes.First(), this.postCodes),
+                        C107_PostCodesSingleOptional = new EnumerationAndFlags(this.postCodes.Last(), this.postCodes),
                         C107_PostCodesMulti = new EnumerationAndFlags(this.postCodes.First(), this.postCodes),
                         C107_PostCodesMultiOptional = c107PostCodesMultiOptional,
                         C107_HashtagsOptional = new EnumerationAndFlags(),
@@ -61,16 +64,10 @@ namespace Soap.Api.Sample.Logic.Processes
                         C107_Image = SampleBlobs.Image1
                     };
 
-                    if (BlobsNeedToBeSaved())
-                    {
-                        await SaveTestBlobs();
-                    }
-
+                    await SaveTestBlobs();
+                    
                     await PublishFormDataEvent(new E103v1_GotC107FormData(), formData);
                 }
-
-                static bool BlobsNeedToBeSaved() =>
-                    ContextWithMessageLogEntry.Current.AppConfig.Environment != SoapEnvironments.InMemory;
 
                 static async Task SaveTestBlobs()
                 {

@@ -53,7 +53,12 @@
             RecordCompleted(new ProcessCompleted(GetType().Name, meta.UserProfileOrNull?.Auth0Id));
         }
 
-        protected T GetConfig<T>() where T : class, IBootstrapVariables => this.context.AppConfig.DirectCast<T>();
+        protected T GetCustomConfigVariable<T>(string propertyName)
+        {
+            var propertyInfo = this.context.AppConfig.GetType().GetProperty(propertyName);
+            Guard.Against(propertyInfo == null, $"Custom config property {propertyName} not found");
+            return (T)propertyInfo.GetValue(this.context.AppConfig, null);
+        }
 
         protected async Task PublishFormDataEvent<TApiCommand>(
             UIFormDataEvent<TApiCommand> @event,

@@ -43,6 +43,6 @@
     {
         public static T FromSerialisableObject<T>(this SerialisableObject s) where T : class => s.Deserialise<T>();
 
-        public static SerialisableObject ToSerialisableObject(this object o) => new SerialisableObject(o);
+        public static SerialisableObject ToSerialisableObject(this object o, SerialiserIds serialiserId = null) => new SerialisableObject(o, serialiserId);
     }
 }

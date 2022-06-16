@@ -1,16 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>8.8.0-alpha</Version>
+    <Version>10.0.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Destructurama.Attributed" Version="2.0.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="5.4.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.2.0" />
     <PackageReference Include="Serilog.Sinks.XUnit" Version="2.0.4" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Auth0\Soap.Auth0.csproj" />
+    <ProjectReference Include="..\Soap.Client\Soap.Client.csproj" />
     <ProjectReference Include="..\Soap.Context\Soap.Context.csproj" />
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />

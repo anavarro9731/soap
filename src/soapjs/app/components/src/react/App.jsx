@@ -36,7 +36,9 @@ export function App(props) {
     useEvent({
         eventName: "Soap.Interfaces.Messages.E001v1_MessageFailed",
         onEventReceived(event, envelope) {
-            toaster.negative(`${event.e001_ErrorMessage} Error Id: ${getHeader(event, headerKeys.messageId)}`);
+            const errorId = !!props.showErrorId ? "Error Id: " + getHeader(event, headerKeys.messageId) : "";
+            const error = event.e001_ErrorMessage + " " + errorId;
+            toaster.negative(error);
         }
     });
 

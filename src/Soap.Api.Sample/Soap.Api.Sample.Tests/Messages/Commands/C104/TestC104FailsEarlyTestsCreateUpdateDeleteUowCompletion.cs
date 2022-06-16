@@ -7,6 +7,8 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
     using Soap.Context.Logging;
+    using Soap.Context.UnitOfWork;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Xunit;
     using Xunit.Abstractions;
@@ -38,13 +40,16 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
                 );
 
             //assert
-            var log = await Result.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-            CountDataStoreOperationsSaved(log);
-            CountMessagesSaved(log);
+            var log = Result.GetMessageLogEntry();
+            var uow = Result.GetUnitOfWork();
+
+            
+            CountDataStoreOperationsSaved(uow);
+            CountMessagesSaved(uow);
             CountMessagesSent();
         }
 
-        private async Task BeforeRunHook(DataStore store, int run)
+        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
         {
             await FixLukesBrokenEtagSoItSucceeds();
             /* this requires you to set the unitofworkid in the executewithretries call above
@@ -64,11 +69,11 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             }
         }
 
-        private new void CountDataStoreOperationsSaved(MessageLogEntry log)
+        private new void CountDataStoreOperationsSaved(UnitOfWork uow)
         {
-            log.UnitOfWork.DataStoreCreateOperations.Count.Should().Be(4);
-            log.UnitOfWork.DataStoreUpdateOperations.Count.Should().Be(3);
-            log.UnitOfWork.DataStoreDeleteOperations.Count.Should().Be(1);
+            uow.DataStoreCreateOperations.Count.Should().Be(4);
+            uow.DataStoreUpdateOperations.Count.Should().Be(3);
+            uow.DataStoreDeleteOperations.Count.Should().Be(1);
         }
 
         private void CountMessagesSent()

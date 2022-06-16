@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using CircuitBoard;
     using Soap.Utility.Functions.Operations;
 
     /* stores a bunch of different flags in a single serialisable class
@@ -16,7 +17,7 @@
     {
         private static void ThrowIf(bool condition, string message)
         {
-            if (condition) throw new ApplicationException(message);
+            if (condition) throw new CircuitException(message);
         }
         
         public static EnumFlags AddFlag<T>(this EnumFlags flags, T newState)

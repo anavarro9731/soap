@@ -37,7 +37,7 @@
                 + " to the perimeter");
 
             /* from this point on we can crash, throw, lose power, it won't matter all
-            will be continued when the message is next dequeued, updates using a new datastore instance not in session */
+            will be continued when the message is next dequeued, updates */
             await context.SaveUnitOfWork();
 
             Guard.Against(
@@ -52,7 +52,7 @@
                 && context.MessageLogEntry.Attempts.Count == 0,
                 SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully.ToString());
 
-            //* messages may be resent but will be thrown out if they have already been sent, importantly they will not change ids
+            //* messages may be resent but will be thrown out if they have already been sent, because most importantly they will not change ids the second time they are sent
             await context.Bus.CommitChanges();
 
             Guard.Against(
@@ -61,7 +61,7 @@
                 && context.MessageLogEntry.Attempts.Count == 0,
                 SpecialIds.ProcessesDataAndMessagesButFailsBeforeMarkingCompleteThenRetriesSuccessfully.ToString());
 
-            await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
+            await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository);
 
             /* any other arbitrary calls made e.g. to 3rd party API etc. these will not be persisted but they should be arrange such that they are handled on isolated calls
             hence the guard above so you cannot queue durable and non-durable changes in the same unit of work. 
@@ -85,28 +85,26 @@
             this ContextWithMessageLogEntry context)
         {
             {
-                /* check the ds UoW's look ahead first to see if there are potential conflicts
-                 if there are then we can assume that is why we failed last time and we should rollback any remaining items
-                 starting with the creates and updates since they are the ones that other people could have seen
-                 and finally returning AllRolledBack */
-
-                //- don't recalculate these expensive ops
-                var records = await WaitForAllRecords(context.MessageLogEntry.UnitOfWork, context.DataStore);
-
-                return context.MessageLogEntry.UnitOfWork switch
+                if (context.UnitOfWork == null) return UnitOfWork.State.New; //* hasn't been saved yet, msg not processed yet
+                else
                 {
-                    var u when IsEmpty(u) => UnitOfWork.State.New, //* hasn't been saved yet, msg not processed yet
-                    _ => await AttemptCompletion(records, context)
-                };
+                    //* don't recalculate these expensive ops
+                    var records = await WaitForAllRecords(context.UnitOfWork, context.DataStore);
+                    return await AttemptCompletion(records, context);
+                }
             }
 
             static async Task<UnitOfWork.State> AttemptCompletion(
                 List<UnitOfWorkExtensions.Record> records,
                 ContextWithMessageLogEntry context)
             {
-                var messageLogEntry = context.MessageLogEntry;
+                /* check the ds UoW's look ahead first to see if there are potential conflicts
+                     if there are then we can assume that is why we failed last time and we should rollback any remaining items
+                     starting with the creates and updates since they are the ones that other people could have seen
+                     and finally returning AllRolledBack */
+                
 
-                if (!messageLogEntry.UnitOfWork.OptimisticConcurrency) return await CompleteDataAndMessages(records, context);
+                if (!context.UnitOfWork.OptimisticConcurrency) return await CompleteDataAndMessages(records, context);
 
                 return records switch //* warning: the order of the switches does matter
                 {
@@ -115,10 +113,10 @@
                                                                                context.DataStore.DocumentRepository,
                                                                                context),
                     var r when NotStartedOrPartiallyCompletedDataAndCanFinish(r) => await CompleteDataAndMessages(r, context),
-                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r, messageLogEntry) => UnitOfWork.State.AllRolledBack,
-                    var r when CompletedDataButNotMarkedAsCompleted(r, messageLogEntry) => await CompleteMessages(context),
+                    var r when HasNotStartedOrWasRolledBackButCannotFinish(r) => UnitOfWork.State.AllRolledBack,
+                    var r when CompletedDataButNotMarkedAsCompleted(r, context.MessageLogEntry) => await CompleteMessages(context),
                     _ => throw new DomainException(
-                             "Unaccounted for case in handling failed unit of work" + $" {messageLogEntry.id}")
+                             "Unaccounted for case in handling failed unit of work" + $" {context.MessageLogEntry.id}")
                 };
 
                 static async Task<UnitOfWork.State> RollbackRemaining(
@@ -179,8 +177,8 @@
 
                 static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
-                    await SendAnyUnsentMessages(context.MessageLogEntry.UnitOfWork, context.Bus.BusClient, context.DataStore);
-                    await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository.ConnectionSettings);
+                    await SendAnyUnsentMessages(context.UnitOfWork, context.Bus.BusClient, context.DataStore);
+                    await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository);
                     return UnitOfWork.State.AllComplete;
                 }
 
@@ -199,8 +197,7 @@
                 window and then nothing has been committed but could be however that should be caught
                 by the previous case NotStartedOrPartiallyCompletedDataAndCanFinish */
                 static bool HasNotStartedOrWasRolledBackButCannotFinish(
-                    List<UnitOfWorkExtensions.Record> records,
-                    MessageLogEntry messageLogEntry)
+                    List<UnitOfWorkExtensions.Record> records)
                 {
                     var result = records.All(
                         x => x.State == DataStoreUnitOfWorkItemExtensions.RecordState.NotCommittedOrRolledBack);
@@ -234,12 +231,7 @@
                 }
             }
 
-            static bool IsEmpty(UnitOfWork u)
-            {
-                var result = !u.BusCommandMessages.Any() && !u.BusEventMessages.Any() && !u.DataStoreUpdateOperations.Any()
-                             && !u.DataStoreDeleteOperations.Any() && !u.DataStoreCreateOperations.Any();
-                return result;
-            }
+            
 
             static async Task SaveUnsavedData(List<UnitOfWorkExtensions.Record> records, IDataStore dataStore)
             {
@@ -372,7 +364,7 @@
 
             catch (Exception e)
             {
-                throw new ApplicationException(
+                throw new CircuitException(
                     $"Error logging failed message with id {context.Message.Headers.GetMessageId()} to DataStore",
                     e);
             }
@@ -469,9 +461,7 @@
             context.Logger.Information("Message: {@message}", serilogEntry);
         }
 
-        internal static ContextWithMessageLogEntry Upgrade(this ContextWithMessage current, MessageLogEntry messageLogEntry) =>
-            new ContextWithMessageLogEntry(messageLogEntry, current);
-
+        
         private static object CreateProfilingData(MessageMeta meta, ContextWithMessageLogEntry ctx)
         {
             {
@@ -600,8 +590,9 @@
             Guard.Against(
                 context.Message.Headers.GetMessageId() == SpecialIds.MessageDiesWhileSavingUnitOfWork,
                 SpecialIds.MessageDiesWhileSavingUnitOfWork.ToString());
-            
-            var u = context.MessageLogEntry.UnitOfWork;
+
+            //* the UOW, the LogEntry and the Message All have the Same GUID 
+            var u = new UnitOfWork(context.Message.Headers.GetMessageId(), context.DataStore.DataStoreOptions.OptimisticConcurrency);
 
             foreach (var queuedStateChange in context.GetQueuedChanges())
                 if (IsDurableChange(queuedStateChange))
@@ -647,11 +638,11 @@
                             break;
                     }
                 }
-
-            /* updates using another datastore instance not in session */
-            return context.MessageLogEntry.UpdateUnitOfWork(u, context.DataStore.DocumentRepository.ConnectionSettings);
+            
+            
+            return context.BlobStorage.SaveObjectAsBlob(u, x => x.id, SerialiserIds.UnitOfWork, "units-of-work");
             /* from this point on we can crash, throw, lose power, it won't matter all
-        will be continued when the message is next dequeued*/
+            will be continued when the message is next dequeued*/
         }
         
         private static async Task<IEnumerable<T>> WhereAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> predicate)

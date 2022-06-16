@@ -161,7 +161,7 @@
             await blobClient.SaveBase64StringAsBlob(base64String, blobId, MimeType.Image.Png);
             await writeLine("Test Blob Saved Successfully");
 
-            var blob = await blobClient.GetBlob(blobId);
+            var blob = await blobClient.GetBlobOrError(blobId);
             Guard.Against(blob.Type.TypeClass != Blob.TypeClass.Mime, "Mime type not retrieved successfully");
             Guard.Against(blob.Type.TypeString != MimeType.Image.Png, "Mime type not retrieved successfully");
             var base64String2 = Convert.ToBase64String(blob.Bytes);
@@ -277,7 +277,7 @@
                 }
 
                 await writeLine($"Waiting for {typeof(TReply).Name} with id {pongId}");
-                var tries = 5;
+                var tries = 15;
                 while (tries > 0)
                 {
                     await writeLine("Waiting 1 seconds ...");

@@ -4,6 +4,7 @@ import eventHandler from './event-handler'
 import queryCache from './query-cache';
 import config from './config';
 import {createRegisteredTypedMessageInstanceFromAnonymousObject, headerKeys} from './messages.js';
+import _ from "lodash";
 
 let mockEvents = {};
 
@@ -129,10 +130,14 @@ export default {
             const commandBlob = new Blob( [JSON.stringify(command)] );
             
             if (commandBlob.size > 256000) {
-                
-                //* make sure these were provided
+                //* make sure these were provided, at present only autoform can send large messages because it can get the sastoken from the backend
+                //* if you need to send large messages from frontend not using autoform, or even using autoform, then sending using httpdirect is the better approach
                 getHeader(command, headerKeys.blobId);
                 getHeader(command, headerKeys.sasStorageToken);
+            } else {
+                //* autoform always sets these, but no need to waste a blob storage call when its not necessary
+                _.remove(command.headers, h => h.key == headerKeys.blobId);
+                _.remove(command.headers, h => h.key == headerKeys.sasStorageToken);
             }
         }
         

@@ -2,6 +2,7 @@
 {
     using System;
     using CircuitBoard;
+    using Destructurama.Attributed;
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
@@ -81,9 +82,10 @@
 
         public class Address
         {
+            [NotLogged]
             [Label("House Name")]
             public string C107_House { get; set; }
-
+            
             [Label("Post Code")]
             public string C107_PostCode { get; set; }
 

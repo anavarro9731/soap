@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Version>8.8.0-alpha</Version>
+    <Version>10.0.0-alpha</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
@@ -10,6 +10,6 @@
     <ProjectReference Include="..\Soap.Interfaces.Messages\Soap.Interfaces.Messages.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="15.5.0-alpha" />
+    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="16.2.0-alpha" />
   </ItemGroup>
 </Project>

@@ -9,6 +9,7 @@ import * as signalR from '@microsoft/signalr';
 import soapVars from '@soap/vars';
 
 
+
 const isTest = process.env.NODE_ENV === 'test';
 globalThis.Soap = {showStackTraceInConsoleLogs : false};
 
@@ -46,6 +47,7 @@ const _logger = (function () {
     }
 })();
 
+let _sendByDirectHttp = false;
 let _auth0, _sessionDetails;
 const _onLoadedCallbacks = [];
 (async function () {
@@ -210,14 +212,17 @@ function sendMessage(msg) {
         (async function (typedMessage) {
 
             try {
-                await send(typedMessage);
-
+                if (_sendByDirectHttp) {
+                    await sendByHttp(typedMessage);    
+                } else {
+                    await sendByBus(typedMessage);
+                }
+                
             } catch (e) {
                 _logger.log(e);
             }
 
-            async function send(message) {
-
+            async function sendByBus(message) {
                 const queue = getHeader(message, headerKeys.queueName);
                 const sender = _sessionDetails.serviceBusClient.createSender(queue);
 
@@ -226,7 +231,7 @@ function sendMessage(msg) {
                 setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
 
                 if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
-                    
+
                     const messageBlob = new Blob([JSON.stringify(message)]);
                     await uploadMessageToBlobStorage(message, messageBlob);
                     clearDownMessageProperties(message);
@@ -242,6 +247,31 @@ function sendMessage(msg) {
                 _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} to queue ${queue}`);
 
                 await sender.close();
+            }
+            
+            async function sendByHttp(message) {
+
+                _logger.log(`Sending message ${getHeader(message, headerKeys.schema)}\r\nid/conversation ${getHeader(message, headerKeys.messageId)}`, message);
+
+                //* http doesn't require us to use blob storage
+                _.remove(message.headers, h => h.key == headerKeys.blobId);
+                _.remove(message.headers, h => h.key == headerKeys.sasStorageToken);
+                
+                setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
+                
+                const endpoint = encodeURI(`${vars().functionAppRoot}/ReceiveMessageHttp?id=${getHeader(message, headerKeys.messageId)}&type=${message.$type}`);
+
+                await fetch(endpoint, {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        
+                    },
+                    body: JSON.stringify(message),
+                })
+
+                _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} to endpoint ${endpoint}`);
+                
             }
 
             function clearDownMessageProperties(message) {
@@ -309,6 +339,8 @@ function vars() {
     };
 }
 
+
+
 export default {
     get vars() {
         return vars();
@@ -321,6 +353,12 @@ export default {
     },
     get auth0() {
         return _auth0;
+    },
+    get sendByDirectHttp() {
+        return _sendByDirectHttp;
+    },
+    set sendByDirectHttp(value) {
+        _sendByDirectHttp = value;
     },
     onLoaded(callback) {
         _onLoadedCallbacks.push(callback);

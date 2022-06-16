@@ -7,6 +7,7 @@
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context.BlobStorage;
+    using Soap.PfBase.Messages;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
@@ -29,12 +30,7 @@
                 {
                     C113_TestDataId = testDataId
                 },
-                Identities.JohnDoeAllPermissions,
-                setupMocks: messageAggregatorForTesting =>
-                    {
-                    messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
-                    
-                    }).Wait();
+                Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]
@@ -43,6 +39,9 @@
             Result.MessageBus.BusEventsPublished.Should().BeEmpty();
         }
 
+       
+
+        
         [Fact]
         public void ItShouldPublishAResponseToTheWebSocketClient()
         {

@@ -5,6 +5,7 @@
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
     using Soap.Context.BlobStorage;
+    using Soap.PfBase.Messages;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
@@ -16,18 +17,20 @@
         {
             TestMessage(
                 new C109v1_GetC107FormDataForCreate(),
-                Identities.JohnDoeAllPermissions,
-                setupMocks: messageAggregatorForTesting =>
-                    {
-                    messageAggregatorForTesting.When<BlobStorage.Events.BlobGetSasTokenEvent>().Return("fake-token");
-                    
-                    }).Wait();
+                Identities.JohnDoeAllPermissions).Wait();
         }
 
         [Fact]
         public void ItShouldNotPublishAResponseToTheBus()
         {
             Result.MessageBus.BusEventsPublished.Should().BeEmpty();
+        }
+        
+        [Fact]
+        public async void ItShouldAddSampleBlobs()
+        {
+            (await Result.BlobStorage.Exists(SampleBlobs.File1.Id.Value)).Should().Be(true);
+            (await Result.BlobStorage.Exists(SampleBlobs.Image1.Id.Value)).Should().Be(true);
         }
 
         [Fact]

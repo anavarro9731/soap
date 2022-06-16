@@ -14,6 +14,7 @@ function global:Run {
 		[switch]$PackAndPublish,
 		[switch]$CreateRelease,
 		[string] $nugetApiKey,
+		[Alias('ado-pat')]
 		[string] $azureDevopsPat,
 		[string] $azClientId,
 		[string] $azClientSecret,
@@ -27,6 +28,7 @@ function global:Run {
 	$libraryProjects = @(
 		"Soap.Auth0"
 		"Soap.Bus"
+		"Soap.Client"
 		"Soap.Config"
 		"Soap.Context"
 		"Soap.Interfaces"
@@ -38,7 +40,8 @@ function global:Run {
 		"Soap.PfBase.Tests"
 		"Soap.PfBase.Models"
 		"Soap.PfBase.Messages"
-		"Soap.Utility"
+		"Soap.Utility",
+		"Soap.Api.Sample\Soap.Api.Sample.Messages"
 	)
 
 	# the relative path on disk without the trailing slash to this file of all xUnit test projects / can be an empty array
@@ -67,7 +70,7 @@ function global:Run {
 		Prepare-NewVersion -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
         -azureDevopsProject "soap" `
-        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
+        -azureDevopsPat  $azureDevopsPat `
         -repository "soap" `
 		-forceVersion $forceVersion `
 		-push $push
@@ -83,7 +86,7 @@ function global:Run {
 		Create-Release -projects $($libraryProjects + $azureFunctionProject) `
         -azureDevopsOrganisation "anavarro9731" `
 		-azureDevopsProject "soap" `
-        -azureDevopsPat  "u6hiiuutqr4ztdzxiyqyrhsu5nkqswl5lh44gxu4zukuiqqtz5fq" `
+        -azureDevopsPat  $azureDevopsPat `
         -repository "soap" `
 		-push $push
 	}

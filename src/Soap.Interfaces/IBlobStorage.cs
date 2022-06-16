@@ -8,11 +8,15 @@
 
     public interface IBlobStorage
     {
+        Task DeleteIfExists(Guid id, string containerName = "content");
+
+        Task<bool> Exists(Guid id, string containerName = "content");
+
         Task<ApiMessage> GetApiMessageFromBlob(Guid blobId);
 
-        Task<Blob> GetBlob(Guid id, string containerName = "content");
-        
-        Task<bool> Exists(Guid id, string containerName = "content");
+        Task<Blob> GetBlobOrError(Guid id, string containerName = "content");
+
+        Task<Blob> GetBlobOrNull(Guid id, string containerName = "content");
 
         string GetStorageSasTokenForBlob(Guid blobId, EnumerationFlags permissions, string containerName = "content");
 

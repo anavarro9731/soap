@@ -7,8 +7,10 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using FluentAssertions;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
+    using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
     using Soap.Context.UnitOfWork;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Tests;
     using Xunit;
@@ -41,7 +43,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 
-        private async Task BeforeRunHook(DataStore store, int run)
+        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
         {
             await SimulateAnotherUnitOfWorkChangingLukesRecord();
             await AssertRollback();
@@ -66,7 +68,8 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
                     //Assert, changes should be rolled back at this point 
                     var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ProcessesSomeThenRollsBackSuccessfully);
                     var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                    CountDataStoreOperationsSaved(log);
+                    var uow = (await storage.GetBlobOrError(c104TestUnitOfWork.Headers.GetMessageId(), "units-of-work")).ToUnitOfWork();
+                    CountDataStoreOperationsSaved(uow);
                     await RecordsShouldBeReturnToOriginalState(store);
                 }
             }

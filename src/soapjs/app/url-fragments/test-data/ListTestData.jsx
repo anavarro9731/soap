@@ -3,6 +3,8 @@ import React, {Fragment} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
 import {EditTestData} from "./drawers/EditTestData";
 import {RemoveTestData} from "./modals/RemoveTestData";
+import {StatefulPopover} from "baseui/popover";
+import {Button, SIZE} from "baseui/button";
 
 export function ListTestData() {
 
@@ -45,6 +47,20 @@ export function ListTestData() {
                     ])
                 }
             }
+                           propertyRenderer={{
+                               "e105_CChild": (value) =><>
+                                   <StatefulPopover
+                                       content={() => (
+                                           <AggregateView title={"test"} aggregate={value} />
+                                       )}
+                                       returnFocus
+                                       autoFocus
+                                   >
+                                       <Button size={SIZE.compact}>Pbis</Button>
+                                   </StatefulPopover>
+                                   
+                               </>
+                           }}
                            expandedFields={["e105_BChildren"]}
                            hiddenFields={["e105_BChildId", "e105_BChildLong"]}
                            title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>

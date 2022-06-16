@@ -64,7 +64,7 @@ namespace Soap.PfBase.Api.Functions
                 var blobClient = new BlobStorage(
                     new BlobStorage.Settings(appConfig.StorageConnectionString, new MessageAggregator()));
 
-                var blob = await blobClient.GetBlob(id);
+                var blob = await blobClient.GetBlobOrError(id);
 
                 return new FileContentResult(blob.Bytes, blob.Type.TypeString);
             }
