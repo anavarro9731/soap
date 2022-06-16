@@ -69,24 +69,11 @@ export function ViewLink(props) {
     );
 }
 
-const ActionMenu = (props) => {
+export const ActionMenu = (props) => {
 
     const {borderWidth, children, button} = props;
     const [css, theme] = useStyletron();
-
-    //const [closeAllDialogsSubscription, setCloseAllDialogsSubscription] = useState();
-    //const [closeFromContent, setCloseFromContent] = useState();
-    //
-    // useEffect(() => {
-    //     bus.onCloseAllDialogs(() => closeFromContent());
-    //     // const sub = bus.onCloseAllDialogs(() => closeFromContent());
-    //     // //setCloseAllDialogsSubscription(sub);
-    //     // if (closeAllDialogsSubscription) {
-    //     //     closeAllDialogsSubscription.unsubscribe();    
-    //     // }    
-    // })
-    //
-
+    
     return (
         children ?
             <StatefulPopover

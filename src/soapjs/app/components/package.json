@@ -1,6 +1,6 @@
 {
   "name": "@soap/modules",
-  "version": "1.495.0",
+  "version": "1.498.0",
   "dependencies": {
     "@auth0/auth0-react": "1.4.0",
     "@azure/service-bus": "7.5.1",
