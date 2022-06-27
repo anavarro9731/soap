@@ -124,18 +124,20 @@
             }
         }
 
-        public Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
+        public async Task<Blob> GetBlobOrNull(Guid id, string containerName = "content")
         {
             try
             {
-                var blob = this.blobStorageSettings.MessageAggregator
+                var blob =  await this.blobStorageSettings.MessageAggregator
                                .CollectAndForward(new Events.BlobDownloadEvent(this.blobStorageSettings, id, containerName))
                                .To(Download);
+
                 return blob;
+
             }
             catch (Exception)
             {
-                return Task.FromResult<Blob>(null);
+                return null; 
             }
         }
 
