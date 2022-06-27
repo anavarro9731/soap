@@ -7,8 +7,8 @@ namespace Soap.PfBase.Api.Functions
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
-    using Soap.Auth0;
     using Soap.Config;
+    using Soap.Idaam;
 
     public static partial class PlatformFunctions
     {
@@ -49,12 +49,13 @@ namespace Soap.PfBase.Api.Functions
             async Task SetAuth0Headers(ApplicationConfig appConfig)
             {
                 AddHeader(req, "Access-Control-Expose-Headers", "*");
-                AddHeader(req, "Auth0-Enabled", appConfig.AuthEnabled.ToString().ToLower());
+                AddHeader(req, "Idaam-Enabled", appConfig.AuthLevel.ApiPermissionEnabled.ToString().ToLower());
                 
-                if (appConfig.AuthEnabled)
+                if (appConfig.AuthLevel.ApiPermissionEnabled)
                 {
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
-                    var applicationClientId = await Auth0Functions.GetUiApplicationClientId(appConfig, messagesAssembly);
+                    var idaamProvider = new IdaamProvider(appConfig);
+                    var applicationClientId = await idaamProvider.GetUiApplicationClientId(messagesAssembly);
                     AddHeader(req, "Auth0-UI-Application-ClientId", applicationClientId);
                     AddHeader(req, "Auth0-Redirect-Uri", appConfig.CorsOrigin);
                 }

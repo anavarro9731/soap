@@ -28,11 +28,11 @@
         
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
+        protected IIdaamProvider IDAAM => this.context.IdaamProvider;
+        
         protected BusWrapper Bus => new BusWrapper(this.context.Bus, this.context.Message);
 
-        protected DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
-
-        protected IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
+        protected IDataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
         protected ILogger Logger => this.context.Logger;
 
@@ -46,11 +46,11 @@
 
             Guard.Against(process == null, $"Process {GetType().Name} lacks handler for message {message.GetType().Name}");
 
-            RecordStarted(new ProcessStarted(GetType().Name, meta.UserProfileOrNull?.Auth0Id));
+            RecordStarted(new ProcessStarted(GetType().Name, meta.UserProfileOrNull?.IdaamProviderId));
 
             await process.BeginProcess(message);
 
-            RecordCompleted(new ProcessCompleted(GetType().Name, meta.UserProfileOrNull?.Auth0Id));
+            RecordCompleted(new ProcessCompleted(GetType().Name, meta.UserProfileOrNull?.IdaamProviderId));
         }
 
         protected T GetCustomConfigVariable<T>(string propertyName)

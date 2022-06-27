@@ -2,8 +2,8 @@
 {
     using System.Collections.Generic;
 
-    public interface IHaveRoles
+    public interface IIdentityWithRoles
     {
-        List<Role> Roles { get; set; }
+        List<RoleInstance> Roles { get; set; }
     }
 }

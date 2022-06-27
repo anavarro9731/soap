@@ -20,7 +20,7 @@ namespace Soap.Api.Sample.Logic.Operations
                         newState.C114_TestDataId.Value,
                         o =>
                             {
-                            if (Meta.IdentityPermissionsOrNull?.ApiPermissions.Contains(CustomDeveloperPermissions.CanHardDelete) == true)
+                            if (Meta.UserHasDeveloperPermission(CustomDeveloperPermissions.CanHardDelete))
                             {
                                 o.Permanently();
                             }

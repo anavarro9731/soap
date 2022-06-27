@@ -23,7 +23,7 @@ namespace Soap.Api.Sample.Afs
             FunctionAppHostName = EnvVars.FunctionAppHostName;
             FunctionAppHostUrlWithTrailingSlash = EnvVars.FunctionAppHostUrlWithTrailingSlash;
             UseServiceLevelAuthorityInTheAbsenceOfASecurityContext = false;
-            AuthEnabled = false;
+            AuthLevel = AuthLevel.None;
             EncryptionKey = "Xhdz9Q3yaps69aHmVUvzHc3uEvkz5WPQBWY6XSnphqqXgRgAs6K3dRWQ4U4VepRW";
         }
     }

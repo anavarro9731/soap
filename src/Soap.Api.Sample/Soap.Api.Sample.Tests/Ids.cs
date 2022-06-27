@@ -9,12 +9,12 @@
 
     public static partial class Ids
     {
-        public static readonly string JohnDoeWithAllPermissionsAuth0Id = "auth0|john";
+        public static readonly Guid ApiPermissionsOnly = Guid.NewGuid();
 
         public static readonly Guid JohnDoeWithAllPermissions = Guid.NewGuid();
-        
-        public static readonly string JaneDoeWithNoPermissionsAuth0Id = "auth0|jane";
 
         public static readonly Guid JaneDoeWithNoPermissions = Guid.NewGuid();
+        
+        public static readonly Guid UseDbPermissionScopeWildcard = Guid.Parse("1EEAF9CB-A2BE-4A08-A5E0-330C63D1D81F");
     }
 }

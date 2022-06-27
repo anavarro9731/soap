@@ -26,7 +26,7 @@ namespace Soap.PfBase.Api.Functions
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log,
-            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -66,7 +66,7 @@ namespace Soap.PfBase.Api.Functions
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log,
-            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveAuth0Id, IUserProfile, IAggregate, new()
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             string messageType = null;

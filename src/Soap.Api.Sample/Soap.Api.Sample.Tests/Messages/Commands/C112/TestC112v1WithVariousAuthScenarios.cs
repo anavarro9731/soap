@@ -6,8 +6,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
     using CircuitBoard;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Commands;
-    using Soap.Auth0;
     using Soap.Context;
+    using Soap.Idaam;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
@@ -35,7 +36,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
         public void ItShouldSetSlaHeadersOnTheOutgoingMessageIfServiceLevelAuthIsRequestedByTheSenderOfTheOutgoingMessage()
         {
             Setup(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.SendAnotherCommandThatDoesRequireAuthorisation, Identities.JaneDoeNoPermissions, forceServiceLevelAuthOnOutgoingC106:true);
-            var serviceLevelAuthority = (AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
+            var serviceLevelAuthority = (AuthorisationSchemes.GetServiceLevelAuthority(new TestConfig()));
             var outgoingHeaders = Result.MessageBus.CommandsSent.Single(x => x is C100v1_Ping).Headers;
             outgoingHeaders.GetIdentityChain().Should().Be($"{Identities.JaneDoeNoPermissions.IdChainSegment},{serviceLevelAuthority.IdentityChainSegment}");
             outgoingHeaders.GetIdentityToken().Should().Be(serviceLevelAuthority.IdentityToken);
@@ -46,7 +47,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
         public void ItShouldSetSlaHeadersOnOutgoingMessageWhenThereIsNoAuthHeadersOnIncomingButEnableSlaWhenSecurityContextIsAbsentIsSet()
         {
             Setup(C112v1_MessageThatDoesntRequireAuthorisation.ForwardAction.SendAnotherCommandThatDoesRequireAuthorisation, null, enableSlaWhenSecurityContextIsAbsent:true);
-            var serviceLevelAuthority = (AuthFunctions.GetServiceLevelAuthority(new TestConfig()));
+            var serviceLevelAuthority = (AuthorisationSchemes.GetServiceLevelAuthority(new TestConfig()));
             var outgoingHeaders = Result.MessageBus.CommandsSent.Single(x => x is C100v1_Ping).Headers;
             outgoingHeaders.GetIdentityChain().Should().Be($"{serviceLevelAuthority.IdentityChainSegment}");
             outgoingHeaders.GetIdentityToken().Should().Be(serviceLevelAuthority.IdentityToken);
@@ -112,7 +113,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
                             }),
                     identity: testIdentity,
                     enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsAbsent,
-                    authEnabled: !disableAuth).Wait();
+                    authLevel: disableAuth ? AuthLevel.None : AuthLevel.ApiAndDatabasePermission).Wait();
         }
     }
 }

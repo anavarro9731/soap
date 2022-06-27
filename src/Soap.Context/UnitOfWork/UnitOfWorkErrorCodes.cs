@@ -2,6 +2,7 @@ using System;
 
 namespace Soap.Context.UnitOfWork
 {
+    using CircuitBoard;
     using Soap.Utility;
 
     public class UnitOfWorkErrorCodes : ErrorCode

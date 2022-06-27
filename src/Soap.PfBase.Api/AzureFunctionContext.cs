@@ -17,7 +17,6 @@
     using Serilog;
     using Serilog.Exceptions;
     using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
-    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
@@ -25,6 +24,7 @@
     using Soap.Context.Context;
     using Soap.Context.Exceptions;
     using Soap.Context.MessageMapping;
+    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
@@ -97,6 +97,7 @@
                         appConfig.DatabaseSettings,
                         messageId,
                         dataStoreOptions,
+                        appConfig,
                         out var dataStore);
                     
                     var blobStorage = await CreateBlobStorage(appConfig, messageAggregator);
@@ -108,23 +109,21 @@
                         signalRBinding,
                         appConfig,
                         out var bus);
+
+                    CreateIdaamProvider(appConfig, out var idaamProvider);
                     
-                    IdentityPermissions identityPermissions = null;
+                    IdentityClaims identityClaims = null;
                     IUserProfile userProfile = null;
 
                     try
                     {
-                        await AuthFunctions.AuthenticateandAuthoriseOrThrow(
+                        await AuthorisationSchemes.AuthenticateandAuthoriseOrThrow<TUserProfile>(
+                            idaamProvider,
                             message,
                             appConfig,
                             dataStore,
-                            new Dictionary<string, AuthFunctions.SchemeAuth<TUserProfile>>()
-                            {
-                                { AuthSchemePrefixes.User, AuthFunctions.UserSchemeAuth<TUserProfile> },
-                                { AuthSchemePrefixes.Service, AuthFunctions.ServiceSchemeAuth<TUserProfile> }
-                            },
                             securityInfo,
-                            v => identityPermissions = v,
+                            v => identityClaims = v,
                             v => userProfile = v);
                     }
                     catch (Exception exception)
@@ -161,7 +160,7 @@
                         throw new SecurityException("Security Exception", exception);
                     }
 
-                    CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
+                    CreateMessageMeta(message, identityClaims, userProfile, appConfig.AuthLevel, out MessageMeta meta);
 
                     CreateNotificationServer(appConfig.NotificationSettings, messageAggregator, out var notificationServer);
                     
@@ -173,6 +172,7 @@
                         bus,
                         notificationServer,
                         blobStorage,
+                        idaamProvider,
                         mappingRegistration);
 
                     int retries = appConfig.BusSettings.NumberOfApiMessageRetries;
@@ -219,13 +219,14 @@
 
             static void CreateMessageMeta(
                 ApiMessage message,
-                IdentityPermissions permissions,
+                IdentityClaims claims,
                 IUserProfile userProfile,
+                AuthLevel authLevel,
                 out MessageMeta meta)
             {
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
-                meta = new MessageMeta(timeStamp, permissions, userProfile, message.Headers.GetMessageId());
+                meta = new MessageMeta(timeStamp ,claims, userProfile, authLevel, message.Headers.GetMessageId());
             }
 
             void DeserialiseMessage(string messageJson, Type type, Guid messageId, out ApiMessage message)
@@ -249,16 +250,27 @@
                 messageId = Guid.Parse(messageIdAsString);
             }
 
+            static void CreateIdaamProvider(ApplicationConfig applicationConfig, out IdaamProvider idaamProvider)
+            {
+                idaamProvider = new IdaamProvider(applicationConfig);
+            }
+
             static void CreateDataStore(
                 IMessageAggregator messageAggregator,
                 IDatabaseSettings databaseSettings,
                 Guid messageId,
                 DataStoreOptions dataStoreOptions,
+                IApplicationConfig applicationConfig,
                 out DataStore dataStore)
             {
                 //* override anything already there
                 dataStoreOptions ??= DataStoreOptions.Create();
                 dataStoreOptions.SpecifyUnitOfWorkId(messageId);
+
+                if (applicationConfig.AuthLevel.DatabasePermissionEnabled && dataStoreOptions.Security == null)
+                {
+                    dataStoreOptions = dataStoreOptions.WithSecurity();
+                }
 
                 lifetimeRepositoryClient ??= databaseSettings.CreateRepository();
 
@@ -287,7 +299,7 @@
                     messageAggregator,
                     blobStorage,
                     signalRBinding,
-                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig),
+                    () => AuthorisationSchemes.GetServiceLevelAuthority(applicationConfig),
                     applicationConfig);
             }
 

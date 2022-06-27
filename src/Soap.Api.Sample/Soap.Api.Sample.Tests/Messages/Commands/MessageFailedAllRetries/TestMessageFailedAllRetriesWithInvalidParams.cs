@@ -1,5 +1,6 @@
 ﻿namespace Soap.Api.Sample.Tests.Messages.Commands.MessageFailedAllRetries
 {
+    using CircuitBoard;
     using FluentAssertions;
     using Soap.Interfaces.Messages;
     using Xunit;
@@ -23,7 +24,7 @@
         public void ItShouldThrowAnErrorWhenAllFieldsAreNotFilledOut()
         {
             Result.Success.Should().BeFalse();
-            Result.UnhandledError.Message.Should().Contain("cannot be null");
+            Result.UnhandledError.Should().BeOfType<CircuitException>();
 
         }
 

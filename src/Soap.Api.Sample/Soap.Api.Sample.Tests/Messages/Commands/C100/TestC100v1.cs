@@ -3,7 +3,8 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
     using System.Linq;
     using FluentAssertions;
     using Soap.Api.Sample.Messages.Events;
-    using Soap.Auth0;
+    using Soap.Api.Sample.Models.Aggregates;
+    using Soap.Idaam;
     using Xunit;
     using Xunit.Abstractions;
     using Commands = Soap.Api.Sample.Tests.Commands;
@@ -27,7 +28,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         [Fact]
         public async void ItShouldCreateTheUserProfile()
         {
-            (await Result.DataStore.Read<TestProfile>()).Single().Auth0Id.Should().Be(Ids.JohnDoeWithAllPermissionsAuth0Id);
+            (await Result.DataStore.Read<UserProfile>()).Single().IdaamProviderId.Should().Be(Ids.JohnDoeWithAllPermissions.ToIdaam());
         }
 
     }

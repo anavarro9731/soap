@@ -116,7 +116,7 @@ async function loadConfigState() {
         const jsonArrayOfMessages = await fetch(endpoint)
             .then(response => {
 
-                const auth0Enabled = (response.headers.get('Auth0-Enabled') == 'true');
+                const auth0Enabled = (response.headers.get('Idaam-Enabled') == 'true');
                 if (auth0Enabled) {
                     auth0Info = {
                         uiAppId: response.headers.get('Auth0-UI-Application-ClientId'),

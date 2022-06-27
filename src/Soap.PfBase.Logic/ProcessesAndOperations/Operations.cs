@@ -17,13 +17,11 @@
     {
         private readonly ContextWithMessageLogEntry context = ContextWithMessageLogEntry.Current;
 
-        public DataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
+        protected IDataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
-        public DataStoreWriteOnly<TAggregate> DataWriter => this.context.DataStore.AsWriteOnlyScoped<TAggregate>();
+        protected IDataStoreWriteOnly DataWriter => this.context.DataStore.AsWriteOnlyScoped<TAggregate>();
 
-        public IWithoutEventReplay DirectDataReader => this.context.DataStore.WithoutEventReplay;
-
-        public ILogger Logger => this.context.Logger;
+        protected ILogger Logger => this.context.Logger;
 
         protected MessageMeta Meta => this.context.MessageLogEntry.MessageMeta;
         

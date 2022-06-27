@@ -4,18 +4,19 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
 {
     using System.Linq;
     using FluentAssertions;
+    using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
     using Xunit;
     using Xunit.Abstractions;
     using Commands = Soap.Api.Sample.Tests.Commands;
 
-    public class TestC100v1WithDisabledAuth : Test
+    public class TestC100v1WithAuthLevelNone : Test
     {
-        public TestC100v1WithDisabledAuth(ITestOutputHelper outputHelper)
+        public TestC100v1WithAuthLevelNone(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authEnabled:false).Wait();
+            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authLevel: AuthLevel.None).Wait();
         }
 
         [Fact]

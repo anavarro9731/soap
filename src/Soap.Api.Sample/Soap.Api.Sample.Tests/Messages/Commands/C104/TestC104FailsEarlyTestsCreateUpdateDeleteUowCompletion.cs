@@ -10,6 +10,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using Soap.Context.UnitOfWork;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.PfBase.Tests;
     using Xunit;
     using Xunit.Abstractions;
     using Commands = Soap.Api.Sample.Tests.Commands;
@@ -49,7 +50,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             CountMessagesSent();
         }
 
-        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
+        private async Task BeforeRunHook(SoapMessageTestContext.BeforeRunHookArgs beforeRunHookArgs)
         {
             await FixLukesBrokenEtagSoItSucceeds();
             /* this requires you to set the unitofworkid in the executewithretries call above
@@ -58,13 +59,13 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
 
             async Task FixLukesBrokenEtagSoItSucceeds()
             {
-                if (run == 2)
+                if (beforeRunHookArgs.Run == 2)
                 {
-                    await store.UpdateById<UserProfile>(
+                    await beforeRunHookArgs.DataStore.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
                         luke => { luke.Etag = "123456"; },
                         side => side.DisableOptimisticConcurrency());
-                    await store.CommitChanges();
+                    await beforeRunHookArgs.DataStore.CommitChanges();
                 }
             }
         }

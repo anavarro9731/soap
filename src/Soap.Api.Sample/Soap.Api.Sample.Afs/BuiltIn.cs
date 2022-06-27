@@ -11,6 +11,7 @@
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.Extensions.Logging;
+    using Soap.Api.Sample.Afs.Security;
     using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Logic;
     using Soap.Api.Sample.Messages.Commands;

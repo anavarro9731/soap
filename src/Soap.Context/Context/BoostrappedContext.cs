@@ -8,6 +8,7 @@
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces;
     using Serilog;
     using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
@@ -27,7 +28,9 @@
 
         public readonly IBus Bus;
 
-        public readonly DataStore DataStore;
+        public readonly IIdaamProvider IdaamProvider;
+        
+        public readonly IDataStore DataStore;
 
         public readonly ILogger Logger;
 
@@ -39,12 +42,13 @@
 
         public BoostrappedContext(
             IBootstrapVariables appConfig,
-            DataStore dataStore,
+            IDataStore dataStore,
             IMessageAggregator messageAggregator,
             ILogger logger,
             IBus bus,
             NotificationServer notificationServer,
             IBlobStorage blobStorage,
+            IIdaamProvider idaamProvider,
             MapMessagesToFunctions messageMapper)
         {
             this.MessageMapper = messageMapper;
@@ -55,6 +59,7 @@
             this.Bus = bus;
             this.NotificationServer = notificationServer;
             this.BlobStorage = blobStorage;
+            this.IdaamProvider = idaamProvider;
         }
 
         protected BoostrappedContext(BoostrappedContext c)
@@ -67,6 +72,7 @@
             this.NotificationServer = c.NotificationServer;
             this.MessageMapper = c.MessageMapper;
             this.BlobStorage = c.BlobStorage;
+            this.IdaamProvider = c.IdaamProvider;
         }
     }
 

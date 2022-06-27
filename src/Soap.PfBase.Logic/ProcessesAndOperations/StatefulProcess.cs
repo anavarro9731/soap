@@ -35,7 +35,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected BusWrapper Bus => new BusWrapper(context.Bus, this.Id, context.Message);
 
-        protected DataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
+        protected IDataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
 
         protected ILogger Logger => context.Logger;
 
@@ -90,7 +90,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected void CompleteProcess()
         {
-            var username = context.MessageLogEntry.MessageMeta.UserProfileOrNull?.Auth0Id;
+            var username = context.MessageLogEntry.MessageMeta.UserProfileOrNull?.IdaamProviderId;
             RecordCompleted(username);
         }
 
@@ -105,7 +105,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessContinued(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.UserProfileOrNull?.Auth0Id,
+                    context.MessageLogEntry.MessageMeta.UserProfileOrNull?.IdaamProviderId,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -117,7 +117,7 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
             context.MessageAggregator.Collect(
                 new StatefulProcessStarted(
                     GetType().Name,
-                    context.MessageLogEntry.MessageMeta.UserProfileOrNull?.Auth0Id,
+                    context.MessageLogEntry.MessageMeta.UserProfileOrNull?.IdaamProviderId,
                     this.processState,
                     message.Headers.GetMessageId()));
         }
@@ -155,11 +155,11 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         public class StateClass
         {
-            private readonly DataStore dataStore;
+            private readonly IDataStore dataStore;
 
             private readonly ProcessState processState;
 
-            public StateClass(ProcessState processState, DataStore dataStore)
+            public StateClass(ProcessState processState, IDataStore dataStore)
             {
                 this.processState = processState;
                 this.dataStore = dataStore;

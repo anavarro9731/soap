@@ -11,11 +11,11 @@
         string AppId { get; set; }
 
         string ApplicationVersion { get; }
+        
+        AuthLevel AuthLevel { get; set; }
 
         string DefaultExceptionMessage { get; set; }
-        
-        bool AuthEnabled { get; set; }
-        
+
         string EncryptionKey { get; set; }
     }
 }

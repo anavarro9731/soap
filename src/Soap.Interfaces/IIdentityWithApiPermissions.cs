@@ -4,6 +4,6 @@
 
     public interface IIdentityWithApiPermissions
     {
-        List<string> ApiPermissions { get; set; }
+        List<ApiPermission> ApiPermissions { get; set; }
     }
 }

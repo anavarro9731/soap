@@ -149,7 +149,7 @@
             /* getServiceLevelAuthority could be expensive and it is cached, that's why we repeat the call below rather then getting to
              a variable is to avoid making the call unnecessarily */
 
-            if (this.bootstrapVariables.AuthEnabled)
+            if (this.bootstrapVariables.AuthLevel.ApiPermissionEnabled)
             {
                 switch (forceServiceLevelAuthority)
                 {
@@ -167,7 +167,7 @@
                         commandToSend.Headers.SetIdentityToken(this.serviceLevelAuthority.IdentityToken);
                         break;
                     
-                    case false:
+                    case false:  
                         
                         /* there are a variety of cases where all of the following could be blank because the context message headers are blank, if they are blank (and they should all be blank or filled)
                         then we use the Sla instead if the flag is set to allow that, the only time this would really make sense without the flag set, would be when a message marked with 
@@ -183,7 +183,7 @@
             
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
-            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthEnabled, !commandToSend.GetType().HasAttribute<AuthorisationNotRequired>(), this.envPartitionKey);
+            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthLevel.ApiPermissionEnabled, !commandToSend.GetType().HasAttribute<AuthorisationNotRequired>(), this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 

@@ -102,20 +102,36 @@
                         /* validate here rather than beginning of method because there can be validation logic that varies between attempts and you want
                                  to attempt to finish an unfinished uow if possible first */
                         msg.ValidateOrThrow(context);
-                        
-                        switch (msg)
+
+                        if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.ApiAndAutoDbAuth)
                         {
-                            case MessageFailedAllRetries m:
-                                await context.HandleFinalFailure(m);
-                                break;
-                            case ApiCommand c:
-                                await context.Handle(c);
-                                break;
-                            case ApiEvent e:
-                                await context.Handle(e);
-                                break;
+                            context.DataStore.DataStoreOptions.Security.SecuredFor = context.MessageLogEntry.MessageMeta.IdentityClaimsOrNull;
                         }
 
+                        try
+                        {
+
+                            switch (msg)
+                            {
+                                case MessageFailedAllRetries m:
+                                    await context.HandleFinalFailure(m);
+                                    break;
+                                case ApiCommand c:
+                                    await context.Handle(c);
+                                    break;
+                                case ApiEvent e:
+                                    await context.Handle(e);
+                                    break;
+                            }
+                        }
+                        finally
+                        {
+                            if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.ApiAndAutoDbAuth)
+                            {
+                                context.DataStore.DataStoreOptions.Security.SecuredFor = null;
+                            }    
+                        }
+                        
                         /* from this point on we can crash, throw, lose power, it won't matter all
                         will be continued when the message is next dequeued. Prior to this any errors
                         will fall into the catch block below and result in the message being retried

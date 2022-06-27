@@ -19,4 +19,9 @@
 
         public static readonly Guid DarthVader = Guid.NewGuid();
     }
+    
+    public static class Ext {
+        public static string ToIdaam(this Guid id) => $"idaam|{id.ToString()}";
+    }
+    
 }

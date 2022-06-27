@@ -5,7 +5,7 @@
     <Version>10.0.0-alpha</Version>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Soap.Auth0\Soap.Auth0.csproj" />
+    <ProjectReference Include="..\Soap.Idaam\Soap.Idaam.csproj" />
     <ProjectReference Include="..\Soap.MessagePipeline\Soap.MessagePipeline.csproj" />
   </ItemGroup>
   <ItemGroup>

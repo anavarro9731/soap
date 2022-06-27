@@ -10,17 +10,18 @@ namespace Soap.PfBase.Tests
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
-    using Soap.Auth0;
     using Soap.Client;
+    using Soap.Config;
     using Soap.Context.BlobStorage;
     using Soap.Context.MessageMapping;
+    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.Utility.Functions.Extensions;
     using Xunit.Abstractions;
 
-    public class SoapMessageTest
+    public class SoapMessageTest<TUserProfile> where TUserProfile : class, IUserProfile, IAggregate, new()
     {
         private readonly MapMessagesToFunctions mappingRegistration;
 
@@ -84,32 +85,44 @@ namespace Soap.PfBase.Tests
             TMessage msg,
             TestIdentity identity,
             Action<MessageAggregatorForTesting>? setup = null,
-            bool authEnabled = false,
+            AuthLevel? authLevel = null,
             bool enableSlaWhenSecurityContextIsMissing = true) where TMessage : ApiMessage
         {
             this.output.WriteLine($"Test Setup: Received Message {typeof(TMessage).Name}");
 
             /* unlike blobstorage and datastore there is no need to keep the bus state from previous messages
              but you do need to make sure any state they create in datastore or blobs is retained */
-            Result = ExecuteMessage(
+            Result = ExecuteMessage<TMessage>(
                     msg,
                     identity,
                     0,
                     setup: setup,
-                    authEnabled: authEnabled,
+                    authLevel: authLevel,
                     enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsMissing)
                 .Result;
             if (Result.Success == false) throw Result.UnhandledError;
         }
-
+        /// <summary>
+        /// Used to send the message being tested
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="identity"></param>
+        /// <param name="retries"></param>
+        /// <param name="beforeRunHook"></param>
+        /// <param name="dataStoreOptions"></param>
+        /// <param name="setupMocks"></param>
+        /// <param name="authLevel">Default is ApiAndDatabasePermission</param>
+        /// <param name="enableSlaWhenSecurityContextIsMissing"></param>
+        /// <param name="clientTransport"></param>
+        /// <typeparam name="TMessage"></typeparam>
         protected async Task TestMessage<TMessage>(
             TMessage msg,
             TestIdentity identity,
             byte retries = 0,
-            (Func<DataStore, IBlobStorage, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
+            (Func<SoapMessageTestContext.BeforeRunHookArgs, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setupMocks = null,
-            bool authEnabled = true,
+            AuthLevel? authLevel = null,
             bool enableSlaWhenSecurityContextIsMissing = false,
             Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
         {
@@ -120,22 +133,26 @@ namespace Soap.PfBase.Tests
                          beforeRunHook,
                          dataStoreOptions,
                          setupMocks,
-                         authEnabled,
+                         authLevel,
                          enableSlaWhenSecurityContextIsMissing,
                          clientTransport);
         }
 
         private async Task<Result> ExecuteMessage<TMessage>(
             TMessage msg,
-            TestIdentity identity,
+            TestIdentity? identity,
             byte retries,
-            (Func<DataStore, IBlobStorage, int, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
+            (Func<SoapMessageTestContext.BeforeRunHookArgs, Task> beforeRunHook, Guid? runHookUnitOfWorkId) beforeRunHook = default,
             DataStoreOptions? dataStoreOptions = null,
             Action<MessageAggregatorForTesting>? setup = null,
-            bool authEnabled = true,
+            AuthLevel? authLevel = null,
             bool enableSlaWhenSecurityContextIsMissing = false,
             Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
+                                                              
         {
+            
+            authLevel ??= AuthLevel.ApiAndDatabasePermission;
+            
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 
             if (msg is ApiCommand && identity != null && msg.Headers.GetIdentityChain() == null)
@@ -156,13 +173,13 @@ namespace Soap.PfBase.Tests
                 msg.ClearAllPublicPropertyValuesExceptHeaders();
             }
 
-            return await this.soapTestContext.Execute(
+            return await this.soapTestContext.Execute<TUserProfile>(
                        msg,
                        this.mappingRegistration,
                        this.output,
                        this.securityInfo,
                        retries,
-                       authEnabled,
+                       authLevel,
                        enableSlaWhenSecurityContextIsMissing,
                        this.rollingStorage,
                        this.rollingRepo,

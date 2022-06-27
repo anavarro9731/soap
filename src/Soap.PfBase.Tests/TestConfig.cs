@@ -12,11 +12,12 @@ to share any more than the general flow */
 
 namespace Soap.PfBase.Tests
 {
+    using Soap.Config;
     using Soap.Interfaces;
     using Soap.NotificationServer.Channels.Email;
     using NotificationServer = Soap.NotificationServer.NotificationServer;
 
-    public class TestConfig : IBootstrapVariables
+    public class TestConfig : IApplicationConfig
     {
         public SoapEnvironments Environment { get; set; } = SoapEnvironments.InMemory;
 
@@ -26,14 +27,14 @@ namespace Soap.PfBase.Tests
 
         public string ApplicationVersion { get; set; } = "0.0.0";
 
+        public AuthLevel AuthLevel { get; set; } = AuthLevel.None;
+
         public IDatabaseSettings DatabaseSettings { get; set; } =
             new InMemoryDocumentRepository.Settings(new InMemoryDocumentRepository());
 
         public IBusSettings BusSettings { get; set; } = new InMemoryBus.Settings();
 
         public string DefaultExceptionMessage { get; set; } = "An Error Has Occurred";
-
-        public bool AuthEnabled { get; set; }
 
         public string EncryptionKey { get; set; } = "h4Yz4gYQWDDa8zwFHXK3vB6aK9yq8a6u";
 
@@ -46,5 +47,12 @@ namespace Soap.PfBase.Tests
                 new EmailChannel.MailJetEmailSenderSettings("apiKey", "apiSecret", "no-reply@test-company.com", "italerts@test-company.com")
             }
         };
+
+        public string FunctionAppHostUrlWithTrailingSlash { get; set; } = "FunctionAppHostUrlWithTrailingSlash";
+
+        public string FunctionAppHostName { get; set; } = "FunctionAppHostName";
+
+        public string CorsOrigin { get; set; } = "CorsOrigin";
+        
     }
 }

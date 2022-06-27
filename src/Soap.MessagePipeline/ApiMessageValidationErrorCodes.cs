@@ -1,6 +1,7 @@
 ﻿namespace Soap.MessagePipeline
 {
     using System;
+    using CircuitBoard;
     using Soap.Context;
     using Soap.Utility;
 

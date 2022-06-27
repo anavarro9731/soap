@@ -1,6 +1,7 @@
 ﻿namespace Soap.PfBase.Tests
 {
     using System;
+    using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using DataStore;
     using FluentAssertions;

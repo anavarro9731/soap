@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Soap.Interfaces.Messages", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Api.Sample.Afs", "Soap.Api.Sample\Soap.Api.Sample.Afs\Soap.Api.Sample.Afs.csproj", "{2D077EB9-03EA-4D50-90FD-8C6F2B775DB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Auth0", "Soap.Auth0\Soap.Auth0.csproj", "{111A5762-85C0-41BD-ACAA-32ACE1730650}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Idaam", "Soap.Idaam\Soap.Idaam.csproj", "{111A5762-85C0-41BD-ACAA-32ACE1730650}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Soap.Config", "Soap.Config\Soap.Config.csproj", "{31206509-8B41-4CB8-BD00-7107EBBB0328}"
 EndProject

@@ -12,14 +12,11 @@
     using Destructurama;
     using Serilog;
     using Serilog.Exceptions;
-    using Soap.Auth0;
-    using Soap.Bus;
     using Soap.Config;
-    using Soap.Context;
-    using Soap.Context.BlobStorage;
     using Soap.Context.Context;
     using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
+    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
@@ -33,22 +30,33 @@
 
     public class SoapMessageTestContext
     {
+        public class BeforeRunHookArgs
+        {
+            public DataStore DataStore;
 
-        public static List<TestIdentity> TestIdentities;
+            public IBlobStorage BlobStorage;
+
+            public IIdaamProvider IdaamProvider;
+            
+            public int Run;
+            
+        }
         
-        public async Task<Result> Execute(
+        public static List<TestIdentity> TestIdentities;
+
+        public async Task<Result> Execute<TUserProfile>(
             ApiMessage message,
             MapMessagesToFunctions messageMapper,
             ITestOutputHelper output,
             ISecurityInfo securityInfo,
             byte retries,
-            bool authEnabled,
+            AuthLevel authLevel,
             bool enableSlaWhenSecurityContextIsMissing,
             IBlobStorage rollingStorage,
             IDocumentRepository rollingRepo,
-            (Func<DataStore, IBlobStorage, int, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
+            (Func<BeforeRunHookArgs, Task> Function, Guid? RunHookUnitOfWorkId) beforeRunHook,
             DataStoreOptions dataStoreOptions,
-            Action<MessageAggregatorForTesting> setup)
+            Action<MessageAggregatorForTesting> setup) where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
             {
@@ -57,7 +65,7 @@
                     FromMessage = message
                 };
 
-                CreateAppConfig(retries, authEnabled, enableSlaWhenSecurityContextIsMissing, out var appConfig);
+                CreateAppConfig(retries, authLevel, enableSlaWhenSecurityContextIsMissing, out var appConfig);
 
                 CreateMessageAggregator(setup, out var messageAggregator);
 
@@ -65,25 +73,15 @@
 
                 try
                 {
-                    CreateDataStore(
-                        messageAggregator,
-                        rollingRepo,
-                        dataStoreOptions,
-                        message.Headers.GetMessageId(),
-                        out var dataStore);
+                    CreateDataStore(messageAggregator, rollingRepo, dataStoreOptions, message.Headers.GetMessageId(), appConfig, out var dataStore);
 
-                    IUserProfile userProfile = null;
-                    IdentityPermissions identityPermissions = null;
-                    await AuthFunctions.AuthenticateandAuthoriseOrThrow<TestProfile>(message, appConfig, dataStore, new Dictionary<string, AuthFunctions.SchemeAuth<TestProfile>>()
-                    {
-                        { AuthSchemePrefixes.Tests, TestSchemeAuth<TestProfile> }
-                    } ,securityInfo, v => identityPermissions = v, v => userProfile = v);
+                    CreateIdaamProvider(appConfig, out IIdaamProvider idaamProvider, securityInfo);
                     
-                    CreateMessageMeta(message, identityPermissions, userProfile, out var meta);
-                        
                     CreateNotificationServer(appConfig.NotificationServerSettings, messageAggregator, out var notificationServer);
 
                     CreateBusContext(messageAggregator, appConfig, rollingStorage, out var bus);
+
+                    
 
                     var context = new BoostrappedContext(
                         messageMapper: messageMapper,
@@ -93,6 +91,7 @@
                         notificationServer: notificationServer,
                         dataStore: dataStore,
                         messageAggregator: messageAggregator,
+                        idaamProvider: idaamProvider,
                         blobStorage: rollingStorage);
 
                     byte currentRun = 1;
@@ -111,20 +110,20 @@
                         {
                             try
                             {
-                                logger.Information(
-                                    @"---------------------- EXECUTING BEFORE RUN HOOK ----------------------"
-                                    + Environment.NewLine);
+                                logger.Information(@"---------------------- EXECUTING BEFORE RUN HOOK ----------------------" + Environment.NewLine);
 
                                 await beforeRunHook.Function.Invoke(
-                                    new DataStore(
-                                        context.DataStore.DocumentRepository,
-                                        dataStoreOptions: beforeRunHook.RunHookUnitOfWorkId.HasValue
-                                                              ? DataStoreOptions.Create()
-                                                                                .SpecifyUnitOfWorkId(
-                                                                                    beforeRunHook.RunHookUnitOfWorkId.Value)
-                                                              : null),
-                                    context.BlobStorage,
-                                    currentRun);
+                                    new BeforeRunHookArgs()
+                                    {
+                                        DataStore =new DataStore(
+                                            context.DataStore.DocumentRepository,
+                                            dataStoreOptions: beforeRunHook.RunHookUnitOfWorkId.HasValue
+                                                                  ? DataStoreOptions.Create().SpecifyUnitOfWorkId(beforeRunHook.RunHookUnitOfWorkId.Value)
+                                                                  : null),
+                                        BlobStorage = context.BlobStorage,
+                                        Run = currentRun,
+                                        IdaamProvider = idaamProvider
+                                    });
                             }
                             catch (Exception e)
                             {
@@ -140,12 +139,26 @@
                             }
                         }
 
-                        logger.Information(
-                            @"---------------------- EXECUTING MESSAGE HANDLER ----------------------" + Environment.NewLine);
+                        logger.Information(@"---------------------- EXECUTING MESSAGE HANDLER ----------------------" + Environment.NewLine);
+                        
+                        //* this is here so that the meta will include any modifications made to identityclaims in the beforerunhook
+                        IUserProfile userProfile = null;
+                        IdentityClaims identityClaims = null;
 
+                        await AuthorisationSchemes.AuthenticateandAuthoriseOrThrow<TUserProfile>(
+                            idaamProvider,
+                            message,
+                            appConfig,
+                            dataStore,
+                            securityInfo,
+                            v => identityClaims = v,
+                            v => userProfile = v);
+                        
+                        CreateMessageMeta(message, identityClaims, userProfile, appConfig.AuthLevel, out var meta);
                         
                         try
                         {
+                            
                             await MessagePipeline.Execute(message, meta, context);
 
                             x.Success = true;
@@ -157,10 +170,14 @@
                             are any statefulprocessstarted or continued events we can use to determine the id of the processtate to return. */
 
                             var statefulProcessLaunchedByThisMessage = messageAggregator.AllMessages
-                                .Where(m => m.GetType().InheritsOrImplements(typeof(IAssociateProcessStateWithAMessage)))
-                                .SingleOrDefault(
-                                    m => ((IAssociateProcessStateWithAMessage)m).ByMessage == message.Headers.GetMessageId())
-                                .DirectCast<IAssociateProcessStateWithAMessage>();
+                                                                                        .Where(
+                                                                                            m => m.GetType()
+                                                                                                  .InheritsOrImplements(
+                                                                                                      typeof(IAssociateProcessStateWithAMessage)))
+                                                                                        .SingleOrDefault(
+                                                                                            m => ((IAssociateProcessStateWithAMessage)m).ByMessage
+                                                                                                 == message.Headers.GetMessageId())
+                                                                                        .DirectCast<IAssociateProcessStateWithAMessage>();
 
                             if (statefulProcessLaunchedByThisMessage != null)
                             {
@@ -174,7 +191,7 @@
                             x.NotificationServer = notificationServer;
                             x.MessageAggregator = messageAggregator;
                             x.BlobStorage = rollingStorage;
-                            
+
                             logger.Information(
                                 Environment.NewLine
                                 + $@"\/\/\/\/\/\/\/\/\/\/\/\/  RUN {currentRun} ENDED in SUCCESS, {remainingRuns} retry(s) left /\/\/\/\/\/\/\/\/\/\/\/\\/");
@@ -195,11 +212,10 @@
                             x.NotificationServer = notificationServer;
                             x.MessageAggregator = messageAggregator;
                             x.BlobStorage = rollingStorage;
-                            
+
                             logger.Error(e, "Unhandled Error");
                             x.Success = false;
                             x.UnhandledError = e;
-
                         }
 
                         currentRun++;
@@ -215,46 +231,46 @@
 
                 return x;
             }
-            
-            static void CreateMessageMeta(
-                ApiMessage message,
-                IdentityPermissions permissions,
-                IUserProfile userProfile,
-                out MessageMeta meta)
+
+            static void CreateIdaamProvider(IBootstrapVariables bootstrapVariables, out IIdaamProvider idaamProvider, ISecurityInfo securityinfo)
+            {
+                idaamProvider = new InMemoryIdaamProvider(TestIdentities, bootstrapVariables, securityinfo);
+            }
+
+            static void CreateMessageMeta(ApiMessage message, IdentityClaims claims, IUserProfile userProfile, AuthLevel authLevel, out MessageMeta meta)
             {
                 (DateTime receivedTime, long receivedTicks) timeStamp = (DateTime.UtcNow, StopwatchOps.GetStopwatchTimestamp());
 
-                meta = new MessageMeta(timeStamp, permissions, userProfile, message.Headers.GetMessageId());
-            }
-            
-            static Task TestSchemeAuth<TUserProfile>(
-                IBootstrapVariables bootstrapVariables,
-                ApiMessage message,
-                DataStore dataStore,
-                ISecurityInfo securityInfo,
-                string schemeValue,
-                Action<IdentityPermissions> setPermissions,
-                Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
-            {
-                var testIdentityId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
-                Guard.Against(schemeValue != testIdentityId, "last scheme value should match decrypted id token");
-                var testIdentity = TestIdentities.SingleOrDefault(t => t.UserProfile.id.ToString() == testIdentityId);
-                if (testIdentity != null)
-                {
-                    setPermissions(testIdentity.IdentityPermissions);
-                    setProfile(testIdentity.UserProfile);
-                }
-                else
-                {
-                    setPermissions(null);
-                    setProfile(null);    
-                }
-                
-
-                return Task.CompletedTask;
+                meta = new MessageMeta(timeStamp, claims, userProfile, authLevel, message.Headers.GetMessageId());
             }
 
-            static void CreateAppConfig(byte retries, bool authEnabled, bool enableSlaWhenSecurityContextIsMissing, out TestConfig applicationConfig)
+            // static Task TestSchemeAuth<TUserProfile>(
+            //     IBootstrapVariables bootstrapVariables,
+            //     ApiMessage message,
+            //     DataStore dataStore,
+            //     ISecurityInfo securityInfo,
+            //     string schemeValue,
+            //     Action<IdentityPermissions> setPermissions,
+            //     Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
+            // {
+            //     var testIdentityId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
+            //     Guard.Against(schemeValue != testIdentityId, "last scheme value should match decrypted id token");
+            //     var testIdentity = TestIdentities.SingleOrDefault(t => t.UserProfile.id.ToString() == testIdentityId);
+            //     if (testIdentity != null)
+            //     {
+            //         setPermissions(testIdentity.AppMetaData);
+            //         setProfile(testIdentity.UserProfile);
+            //     }
+            //     else
+            //     {
+            //         setPermissions(null);
+            //         setProfile(null);
+            //     }
+            //
+            //     return Task.CompletedTask;
+            // }
+
+            static void CreateAppConfig(byte retries, AuthLevel authLevel, bool enableSlaWhenSecurityContextIsMissing, out TestConfig applicationConfig)
             {
                 applicationConfig = new TestConfig
                 {
@@ -264,7 +280,7 @@
                     {
                         NumberOfApiMessageRetries = retries
                     },
-                    AuthEnabled = authEnabled,
+                    AuthLevel = authLevel,
                     UseServiceLevelAuthorityInTheAbsenceOfASecurityContext = enableSlaWhenSecurityContextIsMissing
                 };
             }
@@ -283,9 +299,7 @@
                 Log.Logger = logger; //set serilog default instance which is expected by most serilog plugins
             }
 
-            static void CreateMessageAggregator(
-                Action<MessageAggregatorForTesting> setup,
-                out IMessageAggregator messageAggregator)
+            static void CreateMessageAggregator(Action<MessageAggregatorForTesting> setup, out IMessageAggregator messageAggregator)
             {
                 var messageAggregatorForTesting = new MessageAggregatorForTesting();
                 setup?.Invoke(messageAggregatorForTesting);
@@ -298,22 +312,20 @@
                 out NotificationServer notificationServer)
             {
                 notificationServer = settings.CreateServer(messageAggregator);
-                
             }
 
             static void CreateBusContext(
                 IMessageAggregator messageAggregator,
                 TestConfig applicationConfig,
                 IBlobStorage blobStorage,
-                out IBus busContext
-                 )
+                out IBus busContext)
             {
                 busContext = applicationConfig.BusSettings.CreateBus(
                     messageAggregator,
                     blobStorage,
                     null,
-                    () => AuthFunctions.GetServiceLevelAuthority(applicationConfig), applicationConfig);
-                
+                    () => AuthorisationSchemes.GetServiceLevelAuthority(applicationConfig),
+                    applicationConfig);
             }
 
             static void CreateDataStore(
@@ -321,14 +333,14 @@
                 IDocumentRepository rollingRepo,
                 DataStoreOptions dataStoreOptions,
                 Guid unitOfWorkId,
+                IApplicationConfig applicationConfig,
                 out DataStore dataStore)
             {
-                dataStoreOptions = dataStoreOptions?.SpecifyUnitOfWorkId(unitOfWorkId)
-                                   ?? DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId);
-
+                dataStoreOptions = dataStoreOptions?.SpecifyUnitOfWorkId(unitOfWorkId) ?? DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId);
+                if (applicationConfig.AuthLevel.DatabasePermissionEnabled && dataStoreOptions.Security == null) dataStoreOptions.WithSecurity();
+                
                 dataStore = new DataStore(rollingRepo, messageAggregator, dataStoreOptions);
             }
-            
         }
     }
 }

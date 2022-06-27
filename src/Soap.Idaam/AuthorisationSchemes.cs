@@ -1,4 +1,4 @@
-namespace Soap.Auth0
+namespace Soap.Idaam
 {
     using System;
     using System.Collections.Generic;
@@ -7,6 +7,7 @@ namespace Soap.Auth0
     using System.Threading.Tasks;
     using DataStore;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.LowLevel.Permissions;
     using Soap.Config;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -14,104 +15,113 @@ namespace Soap.Auth0
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
-    public class AuthFunctions
+    public static class AuthorisationSchemes
     {
         private static ServiceLevelAuthority cache;
 
         private static object cacheLock = new object();
 
         public delegate Task SchemeAuth<TUserProfile>(
-            IBootstrapVariables bootstrapVariables,
+            IIdaamProvider idaamProvider,
+            IApplicationConfig applicationConfig,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
             string schemeValue,
-            Action<IdentityPermissions> setPermissions,
+            Action<IdentityClaims> setClaims,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new();
 
-        public static async Task AuthenticateandAuthoriseOrThrow<TUserProfile>(
+        public static async Task 
+            AuthenticateandAuthoriseOrThrow<TUserProfile>(
+            IIdaamProvider idaamProvider,
             ApiMessage message,
-            IBootstrapVariables bootstrapVariables,
+            IApplicationConfig applicationConfig,
             DataStore dataStore,
-            Dictionary<string, SchemeAuth<TUserProfile>> schemeHandlers,
             ISecurityInfo securityInfo,
-            Action<IdentityPermissions> setPermissions,
+            Action<IdentityClaims> setClaims,
             Action<IUserProfile> setUserProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             {
-                IdentityPermissions identityPermissionsInternal = null;
+                IdentityClaims identityClaimsInternal = null;
                 IUserProfile userProfileInternal = null;
 
-                var shouldAuthorise = IsSubjectToAuthorisation(message, bootstrapVariables);
+                var shouldAuthorise = IsSubjectToAuthorisation(message, applicationConfig);
 
                 /* if you don't authorise the message, you don't attempt to authenticate the user either.
                  however, just because you authenticate doesn't mean you always return a user profile, services and tests don't have them */
                 if (shouldAuthorise)
                 {
                     Guard.Against(
-                        shouldAuthorise && (message.Headers.GetIdentityChain() == null
-                                            || message.Headers.GetIdentityToken() == null
-                                            || message.Headers.GetAccessToken() == null), "All Authorisation headers not provided but message is not exempt from authorisation",
+                        shouldAuthorise && (message.Headers.GetIdentityChain() == null || message.Headers.GetIdentityToken() == null
+                                                                                       || message.Headers.GetAccessToken() == null),
+                        "All Authorisation headers not provided but message is not exempt from authorisation",
                         "A Security policy violation is preventing this action from succeeding S01");
 
                     Guard.Against(
                         Regex.IsMatch(
                             message.Headers.GetIdentityChain(),
-                            $"^({AuthSchemePrefixes.Service}|{AuthSchemePrefixes.Tests}|{AuthSchemePrefixes.User}):\\/\\/.+$")
-                        == false, "Identity Chain header invalid",
+                            $"^({AuthSchemePrefixes.Service}|{AuthSchemePrefixes.User}):\\/\\/.+$") == false,
+                        "Identity Chain header invalid",
                         "A Security policy violation is preventing this action from succeeding S02");
 
                     var lastIdentityScheme = message.Headers.GetIdentityChain().SubstringBeforeLast("://");
                     if (lastIdentityScheme.Contains("://")) lastIdentityScheme = lastIdentityScheme.SubstringAfterLast(",");
                     var lastIdentityValue = message.Headers.GetIdentityChain().SubstringAfterLast("://");
 
+                    var schemeHandlers = new Dictionary<string, SchemeAuth<TUserProfile>>()
+                    {
+                        {AuthSchemePrefixes.Service, ServiceSchemeAuth<TUserProfile> },
+                        {AuthSchemePrefixes.User, UserSchemeAuth<TUserProfile> }
+                    };
+                                                                 
                     Guard.Against(
-                        !schemeHandlers.ContainsKey(lastIdentityScheme), "Could not find a handler to process the identity scheme " + lastIdentityScheme,
+                        !schemeHandlers.ContainsKey(lastIdentityScheme),
+                        "Could not find a handler to process the identity scheme " + lastIdentityScheme,
                         "A Security policy violation is preventing this action from succeeding S03");
 
                     var schemeHandler = schemeHandlers[lastIdentityScheme];
 
                     await schemeHandler(
-                        bootstrapVariables,
+                        idaamProvider,
+                        applicationConfig,
                         message,
                         dataStore,
                         securityInfo,
                         lastIdentityValue,
-                        v => identityPermissionsInternal = v,
+                        v => identityClaimsInternal = v,
                         v => userProfileInternal = v);
 
                     if (message is MessageFailedAllRetries m)
                     {
                         message.Validate();
                         var nameOfFailedMessage = Type.GetType(m.TypeName).Name;
-                        
+
                         Guard.Against(
-                            identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(nameOfFailedMessage),
-                            AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");
+                            identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions).Contains(nameOfFailedMessage),
+                            AuthErrorCodes.NoApiPermissionExistsForThisMessage,
+                            "A Security policy violation is preventing this action from succeeding S04");
                     }
                     else
                     {
                         Guard.Against(
-                            identityPermissionsInternal == null || !identityPermissionsInternal.ApiPermissions.Contains(message.GetType().Name),
-                            AuthErrorCodes.NoApiPermissionExistsForThisMessage, "A Security policy violation is preventing this action from succeeding S04");    
+                            identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions).Contains(message.GetType().Name),
+                            AuthErrorCodes.NoApiPermissionExistsForThisMessage,
+                            "A Security policy violation is preventing this action from succeeding S04");
                     }
-                    
-                    
-                    
                 }
-                
+
                 await SaveOrUpdateUserProfileInDb(userProfileInternal as TUserProfile, dataStore);
 
                 //* if auth is enabled these could be empty but should never be null
-                setPermissions(identityPermissionsInternal);
+                setClaims(identityClaimsInternal);
                 setUserProfile(userProfileInternal);
             }
 
-            static bool IsSubjectToAuthorisation(ApiMessage m, IBootstrapVariables bootstrapVariables)
+            static bool IsSubjectToAuthorisation(ApiMessage m, IApplicationConfig applicationConfig)
             {
                 var messageType = m.GetType();
-                
-                return bootstrapVariables.AuthEnabled && messageType.InheritsOrImplements(typeof(ApiCommand))
+
+                return applicationConfig.AuthLevel.ApiPermissionEnabled && messageType.InheritsOrImplements(typeof(ApiCommand))
                                                       && !messageType.HasAttribute<AuthorisationNotRequired>();
             }
 
@@ -120,14 +130,14 @@ namespace Soap.Auth0
             {
                 if (userProfile == null) return;
 
-                var user = (await dataStore.Read<TUserProfileMethodLevel>(x => x.Auth0Id == userProfile.Auth0Id)).SingleOrDefault();
+                var user = (await dataStore.Read<TUserProfileMethodLevel>(x => x.IdaamProviderId == userProfile.IdaamProviderId)).SingleOrDefault();
 
                 if (user == null)
                 {
                     var newUser = new TUserProfileMethodLevel
                     {
                         id = userProfile.id,
-                        Auth0Id = userProfile.Auth0Id,
+                        IdaamProviderId = userProfile.IdaamProviderId,
                         Email = userProfile.Email,
                         FirstName = userProfile.FirstName,
                         LastName = userProfile.LastName
@@ -165,72 +175,104 @@ namespace Soap.Auth0
             return cache;
         }
 
-        public static Task ServiceSchemeAuth<TUserProfile>(
+        public static Task ServiceSchemeAuth<TUserProfile>( //* gives you root access
+            IIdaamProvider idaamProvider,
             IBootstrapVariables bootstrapVariables,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
             string schemeValue,
-            Action<IdentityPermissions> setPermissions,
+            Action<IdentityClaims> setClaims,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
+            
             var appId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
             Guard.Against(schemeValue != appId, "last scheme value should match decrypted id token");
             Guard.Against(bootstrapVariables.AppId != appId, "access token should match app id");
 
-            var identityPermissions = new IdentityPermissions
-            {
-                ApiPermissions = GetAllApiPermissions(message),
-                //DatabasePermissions = if full RBAC it's the scopes on the users' roles mixed with the message perms by attr, otherwise its the message perms by attr and the scope have to be added to the identity permissions some other way yet undefined 
-            };
-            setPermissions(identityPermissions);
-            //* user profile remains null
+            var allRoles = securityInfo.BuiltInRoles.Select(
+                                           x => new RoleInstance()
+                                           {
+                                               RoleKey = x.Key
+                                           })
+                                       .ToList();
 
-            return Task.CompletedTask;
             
-            static List<string> GetAllApiPermissions(ApiMessage message) =>
-                (message is MessageFailedAllRetries fat ? Type.GetType(fat.TypeName) : message.GetType())
-                       .Assembly.GetTypes()
-                       .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
-                       .Select(t => t.Name)
-                       .Union(
-                           typeof(MessageFailedAllRetries).Assembly.GetTypes()
-                                                          .Where(t => t.InheritsOrImplements(typeof(ApiCommand)))
-                                                          .Select(t => t.Name))
-                       .ToList();
+            var identityPermissions = new IdentityClaims
+            {
+                Roles = allRoles,
+                ApiPermissions = securityInfo.ApiPermissions,
+                DatabasePermissions  = new List<DatabasePermission>()
+                {
+                    //* by using the wildcard here, you don't any scopes on the role
+                    new DatabasePermission("*", null)
+                }
+            };
+            setClaims(identityPermissions);
+            
+            setProfile(null); //* user profile remains null
+            
+            return Task.CompletedTask;
         }
 
         public static async Task UserSchemeAuth<TUserProfile>(
+            IIdaamProvider idaamProvider,
             IBootstrapVariables bootstrapVariables,
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
-            string schemeValue,  //* currently not used for securing request with user scheme, apart from visual debug, if this changes consider how it is set by various clients 
-            Action<IdentityPermissions> setPermissions,
+            string schemeValue, //* currently not used for securing request with user scheme, apart from visual debug, if this changes consider how it is set by various clients
+            Action<IdentityClaims> setClaims,
             Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             var accessToken = message.Headers.GetAccessToken();
             var idToken = message.Headers.GetIdentityToken();
 
-            var identityPermissions = await Auth0Functions.GetPermissionsFromAccessToken(
-                                          bootstrapVariables
-                                              .DirectCast<ApplicationConfig>(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
-                                          accessToken,
-                                          securityInfo);
+            var identityClaims = await idaamProvider.GetAppropriateClaimsFromAccessToken(accessToken, message, securityInfo);
 
-            setPermissions(identityPermissions);
+            setClaims(identityClaims);
 
-            
-            var userProfile = idToken == null ? null : await Auth0Functions.GetOrAddUserProfile<TUserProfile>(
-                                  bootstrapVariables
-                                      .DirectCast<ApplicationConfig
-                                      >(), //* HACK we know this will always be ApplicationConfig since this scheme is never used by unit test code
-                                  dataStore,
-                                  idToken);
+            var userProfile = idToken == null ? null : await RefreshAndReturnOrAddUserProfile<TUserProfile>(dataStore, idaamProvider, idToken);
 
             setProfile(userProfile);
+            
+
+        static async Task<TUserProfile> RefreshAndReturnOrAddUserProfile<TUserProfile>(DataStore dataStore, IIdaamProvider idaamProvider, string idToken)
+            where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
+        {
+            /* gets or creates a matching user profile record in the localdb if none exists
+             updates the user's profile if details from idaam provider have changed since this method
+             was last called */
+
+            Guard.Against(idToken == null, "idToken parameter cannot be null");
+
+            var idaamUser = await idaamProvider.GetLimitedUserProfileFromIdentityToken(idToken);
+
+            var user = (await dataStore.Read<TUserProfile>(x => x.IdaamProviderId == idaamUser.IdaamProviderId)).SingleOrDefault();
+
+            if (user == null)
+            {
+                var newUser = new TUserProfile
+                {
+                    IdaamProviderId = idaamUser.IdaamProviderId,
+                    Email = idaamUser.Email,
+                    FirstName = idaamUser.FirstName,
+                    LastName = idaamUser.LastName
+                };
+
+                return await dataStore.Create(newUser);
+            }
+
+            return (await dataStore.UpdateWhere<TUserProfile>(
+                        u => u.IdaamProviderId == user.IdaamProviderId,
+                        x =>
+                            {
+                            x.Email = idaamUser.Email;
+                            x.FirstName = idaamUser.FirstName;
+                            x.LastName = idaamUser.LastName;
+                            })).Single();
+            
         }
-
-
+        }
     }
 }

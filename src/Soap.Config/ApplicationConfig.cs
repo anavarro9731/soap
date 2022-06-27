@@ -11,16 +11,24 @@
      if it relies on env variables also add it to the localsettings.json file and envvars class.
         with the exception of things (e.g. logger) which are read before the config is loaded or in an effort to load the config. 
      if it relies on env vars then you will need to also add it to sampleconfig.cs used by create-new-service.ps1 to setup new config repos 
-        and to edit existing config.cs files in the soap demo config repo which requires republishing the Config nuget pkg first
      if it relies on an envvar which is not there by default then it also needs to go into the configure-local-environment.ps1 the part which sets local.settings.json and/or .env based on custom vnext envvars
          in some cases it can be hardcoded for dev and not downloaded but it still needs to be added   
-     It may also need to be added to testconfig base class if it is required in TestRuns not to be null i.e. its part of the IBoostrapVariables interface  
+     It may also need to be added to testconfig base class if it is required in TestRuns not to be null i.e. its part of the IBoostrapVariables interface otherwise to the IApplicationConfig interface  
      
     This all is ensures that the config remains the sole point of contact for config information, 
     and where it derives from envvars it provides an opportunity for an override, e.g. for a custom domain in live env 
     */
 
-    public class ApplicationConfig : IBootstrapVariables, IConnectWithAuth0
+    public interface IApplicationConfig : IBootstrapVariables
+    {
+        string FunctionAppHostUrlWithTrailingSlash { get; set; }
+
+        string FunctionAppHostName { get; set; }
+
+        string CorsOrigin { get; set; }
+    }
+
+    public class ApplicationConfig : IApplicationConfig
     {
         protected ApplicationConfig(SoapEnvironments environment, string azureAppName)
         {
@@ -39,8 +47,8 @@
         public string AppId { get; set; }
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
-        
-        public bool AuthEnabled { get; set; }
+
+        public AuthLevel AuthLevel { get; set; }
 
         public string EncryptionKey { get; set; }
 
@@ -82,12 +90,11 @@
                 RuleFor(x => x.CorsOrigin).NotEmpty();
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
-                    .Must(
-                        x => x.AuthEnabled == false || !string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
-                             && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
-                             && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret))
+                    .Must(x => x.AuthLevel.ApiPermissionEnabled == false || (!string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
+                               && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
+                               && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret)))
                     .WithMessage(
-                        $"If {nameof(IBootstrapVariables.AuthEnabled)} is set to true, then all Auth0 fields must be populated");
+                        $"If {nameof(IBootstrapVariables.AuthLevel)} requires ApiPermissions, then all Auth0 fields must be populated");
             }
         }
     }

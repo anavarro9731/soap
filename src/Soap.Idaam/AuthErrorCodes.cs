@@ -1,6 +1,7 @@
-namespace Soap.Auth0
+namespace Soap.Idaam
 {
     using System;
+    using CircuitBoard;
     using Soap.Utility;
 
     public class AuthErrorCodes : ErrorCode

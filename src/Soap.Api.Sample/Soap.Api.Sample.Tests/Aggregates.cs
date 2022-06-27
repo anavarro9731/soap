@@ -9,15 +9,15 @@ namespace Soap.Api.Sample.Tests
     public static class Aggregates
     {
         public static UserProfile DarthVader =>
-            new UserProfile { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader };
+            new UserProfile { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader, IdaamProviderId = Ids.DarthVader.ToIdaam()};
 
         public static UserProfile HanSolo =>
-            new UserProfile { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo };
+            new UserProfile { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo, IdaamProviderId = Ids.HanSolo.ToIdaam()};
 
         public static UserProfile LukeSkywalker =>
-            new UserProfile { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker };
+            new UserProfile { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker, IdaamProviderId = Ids.LukeSkywalker.ToIdaam()};
 
         public static UserProfile PrincessLeia =>
-            new UserProfile { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia };
+            new UserProfile { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia, IdaamProviderId = Ids.PrincessLeia.ToIdaam()};
     }
 }

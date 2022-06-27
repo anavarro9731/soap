@@ -21,11 +21,11 @@
                     string internalMessage = $"{validationExceptionError.PropertyName} : {validationExceptionError.ErrorMessage}";
                     if (Guid.TryParse(validationExceptionError.ErrorCode, out var errorCodeGuid))
                     {
-                        AllErrors.Add((ErrorSourceType.INVALID, errorCodeGuid, validationExceptionError.ErrorMessage, internalMessage));
+                        AllErrors.Add((ErrorSourceType.VALIDATOR, errorCodeGuid, validationExceptionError.ErrorMessage, internalMessage));
                     }
                     else
                     {
-                        AllErrors.Add((ErrorSourceType.INVALID, null, validationExceptionError.ErrorMessage, internalMessage));
+                        AllErrors.Add((ErrorSourceType.VALIDATOR, null, validationExceptionError.ErrorMessage, internalMessage));
                     }
                 }
             }
@@ -51,7 +51,7 @@
                 if (string.IsNullOrWhiteSpace(domainExceptionWithErrorCode.ExternalMessage)) {
                 {
                     AllErrors.Add(
-                        (ErrorSourceType.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key), 
+                        (ErrorSourceType.GUARD, Guid.Parse(domainExceptionWithErrorCode.Error.Key), 
                             bootstrapVariables
                                    .DefaultExceptionMessage, //* always consider messages based on code alone to be unsafe to show details for
                             internalErrorMessage));    
@@ -59,14 +59,22 @@
                 else
                 {
                     AllErrors.Add(
-                        (ErrorSourceType.GUARD, (Guid?)Guid.Parse(domainExceptionWithErrorCode.Error.Key),
+                        (ErrorSourceType.GUARD, Guid.Parse(domainExceptionWithErrorCode.Error.Key),
                             domainExceptionWithErrorCode.ExternalMessage,
                             internalErrorMessage));
                 }
             }
-            else if (exception is CircuitException)
+            else if (exception is CircuitException circuitException)
             {
-                AllErrors.Add((ErrorSourceType.RAW, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));
+                if (circuitException.Error != null)
+                {
+                    AllErrors.Add((ErrorSourceType.CIRCUIT, Guid.Parse(circuitException.Error.Key), circuitException.Message, exception.ToString()));
+                }
+                else
+                {
+                    AllErrors.Add((ErrorSourceType.CIRCUIT, null, bootstrapVariables.DefaultExceptionMessage, exception.ToString()));    
+                }
+                
             }
             else if (exception is ExceptionHandlingException)  //* won't be sent to clients (see MessagePipeline.Execute catch block)
             {
@@ -111,14 +119,14 @@
         public class ErrorSourceType
         {
             public const string CLR = nameof(CLR);
+            
+            public const string CIRCUIT = nameof(CIRCUIT);
 
             public const string EXWHEX = nameof(EXWHEX);
 
             public const string GUARD = nameof(GUARD);
 
-            public const string INVALID = nameof(INVALID);
-
-            public const string RAW = nameof(RAW);
+            public const string VALIDATOR = nameof(VALIDATOR);
         }
 
         public class PipelineException : Exception

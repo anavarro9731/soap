@@ -2,6 +2,7 @@
 {
     using System;
     using System.Reflection;
+    using CircuitBoard;
     using Soap.Utility.Functions.Extensions;
 
     public class DomainExceptionWithErrorCode : Exception

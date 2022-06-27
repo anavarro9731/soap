@@ -25,13 +25,13 @@
     using Newtonsoft.Json;
     using RestSharp;
     using Serilog;
-    using Soap.Auth0;
     using Soap.Bus;
     using Soap.Config;
     using Soap.Context;
     using Soap.Context.BlobStorage;
     using Soap.Context.Logging;
     using Soap.Context.MessageMapping;
+    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.MessagePipeline;
@@ -122,9 +122,9 @@
                         
                     }
                 }
-                
-                
-                await Auth0Functions.CheckAuth0Setup(securityInfo, appConfig, WriteLine);
+
+                var idaamProvider = new IdaamProvider(appConfig);
+                await CheckAuth0Setup(idaamProvider, securityInfo, appConfig, WriteLine);
                 
                 var healthCheckCompleted = "Health Check Completed";
                 logger.Information(healthCheckCompleted);
@@ -141,6 +141,29 @@
                 await outputStream.FlushAsync();
 
                 await outputStream.DisposeAsync();
+            }
+            
+            static async Task CheckAuth0Setup(
+                IdaamProvider idaamProvider,
+                ISecurityInfo securityInfo,
+                ApplicationConfig applicationConfig,
+                Func<string, ValueTask> writeLine)
+            {
+                {
+                    if (ConfigIsEnabledForAuth0Integration(applicationConfig))
+                    {
+                        if (await idaamProvider.IsApiRegisteredWithProvider())
+                        {
+                            await idaamProvider.UpdateApiRegistrationWithProvider(securityInfo, writeLine);
+                        }
+                        else
+                        {
+                            await idaamProvider.RegisterApiWithProvider(securityInfo, writeLine);
+                        }
+                    }
+
+                    static bool ConfigIsEnabledForAuth0Integration(ApplicationConfig applicationConfig) => applicationConfig.AuthLevel.ApiPermissionEnabled;
+                }
             }
         }
 
@@ -172,7 +195,7 @@
 
         private static async Task CheckDatabaseExists(ApplicationConfig applicationConfig, Func<string, ValueTask> writeLine)
         {
-            //TODO make cosmossettings visible so you can read the values from there in case these diverge in future *FRAGILE* 
+            //TODO make cosmossettings visible so you can read the values from there in case EnvPartitionKey and ContainerName diverge in future *FRAGILE* 
             await writeLine(
                 $"Creating Container {EnvVars.EnvironmentPartitionKey} on Database {EnvVars.CosmosDbDatabaseName} if it doesn't exist...");
             await new CosmosDbUtilities().CreateDatabaseIfNotExists(applicationConfig.DatabaseSettings);
@@ -243,7 +266,7 @@
             await writeLine("Running Message Test...");
 
             var message = new TSent();
-            var sla = AuthFunctions.GetServiceLevelAuthority(appConfig);
+            var sla = AuthorisationSchemes.GetServiceLevelAuthority(appConfig);
             message.Headers.SetAccessToken(sla.AccessToken);
             message.Headers.SetIdentityChain(sla.IdentityChainSegment);
             message.Headers.SetIdentityToken(sla.IdentityToken);
@@ -310,7 +333,7 @@
             where TUserProfile : class, IUserProfile, IAggregate, new()
 
         {
-            var sla = AuthFunctions.GetServiceLevelAuthority(appConfig);
+            var sla = AuthorisationSchemes.GetServiceLevelAuthority(appConfig);
             message.Headers.SetAccessToken(sla.AccessToken);
             message.Headers.SetIdentityChain(sla.IdentityChainSegment);
             message.Headers.SetIdentityToken(sla.IdentityToken);

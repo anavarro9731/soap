@@ -236,7 +236,8 @@
                 IDataStore dataStore,
                 Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
-                var readById = typeof(IDataStore).GetMethods()
+                
+                var readById = typeof(IDataStoreReadOnly).GetMethods()
                                                  .Single(
                                                      m => m.GetGenericArguments().Length == 1
                                                           && m.Name == nameof(DataStore.ReadById))

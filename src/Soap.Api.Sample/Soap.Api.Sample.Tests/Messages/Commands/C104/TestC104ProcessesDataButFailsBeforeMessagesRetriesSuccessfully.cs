@@ -8,6 +8,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using Soap.Context.Logging;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.PfBase.Tests;
     using Xunit;
     using Xunit.Abstractions;
     using Commands = Soap.Api.Sample.Tests.Commands;
@@ -37,18 +38,18 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             CountMessagesSent();
         }
 
-        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
+        private async Task BeforeRunHook(SoapMessageTestContext.BeforeRunHookArgs beforeRunHookArgs)
         {
             await AssertGuardFail();
 
             async Task AssertGuardFail()
             {
-                if (run == 2)
+                if (beforeRunHookArgs.Run == 2)
                 {
                     //Assert guard fail
                     var c104TestUnitOfWork =
                         Commands.TestUnitOfWork(SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully);
-                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
                     log.Attempts[0] //* 0 is latest attempt they are inserted
                        .Errors.AllErrors[0]
                        .ExternalMessage.Should()

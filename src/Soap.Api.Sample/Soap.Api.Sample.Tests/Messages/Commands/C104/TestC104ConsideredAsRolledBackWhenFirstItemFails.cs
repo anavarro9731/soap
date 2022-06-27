@@ -42,22 +42,22 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             Result.ExceptionContainsErrorCode(UnitOfWorkErrorCodes.UnitOfWorkFailedUnitOfWorkRolledBack);
         }
 
-        private async Task BeforeRunHook(DataStore store, IBlobStorage storage, int run)
+        private async Task BeforeRunHook(SoapMessageTestContext.BeforeRunHookArgs beforeRunHookArgs)
         {
             await Assert();
 
             async Task Assert()
             {
-                if (run == 2)
+                if (beforeRunHookArgs.Run == 2)
                 {
                     //Assert, changes should be rolled back at this point 
                     var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.ConsideredAsRolledBackWhenFirstItemFails);
                     
-                    var log = await store.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
-                    var uow = (await storage.GetBlobOrError(c104TestUnitOfWork.Headers.GetMessageId(), "units-of-work")).ToUnitOfWork();
+                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    var uow = (await beforeRunHookArgs.BlobStorage.GetBlobOrError(c104TestUnitOfWork.Headers.GetMessageId(), "units-of-work")).ToUnitOfWork();
                     
                     CountDataStoreOperationsSaved(uow);
-                    await RecordsShouldBeReturnToOriginalState(store);
+                    await RecordsShouldBeReturnToOriginalState(beforeRunHookArgs.DataStore);
                     await SimulateAnotherUnitOfWorkChangingLukesRecord();
                 }
             }
@@ -66,12 +66,12 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
             {
                 //* luke's record is the only one not yet committed but since we faked a concurrency error in
                 //the change we now need to reflect that in the underlying data for the next run to calculate correctly
-                if (run == 2)
+                if (beforeRunHookArgs.Run == 2)
                 {
-                    await store.UpdateById<UserProfile>(
+                    await beforeRunHookArgs.DataStore.UpdateById<UserProfile>(
                         Ids.LukeSkywalker,
-                        luke => luke.Auth0Id = Ids.JohnDoeWithAllPermissionsAuth0Id);
-                    await store.CommitChanges();
+                        luke => luke.AnyString = "changed"); //doesn't matter just make any change to create a history item, but avoid ID fields or sensitive fields used elsewhere in framework
+                    await beforeRunHookArgs.DataStore.CommitChanges();
                 }
             }
         }

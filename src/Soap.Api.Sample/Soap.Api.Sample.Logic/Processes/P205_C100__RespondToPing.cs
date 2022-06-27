@@ -1,34 +1,51 @@
 ﻿namespace Soap.Api.Sample.Logic.Processes
 {
     using System;
-    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Api.Sample.Messages.Events;
+    using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class P205_C100__RespondToPing : Process, IBeginProcess<C100v1_Ping>
     {
-        
-        
-            
         public Func<C100v1_Ping, Task> BeginProcess =>
             async message =>
                 {
-                await PublishPong();
-
-                async Task PublishPong()
                 {
-                    var p = Meta.UserProfileOrNull;
+                    var pongedBy = Meta.UserProfileOrNull?.IdaamProviderId;
+                    if (Meta.AuthLevel.DatabasePermissionEnabled)
+                    {
+                        var myProfile = Meta.AuthLevel switch
+                        {
+                            { } when Meta.AuthLevel == AuthLevel.ApiAndDatabasePermission => (await DataReader.Read<UserProfile>(
+                                                                                                  x => x.IdaamProviderId == pongedBy,
+                                                                                                  op => op.AuthoriseFor(Meta.IdentityClaimsOrNull)))
+                                .Single(),
 
+                            
+                            { } when Meta.AuthLevel == AuthLevel.ApiAndAutoDbAuth => (await DataReader.Read<UserProfile>(
+                                                                                          x => x.IdaamProviderId == pongedBy)).Single(),
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        pongedBy = myProfile.IdaamProviderId;
+                    }
+
+                    await PublishPong(pongedBy);
+                }
+
+                async Task PublishPong(string pongedBy)
+                {
                     await Bus.Publish(
                         new E100v1_Pong
                         {
                             E000_PingedAt = message.C000_PingedAt,
                             E000_PingedBy = message.C000_PingedBy,
                             E000_PongedAt = DateTime.UtcNow,
-                            E000_PongedBy = p?.Auth0Id
+                            E000_PongedBy = pongedBy
                         });
                 }
                 };

@@ -1,35 +1,56 @@
 namespace Soap.Interfaces
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using DataStore.Interfaces.LowLevel.Permissions;
-
-    public record AddUserArgs(string FirstName, string LastName, string Email, string Password)
-    {
-        public bool Blocked { get; init; } = default;
-
-        public bool EmailVerified { get; init; } = default;
-
-        public bool VerifyEmail { get; init; } = true;
-    }
+    using Soap.Interfaces.Messages;
 
     public interface IIdaamProvider
     {
-        public Task AddRoleToUser(string idaamProviderUserId, RoleId roleId);
+        Task AddRoleToUser(string idaamProviderUserId, Role role);
 
-        public Task AddRoleToUser(string idaamProviderUserId, RoleId roleId, DatabaseScopeReference scopeReferenceToAdd);
+        Task AddRoleToUser(string idaamProviderUserId, Role role, AggregateReference scopeReferenceToAdd);
 
-        public Task AddRoleToUser(string idaamProviderUserId, RoleId roleId, List<DatabaseScopeReference> scopeReferencesToAdd);
+        Task AddRoleToUser(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd);
 
-        public Task AddScopeToUserRole(string idaamProviderUserId, RoleId roleId, List<DatabaseScopeReference> scopeReferencesToAdd);
+        Task AddScopeToUserRole(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd);
 
-        public Task AddScopeToUserRole(string idaamProviderUserId, RoleId roleId, DatabaseScopeReference scopeReferenceToAdd);
+        Task AddScopeToUserRole(string idaamProviderUserId, Role role, AggregateReference scopeReferenceToAdd);
 
-        public Task<string> AddUser(AddUserArgs userProfile);
+        Task<string> AddUser(AddUserArgs args);
 
-        public Task RemoveRoleFromUser(string idaamProviderUserId, RoleId roleId);
+        Task<string> BlockUser(string idaamProviderId);
 
-        public Task RemoveScopeFromUserRole(string idaamProviderUserId, RoleId roleId, DatabaseScopeReference scopeReferenceToRemove);
+        Task ChangeUserPassword(string idaamProviderId, string newPassword);
+
+        Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string bearerToken, ApiMessage apiMessage, ISecurityInfo securityInfo);
+
+        Task<User> GetLimitedUserProfileFromIdentityToken(string idToken);
+
+        Task RemoveRoleFromUser(string idaamProviderUserId, Role role);
+
+        Task RemoveScopeFromUserRole(string idaamProviderUserId, Role role, AggregateReference scopeReferenceToRemove);
+
+        Task RemoveUser(string idaamProviderId);
+
+        public class User : IdaamProviderProfile
+        {
+            public string Email { get; set; }
+
+            public string FirstName { get; set; }
+
+            public string IdaamProviderId { get; set; }
+
+            public string LastName { get; set; }
+        }
+
+        public record AddUserArgs(IUserProfile Profile, string Password)
+        {
+            public bool Blocked { get; init; } = default;
+
+            public bool EmailVerified { get; init; } = default;
+
+            public bool VerifyEmail { get; init; } = true;
+        }
     }
 }

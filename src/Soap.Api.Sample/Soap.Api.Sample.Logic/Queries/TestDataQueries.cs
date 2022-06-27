@@ -16,7 +16,7 @@
             async () =>
                 {
                 var continueAt = new ContinuationToken();
-                return (await DataReaderWithoutEventReplay.ReadActive(
+                return (await DataReader.WithoutEventReplay.ReadActive(
                             Predicates.TestData.RecentTestData(maxAgeInDays),
                             o => o.Take((int)maxRecords, ref continueAt))).OrderByDescending(x => x.CreatedAsMillisecondsEpochTime)
                                                                       .ToList();

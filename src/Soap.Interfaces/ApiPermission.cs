@@ -4,39 +4,28 @@
     using System.Text.RegularExpressions;
     using CircuitBoard;
 
-    public class ApiPermission
+    public class ApiPermission: Enumeration
     {
-        public List<string> DeveloperPermissions;
-
-        public string Description;
-
-        public ApiPermissionId Id;
-    }
-    
-    public class ApiPermissionId : TypedEnumeration<ApiPermissionId>
-    {
-        public ApiPermissionId() {}
+        public ApiPermission() {}
         
-        public ApiPermissionId(string key, string value)
+        public ApiPermission(string key, string value)
         {
             base.Key = key;
             base.Value = value;
         }
-    }
+        public List<string> DeveloperPermissions;
 
+        public string Description;
+        
+    }
+    
     public static class ApiPermissionExt
     {
-        
-        public static string AsAuth0Claim(this ApiPermissionId apiPermission, string environmentPartitionKey)
-        {
-            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
-                   + Regex.Replace(apiPermission.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
-        }
         
         public static string AsAuth0Claim(this ApiPermission apiPermission, string environmentPartitionKey)
         {
             return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
-                   + Regex.Replace(apiPermission.Id.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
+                   + Regex.Replace(apiPermission.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
     }
 }
