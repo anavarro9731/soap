@@ -70,70 +70,101 @@
             where TLargeMsg : ApiMessage
             where TUserProfile : class, IUserProfile, IAggregate, new()
         {
-            async ValueTask WriteLine(string s)
-            {
-                await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
-                await outputStream.FlushAsync();
-            }
 
+            
+
+            
+            ApplicationConfig appConfig = null;
             try
             {
                 logger.Information("Starting Health Check");
+                
+                AzureFunctionContext.LoadAppConfig(out appConfig);
 
-                await WriteLine("Loading Config...");
+                /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
+                EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
+                COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
+                await WriteLineIfInDevelopmentEnvironment("RUNNING IN DEVELOPMENT ENVIRONMENT. DETAILS WILL BE SHOWN THAT ARE NOT PRINTED IN OTHER ENVIRONMENTS.");
 
-                AzureFunctionContext.LoadAppConfig(out var appConfig);
+                await WriteLineIfInDevelopmentEnvironment("Loading Config...");
 
-                await WriteLine(GetConfigDetails(appConfig));
+                
+                await WriteLineIfInDevelopmentEnvironment(GetConfigDetails(appConfig));
 
-                await CheckDatabaseExists(appConfig, WriteLine);
+                await CheckDatabaseExists(appConfig, WriteLineIfInDevelopmentEnvironment);
 
-                await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLine);
+                await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLineIfInDevelopmentEnvironment);
 
-                await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLine, functionHost);
+                await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLineIfInDevelopmentEnvironment, functionHost);
                 
                 bool success1 = await SendMessageWaitForReply<TPing, TPong, TUserProfile>(
                     logger,
                     appConfig,
+                    securityInfo,
                     mapMessagesToFunctions,
                     signalRBinding,
-                    WriteLine);
+                    WriteLineIfInDevelopmentEnvironment);
 
                 bool success2 = await SendMessageWaitForReply<TSendLargeMsg, TLargeMsg, TUserProfile>(
                     logger,
                     appConfig,
+                    securityInfo,
                     mapMessagesToFunctions,
                     signalRBinding,
-                    WriteLine);
+                    WriteLineIfInDevelopmentEnvironment);
 
+                var idaamProvider = new IdaamProvider(appConfig);
+                await CheckAuth0Setup(idaamProvider, securityInfo, appConfig, WriteLineIfInDevelopmentEnvironment);
+                
+                
+                //* this needs 2 run last, order important
                 List<bool> startupCommandResults = new List<bool>();
                 if (startupCommands != null)
                 {
-                    await WriteLine("Running Startup Commands ...");
+                    await WriteLineIfInDevelopmentEnvironment("Running Startup Commands ...");
                     foreach (var startupCommand in startupCommands)
                     {
                         var startupCommandSuccess = await ExecuteCommandInline<TUserProfile>(startupCommand,                   
                                                         logger,
                                                         appConfig,
+                                                        securityInfo,
                                                         mapMessagesToFunctions,
                                                         signalRBinding,
-                                                        WriteLine);
+                                                        WriteLineIfInDevelopmentEnvironment);
                         startupCommandResults.Add(startupCommandSuccess);
                         
                     }
                 }
-
-                var idaamProvider = new IdaamProvider(appConfig);
-                await CheckAuth0Setup(idaamProvider, securityInfo, appConfig, WriteLine);
                 
                 var healthCheckCompleted = "Health Check Completed";
                 logger.Information(healthCheckCompleted);
-                await WriteLine(healthCheckCompleted);
-                await WriteLine((success1 && success2 && startupCommandResults.All(x => x)) ? "+" : "-");
+                
+                var finalString= healthCheckCompleted + Environment.NewLine + ((success1 && success2 && startupCommandResults.All(x => x)) ? "+" : "-");
+                await outputStream.WriteAsync(Encoding.UTF8.GetBytes(finalString));
+                
+                
+                async ValueTask WriteLineIfInDevelopmentEnvironment(string s)
+                {
+                    /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
+                    EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
+                    COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
+                    if (appConfig.Environment == SoapEnvironments.Development)
+                    {
+                        await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
+                        await outputStream.FlushAsync();
+                    }
+                }
             }
             catch (Exception e)
             {
-                await outputStream.WriteAsync(Encoding.UTF8.GetBytes(e.ToString()));
+                if (appConfig?.Environment == SoapEnvironments.Development)
+                {
+                    /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
+                    EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
+                    COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
+                    await outputStream.WriteAsync(Encoding.UTF8.GetBytes(e.ToString()));    
+                }
+                
                 logger.Error(e, "Error Checking Health {0}");
             }
             finally
@@ -256,6 +287,7 @@
         private static async Task<bool> SendMessageWaitForReply<TSent, TReply, TUserProfile>(
             ILogger logger,
             ApplicationConfig appConfig,
+            ISecurityInfo securityInfo,
             MapMessagesToFunctions mappings,
             IAsyncCollector<SignalRMessage> signalRBinding,
             Func<string, ValueTask> writeLine)
@@ -280,7 +312,7 @@
                         mappings,
                         message.Headers.GetMessageId().ToString(),
                         message.GetType().ToShortAssemblyTypeName(),
-                        null,
+                        securityInfo,
                         logger,
                         appConfig,
                         signalRBinding);
@@ -322,11 +354,12 @@
 
             return false;
         }
-        
+
         private static async Task<bool> ExecuteCommandInline<TUserProfile>(
             ApiCommand message,
             ILogger logger,
             ApplicationConfig appConfig,
+            ISecurityInfo securityInfo,
             MapMessagesToFunctions mappings,
             IAsyncCollector<SignalRMessage> signalRBinding,
             Func<string, ValueTask> writeLine)
@@ -346,7 +379,7 @@
                         mappings,
                         message.Headers.GetMessageId().ToString(),
                         message.GetType().ToShortAssemblyTypeName(),
-                        null,
+                        securityInfo,
                         logger,
                         appConfig,
                         signalRBinding);

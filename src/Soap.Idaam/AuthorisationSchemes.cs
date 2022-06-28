@@ -121,8 +121,7 @@ namespace Soap.Idaam
             {
                 var messageType = m.GetType();
 
-                return applicationConfig.AuthLevel.ApiPermissionEnabled && messageType.InheritsOrImplements(typeof(ApiCommand))
-                                                      && !messageType.HasAttribute<AuthorisationNotRequired>();
+                return applicationConfig.AuthLevel.ApiPermissionEnabled && !messageType.HasAttribute<AuthorisationNotRequired>();
             }
 
             static async Task SaveOrUpdateUserProfileInDb<TUserProfileMethodLevel>(TUserProfileMethodLevel userProfile, DataStore dataStore)
@@ -232,13 +231,12 @@ namespace Soap.Idaam
 
             setClaims(identityClaims);
 
-            var userProfile = idToken == null ? null : await RefreshAndReturnOrAddUserProfile<TUserProfile>(dataStore, idaamProvider, idToken);
+            var userProfile = idToken == null ? null : await RefreshAndReturnOrAddUserProfile(dataStore, idaamProvider, idToken);
 
             setProfile(userProfile);
             
 
-        static async Task<TUserProfile> RefreshAndReturnOrAddUserProfile<TUserProfile>(DataStore dataStore, IIdaamProvider idaamProvider, string idToken)
-            where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
+        static async Task<TUserProfile> RefreshAndReturnOrAddUserProfile(DataStore dataStore, IIdaamProvider idaamProvider, string idToken)
         {
             /* gets or creates a matching user profile record in the localdb if none exists
              updates the user's profile if details from idaam provider have changed since this method

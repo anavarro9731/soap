@@ -40,14 +40,14 @@ namespace Soap.Idaam
         {
             Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
 
-            var roleInstance = this.identities[idaamProviderUserId].RoleInstances.SingleOrDefault(x => x.RoleKey == role.Key);
+            var roleInstance = this.identities[idaamProviderUserId].Roles.SingleOrDefault(x => x.RoleKey == role.Key);
 
             scopeReferencesToAdd ??= new List<AggregateReference>();
 
             if (roleInstance == null)
             {
                 this.identities[idaamProviderUserId]
-                    .RoleInstances.Add(
+                    .Roles.Add(
                         new RoleInstance
                         {
                             RoleKey = role.Key,
@@ -102,61 +102,11 @@ namespace Soap.Idaam
             Guard.Against(!exists, "No identity was found with this accessToken");
 
             var identity = this.identities.Single(x => x.Value.AccessToken == accessToken).Value;
-            var messageName = apiMessage.GetType().Name;
-            var claims = new IdentityClaims();
 
-            foreach (var role in identity.RoleInstances)
-            {
-                var roleDef = securityInfo.BuiltInRoles.Single(x => x.Key == role.RoleKey);
-                var apiPermissionDefsForThisRole = securityInfo.ApiPermissions.Where(x => roleDef.ApiPermissions.Contains(x)).ToList();
-
-                /* the user gets API permissions for ALL roles they have, In production the provider
-                currently the service (Auth0) sends us both roles and apipermissions in the token
-                and we trust they are consistent and load them independently, but when testing
-                if we were to load them from the identity independently we might not have consistency
-                so this is the safer way to derive them always from the role */
-                
-                claims.Roles.Add(role);
-                
-                claims.ApiPermissions.AddRange(
-                    apiPermissionDefsForThisRole.Where(newPermission => claims.ApiPermissions.TrueForAll(a => a != newPermission)));
-
-                /* now we add db permissions from the scope of the roles that this user has for THIS message,
-                they will still have all their roles and scopes for review, but only those
-                relevant to this message will be used to create data permissions for accessing data.
-                there could be cases where the same  message is in two role and in that case we will
-                give both sets of scopes because we cannot determine which UI context this was meant from
-                but technically if they have access to send that command with that scope it should be allowed */
-                if (apiPermissionDefsForThisRole.Any(permission => permission.DeveloperPermissions.Contains(messageName)))
-                {
-                    /* we give all because when using datastore as a slave framework, the determination about what type of
-                     operations you can perform is made implicitly by the developer by which method they call. the exception here
-                     would be the readPII which they have no way of specifying from the callsite. Possible we could make this
-                     something they could set as another argument when they add the rolescope in future but only for ReadPII or
-                     you start to introduce confusion between the two approaches */
-                    if (role.ScopeReferences.Any(s => s.AggregateId == Guid.Parse("1EEAF9CB-A2BE-4A08-A5E0-330C63D1D81F")))
-                    {
-                        if (claims.DatabasePermissions.TrueForAll(p => p.PermissionName != "*"))
-                            claims.DatabasePermissions.Add(new DatabasePermission("*", new List<AggregateReference>()));
-                    }
-                    else
-                    {
-                        foreach (var aggregateReference in role.ScopeReferences)
-                        {   
-                            //ADD OR MERGE AND TEST
-                        }
-                        claims.DatabasePermissions.Add(new DatabasePermission(SecurableOperations.READ, role.ScopeReferences));
-                        claims.DatabasePermissions.Add(new DatabasePermission(SecurableOperations.READPII, role.ScopeReferences));
-                        claims.DatabasePermissions.Add(new DatabasePermission(SecurableOperations.UPDATE, role.ScopeReferences));
-                        claims.DatabasePermissions.Add(new DatabasePermission(SecurableOperations.DELETE, role.ScopeReferences));
-                        claims.DatabasePermissions.Add(new DatabasePermission(SecurableOperations.CREATE, role.ScopeReferences));
-                    }
-                }
-            }
-
-            return Task.FromResult(claims);
+            return Task.FromResult(ClaimsExtractor.GetAppropriateClaimsFromAccessToken(securityInfo, identity, apiMessage));
         }
 
+      
         public Task<IIdaamProvider.User> GetLimitedUserProfileFromIdentityToken(string idToken)
         {
             var exists = this.identities.Any(x => x.Value.IdToken(this.bootstrapVariables.EncryptionKey) == idToken);
@@ -179,7 +129,7 @@ namespace Soap.Idaam
         {
             Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
 
-            this.identities[idaamProviderUserId].RoleInstances.RemoveAll(x => x.RoleKey == role.Key);
+            this.identities[idaamProviderUserId].Roles.RemoveAll(x => x.RoleKey == role.Key);
 
             return Task.CompletedTask;
         }
@@ -190,9 +140,9 @@ namespace Soap.Idaam
 
             var identity = this.identities[idaamProviderUserId];
 
-            Guard.Against(!identity.RoleInstances.Exists(x => x.RoleKey == role.Key), "User does not have the role the requested change is for");
+            Guard.Against(!identity.Roles.Exists(x => x.RoleKey == role.Key), "User does not have the role the requested change is for");
 
-            identity.RoleInstances.Single(x => x.RoleKey == role.Key).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
+            identity.Roles.Single(x => x.RoleKey == role.Key).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
 
             return Task.CompletedTask;
         }

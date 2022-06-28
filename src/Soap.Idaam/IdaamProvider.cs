@@ -21,11 +21,13 @@ namespace Soap.Idaam
     using Microsoft.IdentityModel.Protocols.OpenIdConnect;
     using Microsoft.IdentityModel.Tokens;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using RestSharp;
     using Soap.Config;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
+    using Soap.Utility.Enums;
     using Soap.Utility.Functions.Extensions;
     using Role = Soap.Interfaces.Role;
 
@@ -96,14 +98,21 @@ namespace Soap.Idaam
 
         public Task AddRoleToUser(string idaamProviderUserId, Role role, AggregateReference scopeReferenceToAdd)
         {
-            return AddRoleToUser(idaamProviderUserId, role, new List<AggregateReference>() { scopeReferenceToAdd });
+            if (scopeReferenceToAdd != null)
+            {
+                return AddRoleToUser(idaamProviderUserId, role, new List<AggregateReference>() { scopeReferenceToAdd });
+            }
+
+            return AddRoleToUser(idaamProviderUserId, role, (List<AggregateReference>)null);
         }
 
         public async Task AddRoleToUser(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd)
         {
             var client = await GetManagementApiClientCached();
+            
             var user = await client.Users.GetAsync(idaamProviderUserId);
-            AppMetaData appMetaData = user.AppMetadata ?? new AppMetaData();
+            
+            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
 
             scopeReferencesToAdd ??= new List<AggregateReference>();
             
@@ -132,16 +141,34 @@ namespace Soap.Idaam
                              idaamProviderUserId,
                              new UserUpdateRequest()
                              {
-                                 AppMetadata = appMetaData //TODO check if this merges at the right level i.e. replacing appMetaData.Roles each time
+                                 AppMetadata = appMetaData 
                              });
 
-            //* assign the Auth0 role
+            //* rate limiting!
+            var getRoleId = GetRoleId(client, role.AsAuth0Name(EnvVars.EnvironmentPartitionKey));
+            string roleId = await getRoleId;
+            
             await client.Users.AssignRolesAsync(
                 idaamProviderUserId,
                 new AssignRolesRequest()
                 {
-                    Roles = new[] { role.AsAuth0Name(EnvVars.EnvironmentPartitionKey) }
+                    Roles = new[] { roleId }
                 });
+
+        }
+        
+        //* assign the Auth0 role
+        static async Task<string> GetRoleId(ManagementApiClient client, string roleName)
+        {
+            var page = await client.Roles.GetAllAsync(
+                           new GetRolesRequest()
+                           {
+                               NameFilter = roleName
+                           });
+                
+            Guard.Against(page.Count > 1, "Duplicate RoleIds", ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
+                
+            return page.Single().Id;
         }
 
         public Task AddScopeToUserRole(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd)
@@ -301,9 +328,10 @@ namespace Soap.Idaam
         public async Task RemoveRoleFromUser(string idaamProviderUserId, Role roleToRemove)
         {
             var client = await GetManagementApiClientCached();
-
+            
+            
             var user = await client.Users.GetAsync(idaamProviderUserId);
-            AppMetaData appMetaData = user.AppMetadata ?? new AppMetaData();
+            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
 
             if (appMetaData.Roles.Exists(x => x.RoleKey == roleToRemove.Key))
             {
@@ -314,14 +342,19 @@ namespace Soap.Idaam
                 idaamProviderUserId,
                 new UserUpdateRequest()
                 {
-                    AppMetadata = appMetaData //TODO check if this merges at the right level i.e. replacing appMetaData.Roles each time
+                    AppMetadata = appMetaData 
                 });
 
+            
+            //* rate limiting!
+            var getRoleId = GetRoleId(client, roleToRemove.AsAuth0Name(EnvVars.EnvironmentPartitionKey));
+            var roleId = await getRoleId;
+            
             await client.Users.RemoveRolesAsync(
                 idaamProviderUserId,
                 new AssignRolesRequest()
                 {
-                    Roles = new[] { roleToRemove.AsAuth0Name(EnvVars.EnvironmentPartitionKey) }
+                    Roles = new[] { roleId }
                 });
         }
 
@@ -329,7 +362,7 @@ namespace Soap.Idaam
         {
             var client = await GetManagementApiClientCached();
             var user = await client.Users.GetAsync(idaamProviderUserId);
-            AppMetaData appMetaData = user.AppMetadata ?? new AppMetaData();
+            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
 
             Guard.Against(!appMetaData.Roles.Exists(x => x.RoleKey == role.Key), "User does not have the role the requested change is for");
             appMetaData.Roles.Single(x => x.RoleKey == role.Key).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
@@ -363,7 +396,6 @@ namespace Soap.Idaam
                 };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
-
                 
                 try
                 {
@@ -371,46 +403,12 @@ namespace Soap.Idaam
 
                     var principal = tokenHandler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
                     
-                    ExtractPermissionsFromClaims(principal, out var apiPermissionsAsStrings);
+                    GetRoles(principal, out IHaveRoles roleContainer);
 
-                    GetApiPermissions(apiPermissionsAsStrings.ToList(), securityInfo, out var apiPermissions);
-
-                    //TODO TODO
-                    GetRoles(out List<RoleInstance> roles);
+                    var identityPermissions = ClaimsExtractor.GetAppropriateClaimsFromAccessToken(securityInfo, roleContainer, apiMessage);
                     
-                    GetDbPermissionsList(roles, out var dbPermissions);
-
-                    CreateIdentityClaims(roles, apiPermissions, dbPermissions, out var identityPermissions);
-
                     return identityPermissions;
 
-                    static void CreateIdentityClaims(
-                        List<RoleInstance> roles,
-                        List<ApiPermission> apiPermissions,
-                        List<DatabasePermission> dbPermissions,
-                        out IdentityClaims permissions)
-                    {
-                        permissions = new IdentityClaims
-                        {
-                            Roles = roles,
-                            ApiPermissions = apiPermissions,
-                            DatabasePermissions = dbPermissions
-                        };
-                    }
-
-                    static void GetDbPermissionsList(
-                        List<RoleInstance> apiPermissions,
-                        out List<DatabasePermission> dbPermissions)
-                    {
-                        //USE RELEVANT ROLES ONLY TO GET THESE
-                        dbPermissions = new List<DatabasePermission>();
-                        //* when using SOAP 
-                        
-                        // dbPermissions.Add(new DatabasePermission(SecurableOperations.READ, new List<AggregateReference>(new []
-                        // {
-                        //     new AggregateReference()
-                        // })));
-                    }
                 }
                 catch (SecurityTokenExpiredException ex)
                 {
@@ -422,51 +420,16 @@ namespace Soap.Idaam
                 }
             }
             
-            static void ExtractPermissionsFromClaims(
-                ClaimsPrincipal principal,
-                out string[] apiPermissionsArray)
+
+            void GetRoles(ClaimsPrincipal claimsPrincipal, out IHaveRoles roleInstances)
             {
-                var permissionGroupsAsStrings =
-                    principal.Claims.Where(x => x.Type == "permissions").Select(x => x.Value).ToArray();
-
-                apiPermissionsArray = FilterToAppropriateEnvironmentPartition(permissionGroupsAsStrings);
-            }
-
-            static string[] FilterToAppropriateEnvironmentPartition(string[] permissions)
-            {
-                var key = EnvVars.EnvironmentPartitionKey;
-
-                var result = string.IsNullOrEmpty(key)
-                           ? permissions.Where(p => !p.Contains("::"))
-                           : permissions.Where(p => p.StartsWith(key));
-                
-                result = result.Select(RemoveEnvironmentPartitionKeyIfItExists);
-
-                return result.ToArray();
-                
-                static string RemoveEnvironmentPartitionKeyIfItExists(string x)
-                {
-                    //* removes "johndoedeveloper::" prefix
-                    return x.Replace(x.SubstringBefore("::"), string.Empty).Replace("::", string.Empty);
-                }
+                var claim = claimsPrincipal.Claims.Single(x => x.Type == "https://soap.idaam/app_metadata");
+                var jsonAppMetaData = claim.Value;
+                var metaData = JsonConvert.DeserializeObject<AppMetaData>(jsonAppMetaData);
+                roleInstances = metaData;
             }
             
-            void GetRoles(out List<RoleInstance> roleInstances)
-            {
-                throw new NotImplementedException();
-            }
             
-            static void GetApiPermissions(
-                List<string> apiPermissionsAsStrings,
-                ISecurityInfo securityInfo,
-                out List<ApiPermission> apiPermissions)
-            {
-                //* api permission format, "test/test"
-                
-                apiPermissions = securityInfo.ApiPermissions
-                                             .Where(pg => apiPermissionsAsStrings.Contains(pg.Value.ToLower()))
-                                             .ToList();
-            }
         }
 
         private 
@@ -979,9 +942,9 @@ namespace Soap.Idaam
             }
         }
 
-        public class AppMetaData
+        public class AppMetaData : IHaveRoles
         {
-            public List<RoleInstance> Roles { get; set; }
+            public List<RoleInstance> Roles { get; set; } = new List<RoleInstance>();
         }
 
 

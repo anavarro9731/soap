@@ -99,11 +99,14 @@
 
             eventToPublish.Validate();
             eventToPublish.RequiredNotNullOrThrow();
+            
+            SetPermissionsOnOutgoingMessage(eventToPublish, contextMessage, true /* event always published with service level authority */);
+            
             eventToPublish.Headers.SetTimeOfCreationAtOrigin();
             eventToPublish.Headers.SetMessageId(Guid.NewGuid());
             eventToPublish.Headers.SetTopic(eventToPublish.GetType().FullName);
             eventToPublish.Headers.SetSchema(eventToPublish.GetType().FullName);
-            eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish);
+            eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish,  this.bootstrapVariables.AuthLevel.ApiPermissionEnabled, !eventToPublish.GetType().HasAttribute<AuthorisationNotRequired>());
 
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
@@ -146,40 +149,8 @@
             commandToSend.Validate();
             commandToSend.RequiredNotNullOrThrow();
             commandToSend = commandToSend.Clone();
-            /* getServiceLevelAuthority could be expensive and it is cached, that's why we repeat the call below rather then getting to
-             a variable is to avoid making the call unnecessarily */
-
-            if (this.bootstrapVariables.AuthLevel.ApiPermissionEnabled)
-            {
-                switch (forceServiceLevelAuthority)
-                {
-                    case true:
-                        //* set identity chain
-                        var currentChain = contextMessage.Headers.GetIdentityChain();
-                        commandToSend.Headers.SetIdentityChain(
-                            currentChain switch
-                            {
-                                null => this.serviceLevelAuthority.IdentityChainSegment, //* context message could be an event, or auth disabled and not have a chain, etc
-                                _ => $"{currentChain},{this.serviceLevelAuthority.IdentityChainSegment}"
-                            });
-                        commandToSend.Headers.SetAccessToken(this.serviceLevelAuthority.AccessToken); 
-                        //* set identity token
-                        commandToSend.Headers.SetIdentityToken(this.serviceLevelAuthority.IdentityToken);
-                        break;
-                    
-                    case false:  
-                        
-                        /* there are a variety of cases where all of the following could be blank because the context message headers are blank, if they are blank (and they should all be blank or filled)
-                        then we use the Sla instead if the flag is set to allow that, the only time this would really make sense without the flag set, would be when a message marked with 
-                        [AuthorisationNotRequired] sent a command also marked with [AuthorisationNotRequired] */
-                        var useSlaWhenCurrentContextMissing = this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext;
-                        commandToSend.Headers.SetIdentityChain(contextMessage.Headers.GetIdentityChain() ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.IdentityChainSegment : null)); 
-                        commandToSend.Headers.SetAccessToken(contextMessage.Headers.GetAccessToken() ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.AccessToken : null));
-                        commandToSend.Headers.SetIdentityToken(contextMessage.Headers.GetIdentityToken() ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.IdentityToken : null));
-
-                        break;
-                }
-            }
+            
+            SetPermissionsOnOutgoingMessage(commandToSend, contextMessage, forceServiceLevelAuthority);
             
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
@@ -199,6 +170,49 @@
                     CommandToSend = commandToSend,
                     CommitClosure = async () => await BusClient.Send(commandToSend, scheduledAt)
                 });
+        }
+
+        private void SetPermissionsOnOutgoingMessage<TMessage, TContextMessage>(
+            TMessage commandToSend,
+            TContextMessage contextMessage,
+            bool forceServiceLevelAuthority) where TMessage : ApiMessage where TContextMessage : ApiMessage
+        {
+            if (this.bootstrapVariables.AuthLevel.ApiPermissionEnabled)
+            {
+                switch (forceServiceLevelAuthority)
+                {
+                    case true:
+                        //* set identity chain
+                        var currentChain = contextMessage.Headers.GetIdentityChain();
+                        commandToSend.Headers.SetIdentityChain(
+                            currentChain switch
+                            {
+                                null => this.serviceLevelAuthority
+                                            .IdentityChainSegment, //* context message could be an event, or auth disabled and not have a chain, etc
+                                _ => $"{currentChain},{this.serviceLevelAuthority.IdentityChainSegment}"
+                            });
+                        commandToSend.Headers.SetAccessToken(this.serviceLevelAuthority.AccessToken);
+                        //* set identity token
+                        commandToSend.Headers.SetIdentityToken(this.serviceLevelAuthority.IdentityToken);
+                        break;
+
+                    case false:
+
+                        /* there are a variety of cases where all of the following could be blank because the context message headers are blank, if they are blank (and they should all be blank or filled)
+                        then we use the Sla instead if the flag is set to allow that, the only time this would really make sense without the flag set, would be when a message marked with 
+                        [AuthorisationNotRequired] sent a command also marked with [AuthorisationNotRequired] */
+                        var useSlaWhenCurrentContextMissing = this.bootstrapVariables.UseServiceLevelAuthorityInTheAbsenceOfASecurityContext;
+                        commandToSend.Headers.SetIdentityChain(
+                            contextMessage.Headers.GetIdentityChain()
+                            ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.IdentityChainSegment : null));
+                        commandToSend.Headers.SetAccessToken(
+                            contextMessage.Headers.GetAccessToken() ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.AccessToken : null));
+                        commandToSend.Headers.SetIdentityToken(
+                            contextMessage.Headers.GetIdentityToken() ?? (useSlaWhenCurrentContextMissing ? this.serviceLevelAuthority.IdentityToken : null));
+
+                        break;
+                }
+            }
         }
 
         private async Task IfLargeMessageSaveToBlobStorage<T>(T message) where T : ApiMessage

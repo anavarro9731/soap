@@ -7,6 +7,7 @@
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.PfBase.Logic.ProcessesAndOperations;
 
     public class P205_C100__RespondToPing : Process, IBeginProcess<C100v1_Ping>
@@ -16,7 +17,8 @@
                 {
                 {
                     var pongedBy = Meta.UserProfileOrNull?.IdaamProviderId;
-                    if (Meta.AuthLevel.DatabasePermissionEnabled)
+                    var isServiceIdentity = message.Headers.GetIdentityChain().StartsWith("service-identity") && Meta.UserProfileOrNull == null;
+                    if (Meta.AuthLevel.DatabasePermissionEnabled && !isServiceIdentity)
                     {
                         var myProfile = Meta.AuthLevel switch
                         {
@@ -25,7 +27,6 @@
                                                                                                   op => op.AuthoriseFor(Meta.IdentityClaimsOrNull)))
                                 .Single(),
 
-                            
                             { } when Meta.AuthLevel == AuthLevel.ApiAndAutoDbAuth => (await DataReader.Read<UserProfile>(
                                                                                           x => x.IdaamProviderId == pongedBy)).Single(),
                             _ => throw new ArgumentOutOfRangeException()
