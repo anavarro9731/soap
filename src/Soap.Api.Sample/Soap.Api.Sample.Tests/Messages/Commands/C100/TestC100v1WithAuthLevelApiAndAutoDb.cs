@@ -3,17 +3,14 @@
 namespace Soap.Api.Sample.Tests.Messages.Commands.C100
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
-    using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
     using DataStore.Options;
     using FluentAssertions;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context.Exceptions;
-    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.PfBase.Tests;
     using Soap.Utility.Functions.Extensions;
@@ -43,28 +40,28 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         [Fact]
         public void ItShouldSucceedIfAuthIsEnabledAndTheUserDoesHavePermissionsToThisData()
         {
-            
             Setup();
-            
+
             var identityToUse = Identities.WithApiPermissions;
 
-            TestMessage(Commands.Ping, identityToUse, authLevel: AuthLevel.ApiAndAutoDbAuth, dataStoreOptions: 
-                DataStoreOptions.Create().WithSecurity(ScopeHierarchy.Create().WithScopeLevel<Tenant>(
-                x => Guid.Empty).WithScopeLevel<UserProfile>(x => x.TenantId.GetValueOrDefault())), beforeRunHook: (args =>
-                            {
-                                var tenantReference = new AggregateReference(this.tenantId, typeof(Tenant).FullName);
-                            
-                                foreach (var roleInstance in identityToUse.RoleInstances)
-                                {
-                                    args.IdaamProvider.AddScopeToUserRole(
-                                        identityToUse.UserProfile.IdaamProviderId,
-                                        new SecurityInfo().BuiltInRoles.Single(x => x.Key == roleInstance.RoleKey),
-                                        tenantReference);
-                                }
-                            
-                                return Task.CompletedTask;
-                            
-                            }, default)).Wait();
+            TestMessage(
+                    Commands.Ping,
+                    identityToUse,
+                    authLevel: AuthLevel.ApiAndAutoDbAuth,
+                    beforeRunHook: (args =>
+                                           {
+                                           
+                                           var tenantReference = new AggregateReference(this.tenantId, typeof(Tenant).FullName);
+
+                                           foreach (var roleInstance in identityToUse.Roles)
+                                               args.IdaamProvider.AddScopeToUserRole(
+                                                   identityToUse.UserProfile.IdaamProviderId,
+                                                   new SecurityInfo().BuiltInRoles.Single(x => x.Key == roleInstance.RoleKey),
+                                                   tenantReference);
+
+                                           return Task.CompletedTask;
+                                           }, default))
+                .Wait();
 
             Result.Success.Should().BeTrue();
         }
@@ -80,7 +77,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
 
             //* add the user profile we will look for in P205 scoped to the tenant
             var userProfile = Identities.WithApiPermissions.UserProfile.As<UserProfile>().Op(p => p.TenantId = this.tenantId);
-            
+
             SetupTestByAddingADatabaseEntry(userProfile);
         }
     }

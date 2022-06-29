@@ -19,7 +19,6 @@ Other Changes:
 # BackLog
 
 - L1
-    - full RBAC
     - Custom Domain and CDN and GoLive Scripts - Create script to set LIVE config variables and swap Release with LIVE (e.g. Run -InstallProd (from release branch))
       Adding a Special Flag or Tag to Denote builds that were sent to production (which will need new Run -InstallProd switch which runs az slot swap and tags so when your looking at the release branch you can see which version went to production)
     - recovery mode handler

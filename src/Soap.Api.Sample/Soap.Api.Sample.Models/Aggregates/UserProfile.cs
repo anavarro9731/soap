@@ -9,7 +9,7 @@
     {
         [ScopeObjectReference(typeof(Tenant))]
         public Guid? TenantId { get; set; }
-
+        
         public string IdaamProviderId { get; set; }
 
         public string Email { get; set; }

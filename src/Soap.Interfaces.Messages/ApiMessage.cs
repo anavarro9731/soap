@@ -92,7 +92,7 @@
             */
         }
 
-        public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message)
+        public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message, bool authEnabled, bool eventRequiresAuth)
         {
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -103,6 +103,15 @@
 
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
 
+            
+            if (authEnabled && eventRequiresAuth)
+            {
+                Ensure(
+                    messageHeaders.GetIdentityChain() != null,
+                    "All inter-service outgoing events from a service must have an identity chain header if auth is enabled and the message is not exempted from authorisation");
+            }
+
+            
             if (messageHeaders.GetSessionId() != null)
             {
                 Ensure(
@@ -118,7 +127,7 @@
 
             /* NOT SET
             identity token optionally present, some message are anonymous though most aren't
-            identitychain only present on commands
+            identitychain should always be present on inter-service events, as there is always at least one identifiable party, the service
             access token not present on events            
             stateful process id optionally present when stateful process is involved    
             queue name n/a
@@ -165,10 +174,6 @@
             if (messageHeaders.GetIdentityToken() != null || messageHeaders.GetAccessToken() != null || messageHeaders.GetIdentityChain() != null)
             {
                 Ensure(
-                    msg is ApiCommand,
-                    $"All incoming messages with auth headers (accesstoken, identitytoken, identitychain) can only be commands");
-
-                Ensure(
                     messageHeaders.GetAccessToken() != null && messageHeaders.GetIdentityChain() != null && messageHeaders.GetIdentityToken() != null,
                     $"If providing auth headers (accesstoken, identitytoken, identitychain) you must set all 3");
             }
@@ -178,7 +183,7 @@
             //* not validated
             //* identity token optionally present, some message are anonymous though most aren't
             //* access token optionally present, some messages are anonymous
-            //* identitychain optionally present, only set on commands with an identity
+            //* identitychain optionally present, only set on messages with an identity
             //* stateful process id optionally present when stateful process is involved    
             //* queue name not relevant anymore
             //* topic not relevant anymore

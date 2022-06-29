@@ -18,6 +18,7 @@
     using Soap.Api.Sample.Messages.Events;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Config;
+    using Soap.Interfaces.Messages;
     using Soap.PfBase.Api.Functions;
 
     public static class BuiltIn
@@ -42,7 +43,7 @@
                 signalRBinding,
                 new SecurityInfo(),
                 log, 
-                new []{new C101v1_UpgradeTheDatabase(ReleaseVersions.V1)});
+                new ApiCommand[]{new C101v1_UpgradeTheDatabase(ReleaseVersions.V1), new C115v1_OnStartup()});
 
         [FunctionName("GetBlob")]
         public static async Task<IActionResult> GetBlob(
@@ -82,7 +83,7 @@
             ILogger log) =>
             await PlatformFunctions.HandleMessage<UserProfile>(req, new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log);
 
-        
+        //* benefit of using the BUS over HTTP is 1. its durable. 2. you don't have to wait for the message processing to complete to get a 200 OK.
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
             [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus")]

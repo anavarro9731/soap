@@ -8,7 +8,8 @@ import config from '../soap/config'
 
 export const Login = (props) => {
 
-    const audience = config.vars.audience;
+    
+    const audience = config.auth0.audience;
 
     const {
         isLoading,

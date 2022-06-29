@@ -1,7 +1,8 @@
-namespace Soap.Api.Sample.Afs.Security
+namespace Soap.Api.Sample.Afs
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Soap.Api.Sample.Afs.Security;
     using Soap.Interfaces;
     using Soap.Utility.Functions.Extensions;
 

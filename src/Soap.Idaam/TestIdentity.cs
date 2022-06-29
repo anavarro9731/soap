@@ -7,7 +7,7 @@ namespace Soap.Idaam
     using Soap.Utility;
     using Soap.Utility.Functions.Operations;
 
-    public class TestIdentity
+    public class TestIdentity : IHaveRoles
     {
         /* Using concurrent static dictionaries for the tokens associated to each identity ensure you receive the same id and access tokens
          for the same user, no matter how many instances you create. This is to compensate for the fact that Aesops.Encrypt will for the 
@@ -19,11 +19,11 @@ namespace Soap.Idaam
         
         private static readonly ConcurrentDictionary<string, string> cache_idTokens = new ConcurrentDictionary<string, string>();
 
-        public TestIdentity(List<RoleInstance> roleInstances, IUserProfile userProfile)
+        public TestIdentity(List<RoleInstance> roles, IUserProfile userProfile)
         {
-            Guard.Against(roleInstances == null || userProfile == null, $"{nameof(roleInstances)} and {nameof(userProfile)} must both be provided");
+            Guard.Against(roles == null || userProfile == null, $"{nameof(roles)} and {nameof(userProfile)} must both be provided");
 
-            RoleInstances = roleInstances;
+            Roles = roles;
             UserProfile = userProfile;
         }
 
@@ -38,7 +38,7 @@ namespace Soap.Idaam
 
         public string IdChainSegment => $"{AuthSchemePrefixes.User}://" + UserProfile.Email;
 
-        public List<RoleInstance> RoleInstances { get; }
+        public List<RoleInstance> Roles { get; }
 
         public IUserProfile UserProfile { get; }
 

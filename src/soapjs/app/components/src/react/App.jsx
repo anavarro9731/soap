@@ -70,7 +70,7 @@ export function App(props) {
                 return (<Auth0Provider
                     domain={config.auth0.tenantDomain}
                     clientId={config.auth0.uiAppId}
-                    audience={config.vars.audience}
+                    audience={config.auth0.audience}
                     redirectUri={config.auth0.redirectUri}
                     onRedirectCallback={onRedirectCallback}
                     useRefreshTokens={true}

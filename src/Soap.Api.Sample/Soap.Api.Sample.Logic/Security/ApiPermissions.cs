@@ -11,7 +11,10 @@ namespace Soap.Api.Sample.Afs.Security
     {
         /* Beware changing any of these keys will result in removing the permission, if anyone has assigned
         permissions directly in Auth0 which they really shouldn't do, or in the case of custom roles, any replacement
-        permission will be missing */
+        permission will be missing
+        
+        The pattern for permission keys is data/operation.
+         */
 
         public static readonly ApiPermission PingPong__Execute = new ApiPermission("ping-pong/execute", "Ping Pong: Execute")
         {
@@ -21,6 +24,20 @@ namespace Soap.Api.Sample.Afs.Security
                 nameof(C100v1_Ping),
                 nameof(C103v1_StartPingPong),
                 nameof(E100v1_Pong)
+            }
+        };
+        
+        public static readonly ApiPermission HealthCheck__Execute = new ApiPermission("health-check/execute", "Health Check: Execute")
+        {
+            Description = "Required for Health Check",
+            DeveloperPermissions = new List<string>
+            {
+                nameof(C100v1_Ping),
+                nameof(E100v1_Pong),
+                nameof(C105v1_SendLargeMessage),
+                nameof(C101v1_UpgradeTheDatabase),
+                nameof(C106v1_LargeCommand),
+                nameof(C115v1_OnStartup)
             }
         };
 

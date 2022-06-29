@@ -35,6 +35,8 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
 
         protected BusWrapper Bus => new BusWrapper(context.Bus, this.Id, context.Message);
 
+        protected IIdaamProvider IDAAM => this.context.IdaamProvider;
+        
         protected IDataStoreReadOnly DataReader => context.DataStore.AsReadOnly();
 
         protected ILogger Logger => context.Logger;

@@ -5,6 +5,6 @@ namespace Soap.Api.Sample.Models.Aggregates
     [BypassSecurity(SecurableOperations.READ)]
     public class Tenant : Aggregate
     {
-        public string Name { get; set; } 
+        public string Name { get; set; }
     }
 }

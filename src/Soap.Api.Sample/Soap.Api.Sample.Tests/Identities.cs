@@ -43,9 +43,8 @@
                                               /* IN PRODUCTION CODE THIS WOULD BE POPULATED
                                                AND THE DATABASE PERMISSIONS WOULD ALWAYS BE POPULATED
                                                FROM THIS. SINCE WE DON'T KNOW WHAT POSSIBLE DATA WILL
-                                               BE THERE IN THE TEST WE ADD A WILDCARD PERMISSION USING
-                                               A SPECIALIDS */
-                                              new AggregateReference(Ids.UseDbPermissionScopeWildcard)
+                                               BE THERE IN THE TEST WE USE THE PERMISSION WILDCARD */
+                                              new AggregateReference(Guid.Empty, "Any", "*")
                                           }
                                       })
                                   .ToList(),
