@@ -15,6 +15,5 @@
 
         public static readonly Guid JaneDoeWithNoPermissions = Guid.NewGuid();
         
-        public static readonly Guid UseDbPermissionScopeWildcard = Guid.Parse("1EEAF9CB-A2BE-4A08-A5E0-330C63D1D81F");
     }
 }

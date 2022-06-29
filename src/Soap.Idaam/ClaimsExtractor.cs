@@ -44,9 +44,9 @@ namespace Soap.Idaam
                      would be the readPII which they have no way of specifying from the callsite. Possible we could make this
                      something they could set as another argument when they add the rolescope in future but only for ReadPII or
                      you start to introduce confusion between the two approaches */
-                    if (role.ScopeReferences.Any(s => s.AggregateId == Guid.Parse("1EEAF9CB-A2BE-4A08-A5E0-330C63D1D81F")))
+                    if (role.ScopeReferences.Any(s => s.AggregateType == "Any" && s.DebugId == "*"))
                     {
-                        if (claims.DatabasePermissions.TrueForAll(p => p.PermissionName != "*"))
+                        if (claims.DatabasePermissions.TrueForAll(p => p.PermissionName != "*")) //* not already there
                         {
                             claims.DatabasePermissions.Add(new DatabasePermission("*", new List<AggregateReference>()));
                         }

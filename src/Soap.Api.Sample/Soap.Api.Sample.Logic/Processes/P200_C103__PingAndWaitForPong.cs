@@ -39,6 +39,7 @@
                         C000_PingedAt = DateTime.UtcNow, C000_PingedBy = nameof(P200_C103__PingAndWaitForPong)
                     };
                     pingCommand.Headers.SetMessageId(Guid.NewGuid());
+                    
 
                     await Bus.Send(pingCommand);
                     return pingCommand;

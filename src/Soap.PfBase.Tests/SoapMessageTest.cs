@@ -155,7 +155,7 @@ namespace Soap.PfBase.Tests
             
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 
-            if (msg is ApiCommand && identity != null && msg.Headers.GetIdentityChain() == null)
+            if (identity != null && msg.Headers.GetIdentityChain() == null)
             {
                 msg.Headers.SetIdentityChain(identity.IdChainSegment);
                 msg.Headers.SetIdentityToken(identity.IdToken(new TestConfig().EncryptionKey));

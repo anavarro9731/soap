@@ -54,7 +54,7 @@ namespace Soap.Idaam
                     Guard.Against(
                         shouldAuthorise && (message.Headers.GetIdentityChain() == null || message.Headers.GetIdentityToken() == null
                                                                                        || message.Headers.GetAccessToken() == null),
-                        "All Authorisation headers not provided but message is not exempt from authorisation",
+                        "Required Authorisation headers not provided but message is not exempt from authorisation",
                         "A Security policy violation is preventing this action from succeeding S01");
 
                     Guard.Against(
