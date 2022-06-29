@@ -112,7 +112,7 @@ namespace Soap.Idaam
             
             var user = await client.Users.GetAsync(idaamProviderUserId);
             
-            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
+            AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
             scopeReferencesToAdd ??= new List<AggregateReference>();
             
@@ -183,7 +183,6 @@ namespace Soap.Idaam
 
         public async Task<string> AddUser(IIdaamProvider.AddUserArgs args)
         {
-            
             var client = await GetManagementApiClientCached();
 
             var result = await client.Users.CreateAsync(
@@ -199,6 +198,7 @@ namespace Soap.Idaam
                                  VerifyEmail = args.VerifyEmail,
                                  Connection = this.config.Auth0NewUserConnection,
                              });
+            
             return result.UserId;
         }
 
@@ -331,7 +331,7 @@ namespace Soap.Idaam
             
             
             var user = await client.Users.GetAsync(idaamProviderUserId);
-            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
+            AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
             if (appMetaData.Roles.Exists(x => x.RoleKey == roleToRemove.Key))
             {
@@ -362,7 +362,7 @@ namespace Soap.Idaam
         {
             var client = await GetManagementApiClientCached();
             var user = await client.Users.GetAsync(idaamProviderUserId);
-            AppMetaData appMetaData = ((JObject)user.AppMetadata).ToObject<AppMetaData>() ?? new AppMetaData();
+            AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
             Guard.Against(!appMetaData.Roles.Exists(x => x.RoleKey == role.Key), "User does not have the role the requested change is for");
             appMetaData.Roles.Single(x => x.RoleKey == role.Key).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
@@ -495,7 +495,14 @@ namespace Soap.Idaam
 
         static string GetUiAppName(string apiName, out string appName) => appName = $"{apiName}.ui";
 
-        static void GetApiId(ApplicationConfig applicationConfig, out string apiId) => apiId = applicationConfig.FunctionAppHostUrlWithTrailingSlash;
+        public string GetApiClient()
+        {
+            GetApiId(this.config, out var id);
+            return id;
+        }
+        
+        //* this needs to use function app host because the scheme HTTP/HTTPS has to match the environment
+        static void GetApiId(ApplicationConfig applicationConfig, out string apiId) => apiId = applicationConfig.FunctionAppHostUrlWithTrailingSlash + applicationConfig.AppId;
 
         /* admin token for making calls to our API
          depending on your Auth0plan, these can be limited in number you can acquire without incurring extra costs

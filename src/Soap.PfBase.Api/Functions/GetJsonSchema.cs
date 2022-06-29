@@ -56,7 +56,9 @@ namespace Soap.PfBase.Api.Functions
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
                     var idaamProvider = new IdaamProvider(appConfig);
                     var applicationClientId = await idaamProvider.GetUiApplicationClientId(messagesAssembly);
+                    var apiId = idaamProvider.GetApiClient();
                     AddHeader(req, "Auth0-UI-Application-ClientId", applicationClientId);
+                    AddHeader(req, "Auth0-UI-Api-ClientId", apiId);
                     AddHeader(req, "Auth0-Redirect-Uri", appConfig.CorsOrigin);
                 }
 

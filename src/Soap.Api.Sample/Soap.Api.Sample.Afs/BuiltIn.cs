@@ -83,7 +83,7 @@
             ILogger log) =>
             await PlatformFunctions.HandleMessage<UserProfile>(req, new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log);
 
-        
+        //* benefit of using the BUS over HTTP is 1. its durable. 2. you don't have to wait for the message processing to complete to get a 200 OK.
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
             [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus")]

@@ -44,11 +44,9 @@ namespace Soap.Interfaces
             public string LastName { get; set; }
         }
 
-        public record AddUserArgs(IUserProfile Profile, string Password)
+        public record AddUserArgs(IUserProfile Profile, string Password, bool EmailVerified)
         {
             public bool Blocked { get; init; } = default;
-
-            public bool EmailVerified { get; init; } = default;
 
             public bool VerifyEmail { get; init; } = true;
         }

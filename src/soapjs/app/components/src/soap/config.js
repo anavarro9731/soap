@@ -120,6 +120,7 @@ async function loadConfigState() {
                 if (auth0Enabled) {
                     auth0Info = {
                         uiAppId: response.headers.get('Auth0-UI-Application-ClientId'),
+                        audience: response.headers.get('Auth0-UI-Api-ClientId'),
                         tenantDomain: response.headers.get('Auth0-Tenant-Domain'),
                         redirectUri: response.headers.get('Auth0-Redirect-Uri'),
                         isAuthenticated: false,
@@ -331,7 +332,6 @@ function vars() {
 
     return {
         functionAppRoot,
-        audience: functionAppRoot + '/',
         appInsightsKey,
         serviceBusConnectionString,
         blobStorageUri,
