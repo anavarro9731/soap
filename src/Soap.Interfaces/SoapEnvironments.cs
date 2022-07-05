@@ -19,9 +19,11 @@
     public class AuthLevel : TypedEnumeration<AuthLevel>
     {
         /// <summary>
-        /// No checks are performed on any data or api commands. Any security must be done manually.
+        /// There is no authentication or authorisation.
         /// </summary>
-        public static AuthLevel CheckNothing = Create("NONE", nameof(AuthLevel));
+        public static AuthLevel None = Create("NONE", nameof(AuthLevel));
+        
+        public static AuthLevel AuthenticateOnly = Create("AUTHENTICATE-ONLY", nameof(AuthenticateOnly));
         
         /// <summary>
         /// You might use this in a single tenant scenario where you don't need to check
@@ -31,7 +33,7 @@
         /// a single tenant but you would have to check the relationship of the users scopes
         /// to the underlying data through custom code not using DataStore's builtin security apparatus.
         /// </summary>
-        public static AuthLevel ApiPermissionOnly = Create("API", nameof(AuthLevel));
+        public static AuthLevel AuthoriseApiPermissions = Create("AUTHORISE-API", nameof(AuthoriseApiPermissions));
 
         /// <summary>
         /// You might use this in a multi-tenanted scenario where you want to be able to authorise
@@ -50,7 +52,7 @@
         /// This AuthLevel will also enable API level permissions that will validate incoming messages
         /// against the permissions in the user's role. 
         /// </summary>
-        public static AuthLevel ApiAndDatabasePermission = Create("API+DB", nameof(AuthLevel));
+        public static AuthLevel AuthoriseApiAndDatabasePermissionsOptIn = Create("AUTHORISE-API+DBOPTIN", nameof(AuthoriseApiAndDatabasePermissionsOptIn));
         
         /// <summary>
         /// You would use this in a scenario where you want to use Roles with Role Scopes to control
@@ -64,7 +66,7 @@
         /// This will also enable API level permissions that will validate incoming messages
         /// against the permissions in the user's role.
         /// </summary>
-        public static AuthLevel ApiAndAutoDbAuth = Create("API+AUTODB", nameof(AuthLevel));
+        public static AuthLevel AuthoriseApiAndDatabasePermissionsOptOut = Create("API+DBOPTOUT", nameof(AuthoriseApiAndDatabasePermissionsOptOut));
         
         
         /*
@@ -75,12 +77,16 @@
          * In any cases where ApiPermissionEnabled == true you may use Meta.UserHasPermission or Meta.UserHasPermissionWithScope to make checks on CustomerDeveloperPermissions.
          */
 
-        public bool ApiPermissionEnabled =>
-            this == ApiPermissionOnly || this == ApiAndDatabasePermission 
-            || this == ApiAndAutoDbAuth;
+        public bool Enabled => this != None;
+        
+        public bool AuthenticationRequired => ApiPermissionsRequired || this == AuthenticateOnly; 
 
-        public bool DatabasePermissionEnabled =>
-            this == ApiAndDatabasePermission 
-            || this == ApiAndAutoDbAuth;
+        public bool ApiPermissionsRequired =>
+            this == AuthoriseApiPermissions || this == AuthoriseApiAndDatabasePermissionsOptIn 
+            || this == AuthoriseApiAndDatabasePermissionsOptOut;
+
+        public bool DatabasePermissionRequired =>
+            this == AuthoriseApiAndDatabasePermissionsOptIn 
+            || this == AuthoriseApiAndDatabasePermissionsOptOut;
     }
 }

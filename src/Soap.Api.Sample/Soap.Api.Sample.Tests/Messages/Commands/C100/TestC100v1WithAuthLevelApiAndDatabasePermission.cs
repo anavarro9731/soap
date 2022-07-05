@@ -26,7 +26,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         [Fact]
         public void ItShouldFailIfAuthIsEnabledAndTheUserDoesNotHavePermissionsToThisData()
         {
-            TestMessage(Commands.Ping, Identities.WithApiPermissions, authLevel:AuthLevel.ApiAndDatabasePermission).Wait();
+            TestMessage(Commands.Ping, Identities.WithApiPermissions, authLevel:AuthLevel.AuthoriseApiAndDatabasePermissionsOptIn).Wait();
             
             Result.Success.Should().BeFalse();
             Result.UnhandledError.Should().BeOfType<FormattedExceptionInfo.PipelineException>();
@@ -37,7 +37,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         [Fact]
         public void ItShouldSuccedIfAuthIsEnabledAndTheUserDoesHavePermissionsToThisData()
         {
-            TestMessage(Commands.Ping, Identities.JohnDoeAllPermissions, authLevel:AuthLevel.ApiAndDatabasePermission).Wait();
+            TestMessage(Commands.Ping, Identities.JohnDoeAllPermissions, authLevel:AuthLevel.AuthoriseApiAndDatabasePermissionsOptIn).Wait();
             
             Result.Success.Should().BeTrue();
 

@@ -45,14 +45,15 @@ namespace Soap.Idaam
                 IdentityClaims identityClaimsInternal = null;
                 IUserProfile userProfileInternal = null;
 
+                var shouldAuthenticate = applicationConfig.AuthLevel.AuthenticationRequired;
                 var shouldAuthorise = IsSubjectToAuthorisation(message, applicationConfig);
 
                 /* if you don't authorise the message, you don't attempt to authenticate the user either.
                  however, just because you authenticate doesn't mean you always return a user profile, services and tests don't have them */
-                if (shouldAuthorise)
+                if (shouldAuthenticate)
                 {
                     Guard.Against(
-                        shouldAuthorise && (message.Headers.GetIdentityChain() == null || message.Headers.GetIdentityToken() == null
+                        (message.Headers.GetIdentityChain() == null || message.Headers.GetIdentityToken() == null
                                                                                        || message.Headers.GetAccessToken() == null),
                         "Required Authorisation headers not provided but message is not exempt from authorisation",
                         "A Security policy violation is preventing this action from succeeding S01");
@@ -91,22 +92,27 @@ namespace Soap.Idaam
                         v => identityClaimsInternal = v,
                         v => userProfileInternal = v);
 
-                    if (message is MessageFailedAllRetries m)
+                    if (shouldAuthorise)
                     {
-                        message.Validate();
-                        var nameOfFailedMessage = Type.GetType(m.TypeName).Name;
+                        if (message is MessageFailedAllRetries m)
+                        {
+                            message.Validate();
+                            var nameOfFailedMessage = Type.GetType(m.TypeName).Name;
 
-                        Guard.Against(
-                            identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions).Contains(nameOfFailedMessage),
-                            AuthErrorCodes.NoApiPermissionExistsForThisMessage,
-                            "A Security policy violation is preventing this action from succeeding S04");
-                    }
-                    else
-                    {
-                        Guard.Against(
-                            identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions).Contains(message.GetType().Name),
-                            AuthErrorCodes.NoApiPermissionExistsForThisMessage,
-                            "A Security policy violation is preventing this action from succeeding S04");
+                            Guard.Against(
+                                identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions)
+                                                                                         .Contains(nameOfFailedMessage),
+                                AuthErrorCodes.NoApiPermissionExistsForThisMessage,
+                                "A Security policy violation is preventing this action from succeeding S04");
+                        }
+                        else
+                        {
+                            Guard.Against(
+                                identityClaimsInternal == null || !identityClaimsInternal.ApiPermissions.SelectMany(x => x.DeveloperPermissions)
+                                                                                         .Contains(message.GetType().Name),
+                                AuthErrorCodes.NoApiPermissionExistsForThisMessage,
+                                "A Security policy violation is preventing this action from succeeding S05");
+                        }
                     }
                 }
 
@@ -121,7 +127,9 @@ namespace Soap.Idaam
             {
                 var messageType = m.GetType();
 
-                return applicationConfig.AuthLevel.ApiPermissionEnabled && !messageType.HasAttribute<AuthorisationNotRequired>();
+                var messageIsExempt = messageType.HasAttribute<AuthorisationNotRequired>();
+                
+                return applicationConfig.AuthLevel.ApiPermissionsRequired && !messageIsExempt;
             }
 
             static async Task SaveOrUpdateUserProfileInDb<TUserProfileMethodLevel>(TUserProfileMethodLevel userProfile, DataStore dataStore)

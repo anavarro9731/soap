@@ -267,7 +267,7 @@
                 dataStoreOptions ??= DataStoreOptions.Create();
                 dataStoreOptions.SpecifyUnitOfWorkId(messageId);
 
-                if (applicationConfig.AuthLevel.DatabasePermissionEnabled && dataStoreOptions.Security == null)
+                if (applicationConfig.AuthLevel.DatabasePermissionRequired && dataStoreOptions.Security == null)
                 {
                     dataStoreOptions = dataStoreOptions.WithSecurity();
                 }

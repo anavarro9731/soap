@@ -151,7 +151,7 @@ namespace Soap.PfBase.Tests
                                                               
         {
             
-            authLevel ??= AuthLevel.ApiAndDatabasePermission;
+            authLevel ??= AuthLevel.AuthoriseApiAndDatabasePermissionsOptIn;
             
             msg = msg.Clone(); //* ensure changes to this after this call cannot affect the call, that includes previous runs affecting retries or calling test code
 

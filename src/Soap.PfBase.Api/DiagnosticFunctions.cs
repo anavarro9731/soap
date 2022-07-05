@@ -193,7 +193,7 @@
                         }
                     }
 
-                    static bool ConfigIsEnabledForAuth0Integration(ApplicationConfig applicationConfig) => applicationConfig.AuthLevel.ApiPermissionEnabled;
+                    static bool ConfigIsEnabledForAuth0Integration(ApplicationConfig applicationConfig) => applicationConfig.AuthLevel.Enabled;
                 }
             }
         }

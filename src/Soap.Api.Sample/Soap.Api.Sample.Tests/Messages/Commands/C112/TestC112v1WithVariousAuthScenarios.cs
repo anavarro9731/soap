@@ -113,7 +113,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C112
                             }),
                     identity: testIdentity,
                     enableSlaWhenSecurityContextIsMissing: enableSlaWhenSecurityContextIsAbsent,
-                    authLevel: disableAuth ? AuthLevel.CheckNothing : AuthLevel.ApiAndDatabasePermission).Wait();
+                    authLevel: disableAuth ? AuthLevel.None : AuthLevel.AuthoriseApiAndDatabasePermissionsOptIn).Wait();
         }
     }
 }

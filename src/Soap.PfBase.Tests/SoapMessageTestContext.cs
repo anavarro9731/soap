@@ -337,7 +337,7 @@
                 out DataStore dataStore)
             {
                 dataStoreOptions = dataStoreOptions?.SpecifyUnitOfWorkId(unitOfWorkId) ?? DataStoreOptions.Create().SpecifyUnitOfWorkId(unitOfWorkId);
-                if (applicationConfig.AuthLevel.DatabasePermissionEnabled && dataStoreOptions.Security == null) dataStoreOptions.WithSecurity();
+                if (applicationConfig.AuthLevel.DatabasePermissionRequired && dataStoreOptions.Security == null) dataStoreOptions.WithSecurity();
                 
                 dataStore = new DataStore(rollingRepo, messageAggregator, dataStoreOptions);
             }

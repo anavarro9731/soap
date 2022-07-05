@@ -106,7 +106,7 @@
             eventToPublish.Headers.SetMessageId(Guid.NewGuid());
             eventToPublish.Headers.SetTopic(eventToPublish.GetType().FullName);
             eventToPublish.Headers.SetSchema(eventToPublish.GetType().FullName);
-            eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish,  this.bootstrapVariables.AuthLevel.ApiPermissionEnabled, !eventToPublish.GetType().HasAttribute<AuthorisationNotRequired>());
+            eventToPublish.Headers.CheckHeadersOnOutgoingEvent(eventToPublish,  this.bootstrapVariables.AuthLevel.AuthenticationRequired, !eventToPublish.GetType().HasAttribute<AuthorisationNotRequired>());
 
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(eventToPublish);
@@ -154,7 +154,7 @@
             
             commandToSend.Headers.SetTimeOfCreationAtOrigin();
             commandToSend.Headers.SetMessageId(Guid.NewGuid());
-            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthLevel.ApiPermissionEnabled, !commandToSend.GetType().HasAttribute<AuthorisationNotRequired>(), this.envPartitionKey);
+            commandToSend.Headers.CheckHeadersOnOutgoingCommand(commandToSend, this.bootstrapVariables.AuthLevel.AuthenticationRequired, !commandToSend.GetType().HasAttribute<AuthorisationNotRequired>(), this.envPartitionKey);
             //* make all checks first
             await IfLargeMessageSaveToBlobStorage(commandToSend);
 
@@ -177,7 +177,7 @@
             TContextMessage contextMessage,
             bool forceServiceLevelAuthority) where TMessage : ApiMessage where TContextMessage : ApiMessage
         {
-            if (this.bootstrapVariables.AuthLevel.ApiPermissionEnabled)
+            if (this.bootstrapVariables.AuthLevel.AuthenticationRequired)
             {
                 switch (forceServiceLevelAuthority)
                 {

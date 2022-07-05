@@ -18,16 +18,16 @@
                 {
                     var pongedBy = Meta.UserProfileOrNull?.IdaamProviderId;
                     var isServiceIdentity = message.Headers.GetIdentityChain().StartsWith("service-identity") && Meta.UserProfileOrNull == null;
-                    if (Meta.AuthLevel.DatabasePermissionEnabled && !isServiceIdentity)
+                    if (Meta.AuthLevel.DatabasePermissionRequired && !isServiceIdentity)
                     {
                         var myProfile = Meta.AuthLevel switch
                         {
-                            { } when Meta.AuthLevel == AuthLevel.ApiAndDatabasePermission => (await DataReader.Read<UserProfile>(
+                            { } when Meta.AuthLevel == AuthLevel.AuthoriseApiAndDatabasePermissionsOptIn => (await DataReader.Read<UserProfile>(
                                                                                                   x => x.IdaamProviderId == pongedBy,
                                                                                                   op => op.AuthoriseFor(Meta.IdentityClaimsOrNull)))
                                 .Single(),
 
-                            { } when Meta.AuthLevel == AuthLevel.ApiAndAutoDbAuth => (await DataReader.Read<UserProfile>(
+                            { } when Meta.AuthLevel == AuthLevel.AuthoriseApiAndDatabasePermissionsOptOut => (await DataReader.Read<UserProfile>(
                                                                                           x => x.IdaamProviderId == pongedBy)).Single(),
                             _ => throw new ArgumentOutOfRangeException()
                         };

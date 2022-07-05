@@ -18,7 +18,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         public TestC100v1WithApiPermissionsOnly(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authLevel: AuthLevel.ApiPermissionOnly).Wait();
+            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authLevel: AuthLevel.AuthoriseApiPermissions).Wait();
         }
 
         [Fact]

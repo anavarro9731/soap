@@ -30,7 +30,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         [Fact]
         public void ItShouldFailIfAuthIsEnabledAndTheUserDoesNotHavePermissionsToThisData()
         {
-            TestMessage(Commands.Ping, Identities.WithApiPermissions, authLevel: AuthLevel.ApiAndAutoDbAuth).Wait();
+            TestMessage(Commands.Ping, Identities.WithApiPermissions, authLevel: AuthLevel.AuthoriseApiAndDatabasePermissionsOptOut).Wait();
 
             Result.Success.Should().BeFalse();
             Result.UnhandledError.Should().BeOfType<FormattedExceptionInfo.PipelineException>();
@@ -47,7 +47,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
             TestMessage(
                     Commands.Ping,
                     identityToUse,
-                    authLevel: AuthLevel.ApiAndAutoDbAuth,
+                    authLevel: AuthLevel.AuthoriseApiAndDatabasePermissionsOptOut,
                     beforeRunHook: (args =>
                                            {
                                            

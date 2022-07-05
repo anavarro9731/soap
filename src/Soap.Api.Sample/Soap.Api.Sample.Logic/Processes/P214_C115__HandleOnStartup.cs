@@ -18,6 +18,7 @@
                 async message =>
                     {
                     {
+                        await Task.CompletedTask;
                         /* SUGGESTION
                          On a new service if you set the AuthLevel to AutoApiAndDb
                          This will prevent you from processing any messages that access 

@@ -45,8 +45,8 @@
         public static void CheckHeadersOnOutgoingCommand(
             this MessageHeaders messageHeaders,
             ApiMessage message,
-            bool authEnabled,
-            bool commandRequiresAuth,
+            bool authenticationRequired,
+            bool commandNotExempt,
             string envPartitionKey)
         {
             if (message is MessageFailedAllRetries m)
@@ -61,11 +61,11 @@
 
             messageHeaders.SetSchema(message.GetType().FullName);
 
-            if (authEnabled && commandRequiresAuth)
+            if (authenticationRequired && commandNotExempt)
             {
                 Ensure(
                     messageHeaders.GetIdentityChain() != null,
-                    "All inter-service outgoing commands from a service must have an identity chain header if auth is enabled and the message is not exempted from authorisation");
+                    "All inter-service outgoing commands from a service must have an identity chain header if authentication is required and the message is not exempted from authorisation");
             }
 
             Ensure(
@@ -92,7 +92,7 @@
             */
         }
 
-        public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message, bool authEnabled, bool eventRequiresAuth)
+        public static void CheckHeadersOnOutgoingEvent(this MessageHeaders messageHeaders, ApiMessage message, bool authenticationRequired, bool eventNotExempt)
         {
             Ensure(
                 messageHeaders.GetMessageId() != null && messageHeaders.GetMessageId() != Guid.Empty,
@@ -104,11 +104,11 @@
             Ensure(messageHeaders.GetTopic() != null, $"All outgoing Api events must have a {Keys.Topic} header set");
 
             
-            if (authEnabled && eventRequiresAuth)
+            if (authenticationRequired && eventNotExempt)
             {
                 Ensure(
                     messageHeaders.GetIdentityChain() != null,
-                    "All inter-service outgoing events from a service must have an identity chain header if auth is enabled and the message is not exempted from authorisation");
+                    "All inter-service outgoing events from a service must have an identity chain header if authentication is enabled and the message is not exempted from authentication");
             }
 
             

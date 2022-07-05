@@ -48,7 +48,7 @@
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
-        public AuthLevel AuthLevel { get; set; } = AuthLevel.CheckNothing;
+        public AuthLevel AuthLevel { get; set; } = AuthLevel.None;
 
         public string EncryptionKey { get; set; }
 
@@ -90,11 +90,13 @@
                 RuleFor(x => x.CorsOrigin).NotEmpty();
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
-                    .Must(x => x.AuthLevel.ApiPermissionEnabled == false || (!string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
-                               && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientId)
-                               && !string.IsNullOrEmpty(x.Auth0EnterpriseAdminClientSecret)))
+                    .Must(x => x.AuthLevel.Enabled && 
+                               (string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
+                               || string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientId)
+                               || string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientSecret))
+                               || string.IsNullOrWhiteSpace(x.Auth0NewUserConnection))
                     .WithMessage(
-                        $"If {nameof(IBootstrapVariables.AuthLevel)} requires ApiPermissions, then all Auth0 fields must be populated");
+                        $"If {nameof(IBootstrapVariables.AuthLevel)} is not set to None, then all Auth0 fields must be populated");
             }
         }
     }

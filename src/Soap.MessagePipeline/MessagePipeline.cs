@@ -103,7 +103,7 @@
                                  to attempt to finish an unfinished uow if possible first */
                         msg.ValidateOrThrow(context);
 
-                        if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.ApiAndAutoDbAuth)
+                        if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.AuthoriseApiAndDatabasePermissionsOptOut)
                         {
                             context.DataStore.DataStoreOptions.Security.SecuredFor = context.MessageLogEntry.MessageMeta.IdentityClaimsOrNull;
                         }
@@ -126,7 +126,7 @@
                         }
                         finally
                         {
-                            if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.ApiAndAutoDbAuth)
+                            if (context.MessageLogEntry.MessageMeta.AuthLevel == AuthLevel.AuthoriseApiAndDatabasePermissionsOptOut)
                             {
                                 context.DataStore.DataStoreOptions.Security.SecuredFor = null;
                             }    

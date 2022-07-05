@@ -49,9 +49,9 @@ namespace Soap.PfBase.Api.Functions
             async Task SetAuth0Headers(ApplicationConfig appConfig)
             {
                 AddHeader(req, "Access-Control-Expose-Headers", "*");
-                AddHeader(req, "Idaam-Enabled", appConfig.AuthLevel.ApiPermissionEnabled.ToString().ToLower());
+                AddHeader(req, "Idaam-Enabled", appConfig.AuthLevel.Enabled.ToString().ToLower());
                 
-                if (appConfig.AuthLevel.ApiPermissionEnabled)
+                if (appConfig.AuthLevel.Enabled)
                 {
                     AddHeader(req, "Auth0-Tenant-Domain", appConfig.Auth0TenantDomain);
                     var idaamProvider = new IdaamProvider(appConfig);
