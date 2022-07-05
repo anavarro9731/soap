@@ -95,7 +95,10 @@
                     {
                         var codeString = SourceText.From(sourceCode);
 
-                        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp7_3).WithPreprocessorSymbols("NEXTVERSION");
+                        var version = Assembly.GetExecutingAssembly().GetName().Version;
+                        var options = CSharpParseOptions.Default
+                                                        .WithLanguageVersion(LanguageVersion.CSharp7_3)
+                                                        .WithPreprocessorSymbols($"SOAPV{version.Major}{version.Minor}");
 
                         var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
