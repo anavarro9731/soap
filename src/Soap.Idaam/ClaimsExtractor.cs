@@ -44,7 +44,7 @@ namespace Soap.Idaam
                      would be the readPII which they have no way of specifying from the callsite. Possible we could make this
                      something they could set as another argument when they add the rolescope in future but only for ReadPII or
                      you start to introduce confusion between the two approaches */
-                    if (role.ScopeReferences.Any(s => s.AggregateType == "Any" && s.DebugId == "*"))
+                    if (role.ScopeReferences.Any(s => s.AggregateId == Guid.Empty && s.AggregateType == "Any" && s.DebugId == "*"))
                     {
                         if (claims.DatabasePermissions.TrueForAll(p => p.PermissionName != "*")) //* not already there
                         {
@@ -54,11 +54,14 @@ namespace Soap.Idaam
 
                     foreach (var aggregateReference in role.ScopeReferences)
                     {
-                        AddIfNotExists(role, aggregateReference, SecurableOperations.READ);
-                        AddIfNotExists(role, aggregateReference, SecurableOperations.READPII);
-                        AddIfNotExists(role, aggregateReference, SecurableOperations.UPDATE);
-                        AddIfNotExists(role, aggregateReference, SecurableOperations.DELETE);
-                        AddIfNotExists(role, aggregateReference, SecurableOperations.CREATE);
+                        if (aggregateReference.AggregateId != Guid.Empty)
+                        {
+                            AddIfNotExists(role, aggregateReference, SecurableOperations.READ);
+                            AddIfNotExists(role, aggregateReference, SecurableOperations.READPII);
+                            AddIfNotExists(role, aggregateReference, SecurableOperations.UPDATE);
+                            AddIfNotExists(role, aggregateReference, SecurableOperations.DELETE);
+                            AddIfNotExists(role, aggregateReference, SecurableOperations.CREATE);
+                        }
                     }
                 }
             }
