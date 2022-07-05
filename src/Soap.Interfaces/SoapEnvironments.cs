@@ -21,7 +21,7 @@
         /// <summary>
         /// No checks are performed on any data or api commands. Any security must be done manually.
         /// </summary>
-        public static AuthLevel None = Create("NONE", nameof(AuthLevel));
+        public static AuthLevel CheckNothing = Create("NONE", nameof(AuthLevel));
         
         /// <summary>
         /// You might use this in a single tenant scenario where you don't need to check

@@ -16,7 +16,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         public TestC100v1WithAuthLevelNone(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
-            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authLevel: AuthLevel.None).Wait();
+            TestMessage(Commands.Ping, Identities.JaneDoeNoPermissions, authLevel: AuthLevel.CheckNothing).Wait();
         }
 
         [Fact]

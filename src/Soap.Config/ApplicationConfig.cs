@@ -48,7 +48,7 @@
 
         public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
 
-        public AuthLevel AuthLevel { get; set; }
+        public AuthLevel AuthLevel { get; set; } = AuthLevel.CheckNothing;
 
         public string EncryptionKey { get; set; }
 

@@ -27,7 +27,7 @@ namespace Soap.PfBase.Tests
 
         public string ApplicationVersion { get; set; } = "0.0.0";
 
-        public AuthLevel AuthLevel { get; set; } = AuthLevel.None;
+        public AuthLevel AuthLevel { get; set; } = AuthLevel.CheckNothing;
 
         public IDatabaseSettings DatabaseSettings { get; set; } =
             new InMemoryDocumentRepository.Settings(new InMemoryDocumentRepository());
