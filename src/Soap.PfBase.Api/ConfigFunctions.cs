@@ -95,7 +95,7 @@
                     {
                         var codeString = SourceText.From(sourceCode);
 
-                        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp7_3);
+                        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp7_3).WithPreprocessorSymbols("NEXTVERSION");
 
                         var parsedSyntaxTree = SyntaxFactory.ParseSyntaxTree(codeString, options);
 
@@ -119,6 +119,9 @@
                         };
 
                         var compilationOptions = new CSharpCompilationOptions(
+                             
+                            
+                            
                             OutputKind.DynamicallyLinkedLibrary,
                             optimizationLevel: OptimizationLevel.Release);
 
