@@ -33,6 +33,6 @@ namespace Soap.Api.Sample.Afs.Security
                 ApiPermissions.TestData__RestrictedOperations
             }
         };
-        
+
     }
 }

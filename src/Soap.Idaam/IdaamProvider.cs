@@ -426,13 +426,32 @@ namespace Soap.Idaam
                 var claim = claimsPrincipal.Claims.Single(x => x.Type == "https://soap.idaam/app_metadata");
                 var jsonAppMetaData = claim.Value;
                 var metaData = JsonConvert.DeserializeObject<AppMetaData>(jsonAppMetaData);
-                roleInstances = metaData;
+                var auth0ApiAssignedRoles = claimsPrincipal.Claims.Where(c => c.Type == "https://soap.idaam/roles" && c.Value.Contains("builtin:"))
+                                                           .Select(x => x.Value.SubstringAfter("builtin:"))
+                                                           .ToList();
+                if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions)
+                {
+                    /* in this case we ignore role metadata and read the auth0 api assigned roles */
+
+                    roleInstances = new AppMetaData()
+                    {
+                        Roles = auth0ApiAssignedRoles.Select(
+                                                   x => new RoleInstance()
+                                                   {
+                                                       RoleKey = x
+                                                   })
+                                               .ToList()
+                    };
+                }
+                else
+                {
+                    roleInstances = metaData;    
+                }
+                
             }
             
             
         }
-
-        private 
 
         static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, Interfaces.Role role)
         {

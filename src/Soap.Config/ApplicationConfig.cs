@@ -90,11 +90,11 @@
                 RuleFor(x => x.CorsOrigin).NotEmpty();
                 RuleFor(x => x.StorageConnectionString).NotEmpty();
                 RuleFor(x => x)
-                    .Must(x => x.AuthLevel.Enabled && 
-                               (string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
-                               || string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientId)
-                               || string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientSecret))
-                               || string.IsNullOrWhiteSpace(x.Auth0NewUserConnection))
+                    .Must(x => !x.AuthLevel.Enabled || 
+                               (!string.IsNullOrWhiteSpace(x.Auth0TenantDomain)
+                               && !string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientId)
+                               && !string.IsNullOrWhiteSpace(x.Auth0EnterpriseAdminClientSecret))
+                               && !string.IsNullOrWhiteSpace(x.Auth0NewUserConnection))
                     .WithMessage(
                         $"If {nameof(IBootstrapVariables.AuthLevel)} is not set to None, then all Auth0 fields must be populated");
             }
