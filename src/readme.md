@@ -632,16 +632,30 @@ In each tenant create a machine-machine application called "Enterprise Admin", a
 1. Copy the following variables from the CURL from sample code from the Quick Start page of the new m2m app,
    for *Getting an access token for your API line*, from the line that begins with "--data"
    and set them in the ENV_Config file in the YourApi.Config repo for each environment.
-1. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
-1. Auth0EnterpriseAdminClientSecret = "BXNHigoH4NFSEm__SAMPLE-SECRET__9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
-1. Auth0EnterpriseAdminClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
-1. AuthEnabled = true;
+2. Auth0TenantDomain = "yourorganisation-{env}.eu.auth0.com"
+3. Auth0EnterpriseAdminClientSecret = "BXNHigoH4NFSEm__SAMPLE-SECRET__9Mplvzqg2nE_R524fS60D04IeqrKTkhm33F";
+4. Auth0EnterpriseAdminClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
+5. Auth0NewUserConnection = "User-Database-Connection";
+6. AuthLevel = AuthLevel.AuthenticateOnly;
 
 **WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
 these are the keys to the castle for the entire service enterprise. The config repo should have azure
 devops security associated with it so that only the few persons with the need to access these variables
 do so. Except in cases of small teams, developers should not have access to the config repo.
 If they need to add a custom field to the configs they should ask the owner of the config repo to do so.
+
+Under rules for each tenant add a custom rule called "Add roles to authToken"
+with the following content:
+```javascript
+function (user, context, callback) {
+  const namespace = 'https://soap.idaam/';
+  const app_metadata = user.app_metadata;
+  context.accessToken[namespace + 'app_metadata'] = !!app_metadata ? app_metadata : {}; 
+  context.accessToken[namespace + 'roles'] = context.authorization.roles;
+  callback(null, user, context);
+}
+
+```
 
 Once the Auth0 integration is active in the config, you then need to start the service
 and run the Health Check. THis will sync Auth0 permissions with the permissions in your SecurityInfo.cs

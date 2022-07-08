@@ -7,6 +7,7 @@ namespace Soap.Api.Sample.Messages.Commands
     using Soap.Interfaces.Messages;
 
     [AuthorisationNotRequired]
+    [AuthenticationNotRequired]
     public sealed class C112v1_MessageThatDoesntRequireAuthorisation : ApiCommand
     {
         public TypedEnumerationAndFlags<ForwardAction> C112_NextAction { get; set; }

@@ -6,4 +6,9 @@ namespace Soap.Interfaces.Messages
     {
         
     }
+    
+    public class AuthenticationNotRequired : Attribute
+    {
+        
+    }
 }

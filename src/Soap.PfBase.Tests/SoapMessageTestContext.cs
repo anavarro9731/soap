@@ -8,6 +8,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models;
     using DataStore.Options;
     using Destructurama;
     using Serilog;
@@ -145,6 +146,15 @@
                         IUserProfile userProfile = null;
                         IdentityClaims identityClaims = null;
 
+                        //*
+                        foreach (var testIdentity in TestIdentities
+                                     .Where(x => dataStore.ReadById<TUserProfile>(x.UserProfile.id) == null))
+                        {
+                            var newProfile = new TUserProfile();
+                            testIdentity.UserProfile.DirectCast<TUserProfile>().CopyProperties(newProfile);
+                            await dataStore.Create(newProfile);
+                        }
+                        
                         await AuthorisationSchemes.AuthenticateandAuthoriseOrThrow<TUserProfile>(
                             idaamProvider,
                             message,
@@ -243,32 +253,6 @@
 
                 meta = new MessageMeta(timeStamp, claims, userProfile, authLevel, message.Headers.GetMessageId());
             }
-
-            // static Task TestSchemeAuth<TUserProfile>(
-            //     IBootstrapVariables bootstrapVariables,
-            //     ApiMessage message,
-            //     DataStore dataStore,
-            //     ISecurityInfo securityInfo,
-            //     string schemeValue,
-            //     Action<IdentityPermissions> setPermissions,
-            //     Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
-            // {
-            //     var testIdentityId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
-            //     Guard.Against(schemeValue != testIdentityId, "last scheme value should match decrypted id token");
-            //     var testIdentity = TestIdentities.SingleOrDefault(t => t.UserProfile.id.ToString() == testIdentityId);
-            //     if (testIdentity != null)
-            //     {
-            //         setPermissions(testIdentity.AppMetaData);
-            //         setProfile(testIdentity.UserProfile);
-            //     }
-            //     else
-            //     {
-            //         setPermissions(null);
-            //         setProfile(null);
-            //     }
-            //
-            //     return Task.CompletedTask;
-            // }
 
             static void CreateAppConfig(byte retries, AuthLevel authLevel, bool enableSlaWhenSecurityContextIsMissing, out TestConfig applicationConfig)
             {

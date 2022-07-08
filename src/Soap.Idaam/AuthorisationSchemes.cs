@@ -21,7 +21,7 @@ namespace Soap.Idaam
 
         private static object cacheLock = new object();
 
-        public delegate Task SchemeAuth<TUserProfile>(
+        public delegate Task SchemeAuth(
             IIdaamProvider idaamProvider,
             IApplicationConfig applicationConfig,
             ApiMessage message,
@@ -29,7 +29,7 @@ namespace Soap.Idaam
             ISecurityInfo securityInfo,
             string schemeValue,
             Action<IdentityClaims> setClaims,
-            Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new();
+            Action<IdaamProviderProfile> setProfile);
 
         public static async Task 
             AuthenticateandAuthoriseOrThrow<TUserProfile>(
@@ -39,29 +39,28 @@ namespace Soap.Idaam
             DataStore dataStore,
             ISecurityInfo securityInfo,
             Action<IdentityClaims> setClaims,
-            Action<IUserProfile> setUserProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
+            Action<TUserProfile> setUserProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
         {
             {
                 IdentityClaims identityClaimsInternal = null;
-                IUserProfile userProfileInternal = null;
+                IdaamProviderProfile idaamProfile = null;
 
-                var shouldAuthenticate = applicationConfig.AuthLevel.AuthenticationRequired;
+                var shouldAuthenticate = IsSubjectToAuthentication(message, applicationConfig);
                 var shouldAuthorise = IsSubjectToAuthorisation(message, applicationConfig);
 
-                /* if you don't authorise the message, you don't attempt to authenticate the user either.
-                 however, just because you authenticate doesn't mean you always return a user profile, services and tests don't have them */
+                /* if you don't authenticate the message, you don't attempt to authorise the user either.
+                 however, just because you authenticate doesn't mean you always return a user profile, service users dont have them */
                 if (shouldAuthenticate)
                 {
                     Guard.Against(
-                        (message.Headers.GetIdentityChain() == null || message.Headers.GetIdentityToken() == null
-                                                                                       || message.Headers.GetAccessToken() == null),
-                        "Required Authorisation headers not provided but message is not exempt from authorisation",
-                        "A Security policy violation is preventing this action from succeeding S01");
-
-                    Guard.Against(
-                        Regex.IsMatch(
-                            message.Headers.GetIdentityChain(),
-                            $"^({AuthSchemePrefixes.Service}|{AuthSchemePrefixes.User}):\\/\\/.+$") == false,
+                        (message.Headers.GetIdentityToken() == null),
+                        "Required Authorisation headers not provided but message is not exempt from authentication",
+                        "A Security policy violation is preventing this action from succeeding S06");
+                    
+                    Guard.Against( message.Headers.GetIdentityChain() == null ||
+                                  !Regex.IsMatch(
+                                      message.Headers.GetIdentityChain(),
+                                      $"^({AuthSchemePrefixes.Service}|{AuthSchemePrefixes.User}):\\/\\/.+$"),
                         "Identity Chain header invalid",
                         "A Security policy violation is preventing this action from succeeding S02");
 
@@ -69,10 +68,10 @@ namespace Soap.Idaam
                     if (lastIdentityScheme.Contains("://")) lastIdentityScheme = lastIdentityScheme.SubstringAfterLast(",");
                     var lastIdentityValue = message.Headers.GetIdentityChain().SubstringAfterLast("://");
 
-                    var schemeHandlers = new Dictionary<string, SchemeAuth<TUserProfile>>()
+                    var schemeHandlers = new Dictionary<string, SchemeAuth>()
                     {
-                        {AuthSchemePrefixes.Service, ServiceSchemeAuth<TUserProfile> },
-                        {AuthSchemePrefixes.User, UserSchemeAuth<TUserProfile> }
+                        {AuthSchemePrefixes.Service, ServiceSchemeAuth },
+                        {AuthSchemePrefixes.User, UserSchemeAuth }
                     };
                                                                  
                     Guard.Against(
@@ -90,10 +89,15 @@ namespace Soap.Idaam
                         securityInfo,
                         lastIdentityValue,
                         v => identityClaimsInternal = v,
-                        v => userProfileInternal = v);
+                        v => idaamProfile = v);
 
                     if (shouldAuthorise)
                     {
+                        Guard.Against(
+                            (message.Headers.GetAccessToken() == null),
+                            "Required Authorisation headers not provided but message is not exempt from authentication",
+                            "A Security policy violation is preventing this action from succeeding S01");
+                        
                         if (message is MessageFailedAllRetries m)
                         {
                             message.Validate();
@@ -116,13 +120,22 @@ namespace Soap.Idaam
                     }
                 }
 
-                await SaveOrUpdateUserProfileInDb(userProfileInternal as TUserProfile, dataStore);
+                var userProfile = await SaveOrUpdateUserProfileInDb<TUserProfile>(idaamProfile, dataStore);
 
                 //* if auth is enabled these could be empty but should never be null
                 setClaims(identityClaimsInternal);
-                setUserProfile(userProfileInternal);
+                setUserProfile(userProfile);
             }
 
+            static bool IsSubjectToAuthentication(ApiMessage m, IApplicationConfig applicationConfig)
+            {
+                var messageType = m.GetType();
+
+                var messageIsExempt = messageType.HasAttribute<AuthenticationNotRequired>();
+                
+                return applicationConfig.AuthLevel.AuthenticationRequired && !messageIsExempt;
+            }
+            
             static bool IsSubjectToAuthorisation(ApiMessage m, IApplicationConfig applicationConfig)
             {
                 var messageType = m.GetType();
@@ -132,10 +145,10 @@ namespace Soap.Idaam
                 return applicationConfig.AuthLevel.ApiPermissionsRequired && !messageIsExempt;
             }
 
-            static async Task SaveOrUpdateUserProfileInDb<TUserProfileMethodLevel>(TUserProfileMethodLevel userProfile, DataStore dataStore)
+            static async Task<TUserProfileMethodLevel> SaveOrUpdateUserProfileInDb<TUserProfileMethodLevel>(IdaamProviderProfile userProfile, DataStore dataStore)
                 where TUserProfileMethodLevel : class, IUserProfile, IAggregate, new()
             {
-                if (userProfile == null) return;
+                if (userProfile == null) return null;
 
                 var user = (await dataStore.Read<TUserProfileMethodLevel>(x => x.IdaamProviderId == userProfile.IdaamProviderId)).SingleOrDefault();
 
@@ -143,18 +156,18 @@ namespace Soap.Idaam
                 {
                     var newUser = new TUserProfileMethodLevel
                     {
-                        id = userProfile.id,
+                        id = Guid.NewGuid(),
                         IdaamProviderId = userProfile.IdaamProviderId,
                         Email = userProfile.Email,
                         FirstName = userProfile.FirstName,
                         LastName = userProfile.LastName
                     };
 
-                    await dataStore.Create(newUser);
+                    return await dataStore.Create(newUser);
                 }
                 else
                 {
-                    await dataStore.UpdateById<TUserProfileMethodLevel>(
+                    return await dataStore.UpdateById<TUserProfileMethodLevel>(
                         user.id,
                         x =>
                             {
@@ -182,7 +195,7 @@ namespace Soap.Idaam
             return cache;
         }
 
-        public static Task ServiceSchemeAuth<TUserProfile>( //* gives you root access
+        public static Task ServiceSchemeAuth( //* gives you root access
             IIdaamProvider idaamProvider,
             IBootstrapVariables bootstrapVariables,
             ApiMessage message,
@@ -190,7 +203,7 @@ namespace Soap.Idaam
             ISecurityInfo securityInfo,
             string schemeValue,
             Action<IdentityClaims> setClaims,
-            Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
+            Action<IdaamProviderProfile> setProfile) 
         {
             
             var appId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
@@ -222,7 +235,7 @@ namespace Soap.Idaam
             return Task.CompletedTask;
         }
 
-        public static async Task UserSchemeAuth<TUserProfile>(
+        public static async Task UserSchemeAuth(
             IIdaamProvider idaamProvider,
             IBootstrapVariables bootstrapVariables,
             ApiMessage message,
@@ -230,7 +243,7 @@ namespace Soap.Idaam
             ISecurityInfo securityInfo,
             string schemeValue, //* currently not used for securing request with user scheme, apart from visual debug, if this changes consider how it is set by various clients
             Action<IdentityClaims> setClaims,
-            Action<IUserProfile> setProfile) where TUserProfile : class, IUserProfile, IAggregate, new()
+            Action<IdaamProviderProfile> setProfile) 
         {
             var accessToken = message.Headers.GetAccessToken();
             var idToken = message.Headers.GetIdentityToken();
@@ -239,46 +252,10 @@ namespace Soap.Idaam
 
             setClaims(identityClaims);
 
-            var userProfile = idToken == null ? null : await RefreshAndReturnOrAddUserProfile(dataStore, idaamProvider, idToken);
-
+            var userProfile = await idaamProvider.GetLimitedUserProfileFromIdentityToken(idToken);
+            
             setProfile(userProfile);
             
-
-        static async Task<TUserProfile> RefreshAndReturnOrAddUserProfile(DataStore dataStore, IIdaamProvider idaamProvider, string idToken)
-        {
-            /* gets or creates a matching user profile record in the localdb if none exists
-             updates the user's profile if details from idaam provider have changed since this method
-             was last called */
-
-            Guard.Against(idToken == null, "idToken parameter cannot be null");
-
-            var idaamUser = await idaamProvider.GetLimitedUserProfileFromIdentityToken(idToken);
-
-            var user = (await dataStore.Read<TUserProfile>(x => x.IdaamProviderId == idaamUser.IdaamProviderId)).SingleOrDefault();
-
-            if (user == null)
-            {
-                var newUser = new TUserProfile
-                {
-                    IdaamProviderId = idaamUser.IdaamProviderId,
-                    Email = idaamUser.Email,
-                    FirstName = idaamUser.FirstName,
-                    LastName = idaamUser.LastName
-                };
-
-                return await dataStore.Create(newUser);
-            }
-
-            return (await dataStore.UpdateWhere<TUserProfile>(
-                        u => u.IdaamProviderId == user.IdaamProviderId,
-                        x =>
-                            {
-                            x.Email = idaamUser.Email;
-                            x.FirstName = idaamUser.FirstName;
-                            x.LastName = idaamUser.LastName;
-                            })).Single();
-            
-        }
         }
     }
 }
