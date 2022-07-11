@@ -65,13 +65,27 @@
     public static class ObjectExt
     {
         /// <summary>
-        ///     a simpler cast
+        /// Same as ((Type)object)
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static T DirectCast<T>(this object obj) where T : class => (T)obj;
+        public static T CastOrError<T>(this object obj) where T : class => (T)obj;
 
+        /// <summary>
+        /// Same as (object as Type)
+        /// </summary>
+        /// <param name="subject"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T CastOrDefault<T>(this object subject) => !(subject is T to) ? default : to;
+        
+        /// <summary>
+        /// Deep clone using serialisation
+        /// </summary>
+        /// <param name="source"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T Clone<T>(this T source) where T : class
         {
             var json = source.ToJson(SerialiserIds.JsonDotNetDefault);
@@ -79,11 +93,11 @@
                 source.GetType()
                       .AssemblyQualifiedName; //* be sure to use the underlying type in case source is assigned to a base class or interface
             var obj = json.FromJson<T>(SerialiserIds.JsonDotNetDefault, assemblyQualifiedName);
-            return obj.DirectCast<T>();
+            return obj.CastOrError<T>();
         }
 
         /// <summary>
-        ///     copies the values of matching properties from one object to another regardless of type
+        ///  Copies the values of matching properties from one object to another regardless of type, this is a shallow clone operation
         /// </summary>
         /// <param name="source"></param>
         /// <param name="destination"></param>
@@ -122,12 +136,18 @@
             return awaitable.GetAwaiter().GetResult();
         }
 
-        
-
+        /// <summary>
+        /// Convert one type to another. It's like .Select(x => new Type()) but without a list 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="map"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="To"></typeparam>
+        /// <returns></returns>
         public static To Map<T, To>(this T obj, Func<T, To> map) => map(obj);
 
         /// <summary>
-        ///     perform an operation on any class inline, (e.g. new Object().Op(o => SomeOperationOn(o));
+        /// Perform an operation on any class inline, (e.g. new Object().Op(o => SomeOperationOn(o));
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>

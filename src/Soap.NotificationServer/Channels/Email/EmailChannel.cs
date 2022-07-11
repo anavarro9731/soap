@@ -34,7 +34,7 @@
 
         public Task Send(Notification notification, ChannelSpecificNotificationMeta meta)
         {
-            var emailMeta = meta.DirectCast<EmailNotificationSpecificNotificationMeta>(); //* should never fail due to design in NotificationServer and ChannelSpecificNotificationMeta.Type but double check
+            var emailMeta = meta.CastOrError<EmailNotificationSpecificNotificationMeta>(); //* should never fail due to design in NotificationServer and ChannelSpecificNotificationMeta.Type but double check
             
             var recipients = meta.Recipient.Split(';'); //* we try not to allow multiple recips but this would pass through most providers so we should handle it, we could fail the message i wouldn't say its a failure, so leave it
             

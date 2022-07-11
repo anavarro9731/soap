@@ -81,7 +81,7 @@
                 var identities = typeof(Identities).GetProperties()
                                                    .Where(x => x.PropertyType == typeof(TestIdentity))
                                                    .Select(x => x.GetValue(null, null))
-                                                   .Select(y => y.DirectCast<TestIdentity>())
+                                                   .Select(y => y.CastOrError<TestIdentity>())
                                                    .ToList();
 
                 return identities;

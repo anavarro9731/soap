@@ -23,7 +23,7 @@ namespace Soap.Api.Sample.Tests.Messages.Events.E100
         public void ItShouldNotSucceedWithNoPermissions()
         {
             Result.UnhandledError.Should().BeOfType<DomainExceptionWithErrorCode>();
-            Result.UnhandledError.DirectCast<DomainExceptionWithErrorCode>()
+            Result.UnhandledError.CastOrError<DomainExceptionWithErrorCode>()
                   .Error.Should()
                   .Be(AuthErrorCodes.NoApiPermissionExistsForThisMessage);
         }

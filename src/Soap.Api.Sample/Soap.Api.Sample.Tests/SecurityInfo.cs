@@ -55,7 +55,7 @@ namespace Soap.Api.Sample.Tests
                 return typeof(ApiPermissions).GetFields()
                                                .Where(x => x.FieldType == typeof(ApiPermission))
                                                .Select(x => x.GetValue(null))
-                                               .Select(x => x.DirectCast<ApiPermission>())
+                                               .Select(x => x.CastOrError<ApiPermission>())
                                                .ToList();
             }
         }
@@ -67,7 +67,7 @@ namespace Soap.Api.Sample.Tests
                 return typeof(Roles).GetFields()
                                        .Where(x => x.FieldType == typeof(Role))
                                        .Select(x => x.GetValue(null))
-                                       .Select(x => x.DirectCast<Role>())
+                                       .Select(x => x.CastOrError<Role>())
                                        .ToList();
             }
         }

@@ -153,7 +153,7 @@
                                      .Where(identity => !existingProfileIds.Contains(identity.UserProfile.id)))
                         {
                             var newProfile = new TUserProfile();
-                            testIdentity.UserProfile.DirectCast<TUserProfile>().CopyProperties(newProfile);
+                            testIdentity.UserProfile.CastOrError<TUserProfile>().CopyProperties(newProfile);
                             await dataStore.Create(newProfile);
                         }
                         
@@ -189,7 +189,7 @@
                                                                                         .SingleOrDefault(
                                                                                             m => ((IAssociateProcessStateWithAMessage)m).ByMessage
                                                                                                  == message.Headers.GetMessageId())
-                                                                                        .DirectCast<IAssociateProcessStateWithAMessage>();
+                                                                                        .CastOrError<IAssociateProcessStateWithAMessage>();
 
                             if (statefulProcessLaunchedByThisMessage != null)
                             {

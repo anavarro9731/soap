@@ -247,7 +247,7 @@
                                     {
                                         //* handle primitives
                                         _ when t.IsConstructedGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => GetDefaultList(t),  
-                                        _ when t == typeof(MessageHeaders) => new MessageHeaders() { GetWithDefaults(typeof(Enumeration), propNamesList, totalIndent, nameof(Enumeration)).DirectCast<Enumeration>() }, //don't break this down, we don't break down lists
+                                        _ when t == typeof(MessageHeaders) => new MessageHeaders() { GetWithDefaults(typeof(Enumeration), propNamesList, totalIndent, nameof(Enumeration)).CastOrError<Enumeration>() }, //don't break this down, we don't break down lists
                                         _ when t == typeof(string) => isRequired ? "string" : string.Empty, 
                                         _ when t == typeof(bool?) => isRequired,
                                         _ when t == typeof(long?) => isRequired

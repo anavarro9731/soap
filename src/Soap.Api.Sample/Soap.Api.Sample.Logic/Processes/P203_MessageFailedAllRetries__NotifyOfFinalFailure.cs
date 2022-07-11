@@ -24,7 +24,7 @@
                  somewhere else. */
 
                 var emailChannel = NotificationServer.Channels.SingleOrDefault(x => x.Type == NotificationChannelTypes.Email)
-                                                     .DirectCast<EmailChannel>();
+                                                     .CastOrError<EmailChannel>();
 
                 //* if the emailChannel is null, then nothing will happen when you call notify if the "failMessageIfFailedToSendNotification" argument is false 
 
