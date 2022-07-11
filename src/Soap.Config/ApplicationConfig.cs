@@ -19,15 +19,6 @@
     and where it derives from envvars it provides an opportunity for an override, e.g. for a custom domain in live env 
     */
 
-    public interface IApplicationConfig : IBootstrapVariables
-    {
-        string FunctionAppHostUrlWithTrailingSlash { get; set; }
-
-        string FunctionAppHostName { get; set; }
-
-        string CorsOrigin { get; set; }
-    }
-
     public class ApplicationConfig : IApplicationConfig
     {
         protected ApplicationConfig(SoapEnvironments environment, string azureAppName)
