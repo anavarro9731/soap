@@ -26,9 +26,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         }
         
         [Fact]
-        public async void ItShouldCreateTheUserProfile()
+        public async void ItShouldCreateAllTheUserProfiles()
         {
-            (await Result.DataStore.Read<UserProfile>()).Single().IdaamProviderId.Should().Be(Ids.JohnDoeWithAllPermissions.ToIdaam());
+            Result.DataStore.ReadActive<UserProfile>().Result.Count().Should().Be(Identities.TestIdentities.Count());
         }
 
     }

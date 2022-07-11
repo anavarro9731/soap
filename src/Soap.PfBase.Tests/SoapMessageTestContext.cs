@@ -147,8 +147,10 @@
                         IdentityClaims identityClaims = null;
 
                         //*
+                        var existingProfiles = (await dataStore.Read<TUserProfile>());
+                        var existingProfileIds = existingProfiles.Select(x => x.id);
                         foreach (var testIdentity in TestIdentities
-                                     .Where(x => dataStore.ReadById<TUserProfile>(x.UserProfile.id) == null))
+                                     .Where(identity => !existingProfileIds.Contains(identity.UserProfile.id)))
                         {
                             var newProfile = new TUserProfile();
                             testIdentity.UserProfile.DirectCast<TUserProfile>().CopyProperties(newProfile);
