@@ -90,6 +90,16 @@ namespace Soap.Idaam
             throw new NotImplementedException();
         }
 
+        public Task<string> UnblockUser(string idaamProviderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> UpdateUserProfile(string idaamProvider, IIdaamProvider.UpdateUserArgs updateUserArgs)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task ChangeUserPassword(string idaamProviderId, string newPassword)
         {
             throw new NotImplementedException();

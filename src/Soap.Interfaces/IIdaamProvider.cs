@@ -20,6 +20,10 @@ namespace Soap.Interfaces
         Task<string> AddUser(AddUserArgs args);
 
         Task<string> BlockUser(string idaamProviderId);
+        
+        Task<string> UnblockUser(string idaamProviderId);
+
+        Task<string> UpdateUserProfile(string idaamProvider, IIdaamProvider.UpdateUserArgs updateUserArgs);
 
         Task ChangeUserPassword(string idaamProviderId, string newPassword);
 
@@ -50,5 +54,11 @@ namespace Soap.Interfaces
 
             public bool VerifyEmail { get; init; } = true;
         }
+        
+        public record UpdateUserArgs(IUserProfile Profile, bool VerifyEmail)
+        {
+            public bool Blocked { get; init; } = default;
+        }
+        
     }
 }

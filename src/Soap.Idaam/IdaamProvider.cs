@@ -35,6 +35,7 @@ namespace Soap.Idaam
      but I think then there is a risk that we could have a transactional integrity problem since auth0 
      cannot enlist in the txn */
     public class IdaamProvider : IIdaamProvider
+    
     {
         private static (ManagementApiClient apiClient, DateTime expires) managementApiClientCache;
 
@@ -201,6 +202,26 @@ namespace Soap.Idaam
             
             return result.UserId;
         }
+        
+        public async Task<string> UpdateUserProfile(string idaamProviderId, IIdaamProvider.UpdateUserArgs args)
+        {
+            var client = await GetManagementApiClientCached();
+
+            var result = await client.Users.UpdateAsync(
+                             idaamProviderId,
+                             new UserUpdateRequest()
+                             {
+                                 FirstName = args.Profile.FirstName,
+                                 LastName = args.Profile.LastName,
+                                 FullName = $"{args.Profile.FirstName} {args.Profile.LastName}",
+                                 Email = args.Profile.Email,
+                                 Blocked = args.Blocked,
+                                 VerifyEmail = args.VerifyEmail,
+                                 Connection = this.config.Auth0NewUserConnection,
+                             });
+            
+            return result.UserId;
+        }
 
         public async Task ChangeUserPassword(string idaamProviderId, string newPassword)
         {
@@ -230,6 +251,19 @@ namespace Soap.Idaam
                              new UserUpdateRequest()
                              {
                                  Blocked = true
+                             });
+            return result.UserId;
+        }
+        
+        public async Task<string> UnblockUser(string idaamProviderId)
+        {
+            var client = await GetManagementApiClientCached();
+
+            var result = await client.Users.UpdateAsync(
+                             idaamProviderId,
+                             new UserUpdateRequest()
+                             {
+                                 Blocked = false
                              });
             return result.UserId;
         }
