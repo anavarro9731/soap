@@ -81,6 +81,8 @@ namespace Soap.PfBase.Logic.ProcessesAndOperations
                                           message.Headers.GetStatefulProcessId().Value.InstanceId)
                                       .ConfigureAwait(false);
 
+            this.Id = new StatefulProcessId(GetType().ToShortAssemblyTypeName(), this.processState.id);
+            
             Guard.Against(this.processState.EnumFlags.HasFlag(BuiltInStates.Completed), "Stateful Process Already Completed");
 
             RecordContinued(message);
