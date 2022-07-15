@@ -31,6 +31,20 @@ namespace Soap.Utility.Objects.Binary
             HexSalt = saltHex;
             IterationsUsed = iterations;
         }
+        
+        public static bool operator ==(HmacHash left, HmacHash right)
+        {
+            if (left is null)
+            {
+                return right is null;
+            }
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(HmacHash left, HmacHash right)
+        {
+            return !(left == right);
+        }
 
         public string HexHash { get; internal set; }
 
@@ -46,7 +60,7 @@ namespace Soap.Utility.Objects.Binary
 
             if (obj.GetType() != GetType()) return false;
 
-            return Equals((HmacHash)obj);
+            return PropertiesAreEqual((HmacHash)obj);
         }
 
         public override int GetHashCode()
@@ -62,7 +76,7 @@ namespace Soap.Utility.Objects.Binary
 
         public override string ToString() => $"{HexSalt}:{HexHash}:{IterationsUsed}:";
 
-        protected bool Equals(HmacHash other) =>
+        protected bool PropertiesAreEqual(HmacHash other) =>
             string.Equals(HexSalt, other.HexSalt) && IterationsUsed == other.IterationsUsed
                                                   && string.Equals(HexHash, other.HexHash);
     }
