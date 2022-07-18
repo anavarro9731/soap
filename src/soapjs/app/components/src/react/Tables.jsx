@@ -157,7 +157,7 @@ function CreateTertiaryActionsMenu(propertyKey, entityMenus, entity) {
         [{entityMenus}, types.object, optional],
         [{entity}, types.object, optional]
     );
-    if (entityMenus && entityMenus[propertyKey]?.actions) {
+    if (entityMenus && entityMenus[propertyKey]?.actions && entityMenus[propertyKey]?.actions.every(action => action(entity) !== undefined)) {
         const actions = entityMenus[propertyKey]?.actions;
 
         return (<TertiaryActionMenu>
@@ -250,7 +250,7 @@ function ArrayTable(props) {
         } else {
             //*otherwise convert the object in that field into a control array
             const componentArray = ConvertObjectToComponentArray(obj, propertyRenderer, hiddenFields, expandedFields, entityMenus);
-            if (childrenHaveMenu) { //* actions column
+                if (childrenHaveMenu) { //* actions column
                 componentArray.push(<div style={{display:"flex"}}>
                     {CreateViewButton(childrenPropertyKey, entityMenus, obj)}
                     {CreateTertiaryActionsMenu(childrenPropertyKey, entityMenus, obj)}
