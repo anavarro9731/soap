@@ -205,7 +205,7 @@
                 {
                     ctx.Logger.Debug($"Looking for msg id {message.Headers.GetMessageId()}");
 
-                    var result = await ctx.DataStore.ReadActiveById<MessageLogEntry>(message.Headers.GetMessageId());
+                    var result = await ctx.DataStore.ReadActiveById<MessageLogEntry>(message.Headers.GetMessageId(), options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow()));
 
                     ctx.Logger.Debug(
                         result == null

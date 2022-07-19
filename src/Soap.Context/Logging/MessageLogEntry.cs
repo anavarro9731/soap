@@ -9,6 +9,7 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PartitionKeys;
     using DataStore.Options;
     using Newtonsoft.Json;
     using Soap.Context.Exceptions;
@@ -18,6 +19,7 @@
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Models;
 
+    [PartitionKey__Type_TimePeriod_Id(nameof(MessageLogEntry.Created), PartitionKeyTimeIntervalEnum.Week)]
     public sealed class MessageLogEntry : Aggregate
     {
         public MessageLogEntry(SerialisableObject serialisedMessage, MessageMeta meta, int numberOfRetries, bool skeletonOnly)
@@ -95,7 +97,7 @@
             first so use different instance of ds instead*/
             var d = new DataStore(documentRepository,
                 dataStoreOptions: DataStoreOptions.Create().DisableOptimisticConcurrency());
-            await d.Update(messageLogEntry);
+            await d.Update(messageLogEntry, options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow()));
             await d.CommitChanges();
         }
     }

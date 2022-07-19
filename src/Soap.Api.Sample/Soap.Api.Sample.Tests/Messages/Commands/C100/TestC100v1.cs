@@ -26,7 +26,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C100
         }
         
         [Fact]
-        public async void ItShouldCreateAllTheUserProfiles()
+        public void ItShouldCreateAllTheUserProfiles()
         {
             Result.DataStore.ReadActive<UserProfile>().Result.Count().Should().Be(Identities.TestIdentities.Count());
         }

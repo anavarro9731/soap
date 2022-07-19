@@ -4,6 +4,7 @@
     using CircuitBoard;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces;
     using FluentAssertions;
     using Soap.Context;
     using Soap.Context.BlobStorage;
@@ -38,7 +39,7 @@
         public MessageLogEntry GetMessageLogEntry()
         {
             //* will be null in beforerunhooks
-            return DataStore.ReadById<MessageLogEntry>(FromMessage.Headers.GetMessageId()).Result;
+            return DataStore.ReadById<MessageLogEntry>(FromMessage.Headers.GetMessageId(), options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow())).Result;
         }
 
         public UnitOfWork GetUnitOfWork()

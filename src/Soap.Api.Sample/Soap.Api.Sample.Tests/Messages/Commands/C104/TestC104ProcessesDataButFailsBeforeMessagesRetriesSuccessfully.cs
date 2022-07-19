@@ -3,6 +3,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
 {
     using System.Threading.Tasks;
     using DataStore;
+    using DataStore.Interfaces;
     using FluentAssertions;
     using Soap.Context;
     using Soap.Context.Logging;
@@ -49,7 +50,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
                     //Assert guard fail
                     var c104TestUnitOfWork =
                         Commands.TestUnitOfWork(SpecialIds.ProcessesDataButFailsBeforeMessagesRetriesSuccessfully);
-                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId(), options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow()));
                     log.Attempts[0] //* 0 is latest attempt they are inserted
                        .Errors.AllErrors[0]
                        .ExternalMessage.Should()

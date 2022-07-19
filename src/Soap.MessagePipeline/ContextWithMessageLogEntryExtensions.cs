@@ -375,7 +375,11 @@
                 var logEntry = context.MessageLogEntry;
                 logEntry.AddFailedAttempt(exceptionInfo);
 
-                await context.DataStore.Update(logEntry, o => o.DisableOptimisticConcurrency()); //etag has changed
+                await context.DataStore.Update(logEntry, o =>
+                    {
+                    o.ProvidePartitionKeyValues(WeekInterval.FromUtcNow());
+                    o.DisableOptimisticConcurrency();
+                    }); //etag has changed
             }
 
             bool TheMessageWeAreProcessingIsAMaxFailNotificationMessage() =>

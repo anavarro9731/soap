@@ -7,6 +7,8 @@
     using DataStore;
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Interfaces.Options.ClientSide;
+    using DataStore.Models.PartitionKeys;
     using Newtonsoft.Json;
     using Soap.Utility;
     using Soap.Utility.Enums;
@@ -88,8 +90,7 @@
                 List<Aggregate.AggregateVersionInfo> history = null;
 
                 await GetAggregateHistory(
-                    item.ObjectId,
-                    (item.BeforeModel ?? item.AfterModel).TypeName,
+                    (item.BeforeModel ?? item.AfterModel).Deserialise<IAggregate>(),
                     dataStore,
                     v => history = v);
 
@@ -231,8 +232,7 @@
             }
 
             async Task GetAggregateHistory(
-                Guid aggregateId,
-                string typename,
+                IAggregate aggregate,
                 IDataStore dataStore,
                 Action<List<Aggregate.AggregateVersionInfo>> setHistory)
             {
@@ -240,10 +240,11 @@
                 var readById = typeof(IDataStoreReadOnly).GetMethods()
                                                  .Single(
                                                      m => m.GetGenericArguments().Length == 1
-                                                          && m.Name == nameof(DataStore.ReadById))
-                                                 .MakeGenericMethod(Type.GetType(typename));
-
-                var result = await readById.InvokeAsync(dataStore, aggregateId, null, null);
+                                                          && m.Name == nameof(DataStore.ReadById) 
+                                                          && m.GetParameters().First().ParameterType == typeof(string))
+                                                 .MakeGenericMethod(Type.GetType(aggregate.GetType().ToShortAssemblyTypeName()));
+                
+                var result = await readById.InvokeAsync(dataStore, aggregate.GetLongId(), null, nameof(GetAggregateHistory));
 
                 //* relying on history never being null if the aggregate exists
                 setHistory(((IAggregate)result)?.VersionHistory);

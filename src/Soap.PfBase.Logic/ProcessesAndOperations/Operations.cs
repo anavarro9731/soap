@@ -19,7 +19,7 @@
 
         protected IDataStoreReadOnly DataReader => this.context.DataStore.AsReadOnly();
 
-        protected IDataStoreWriteOnly DataWriter => this.context.DataStore.AsWriteOnlyScoped<TAggregate>();
+        protected IDataStoreWriteOnly<TAggregate> DataWriter => this.context.DataStore.AsWriteOnlyScoped<TAggregate>();
 
         protected ILogger Logger => this.context.Logger;
 

@@ -16,7 +16,7 @@ namespace Soap.Api.Sample.Logic.Operations
             async newState =>
                 {
                 {
-                    await DataWriter.DeleteById<TestData>(
+                    await DataWriter.DeleteById(
                         newState.C114_TestDataId.Value,
                         o =>
                             {
@@ -118,7 +118,7 @@ namespace Soap.Api.Sample.Logic.Operations
                                                });
                     }
 
-                    return async () => await DataWriter.UpdateById<TestData>(
+                    return async () => await DataWriter.UpdateById(
                                            newState.C107_Guid.Value,
                                            data =>
                                                {

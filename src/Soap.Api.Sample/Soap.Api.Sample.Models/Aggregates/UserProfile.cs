@@ -3,8 +3,10 @@
     using System;
     using System.Collections.Generic;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PartitionKeys;
     using Soap.Interfaces;
 
+    [PartitionKey__Shared]
     public class UserProfile : Aggregate, IUserProfile
     {
         [ScopeObjectReference(typeof(Tenant))]

@@ -656,6 +656,7 @@ function (user, context, callback) {
 }
 
 ```
+failure to add the rule may result in Error S06.
 
 Once the Auth0 integration is active in the config, you then need to start the service
 and run the Health Check. THis will sync Auth0 permissions with the permissions in your SecurityInfo.cs

@@ -45,7 +45,7 @@
          and will avoid duplicates in 99% of cases */
         private static async Task<bool> QueryForCompleteness(this BusMessageUnitOfWorkItem item, IDataStore dataStore)
         {
-            var logEntry = (await dataStore.Read<MessageLogEntry>(x => x.id == item.MessageId)).SingleOrDefault();
+            var logEntry = (await dataStore.ReadById<MessageLogEntry>(item.MessageId, options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow())));
             return logEntry != null;
         }
     }

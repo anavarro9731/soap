@@ -4,6 +4,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
     using System.Linq;
     using System.Threading.Tasks;
     using DataStore;
+    using DataStore.Interfaces;
     using FluentAssertions;
     using Soap.Api.Sample.Models.Aggregates;
     using Soap.Context;
@@ -80,7 +81,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C104
                 {
                     //Assert, changes should be rolled back at this point 
                     var c104TestUnitOfWork = Commands.TestUnitOfWork(SpecialIds.RollbackSkipsOverItemsDeletedSinceWeChangedThem);
-                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId());
+                    var log = await beforeRunHookArgs.DataStore.ReadById<MessageLogEntry>(c104TestUnitOfWork.Headers.GetMessageId(), options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow()));
                     var uow = (await beforeRunHookArgs.BlobStorage.GetBlobOrError(c104TestUnitOfWork.Headers.GetMessageId(), "units-of-work")).ToUnitOfWork();
                     
                     CountDataStoreOperationsSaved(uow);

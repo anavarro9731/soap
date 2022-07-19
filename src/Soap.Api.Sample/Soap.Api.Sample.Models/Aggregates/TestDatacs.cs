@@ -4,10 +4,12 @@ namespace Soap.Api.Sample.Models.Aggregates
     using System.Collections.Generic;
     using System.Linq;
     using DataStore.Interfaces.LowLevel;
+    using DataStore.Models.PartitionKeys;
     using Soap.Api.Sample.Models.Entities;
     using Soap.Api.Sample.Models.ValueTypes;
     using Soap.Interfaces.Messages;
 
+    [PartitionKey__Shared]
     public class TestData : Aggregate
     {
         public bool? Boolean { get; set; }

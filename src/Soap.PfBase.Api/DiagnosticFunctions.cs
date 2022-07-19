@@ -13,12 +13,14 @@
     using System.Threading.Tasks;
     using CircuitBoard.MessageAggregator;
     using DataStore;
+    using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Providers.CosmosDb;
     using global::Auth0.ManagementApi;
     using global::Auth0.ManagementApi.Models;
     using global::Auth0.ManagementApi.Paging;
     using Mainwave.MimeTypes;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.CSharp.RuntimeBinder;
@@ -56,6 +58,7 @@
         public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
             Stream outputStream,
             HttpContent httpContent,
+            HttpRequest httpRequest,
             TransportContext transportContext,
             Assembly messagesAssembly,
             string functionHost,
@@ -88,7 +91,6 @@
 
                 await WriteLineIfInDevelopmentEnvironment("Loading Config...");
 
-                
                 await WriteLineIfInDevelopmentEnvironment(GetConfigDetails(appConfig));
 
                 await CheckDatabaseExists(appConfig, WriteLineIfInDevelopmentEnvironment);
@@ -148,7 +150,7 @@
                     /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
                     EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
                     COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
-                    if (appConfig.Environment == SoapEnvironments.Development)
+                    if (appConfig.Environment == SoapEnvironments.Development || httpRequest.Query["key"] == Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"))
                     {
                         await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
                         await outputStream.FlushAsync();
@@ -338,7 +340,7 @@
                     await writeLine("Waiting 1 seconds ...");
                     await Task.Delay(1000);
                     var logged =
-                        await new DataStore(appConfig.DatabaseSettings.CreateRepository()).ReadById<MessageLogEntry>(pongId);
+                        await new DataStore(appConfig.DatabaseSettings.CreateRepository()).ReadById<MessageLogEntry>(pongId, options => options.ProvidePartitionKeyValues(WeekInterval.FromUtcNow()));
                     if (logged != null && logged.ProcessingComplete)
                     {
                         await writeLine($"Received {typeof(TReply).Name} Message Test Succeeded.");
