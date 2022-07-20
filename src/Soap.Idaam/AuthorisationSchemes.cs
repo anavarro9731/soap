@@ -188,7 +188,7 @@ namespace Soap.Idaam
                 {
                     IdentityChainSegment = $"{AuthSchemePrefixes.Service}://" + bootstrapVariables.AppId,
                     AccessToken = RandomOps.RandomString(64),
-                    IdentityToken = AesOps.Encrypt(bootstrapVariables.AppId, bootstrapVariables.EncryptionKey)
+                    IdentityToken = AesOps.Encrypt($"{bootstrapVariables.AppId}.sla", bootstrapVariables.EncryptionKey)
                 };
             }
 
@@ -201,14 +201,14 @@ namespace Soap.Idaam
             ApiMessage message,
             DataStore dataStore,
             ISecurityInfo securityInfo,
-            string schemeValue,
+            string identityValueWhichIsServiceName,
             Action<IdentityClaims> setClaims,
             Action<IdaamProviderProfile> setProfile) 
         {
             
-            var appId = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
-            Guard.Against(schemeValue != appId, "last scheme value should match decrypted id token");
-            Guard.Against(bootstrapVariables.AppId != appId, "access token should match app id");
+            var idTokenWhichHasTheServiceName = AesOps.Decrypt(message.Headers.GetIdentityToken(), bootstrapVariables.EncryptionKey);
+            Guard.Against("sla" != idTokenWhichHasTheServiceName.SubstringAfter('.'), "Service token identities do not match");
+            
 
             var allRoles = securityInfo.BuiltInRoles.Select(
                                            x => new RoleInstance()
