@@ -11,23 +11,26 @@
 
         public string Description;
 
+        internal readonly string apiIdOfServiceThatOwnsThisRole;
+        
         public Role()
         {
         }
 
-        public Role(string key, string value)
+        public Role(string key, string value, string apiId = null)
         {
             Key = key;
             Value = value;
+            this.apiIdOfServiceThatOwnsThisRole = apiId;
         }
     }
 
     public static class RoleExt
     {
-        public static string AsAuth0Name(this Role role, string environmentPartitionKey, string serviceName)
+        public static string AsAuth0Name(this Role role, string environmentPartitionKey, string apiIdOfHostService)
         {
             return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
-                   + serviceName + ":builtin:"
+                   + (!string.IsNullOrEmpty(role.apiIdOfServiceThatOwnsThisRole) ? role.apiIdOfServiceThatOwnsThisRole : apiIdOfHostService) + ":builtin:"
                    + Regex.Replace(role.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
     }
