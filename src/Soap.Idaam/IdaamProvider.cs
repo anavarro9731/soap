@@ -110,7 +110,7 @@ namespace Soap.Idaam
         public async Task AddRoleToUser(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd)
         {
             var client = await GetManagementApiClientCached();
-            
+            GetApiName(this.config, out string apiName);
             var user = await client.Users.GetAsync(idaamProviderUserId);
             
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
@@ -146,7 +146,7 @@ namespace Soap.Idaam
                              });
 
             //* rate limiting!
-            var getRoleId = GetRoleId(client, role.AsAuth0Name(EnvVars.EnvironmentPartitionKey));
+            var getRoleId = GetRoleId(client, role.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName));
             string roleId = await getRoleId;
             
             await client.Users.AssignRolesAsync(
@@ -362,7 +362,7 @@ namespace Soap.Idaam
         public async Task RemoveRoleFromUser(string idaamProviderUserId, Role roleToRemove)
         {
             var client = await GetManagementApiClientCached();
-            
+            GetApiName(this.config, out string apiName);
             
             var user = await client.Users.GetAsync(idaamProviderUserId);
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
@@ -381,7 +381,7 @@ namespace Soap.Idaam
 
             
             //* rate limiting!
-            var getRoleId = GetRoleId(client, roleToRemove.AsAuth0Name(EnvVars.EnvironmentPartitionKey));
+            var getRoleId = GetRoleId(client, roleToRemove.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName));
             var roleId = await getRoleId;
             
             await client.Users.RemoveRolesAsync(
@@ -487,13 +487,13 @@ namespace Soap.Idaam
             
         }
 
-        static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, Interfaces.Role role)
+        static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, string apiName, Interfaces.Role role)
         {
             var newRole = await client.Roles.CreateAsync(
                               new RoleCreateRequest()
                               {
                                   Description = role.Description ?? role.Value,
-                                  Name = role.AsAuth0Name(EnvVars.EnvironmentPartitionKey)
+                                  Name = role.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName)
                               });
 
             if (role.ApiPermissions.Any())
@@ -507,7 +507,7 @@ namespace Soap.Idaam
                                               {
                                                   Identifier = apiId,
                                                   Name = apiPermission
-                                                                     .AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
+                                                                     .AsAuth0Claim(EnvVars.EnvironmentPartitionKey, apiName)
                                               })
                                           .ToList()
                     });
@@ -569,13 +569,13 @@ namespace Soap.Idaam
             return adminM2MToken;
         }
 
-        static List<ResourceServerScope> GetLocalApiPermissions(ISecurityInfo securityInfo)
+        static List<ResourceServerScope> GetLocalApiPermissions(ISecurityInfo securityInfo, string apiName)
         {
             var scopes = securityInfo.ApiPermissions.Select(
                                          x => new ResourceServerScope
                                          {
                                              Description = x.Description ?? x.Value,
-                                             Value = x.AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
+                                             Value = x.AsAuth0Claim(EnvVars.EnvironmentPartitionKey, apiName)
                                          })
                                      .ToList();
 
@@ -612,7 +612,7 @@ namespace Soap.Idaam
                 GetUiAppName(apiName, out string appName);
                 GetApiId(this.config, out string apiId);
 
-                var resourceServerScopes = GetLocalApiPermissions(securityInfo);
+                var resourceServerScopes = GetLocalApiPermissions(securityInfo, apiName);
 
                 await writeLine($"Auth0 Api for this service in environment {this.config.Environment.Value} does not exist. Creating it now.");
 
@@ -622,7 +622,7 @@ namespace Soap.Idaam
 
                 await CreateFrontEnd(client, appName, apiName, this.config);
 
-                await CreateRoles(client, apiId, securityInfo);
+                await CreateRoles(client, apiId, securityInfo, apiName);
             }
 
             //* register api 
@@ -677,13 +677,13 @@ namespace Soap.Idaam
 
 
             //* create builtin roles
-            static async Task CreateRoles(ManagementApiClient client, string apiId, ISecurityInfo securityInfo)
+            static async Task CreateRoles(ManagementApiClient client, string apiId, ISecurityInfo securityInfo, string apiName)
             {
                 if (securityInfo.BuiltInRoles != default)
                 {
                     foreach (var role in securityInfo.BuiltInRoles)
                     {
-                        await CreateRoleOnServer(client, apiId, securityInfo, role);
+                        await CreateRoleOnServer(client, apiId, apiName, role);
                     }
                 }
             }
@@ -701,22 +701,23 @@ namespace Soap.Idaam
                     $"Updating Auth0 Api for this service in environment {this.config.Environment.Value} with the latest permissions.");
 
                 GetApiId(this.config, out string apiId);
+                GetApiName(this.config, out string apiName);
                 
-                await UpdateApiPermissions(client, securityInfo, apiId, writeLine);
+                await UpdateApiPermissions(client, securityInfo, apiId,  apiName, writeLine);
 
-                await UpdateApiRoles(client, securityInfo, apiId, writeLine);
+                await UpdateApiRoles(client, securityInfo, apiId, apiName, writeLine);
             }
 
-            static async Task UpdateApiRoles(ManagementApiClient client, ISecurityInfo securityInfo, string apiId, Func<string, ValueTask> writeLine)
+            static async Task UpdateApiRoles(ManagementApiClient client, ISecurityInfo securityInfo, string apiId, string apiName, Func<string, ValueTask> writeLine)
             {
                 {
                     var environmentPartitionKey = EnvVars.EnvironmentPartitionKey;
-                    var serverRoles = await GetAllRoles(client);
+                    var serverRoles = await GetAllRoles(client, apiName);
                     var localRoleDefinitions = securityInfo.BuiltInRoles;
 
                     //* remove roles
                     var serverRolesToRemove = serverRoles
-                                              .Where(r => localRoleDefinitions.All(lr => lr.AsAuth0Name(environmentPartitionKey) != r.Name))
+                                              .Where(r => localRoleDefinitions.All(lr => lr.AsAuth0Name(environmentPartitionKey, apiName) != r.Name))
                                               .ToList();
                     if (serverRolesToRemove.Any())
                     {
@@ -729,7 +730,7 @@ namespace Soap.Idaam
                     await Task.WhenAll(removeTasks);
 
                     //* add roles
-                    var localRolesToAdd = localRoleDefinitions.Where(lr => serverRoles.All(sr => sr.Name != lr.AsAuth0Name(environmentPartitionKey)))
+                    var localRolesToAdd = localRoleDefinitions.Where(lr => serverRoles.All(sr => sr.Name != lr.AsAuth0Name(environmentPartitionKey, apiName)))
                                                               .ToList();
                     if (localRolesToAdd.Any())
                     {
@@ -738,14 +739,14 @@ namespace Soap.Idaam
                                                                                    .Aggregate((x, y) => $"{x}{Environment.NewLine}{y}"));
                     }
 
-                    var addTasks = localRolesToAdd.Select(async lr => await CreateRoleOnServer(client, apiId, securityInfo, lr)).ToList();
+                    var addTasks = localRolesToAdd.Select(async lr => await CreateRoleOnServer(client, apiId, apiName, lr)).ToList();
                     await Task.WhenAll(addTasks);
 
                     //* update permissions on existing roles
                     var serverCopyOfRolesThatAreStillRelevant = serverRoles
                                                                 .Where(
                                                                     sr => localRoleDefinitions.Exists(
-                                                                        lr => lr.AsAuth0Name(environmentPartitionKey) == sr.Name))
+                                                                        lr => lr.AsAuth0Name(environmentPartitionKey, apiName) == sr.Name))
                                                                 .ToList();
                     if (serverCopyOfRolesThatAreStillRelevant.Any())
                     {
@@ -755,8 +756,8 @@ namespace Soap.Idaam
                     var updateTasks = serverCopyOfRolesThatAreStillRelevant.Select(
                         async sr =>
                             {
-                            var matchingLocalRole = localRoleDefinitions.Single(x => x.AsAuth0Name(EnvVars.EnvironmentPartitionKey) == sr.Name);
-                            await UpdateRoleApiPermissions(client, apiId, writeLine, matchingLocalRole, sr);
+                            var matchingLocalRole = localRoleDefinitions.Single(x => x.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName) == sr.Name);
+                            await UpdateRoleApiPermissions(client, apiId, apiName, writeLine, matchingLocalRole, sr);
                             });
                     await Task.WhenAll(updateTasks);
                 }
@@ -764,6 +765,7 @@ namespace Soap.Idaam
                 static async Task UpdateRoleApiPermissions(
                     ManagementApiClient client,
                     string apiId,
+                    string apiName,
                     Func<string, ValueTask> writeLine,
                     Interfaces.Role matchingLocalCopy,
                     global::Auth0.ManagementApi.Models.Role serverRoleThatNeedsItsApiPermissionsChecked)
@@ -774,7 +776,7 @@ namespace Soap.Idaam
 
                     //* remove permissions
                     var permissionsToRemove = serverSidePermissionsForTheRole.Where(
-                        sp => localPermissions.All(localPermission => localPermission.AsAuth0Claim(EnvVars.EnvironmentPartitionKey) != sp.Name)).ToList();
+                        sp => localPermissions.All(localPermission => localPermission.AsAuth0Claim(EnvVars.EnvironmentPartitionKey, apiName) != sp.Name)).ToList();
                     if (permissionsToRemove.Any())
                     {
                         await writeLine(
@@ -802,7 +804,7 @@ namespace Soap.Idaam
                     //* add permissions
                     var permissionsToAdd = localPermissions.Where(
                                                                lp => serverSidePermissionsForTheRole.All(
-                                                                   sp => sp.Name != lp.AsAuth0Claim(EnvVars.EnvironmentPartitionKey)))
+                                                                   sp => sp.Name != lp.AsAuth0Claim(EnvVars.EnvironmentPartitionKey, apiName)))
                                                            .ToList();
                     var addTasks = permissionsToAdd.Select(
                         async p => await client.Roles.AssignPermissionsAsync(
@@ -814,7 +816,7 @@ namespace Soap.Idaam
                                                new PermissionIdentity()
                                                {
                                                    Identifier = apiId,
-                                                   Name = p.AsAuth0Claim(EnvVars.EnvironmentPartitionKey)
+                                                   Name = p.AsAuth0Claim(EnvVars.EnvironmentPartitionKey, apiName)
                                                }
                                            }
                                        }));
@@ -859,13 +861,13 @@ namespace Soap.Idaam
                     }
                 }
 
-                static async Task<List<global::Auth0.ManagementApi.Models.Role>> GetAllRoles(ManagementApiClient client)
+                static async Task<List<global::Auth0.ManagementApi.Models.Role>> GetAllRoles(ManagementApiClient client, string apiName)
                 {
                     var allRoles = await RetrieveAllRolesOnePageAtATime(client, 0, new List<global::Auth0.ManagementApi.Models.Role>());
                     var filteredByTheCurrentPartitionKey = EnvVars.EnvironmentPartitionKey switch
                     {
-                        var x when string.IsNullOrEmpty(x) => allRoles.Where(x => x.Name.StartsWith("builtin")).ToList(),
-                        _ => allRoles.Where(x => x.Name.StartsWith($"{EnvVars.EnvironmentPartitionKey}::")).ToList() //* DEV environment
+                        var x when string.IsNullOrEmpty(x) => allRoles.Where(x => x.Name.StartsWith($"{apiName}:builtin")).ToList(),
+                        _ => allRoles.Where(x => x.Name.StartsWith($"{EnvVars.EnvironmentPartitionKey}::{apiName}")).ToList() //* DEV environment
                     };
 
                     return filteredByTheCurrentPartitionKey;
@@ -893,6 +895,7 @@ namespace Soap.Idaam
                 ManagementApiClient client,
                 ISecurityInfo securityInfo,
                 string apiId,
+                string apiName,
                 Func<string, ValueTask> writeLine)
             {
                 {
@@ -918,12 +921,15 @@ namespace Soap.Idaam
 
                     SeparateOnlinePermissionsIntoGroups(
                         onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
+                        apiName,
                         out var onlineApiPermissionsFromOurPartition,
                         out var onlinePermissionsFromOtherPartitions);
 
-                    var currentApiPermissionsInOurPartition = GetLocalApiPermissions(securityInfo);
+                    var currentApiPermissionsInOurPartition = GetLocalApiPermissions(securityInfo, apiName);
+                    
                     var updatedApiPermissionsToBeSavedOnline =
                         currentApiPermissionsInOurPartition.Union(onlinePermissionsFromOtherPartitions).ToList();
+                    
 
                     var onlineApiPermissionsBeingRemoved = onlineApiPermissionsFromOurPartition
                                                            .Where(x => !currentApiPermissionsInOurPartition.Exists(y => y.Value == x.Value))
@@ -955,16 +961,17 @@ namespace Soap.Idaam
 
                     static void SeparateOnlinePermissionsIntoGroups(
                         List<ResourceServerScope> onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions,
+                        string apiName,
                         out List<ResourceServerScope> onlinePermissionsFromOurPartition,
                         out List<ResourceServerScope> onlinePermissionsFromOtherPartitions)
                     {
                         if (!string.IsNullOrEmpty(EnvVars.EnvironmentPartitionKey))
                         {
                             onlinePermissionsFromOtherPartitions = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
-                                                                   .Where(x => !x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                   .Where(x => !x.Value.StartsWith($"{EnvVars.EnvironmentPartitionKey}::{apiName}"))
                                                                    .ToList();
                             onlinePermissionsFromOurPartition = onlinePermissionsWhichMightIncludeThoseFromOtherEnvironmentPartitions
-                                                                .Where(x => x.Value.StartsWith(EnvVars.EnvironmentPartitionKey))
+                                                                .Where(x => x.Value.StartsWith($"{EnvVars.EnvironmentPartitionKey}::{apiName}"))
                                                                 .ToList();
                         }
                         else

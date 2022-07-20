@@ -24,9 +24,10 @@
 
     public static class RoleExt
     {
-        public static string AsAuth0Name(this Role role, string environmentPartitionKey)
+        public static string AsAuth0Name(this Role role, string environmentPartitionKey, string serviceName)
         {
-            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) + "builtin:"
+            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
+                   + serviceName + ":builtin:"
                    + Regex.Replace(role.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
     }
