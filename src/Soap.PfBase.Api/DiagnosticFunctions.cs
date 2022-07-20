@@ -19,6 +19,7 @@
     using global::Auth0.ManagementApi.Models;
     using global::Auth0.ManagementApi.Paging;
     using Mainwave.MimeTypes;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.CSharp.RuntimeBinder;
@@ -56,6 +57,7 @@
         public static async Task OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
             Stream outputStream,
             HttpContent httpContent,
+            HttpRequest httpRequest,
             TransportContext transportContext,
             Assembly messagesAssembly,
             string functionHost,
@@ -148,7 +150,7 @@
                     /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
                     EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
                     COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
-                    if (appConfig.Environment == SoapEnvironments.Development)
+                    if (appConfig.Environment == SoapEnvironments.Development || httpRequest.Query["key"] == Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"))
                     {
                         await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));
                         await outputStream.FlushAsync();

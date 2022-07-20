@@ -42,6 +42,7 @@ namespace Soap.PfBase.Api.Functions
                             .OnOutputStreamReadyToBeWrittenTo<TPing, TPong, TSendLargeMsg, TLargeMsg, TUserProfile>(
                                 outputSteam,
                                 httpContent,
+                                req,
                                 transportContext,
                                 typeof(TPing).Assembly,
                                 $"{req.Scheme}://{req.Host.ToUriComponent()}",
