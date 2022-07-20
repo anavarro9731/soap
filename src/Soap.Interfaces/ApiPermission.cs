@@ -22,9 +22,10 @@
     public static class ApiPermissionExt
     {
         
-        public static string AsAuth0Claim(this ApiPermission apiPermission, string environmentPartitionKey)
+        public static string AsAuth0Claim(this ApiPermission apiPermission, string environmentPartitionKey, string serviceName)
         {
-            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty) 
+            return (!string.IsNullOrEmpty(environmentPartitionKey) ? environmentPartitionKey + "::" : string.Empty)
+                   + serviceName + ":builtin:" 
                    + Regex.Replace(apiPermission.Key.ToLower(), "[^a-z0-9./-]", string.Empty);
         }
     }
