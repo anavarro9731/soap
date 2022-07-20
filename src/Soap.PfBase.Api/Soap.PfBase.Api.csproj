@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>V3</AzureFunctionsVersion>
-    <Version>10.14.3</Version>
+    <Version>10.14.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Soap.Idaam\Soap.Idaam.csproj" />
