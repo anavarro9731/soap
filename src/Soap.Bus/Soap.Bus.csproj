@@ -7,7 +7,7 @@
     <ProjectReference Include="..\Soap.Interfaces\Soap.Interfaces.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.0.0" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.9.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.SignalRService" Version="1.2.2" />
   </ItemGroup>
 </Project>

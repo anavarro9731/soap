@@ -54,7 +54,7 @@
             }
         }
 
-        public async Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility)
+        public async Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility, Guid sessionId)
         {
             
             /* ORDER MATTERS, because we clear the session id on the Bus Broadcast, but it needs to be there for the WebSocketReply
@@ -98,6 +98,7 @@
                 this really should have been handled earlier another way, but its not the worst */
                 var topicMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(publishEvent.ToJson(SerialiserIds.ApiBusMessage)))
                 {
+                    SessionId = sessionId.ToString(),
                     MessageId = publishEvent.Headers.GetMessageId()
                                             .ToString(), //* required for bus envelope but out code uses the matching header
 
@@ -121,7 +122,7 @@
             }
         }
 
-        public async Task Send(ApiCommand sendCommand, DateTimeOffset? scheduleAt = null)
+        public async Task Send(ApiCommand sendCommand, Guid sessionId, DateTimeOffset? scheduleAt = null)
         {
             var queueName = sendCommand.Headers.GetQueue();
 
@@ -132,7 +133,8 @@
                 MessageId = sendCommand.Headers.GetMessageId().ToString(),
                 Subject = sendCommand.GetType()
                                      .ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString()
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
+                SessionId = sessionId.ToString()
             };
 
             if (scheduleAt.HasValue)

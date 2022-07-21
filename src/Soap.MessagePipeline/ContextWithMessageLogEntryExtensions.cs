@@ -177,7 +177,7 @@
 
                 static async Task<UnitOfWork.State> CompleteMessages(ContextWithMessageLogEntry context)
                 {
-                    await SendAnyUnsentMessages(context.UnitOfWork, context.Bus.BusClient, context.DataStore);
+                    await SendAnyUnsentMessages(context.UnitOfWork, context.Bus.BusClient, context.DataStore, context.Message.Headers.GetMessageId());
                     await context.MessageLogEntry.CompleteUnitOfWork(context.DataStore.DocumentRepository);
                     return UnitOfWork.State.AllComplete;
                 }
@@ -282,7 +282,7 @@
                 }
             }
 
-            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBusClient busClient, IDataStore dataStore)
+            static async Task SendAnyUnsentMessages(UnitOfWork unitOfWork, IBusClient busClient, IDataStore dataStore, Guid contextMessageId)
             {
                 /* cannot rollback messages, forward only,
                 it's not the same risk as data though since there are no concurrency issues
@@ -294,11 +294,11 @@
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var commands = incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList();
                 
-                commands.ForEach(async i => await busClient.Send(i));
+                commands.ForEach(async i => await busClient.Send(i, contextMessageId));
 
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var events = incompleteEvents.Select(x => new { Event = x.Deserialise<ApiEvent>(), Visibility = x.EventVisibility }).ToList();
-                events.ForEach(async x => await busClient.Publish(x.Event, x.Visibility));
+                events.ForEach(async x => await busClient.Publish(x.Event, x.Visibility, contextMessageId));
                 
             }
 

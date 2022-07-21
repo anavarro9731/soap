@@ -26,7 +26,7 @@
 
         public List<ApiEvent> WsEventsPublished { get; } = new List<ApiEvent>(); //TODO write a test
 
-        public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility)
+        public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility, Guid sessionId)
         {
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
             {
@@ -45,7 +45,7 @@
             return Task.CompletedTask;
         }
 
-        public Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null)
+        public Task Send(ApiCommand sendCommand, Guid sessionId, DateTimeOffset? scheduledAt = null)
         {
             CommandsSent.Add(sendCommand);
             return Task.CompletedTask;
