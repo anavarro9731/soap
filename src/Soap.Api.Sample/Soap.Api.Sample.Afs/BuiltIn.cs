@@ -86,7 +86,7 @@
         //* benefit of using the BUS over HTTP is 1. its durable. 2. you don't have to wait for the message processing to complete to get a 200 OK.
         [FunctionName("ReceiveMessage")]
         public static async Task ReceiveMessage(
-            [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus")]
+            [ServiceBusTrigger("Soap.Api.Sample.Messages.%EnvironmentPartitionKey%", Connection = "AzureWebJobsServiceBus", IsSessionsEnabled = true)]
             //* this uses PeekLockMode
             Message myQueueItem,
             string messageId,

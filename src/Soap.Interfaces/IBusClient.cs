@@ -15,9 +15,9 @@
         List<ApiEvent> WsEventsPublished { get; }
         
         
-        Task Publish(ApiEvent publishEvent, EventVisibilityFlags eventVisibility);
+        Task Publish(ApiEvent publishEvent, EventVisibilityFlags eventVisibility, Guid sessionId);
 
-        Task Send(ApiCommand sendCommand, DateTimeOffset? scheduledAt = null);
+        Task Send(ApiCommand sendCommand, Guid sessionId, DateTimeOffset? scheduledAt = null);
 
         public class EventVisibility : TypedEnumeration<EventVisibility>
         {

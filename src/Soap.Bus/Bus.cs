@@ -122,7 +122,7 @@
                 {
                     EventVisibility = eventVisibility,
                     EventToPublish = eventToPublish,
-                    CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility)
+                    CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility, contextMessage.Headers.GetMessageId())
                 });
 
             static IBusClient.EventVisibilityFlags GetDefaultVisibility(ApiMessage contextMessage)
@@ -168,7 +168,7 @@
                 new QueuedCommandToSend
                 {
                     CommandToSend = commandToSend,
-                    CommitClosure = async () => await BusClient.Send(commandToSend, scheduledAt)
+                    CommitClosure = async () => await BusClient.Send(commandToSend, contextMessage.Headers.GetMessageId(), scheduledAt)
                 });
         }
 

@@ -30,8 +30,14 @@
 
             if (!await adminClient.QueueExistsAsync(queueName))
             {
+                
                 await stream($"-> Queue {queueName} does not exist, creating it...");
-                await adminClient.CreateQueueAsync(queueName);
+                await adminClient.CreateQueueAsync(
+                    new CreateQueueOptions(queueName)
+                    {
+                        RequiresSession = true,
+                    });
+
             }
             else
             {
