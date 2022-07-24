@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react';
 import {useAuth0} from '@auth0/auth0-react';
 import config from "../soap/config";
 import {useIsConfigLoaded} from "./systemStateHooks";
-import {types, validateArgs} from "../soap/util";
+import {optional, types, validateArgs} from "../soap/util";
 
 export const useAuth = () => {
 
@@ -36,15 +36,8 @@ export const useAuth = () => {
                             // if you need the raw id_token, you can access it
                             // using the __raw property
                             const id_token = claims.__raw;
-                            setIdToken(id_token);
-
                             const access_token = await getAccessTokenSilently();
-                            setAccessToken(access_token);
-
-                            config.auth0.isAuthenticated = true;
-                            config.auth0.accessToken = access_token;
-                            config.auth0.identityToken = id_token;
-                            config.auth0.userName = user.sub;
+                            setAuthenticated(id_token, access_token, user.sub);
                         }
                         setAuthReady(true);
                     }
@@ -55,11 +48,28 @@ export const useAuth = () => {
         })();
     }, [refreshIndex, isLoading, isAuthenticated, configLoaded]);
 
+    function setAuthenticated(idToken, accessToken, username) {
+        validateArgs(
+            [{idToken}, types.string],
+            [{accessToken}, types.string],
+            [{username}, types.string, optional]
+        );
+        setAccessToken(accessToken);
+        setIdToken(idToken);
+        config.auth0.isAuthenticated = true;
+        config.auth0.accessToken = accessToken;
+        config.auth0.identityToken = idToken;
+        config.auth0.userName = username;
+    }
+    
     return {
         idToken,
         accessToken,
         authEnabled: !!config.auth0,
         authReady,
+        setTokensForcefully(identityToken, accessToken, userName) {
+            setAuthenticated(identityToken, accessToken, userName)
+        },
         requireAuth(onAuthenticated) {
             validateArgs([{onAuthenticated}, types.function]);
             if (authReady) {
