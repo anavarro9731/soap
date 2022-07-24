@@ -5,7 +5,7 @@ import {getHeader, optional, setHeader, types, validateArgs} from './util';
 import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from './messages';
 import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
-import * as signalR from '@microsoft/signalr';
+import * as signalR from '@microsoft/signalr/dist/browser/signalr';
 import soapVars from '@soap/vars';
 
 
@@ -17,21 +17,25 @@ const _logger = (function () {
     //* the IIFE used is so that the "this.appInsights" expression will consider this to be the object-literal being constructed rather than the calling context
     return {
         appInsights: null,
-        log: (logMsg, logObject, toAzure) => {
+        log: (logMsg, logObject, important) => {
 
             if (typeof logMsg === types.object) logMsg = logMsg.toString();
             if (typeof logObject === types.object) logObject = JSON.parse(JSON.stringify(logObject, null, 2)); //* clone it to protect from mutation 
 
             validateArgs(
                 [{msg: logMsg}, types.string],
-                [{toAzure}, types.boolean, optional]
+                [{important}, types.boolean, optional]
             );
             
             const stackTrace = globalThis.Soap.showStackTraceInConsoleLogs ? new Error().stack.substring(5) : null;
-            if (logObject === undefined) toAzure ? console.warn(logMsg) : console.log(logMsg)
-            else toAzure ? console.warn(logMsg, logObject, stackTrace) : console.log(logMsg, logObject, stackTrace);
+            if (logObject === undefined) {
+                !!important ? console.warn(logMsg) : console.log(logMsg);
+            }
+            else {
+                !!important ? console.warn(logMsg, logObject, stackTrace) : console.log(logMsg, logObject, stackTrace)
+            }
 
-            if (toAzure && !isTest) {
+            if (!!important && !isTest) {
 
                 if (!this.appInsights) {
                     this.appInsights = new ApplicationInsights({
@@ -47,8 +51,8 @@ const _logger = (function () {
     }
 })();
 
-let _sendByDirectHttp = false;
-let _auth0, _sessionDetails;
+let _sendMode = "signalr";
+let _auth0, _sessionConnections;
 const _onLoadedCallbacks = [];
 (async function () {
     if (!isTest) {
@@ -65,7 +69,7 @@ async function loadConfigState() {
             _auth0 = await registerMessageTypesFromApi();
         }
         const b = async () => {
-            _sessionDetails = await createBusSession(receiveMessage);
+            _sessionConnections = await createSession(receiveMessage);
         }
 
         const promises = [a(), b()];
@@ -80,7 +84,7 @@ async function loadConfigState() {
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl(functionAppRoot)
             .withAutomaticReconnect()
-            .configureLogging(signalR.LogLevel.Information)
+            .configureLogging(signalR.LogLevel.Trace)
             .build();
 
         hubConnection.on('eventReceived', async message => {
@@ -88,9 +92,9 @@ async function loadConfigState() {
             await processor(messageObj);
         });
         
+        
         hubConnection.onreconnecting(err => console.warn("SignalR Reconnecting", err));
         hubConnection.onreconnected(connectionId =>{
-            _sessionDetails.browserSessionId = connectionId;   
             console.warn("SignalR Reconnected. New Session Id: " + connectionId)  
         });
         hubConnection.onclose(err => console.warn("SignalR Closing", err))
@@ -103,9 +107,9 @@ async function loadConfigState() {
         const endpoint = `${functionAppRoot}/AddToGroup?connectionId=${encodeURIComponent(hubConnection.connectionId)}`;
 
         //* don't wait it will finish before first response
-        fetch(endpoint); //this will get us messages matched to our environment partition key
+        await fetch(endpoint); //this will get us messages matched to our environment partition key
 
-        return hubConnection.connectionId;
+        return hubConnection;
     }
 
     async function registerMessageTypesFromApi() {
@@ -139,18 +143,18 @@ async function loadConfigState() {
         return auth0Info;
     }
 
-    async function createBusSession(receiver) {
+    async function createSession(receiver) {
 
         const serviceBusClient = new ServiceBusClient(vars().serviceBusConnectionString); //* timeout at the default of [5 minutes] of inactivity on the AMQP connection
         //* will hold lock on the session for 5 mins. if the user F5's then you will get a new session id and the old one will die off with the servicebusClient 
         //* after connection timeout since there are no lockRenewals on session or send calls on that client. 
         // on further inspection it may be killed as soon as the WSS connection is lost though not able to verify
 
-        const browserSessionId = await receiver(processMessage);
+        const hubConnection = await receiver(processMessage);
 
         return {
-            browserSessionId,
-            serviceBusClient,
+            hubConnection,
+            serviceBusClient
         };
 
         async function processMessage(message) {
@@ -206,30 +210,52 @@ async function loadConfigState() {
 
 function sendMessage(msg) {
 
-    if (!_sessionDetails) {
+    if (!_sessionConnections) {
         console.error(`trying to send msg ${msg.$type} before types are loaded. message will be discarded`);
     } else {
 
         (async function (typedMessage) {
 
             try {
-                if (_sendByDirectHttp) {
+                if (_sendMode.toLowerCase() == "httpdirect") {
                     await sendByHttp(typedMessage);    
-                } else {
+                } else if (_sendMode.toLowerCase() == "servicebus") {
                     await sendByBus(typedMessage);
+                } else if (_sendMode.toLowerCase() == "signalr") {
+                    await sendBySignalR(typedMessage);
                 }
                 
             } catch (e) {
                 _logger.log(e);
             }
 
-            async function sendByBus(message) {
-                const queue = getHeader(message, headerKeys.queueName);
-                const sender = _sessionDetails.serviceBusClient.createSender(queue);
+            async function sendBySignalR(message) {
 
                 _logger.log(`Sending message ${getHeader(message, headerKeys.schema)}\r\nid/conversation ${getHeader(message, headerKeys.messageId)}`, message);
 
-                setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
+                //* signalR doesn't require us to use blob storage
+                _.remove(message.headers, h => h.key == headerKeys.blobId);
+                _.remove(message.headers, h => h.key == headerKeys.sasStorageToken);
+
+                setHeader(message, headerKeys.sessionId, _sessionConnections.hubConnection.connectionId);
+
+                try {
+                    await _sessionConnections.hubConnection.send("ReceiveMessageSignalR", JSON.stringify(message), getHeader(message, headerKeys.messageId), message.$type);
+                } catch (err) {
+                    console.error(err);
+                }
+                
+                _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} to endpoint ${endpoint}`);
+
+            }
+
+            async function sendByBus(message) {
+                const queue = getHeader(message, headerKeys.queueName);
+                const sender = _sessionConnections.serviceBusClient.createSender(queue);
+
+                _logger.log(`Sending message ${getHeader(message, headerKeys.schema)}\r\nid/conversation ${getHeader(message, headerKeys.messageId)}`, message);
+
+                setHeader(message, headerKeys.sessionId, _sessionConnections.hubConnection.connectionId);
 
                 if (_.find(message.headers, h => h.key === headerKeys.blobId)) {
 
@@ -242,7 +268,7 @@ function sendMessage(msg) {
                     body: message,
                     messageId: getHeader(message, headerKeys.messageId),
                     subject: message.$type,
-                    sessionId: _sessionDetails.browserSessionId
+                    sessionId: _sessionConnections.hubConnection.connectionId
                 });
 
                 _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} to queue ${queue}`);
@@ -258,7 +284,7 @@ function sendMessage(msg) {
                 _.remove(message.headers, h => h.key == headerKeys.blobId);
                 _.remove(message.headers, h => h.key == headerKeys.sasStorageToken);
                 
-                setHeader(message, headerKeys.sessionId, _sessionDetails.browserSessionId);
+                setHeader(message, headerKeys.sessionId, _sessionConnections.hubConnection.connectionId);
                 
                 const endpoint = encodeURI(`${vars().functionAppRoot}/ReceiveMessageHttp?id=${getHeader(message, headerKeys.messageId)}&type=${message.$type}`);
 
@@ -266,7 +292,6 @@ function sendMessage(msg) {
                     method: 'POST', 
                     headers: {
                         'Content-Type': 'application/json',
-                        
                     },
                     body: JSON.stringify(message),
                 })
@@ -349,16 +374,16 @@ export default {
         return _logger;
     },
     get isLoaded() {
-        return !!_sessionDetails;
+        return !!_sessionConnections;
     },
     get auth0() {
         return _auth0;
     },
-    get sendByDirectHttp() {
-        return _sendByDirectHttp;
+    get sendMode() {
+        return _sendMode;
     },
-    set sendByDirectHttp(value) {
-        _sendByDirectHttp = value;
+    set sendMode(value) {
+        _sendMode = value;
     },
     onLoaded(callback) {
         _onLoadedCallbacks.push(callback);

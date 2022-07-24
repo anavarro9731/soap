@@ -6,7 +6,7 @@
     "@azure/service-bus": "7.5.1",
     "@azure/storage-blob": "12.3.0",
     "@microsoft/applicationinsights-web": "2.5.10",
-    "@microsoft/signalr": "6.0.4",
+    "@microsoft/signalr": "6.0.7",
     "baseui": "10.12.1",
     "compressorjs": "1.0.7",
     "dompurify": "2.2.9",

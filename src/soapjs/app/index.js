@@ -11,7 +11,7 @@ import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
 config.showSignup = false;
-config.debugSystemState = true;
+
 function Index() {
     return (
         

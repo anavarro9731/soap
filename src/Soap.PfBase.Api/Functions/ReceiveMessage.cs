@@ -19,6 +19,49 @@ namespace Soap.PfBase.Api.Functions
 
     public static partial class PlatformFunctions
     {
+        
+        public static async Task HandleMessage<TUserProfile>(
+            string body,
+            string messageId,
+            string type,
+            MapMessagesToFunctions messageFunctionRegistration,
+            ISecurityInfo securityInfo,
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            ILogger log,
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
+        {
+            Serilog.ILogger logger = null;
+            try
+            {
+                AzureFunctionContext.CreateLogger(out logger);
+
+                AzureFunctionContext.LoadAppConfig(out var appConfig);
+
+                var result = await AzureFunctionContext.Execute<TUserProfile>(
+                                 body,
+                                 messageFunctionRegistration,
+                                 messageId,
+                                 type,
+                                 securityInfo,
+                                 logger,
+                                 appConfig,
+                                 signalRBinding, 
+                                 dataStoreOptions);
+
+                if (result.Success == false)
+                {
+                    ExceptionDispatchInfo.Capture(result.UnhandledError).Throw();
+                }
+            }
+            catch (Exception e)
+            {
+                logger?.Fatal(
+                    e,
+                    $"Could not execute function {nameof(HandleMessage)} for message type ${type ?? "unknown"} with id {messageId ?? "unknown"}");
+                log.LogCritical(e.ToString());
+            }
+        }
+        
         public static async Task HandleMessage<TUserProfile>(
             Message myQueueItem,
             string messageId,

@@ -267,3 +267,4 @@ dist
 node_modules
 
 
+/settings.json

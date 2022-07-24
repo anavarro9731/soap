@@ -1,5 +1,5 @@
 import {AggregateList, AggregateView, useEvent, useQuery, EntityMenu, getIdOfMessageEntity} from "@soap/modules";
-import React, {Fragment} from "react";
+import React, {Fragment, useCallback, useState} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
 import {EditTestData} from "./drawers/EditTestData";
 import {RemoveTestData} from "./modals/RemoveTestData";
@@ -14,18 +14,18 @@ export function ListTestData() {
         }
     });
 
+    const receiver = useCallback( () => {
+        refresh();
+    },[]);
+        
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E106v1_TestDataRemoved",
-        onEventReceived(event, envelope) {
-            refresh();
-        }
+        onEventReceived: receiver
     });
-
+    
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataUpserted",
-        onEventReceived(event, envelope) {
-            refresh();
-        }
+        onEventReceived: receiver
     });
 
     return (

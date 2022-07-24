@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useEffect, useCallback} from 'react';
 import postal from 'postal';
 import bus from '../soap/bus';
 import {optional, types, validateArgs} from "../soap/util";
@@ -9,7 +9,7 @@ export function useEvent(
     channel = bus.channels.events,
 ) {
     let { eventName, conversationId, onEventReceived } = args;
-    
+        
     useEffect(() => {
         let sub;
         if (!!args) {
@@ -26,5 +26,5 @@ export function useEvent(
             config.logger.log(`UNSUBSCRIBED to channel:${sub.channel}, topic:${sub.topic}`);
             if (!!sub) postal.unsubscribe(sub);
         };
-    }, [args]);
+    }, [eventName, conversationId, onEventReceived]);
 }
