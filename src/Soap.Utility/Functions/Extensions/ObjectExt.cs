@@ -30,6 +30,11 @@
         {
         };
         
+        /*
+         ******************** IF YOU CHANGE THIS METHOD CHANGE THE COPY IN SOAP.CLIENT ****************************
+         * it is duplicated because of restrictions on .net target frameworks used in soap.client that prevent importing
+         * of this and other soap pkgs but we need to keep them aligned so things send that way and this are always the same.
+         */
         public static JsonSerializerSettings ApiMessageSerialiserSettings => new JsonSerializerSettings
         {
             DefaultValueHandling =

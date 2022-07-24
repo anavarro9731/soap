@@ -28,7 +28,7 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C106
 
             var c106V1LargeCommand = new C106v1_LargeCommand().Op(SetHeaders).Op(x => x.C106_Large256KbString = "small string instead");
             
-            TestMessage(c106V1LargeCommand, Identities.JohnDoeAllPermissions, 0, clientTransport: Transport.HttpDirect).Wait();
+            TestMessage(c106V1LargeCommand, Identities.JohnDoeAllPermissions, 0, clientOptions: new SoapClient.HttpOptions()).Wait();
         }
 
         [Fact]

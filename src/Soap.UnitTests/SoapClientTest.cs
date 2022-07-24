@@ -5,6 +5,7 @@ namespace Soap.UnitTests
     using FluentValidation;
     using Soap.Client;
     using Soap.Interfaces.Messages;
+    using Soap.Utility.Functions.Extensions;
     using Xunit;
 
     public class SoapClientTest
@@ -27,13 +28,13 @@ namespace Soap.UnitTests
             }
         }
 
-        public class WhenWeSubmitACommand
+        public class WhenWeSubmitACommandByHttp
         {
             private static readonly SoapClient client = new SoapClient();
 
-            private static SoapClient.SendResult result;
+            private static SoapClient.HttpSendResult result;
 
-            public WhenWeSubmitACommand()
+            public WhenWeSubmitACommandByHttp()
             {
                 var x = new C100_TestCommand
                 {
@@ -43,13 +44,13 @@ namespace Soap.UnitTests
                 result = client.Send(
                                    "http://localhost/",
                                    x,
-                                   new SoapClient.Options
+                                   new SoapClient.HttpOptions()
                                    {
                                        TestMode = true,
-                                       RequiresAuth = new SoapClient.Options.Auth("accesstoken", "idtoken", "user"),
-                                       SignalRSession = new SoapClient.Options.SignalRSessionInfo("hash", Guid.NewGuid(), "sessionid")
+                                       RequiresAuth = new SoapClient.OptionsBase.Auth("accesstoken", "idtoken", "user"),
+                                       SignalRSession = new SoapClient.OptionsBase.SignalRSessionInfo("hash", Guid.NewGuid(), "sessionid")
                                    })
-                               .Result;
+                               .Result.CastOrError<SoapClient.HttpSendResult>();
             }
 
             [Fact]
@@ -63,5 +64,42 @@ namespace Soap.UnitTests
                 result.JsonSent.Should().NotBeEmpty();
             }
         }
+        
+        public class WhenWeSubmitACommandByBus
+        {
+            private static readonly SoapClient client = new SoapClient();
+
+            private static SoapClient.BusSendResult result;
+
+            public WhenWeSubmitACommandByBus()
+            {
+                var x = new C100_TestCommand
+                {
+                    Name = "test"
+                };
+
+                result = client.Send(
+                                   "Endpoint=sb://sb-soapapisample-vnext.servicebus.windows.net/;SharedAccessKeyName=SenderAccessKey;SharedAccessKey=u5GzCw0bot5/Xc5EIq4X6B3fD70vYE65Bso2AZ1vI+8=",
+                                   x,
+                                   new SoapClient.BusOptions()
+                                   {
+                                       ScheduleAt = new DateTimeOffset(DateTime.Now.AddDays(1)),
+                                       BusSessionId = Guid.NewGuid(),
+                                       TestMode = true,
+                                       RequiresAuth = new SoapClient.OptionsBase.Auth("accesstoken", "idtoken", "user"),
+                                       SignalRSession = new SoapClient.OptionsBase.SignalRSessionInfo("hash", Guid.NewGuid(), "sessionid")
+                                   })
+                               .Result.CastOrError<SoapClient.BusSendResult>();
+            }
+
+            [Fact]
+            public void ItShouldSerialiseIt()
+            {
+                result.Should().NotBeNull();
+                result.MessageId.Should().NotBeEmpty();
+                result.JsonSent.Should().NotBeEmpty();
+            }
+        }
+        
     }
 }

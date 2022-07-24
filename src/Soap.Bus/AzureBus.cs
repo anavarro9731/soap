@@ -122,32 +122,47 @@
             }
         }
 
+
         public async Task Send(ApiCommand sendCommand, Guid sessionId, DateTimeOffset? scheduleAt = null)
         {
             var queueName = sendCommand.Headers.GetQueue();
 
             var sender = serviceBusSenders.GetOrAdd(queueName, (key) => serviceBusClient.CreateSender(key));
+
+            var messageJson = sendCommand.ToJson(SerialiserIds.ApiBusMessage);
             
-            var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(sendCommand.ToJson(SerialiserIds.ApiBusMessage)))
-            {
-                MessageId = sendCommand.Headers.GetMessageId().ToString(),
-                Subject = sendCommand.GetType()
-                                     .ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
-                SessionId = sessionId.ToString()
-            };
+            var queueMessage = CreateBusMessage(sendCommand, messageJson, sessionId);
 
             if (scheduleAt.HasValue)
             {
-                var sequenceNumber = await sender.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
+                long sequenceNumber = await sender.ScheduleMessageAsync(queueMessage, scheduleAt.Value);
             }
             else
             {
                 await sender.SendMessageAsync(queueMessage);
             }
-
+            
             CommandsSent.Add(sendCommand.Clone());
         }
+        
+        public static ServiceBusMessage CreateBusMessage(ApiCommand sendCommand, string messageJson, Guid sessionId)
+        {
+            /*
+             ******************** IF YOU CHANGE THE LOGIC IN THIS METHOD CHANGE THE COPY IN SOAP.CLIENT ****************************
+             * it is duplicated because of restrictions on .net target frameworks used in soap.client that prevent importing
+             * of this and other soap pkgs but we need to keep them aligned so things send that way and this are always the same.
+             */
+            
+            var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(messageJson))
+            {
+                MessageId = sendCommand.Headers.GetMessageId().ToString(),
+                Subject = sendCommand.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
+                SessionId = sessionId.ToString()
+            };
+            return queueMessage;
+        }
+        
 
         public class Settings : IBusSettings
         {

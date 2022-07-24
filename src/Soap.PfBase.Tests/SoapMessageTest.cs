@@ -10,6 +10,7 @@ namespace Soap.PfBase.Tests
     using DataStore.Interfaces;
     using DataStore.Interfaces.LowLevel;
     using DataStore.Options;
+    using Microsoft.Extensions.Options;
     using Soap.Client;
     using Soap.Config;
     using Soap.Context.BlobStorage;
@@ -102,6 +103,7 @@ namespace Soap.PfBase.Tests
                 .Result;
             if (Result.Success == false) throw Result.UnhandledError;
         }
+
         /// <summary>
         /// Used to send the message being tested
         /// </summary>
@@ -113,7 +115,7 @@ namespace Soap.PfBase.Tests
         /// <param name="setupMocks"></param>
         /// <param name="authLevel">Default is ApiAndDatabasePermission</param>
         /// <param name="enableSlaWhenSecurityContextIsMissing"></param>
-        /// <param name="clientTransport"></param>
+        /// <param name="clientOptions"></param>
         /// <typeparam name="TMessage"></typeparam>
         protected async Task TestMessage<TMessage>(
             TMessage msg,
@@ -124,7 +126,7 @@ namespace Soap.PfBase.Tests
             Action<MessageAggregatorForTesting>? setupMocks = null,
             AuthLevel? authLevel = null,
             bool enableSlaWhenSecurityContextIsMissing = false,
-            Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
+            SoapClient.OptionsBase? clientOptions = null) where TMessage : ApiMessage
         {
             Result = await ExecuteMessage(
                          msg,
@@ -135,7 +137,7 @@ namespace Soap.PfBase.Tests
                          setupMocks,
                          authLevel,
                          enableSlaWhenSecurityContextIsMissing,
-                         clientTransport);
+                         clientOptions);
         }
 
         private async Task<Result> ExecuteMessage<TMessage>(
@@ -147,7 +149,7 @@ namespace Soap.PfBase.Tests
             Action<MessageAggregatorForTesting>? setup = null,
             AuthLevel? authLevel = null,
             bool enableSlaWhenSecurityContextIsMissing = false,
-            Transport clientTransport = Transport.ServiceBus) where TMessage : ApiMessage
+            SoapClient.OptionsBase? clientOptions = null) where TMessage : ApiMessage
                                                               
         {
             
@@ -164,7 +166,8 @@ namespace Soap.PfBase.Tests
 
             msg.SetDefaultHeadersForIncomingTestMessages();
 
-            if (msg is ApiCommand && clientTransport == Transport.ServiceBus
+            clientOptions ??= new SoapClient.BusOptions();
+            if (msg is ApiCommand && clientOptions is SoapClient.BusOptions
                                   && msg.ToBlob().Bytes.Length > 256000)
             {
                 //* simulate what the js or soap clients would do
