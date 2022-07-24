@@ -107,10 +107,11 @@
             var connectionId = req.Query["connectionId"];
             if (string.IsNullOrEmpty(connectionId))
             {
-                logger.LogCritical("Missing Connection ID Parameter");
-                throw new ArgumentException("Missing Connection ID Parameter");
+                logger.LogCritical("Missing Parameters");
+                throw new ArgumentException("Missing Parameters");
             }
 
+            //* groups per EPK
             return groups.AddAsync(
                 new SignalRGroupAction
                 {

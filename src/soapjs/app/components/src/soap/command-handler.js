@@ -131,7 +131,7 @@ export default {
             
             if (commandBlob.size > 256000) {
                 //* make sure these were provided, at present only autoform can send large messages because it can get the sastoken from the backend
-                //* if you need to send large messages from frontend not using autoform, or even using autoform, then sending using httpdirect is the better approach
+                //* if you need to send large messages from frontend not using autoform, sending using httpdirect is the better approach
                 getHeader(command, headerKeys.blobId);
                 getHeader(command, headerKeys.sasStorageToken);
             } else {

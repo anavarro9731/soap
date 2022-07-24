@@ -42,6 +42,8 @@ export const useAuth = () => {
                         setAuthReady(true);
                     }
                 } else {
+                    /* this would be where config is load but not auth0 object, so auth is disabled, but for components waiting on a determination its "ready"
+                    you could check for AuthEnabled and AuthReady separately but this makes it a bit easier and you can't forget to check one when there is only one variable */
                     setAuthReady(true);
                 }
             }

@@ -320,7 +320,7 @@ namespace Soap.Idaam
                 }
                 catch (Exception e)
                 {
-                    throw new ApplicationException("The id token is invalid.", e);
+                    throw new ApplicationException("Security Exception S11.", e);
                 }
                 
                 string FirstName(string firstName, string fullName) =>
@@ -450,7 +450,7 @@ namespace Soap.Idaam
                 }
                 catch (Exception e)
                 {
-                    throw new CircuitException("The access token is invalid.", e);
+                    throw new CircuitException("Security Exception S10", e);
                 }
             }
             

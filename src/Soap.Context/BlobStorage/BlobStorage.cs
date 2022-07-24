@@ -315,7 +315,7 @@
                     containerName => blobServiceClient.GetBlobContainerClient(containerName));
 
                 //* sadly CreateIfNotExists works by trying to make a call to see if it exists and fills the azure logs with errors that aren't real errors
-                containerClient.CreateIfNotExists(PublicAccessType.Blob);
+                containerClient.CreateIfNotExists(PublicAccessType.None);
 
                 var blobClient = containerClient.GetBlobClient(blobName);
                 return blobClient;

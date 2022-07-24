@@ -73,10 +73,6 @@
             where TLargeMsg : ApiMessage
             where TUserProfile : class, IUserProfile, IAggregate, new()
         {
-
-            
-
-            
             ApplicationConfig appConfig = null;
             try
             {
@@ -84,20 +80,20 @@
                 
                 AzureFunctionContext.LoadAppConfig(out appConfig);
 
-                /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
+                /* WARNING DO NOT WRITE ANYTHING IF YOU ARE NOT IN DEV ENV OR USING INSTRUMENTATION KEY
                 EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
-                COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
-                await WriteLineIfInDevelopmentEnvironment("RUNNING IN DEVELOPMENT ENVIRONMENT. DETAILS WILL BE SHOWN THAT ARE NOT PRINTED IN OTHER ENVIRONMENTS.");
+                COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL SINCE THE HEALTH CHECK RUNS WITH SERVICE LEVEL AUTHORITY */
+                await PrintToOutputStreamIfInSecureEnvironment("RUNNING IN SECURE ENVIRONMENT. DETAILS WILL BE SHOWN THAT ARE NOT PRINTED IN OTHER ENVIRONMENTS.");
 
-                await WriteLineIfInDevelopmentEnvironment("Loading Config...");
+                await PrintToOutputStreamIfInSecureEnvironment("Loading Config...");
 
-                await WriteLineIfInDevelopmentEnvironment(GetConfigDetails(appConfig));
+                await PrintToOutputStreamIfInSecureEnvironment(GetConfigDetails(appConfig));
 
-                await CheckDatabaseExists(appConfig, WriteLineIfInDevelopmentEnvironment);
+                await CheckDatabaseExists(appConfig, PrintToOutputStreamIfInSecureEnvironment);
 
-                await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, WriteLineIfInDevelopmentEnvironment);
+                await CheckServiceBusConfiguration(appConfig, messagesAssembly, mapMessagesToFunctions, logger, PrintToOutputStreamIfInSecureEnvironment);
 
-                await CheckBlobStorage(appConfig, new MessageAggregator(), WriteLineIfInDevelopmentEnvironment, functionHost);
+                await CheckBlobStorage(appConfig, new MessageAggregator(), PrintToOutputStreamIfInSecureEnvironment, functionHost);
                 
                 bool success1 = await SendMessageWaitForReply<TPing, TPong, TUserProfile>(
                     logger,
@@ -105,7 +101,7 @@
                     securityInfo,
                     mapMessagesToFunctions,
                     signalRBinding,
-                    WriteLineIfInDevelopmentEnvironment);
+                    PrintToOutputStreamIfInSecureEnvironment);
 
                 bool success2 = await SendMessageWaitForReply<TSendLargeMsg, TLargeMsg, TUserProfile>(
                     logger,
@@ -113,17 +109,17 @@
                     securityInfo,
                     mapMessagesToFunctions,
                     signalRBinding,
-                    WriteLineIfInDevelopmentEnvironment);
+                    PrintToOutputStreamIfInSecureEnvironment);
 
                 var idaamProvider = new IdaamProvider(appConfig);
-                await CheckAuth0Setup(idaamProvider, securityInfo, appConfig, WriteLineIfInDevelopmentEnvironment);
+                await CheckAuth0Setup(idaamProvider, securityInfo, appConfig, PrintToOutputStreamIfInSecureEnvironment);
                 
                 
                 //* this needs 2 run last, order important
                 List<bool> startupCommandResults = new List<bool>();
                 if (startupCommands != null)
                 {
-                    await WriteLineIfInDevelopmentEnvironment("Running Startup Commands ...");
+                    await PrintToOutputStreamIfInSecureEnvironment("Running Startup Commands ...");
                     foreach (var startupCommand in startupCommands)
                     {
                         var startupCommandSuccess = await ExecuteCommandInline<TUserProfile>(startupCommand,                   
@@ -132,7 +128,7 @@
                                                         securityInfo,
                                                         mapMessagesToFunctions,
                                                         signalRBinding,
-                                                        WriteLineIfInDevelopmentEnvironment);
+                                                        PrintToOutputStreamIfInSecureEnvironment);
                         startupCommandResults.Add(startupCommandSuccess);
                         
                     }
@@ -145,11 +141,11 @@
                 await outputStream.WriteAsync(Encoding.UTF8.GetBytes(finalString));
                 
                 
-                async ValueTask WriteLineIfInDevelopmentEnvironment(string s)
+                async ValueTask PrintToOutputStreamIfInSecureEnvironment(string s)
                 {
-                    /* WARNING DO NOT WRITE ANYTHING TO THE CONSOLE IF YOU ARE NOT IN DEV ENVIRONMENT AFTER THIS UNLESS YOU HAVE THE SPECIAL KEY
+                    /* WARNING DO NOT WRITE ANYTHING IF YOU ARE NOT IN DEV ENV OR USING INSTRUMENTATION KEY
                     EXPOSING THINGS LIKE MESSAGE HEADERS ON HEALTH CHECK MESSAGES OR OTHER INTERNAL DETAILS COULD EXPOSE DETAILS ATTACKER 
-                    COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL*/
+                    COULD USE TO COMPROMISE SYSTEM, POTENTIALLY AT A LOW LEVEL SINCE THE HEALTH CHECK RUNS WITH SERVICE LEVEL AUTHORITY */
                     if (appConfig.Environment == SoapEnvironments.Development || httpRequest.Query["key"] == Environment.GetEnvironmentVariable("APPINSIGHTS_INSTRUMENTATIONKEY"))
                     {
                         await outputStream.WriteAsync(Encoding.UTF8.GetBytes($"{s}{Environment.NewLine}"));

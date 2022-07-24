@@ -35,10 +35,8 @@ extra work during the definition stage, but once defined they should remain stab
 the life of the system. The architecture should recover any initial costs spent defining these parts 
 by keeping the cost of change low as the systems' feature-set grows.  
 
-### For install instructions see the [setup.md](setup.md)
-
-##Post-Install Solution 
-
+### Installation
+#### For instructions see the [setup.md](setup.md)
 Note: All packages referred to in this guide are available on the Soap Nuget feed
 https://pkgs.dev.azure.com/anavarro9731/soap-feed/_packaging/soap-pkgs/nuget/v3/index.json
 
@@ -79,6 +77,12 @@ The other projects are:
 - YourAPi.Tests, this project contains unit tests that exercise the message pipeline using various messages.
 
 We will discuss each of these project types and their associated classes in detail.
+
+### Important Security Considerations
+
+It's probably best highlight these at the top so failing to read the whole document will not result in missing these considerations.
+1. By Default the AuthLevel in the config is set to None. To secure your endpoints you need to change this. 
+2. The GetBlob and AddBlob endpoints are secured by SAS tokens for builtin functions, but even this does not 
 
 ## YourApi.Constants
 

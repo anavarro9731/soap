@@ -6,8 +6,11 @@ namespace Soap.PfBase.Api.Functions
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Soap.Config;
     using Soap.Context;
     using Soap.Context.BlobStorage;
+    using Soap.Idaam;
+    using Soap.Interfaces;
     using Soap.MessagePipeline.MessageAggregator;
     using Soap.Utility;
     using Soap.Utility.Enums;
@@ -23,6 +26,11 @@ namespace Soap.PfBase.Api.Functions
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
+                if (appConfig.AuthLevel.AuthenticationRequired)
+                {
+                    await VerifyIdToken(req, appConfig);    
+                }
+                
                 var blobClient = new BlobStorage(
                     new BlobStorage.Settings(appConfig.StorageConnectionString, new MessageAggregator()));
 
@@ -59,6 +67,11 @@ namespace Soap.PfBase.Api.Functions
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
+                if (appConfig.AuthLevel.AuthenticationRequired)
+                {
+                    await VerifyIdToken(req, appConfig);    
+                }
+                
                 GetBlobId(req, out var id);
 
                 var blobClient = new BlobStorage(
@@ -85,6 +98,13 @@ namespace Soap.PfBase.Api.Functions
                 "Could not parse ID of Image from Querystring param 'id'",
                 ErrorMessageSensitivity.MessageIsSafeForInternalClientsOnly);
             blobId = id;
+        }
+        
+        private static async Task VerifyIdToken(HttpRequest req, ApplicationConfig appConfig)
+        {
+            string idToken = req.Query["it"];
+            var idaamProvider = new IdaamProvider(appConfig);
+            await idaamProvider.GetLimitedUserProfileFromIdentityToken(idToken);
         }
     }
 }

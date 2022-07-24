@@ -6,6 +6,7 @@ import {Modal, ModalBody, ModalHeader, ROLE, SIZE} from "baseui/modal";
 import {useStyletron} from "baseui";
 import Compressor from 'compressorjs'
 import config from "../soap/config";
+import {useAuth} from "../hooks/useAuth.js";
 
 function resizeTo(blob, {maxHeight, maxWidth}) {
     return new Promise((resolve, reject) => {
@@ -36,14 +37,19 @@ export function FileView(props) {
     const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
     const [css] = useStyletron();
 
-
+    const {
+        idToken,
+        authReady
+    } = useAuth();
+    
     //* run to get the blob state after first render is complete
     useEffect(() => {
         (async function GetBlobFromBackend() {
-            if (value && value.objectUrl === undefined) {
+            if (value && value.objectUrl === undefined && authReady) {
                 setIsLoading(true);
                 const endpoint = `${config.vars.functionAppRoot}/GetBlob`;
-                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
+                
+                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}&it=${idToken}`);
                 const blob = await response.blob();
                 const blobInfo = {
                     id: value.id,
@@ -56,7 +62,7 @@ export function FileView(props) {
                 setIsLoading(false);
             }
         })();
-    }, []) //* run only once
+    }, [authReady]) //* run only once
 
     return (
         <div>

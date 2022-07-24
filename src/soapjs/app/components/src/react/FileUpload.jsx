@@ -12,6 +12,8 @@ import {uuidv4} from "../soap/util";
 import Compressor from 'compressorjs'
 import {Label3} from "baseui/typography";
 import config from "../soap/config";
+import {useAuth} from "../hooks/useAuth.js"
+
 
 function resizeTo(blob, {maxHeight, maxWidth}) {
     return new Promise((resolve, reject) => {
@@ -25,14 +27,18 @@ function resizeTo(blob, {maxHeight, maxWidth}) {
     });
 }
 
-async function uploadBlobToBackend(blobId, blob) {
+async function uploadBlobToBackend(blobId, blob, idToken) {
 
     const endpoint = `${config.vars.functionAppRoot}/AddBlob`;
-    await fetch(`${endpoint}?id=${blobId}`, {
+    
+    
+    //* shouldn't need use effect as page should be loaded
+    await fetch(`${endpoint}?id=${blobId}&it=${idToken}`, {
         method: "post",
         //we don’t set Content-Type header manually, because a Blob object has a built-in type for Blob objects that type becomes the value of Content-Type.
         body: blob
     });
+
     
 }
 
@@ -49,15 +55,19 @@ export function FileUpload (props) {
     const dimensions = props.dimensions ?? {maxWidth: 1024, maxHeight: 768};
     const [isOpen, setIsOpen] = useState(false);
     const [css] = useStyletron();
-    
 
+    const {
+        idToken,
+        authReady
+    } = useAuth();
+    
     //* run to get the blob state after first render is complete
     useEffect(() => {
         (async function GetBlobFromBackend() {
-            if (value !== null && value.objectUrl === undefined) {
+            if (value !== null && value.objectUrl === undefined && authReady) {
                 setIsLoading(true);
                 const endpoint = `${config.vars.functionAppRoot}/GetBlob`;
-                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}`);
+                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}&it=${idToken}`);
                 const blob = await response.blob();
                 const blobInfo = {
                     id: value.id,
@@ -71,7 +81,7 @@ export function FileUpload (props) {
                 setIsLoading(false);
             }
         })();
-    }, []) //* run only once
+    }, [authReady])
    
     return (
         <div>
@@ -87,7 +97,7 @@ export function FileUpload (props) {
                     const enrichedBlob = await enrichBlobInfo(blob);
                     enrichedBlob.id = uuidv4();
                     const blobToUpload = await objectUrlToBlob(enrichedBlob.objectUrl);
-                    await uploadBlobToBackend(enrichedBlob.id, blobToUpload);
+                    await uploadBlobToBackend(enrichedBlob.id, blobToUpload, idToken);
                     onChange(enrichedBlob);
                     setIsLoading(false);
                 }}

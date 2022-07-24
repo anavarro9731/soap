@@ -10,6 +10,6 @@
     <ProjectReference Include="..\Soap.Interfaces.Messages\Soap.Interfaces.Messages.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="16.19.1" />
+    <PackageReference Include="DataStore.Interfaces.LowLevel" Version="16.23.0-alpha" />
   </ItemGroup>
 </Project>
