@@ -19,6 +19,7 @@
     "react-dom": "16.14.0",
     "react-hook-form": "6.15.3",
     "react-router-dom": "5.2.0",
+    "@vighnesh153/use-global-state": "1.3.115",
     "@soap/vars": "1.1.0"
   },
   "devDependencies": {

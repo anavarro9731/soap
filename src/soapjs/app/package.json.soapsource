@@ -20,7 +20,8 @@
     "react-hook-form": "6.15.3",
     "react-router-dom": "5.2.0",
     "styletron-engine-atomic": "1.4.8",
-    "styletron-react": "6.0.2"
+    "styletron-react": "6.0.2",
+    "@vighnesh153/use-global-state": "1.3.115"
   },
   "devDependencies": {
     "os-browserify": "0.3.0",

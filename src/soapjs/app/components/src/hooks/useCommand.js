@@ -11,7 +11,7 @@ export function useCommand(command, sendCommand = true, closeConversation = true
     const { authReady } = useAuth();
 
     const [conversationId, setConversationId] = useState();
-    
+
     useEffect(() => {
         
         if (configLoaded && authReady && sendCommand) {

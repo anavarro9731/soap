@@ -5,7 +5,7 @@ import {getHeader, optional, setHeader, types, validateArgs} from './util';
 import {getListOfRegisteredMessages, headerKeys, registerMessageTypes} from './messages';
 import {BlobServiceClient} from "@azure/storage-blob";
 import _ from "lodash";
-import * as signalR from '@microsoft/signalr/dist/browser/signalr';
+import * as signalR from '@microsoft/signalr';
 import soapVars from '@soap/vars';
 
 
@@ -51,7 +51,7 @@ const _logger = (function () {
     }
 })();
 
-let _sendMode = "signalr";
+let _sendMode = "httpdirect";
 let _auth0, _sessionConnections;
 const _onLoadedCallbacks = [];
 (async function () {
@@ -84,7 +84,7 @@ async function loadConfigState() {
         const hubConnection = new signalR.HubConnectionBuilder()
             .withUrl(functionAppRoot)
             .withAutomaticReconnect()
-            .configureLogging(signalR.LogLevel.Trace)
+            .configureLogging(signalR.LogLevel.Information)
             .build();
 
         hubConnection.on('eventReceived', async message => {
@@ -245,7 +245,7 @@ function sendMessage(msg) {
                     console.error(err);
                 }
                 
-                _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} to endpoint ${endpoint}`);
+                _logger.log(`Sent message ${getHeader(message, headerKeys.messageId)} by websocket, connectionId ${_sessionConnections.hubConnection.connectionId}`);
 
             }
 

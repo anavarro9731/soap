@@ -1,4 +1,5 @@
 import {useEffect, useState} from 'react';
+import useGlobalState from "@vighnesh153/use-global-state";
 import {useAuth0} from '@auth0/auth0-react';
 import config from "../soap/config";
 import {useIsConfigLoaded} from "./systemStateHooks";
@@ -8,7 +9,7 @@ export const useAuth = () => {
 
     const [idToken, setIdToken] = useState(null);
     const [accessToken, setAccessToken] = useState(null);
-    const [authReady, setAuthReady] = useState(false);
+    const [authReady, setAuthReady] = useGlobalState(false);
 
     const {
         isLoading,
@@ -71,6 +72,7 @@ export const useAuth = () => {
         authReady,
         setTokensForcefully(identityToken, accessToken, userName) {
             setAuthenticated(identityToken, accessToken, userName)
+            setAuthReady(true);
         },
         requireAuth(onAuthenticated) {
             validateArgs([{onAuthenticated}, types.function]);
