@@ -1087,10 +1087,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/csstype/-/csstype-2.6.5-forked.0.tgz#b5b4e2a07ad83a91874ebf5fabdb73dc8c1632f6"
   integrity sha512-0HwnY8uPWcCloTgdbbaJG3MbDUfNf6yKWZfCKxFv9yj2Sbp4mSKaIjC7Cr/5L4hMxvrrk85CU3wlAg7EtBBJ1Q==
 
-"@soap/modules@1.512.0":
-  version "1.512.0"
-  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.512.0.tgz#757d6188df840762493bbe215699af94e3d8e0b6"
-  integrity sha1-dX1hiN+EB2JJO74hVpmvlOPY4LY=
+"@soap/modules@1.514.0":
+  version "1.514.0"
+  resolved "https://anavarro9731.pkgs.visualstudio.com/soap-feed/_packaging/soap-pkgs/npm/registry/@soap/modules/-/modules-1.514.0.tgz#a87b6700fd1a7cc2fe5c403df8521ece88e50225"
+  integrity sha1-qHtnAP0afML+XEA9+FIezojlAiU=
   dependencies:
     "@auth0/auth0-react" "1.4.0"
     "@azure/service-bus" "7.5.1"
