@@ -70,10 +70,17 @@ namespace Soap.Api.Sample.Logic.Processes
                     C107_PostCodesSingleOptional = new EnumerationAndFlags(
                         allEnumerations: this.postCodes).AddFlagIfItExistsInAllEnumerations(testData.PostCodesSingleOptionalKey),
                     C107_PostCodesMulti =
-                        new EnumerationAndFlags(allEnumerations: this.postCodes).AddFlagsIfTheyExistInAllEnumerations(
-                            testData.PostCodesMultiKeys),
+                        new EnumerationAndFlags(allEnumerations: this.postCodes)
+                        {
+                            AllowMultipleSelections = true
+                        }.AddFlagsIfTheyExistInAllEnumerations(
+                            testData.PostCodesMultiKeys) 
+                ,
                     C107_PostCodesMultiOptional =
-                        new EnumerationAndFlags(allEnumerations: this.postCodes).AddFlagsIfTheyExistInAllEnumerations(
+                        new EnumerationAndFlags(allEnumerations: this.postCodes)
+                        {
+                            AllowMultipleSelections = true
+                        }.AddFlagsIfTheyExistInAllEnumerations(
                             testData.PostCodesMultiOptionalKeys)
                 };
 
