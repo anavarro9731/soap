@@ -313,7 +313,7 @@ Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
 Log "Configuring Pwsh-Bootstrap Script"
 
 #* remove all library projects (which will now be referenced from the soap feed)
-Remove-ConfigLine '"Soap.Auth0"' ""
+Remove-ConfigLine '"Soap.Idaam"' ""
 Remove-ConfigLine '"Soap.Bus"' ""
 Remove-ConfigLine '"Soap.Config"' ""
 Remove-ConfigLine '"Soap.Context"' ""
