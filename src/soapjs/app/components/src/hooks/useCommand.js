@@ -7,8 +7,8 @@ import {toTypeName} from "../soap/messages";
 
 export function useCommand(command, sendCommand = true, closeConversation = true) {
     
-    const configLoaded = useIsConfigLoaded("useCommand.js");
-    const { authReady } = useAuth();
+    const configLoaded = useIsConfigLoaded("UseCommand");
+    const { authReady } = useAuth("UseCommand");
 
     const [conversationId, setConversationId] = useState();
 

@@ -3,7 +3,7 @@
     using FluentValidation;
     using Soap.Interfaces.Messages;
 
-    [AuthorisationNotRequired]
+    [AuthenticationNotRequired]
     public sealed class C111v2_GetRecentTestData : ApiCommand
     {
         public long? C111_MaxAgeInDays { get; set; }

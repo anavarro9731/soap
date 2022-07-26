@@ -7,7 +7,6 @@ import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
 
 export const Login = (props) => {
-
     
     const audience = config.auth0.audience;
 
@@ -26,7 +25,7 @@ export const Login = (props) => {
         accessToken,
         authReady,
         refresh
-    } = useAuth();
+    } = useAuth("Login");
 
     const urlParams = new URLSearchParams(window.location.search);
     const authDebug = urlParams.get('authDebug');
@@ -51,10 +50,10 @@ export const Login = (props) => {
         if (!!code) {
             setTimeout(() => {
                 window.history.replaceState({}, document.title, location.origin + '/#/');
-            }, 500); //*ugly hack but you need to ensure that auth0 library has fully processed the code, without this is doesn't pickup the login
+            }, 500); //*ugly hack but you need to ensure that auth0 library has fully processed the code, without this it doesn't pickup the login
             
         }
-    }, [authReady], [code]);
+    }, [authReady, code]);
 
     if (!authReady || !config.auth0) {
         return null;
@@ -116,7 +115,7 @@ export const Login = (props) => {
 
 export const ProtectedRoute = ({component, ...args}) => {
 
-    const {authReady, authEnabled} = useAuth();
+    const {authReady, authEnabled} = useAuth("ProtectedRoute");
 
     if (authReady) {
         if (authEnabled) {

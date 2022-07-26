@@ -59,7 +59,7 @@ export function FileUpload (props) {
     const {
         idToken,
         authReady
-    } = useAuth();
+    } = useAuth("FileUpload");
     
     //* run to get the blob state after first render is complete
     useEffect(() => {

@@ -17,7 +17,7 @@ export function ActionDrawer(props) {
 [{viewHeight}, types.number, optional]
     );
     
-    const {requireAuth} = useAuth();
+    const {requireAuth} = useAuth("ActionDrawer");
     const [isOpen, setIsOpen] = useState(false);
     const [css, theme] = useStyletron();
     

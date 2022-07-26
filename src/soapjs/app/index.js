@@ -10,8 +10,9 @@ import {Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
-config.showSignup = false;
-
+config.debugSystemState = false;
+config.disableGeneralLogger();
+globalThis.Soap.forceConsoleLogging = true;
 function Index() {
     return (
         

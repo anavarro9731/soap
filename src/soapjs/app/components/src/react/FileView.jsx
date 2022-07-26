@@ -40,7 +40,7 @@ export function FileView(props) {
     const {
         idToken,
         authReady
-    } = useAuth();
+    } = useAuth("FileView");
     
     //* run to get the blob state after first render is complete
     useEffect(() => {

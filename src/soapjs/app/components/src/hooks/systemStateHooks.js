@@ -34,7 +34,7 @@ export const useIsConfigLoaded = (callerId) => {
      
     if (!callbackAdded && !isLoaded) {
         
-        if (config.debugSystemState) console.warn(`adding config onLoaded callback  ["${callerId ?? "unknown"}"]`);
+        if (config.debugSystemState) console.warn(`Adding config onLoaded callback  ["${callerId ?? "unknown"}"]`);
         
         config.onLoaded(configLoadedCallback);
         setCallbackAdded(true);

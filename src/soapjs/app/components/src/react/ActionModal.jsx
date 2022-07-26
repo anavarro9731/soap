@@ -9,7 +9,7 @@ export function ActionModal(props) {
 
     const {title, auth, children, command} = props;
 
-    const {requireAuth} = useAuth();
+    const {requireAuth} = useAuth("ActionModal");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [useCommandArgs, setUseCommandArgs] = useState({command, sendCommand: false});
 

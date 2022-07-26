@@ -9,7 +9,7 @@ namespace Soap.Interfaces
 
     public interface IUserProfile : IdaamProviderProfile, IHaveAUniqueId
     {
-        
+        public Guid? TenantId { get; set; }
     }
 
     public interface IdaamProviderProfile : IHaveIdaamProviderId
