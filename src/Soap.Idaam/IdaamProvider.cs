@@ -752,6 +752,10 @@ namespace Soap.Idaam
                     {
                         await writeLine("Updating Existing Role Permissions....");
                     }
+                    else
+                    {
+                        await writeLine("No role changes");
+                    }
 
                     var updateTasks = serverCopyOfRolesThatAreStillRelevant.Select(
                         async sr =>
