@@ -848,7 +848,7 @@ namespace Soap.Idaam
                         int pageNo,
                         List<Permission> permissions)
                     {
-                        var page = await client.Roles.GetPermissionsAsync(role, new PaginationInfo(pageNo, 50, true));
+                        var page = await client.Roles.GetPermissionsAsync(role, new PaginationInfo(pageNo, 100, true));
 
                         permissions.AddRange(page.ToList());
 
@@ -877,7 +877,7 @@ namespace Soap.Idaam
                         int pageNo,
                         List<global::Auth0.ManagementApi.Models.Role> roles)
                     {
-                        var page = await client.Roles.GetAllAsync(new GetRolesRequest(), new PaginationInfo(pageNo, 50, true));
+                        var page = await client.Roles.GetAllAsync(new GetRolesRequest(), new PaginationInfo(pageNo, 100, true));
 
                         roles.AddRange(page.ToList());
 
