@@ -23,7 +23,9 @@ export function ActionDrawer(props) {
     
     useEffect(() => {
         //* register to close yourself, if your children publish closeAllDialogs
-        bus.onCloseAllDialogs(() => setIsOpen(false));
+        const sub = bus.onCloseAllDialogs(() => setIsOpen(false));
+        //* unregister on dismount
+        return () => sub.unsubscribe();
     }, []); //* run once
 
     
@@ -42,9 +44,9 @@ export function ActionDrawer(props) {
         <Drawer 
             isOpen={isOpen} 
             onClose={() => {
-            //* when closing via corner X
-            setIsOpen(false);
-            bus.closeAllDialogs(); //if you close yourself, close anything behind you (e.g. popover menus). this could be a problem if there were double layered drawers but I don't think we have any, you could always make it a parameter if there were.
+                //* when closing via corner X
+                setIsOpen(false);
+                bus.closeAllDialogs(); //if you close yourself, close anything behind you (e.g. popover menus). this could be a problem if there were double layered drawers but I don't think we have any, you could always make it a parameter if there were.
             }}
             autoFocus
             size={SIZE.full}

@@ -2,7 +2,7 @@ import {useStyletron} from "baseui";
 import {PLACEMENT, StatefulPopover} from "baseui/popover";
 import {Button, KIND, SIZE} from "baseui/button";
 
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import bus from "../soap/bus";
 
 export const PrimaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
@@ -73,6 +73,7 @@ export const ActionMenu = (props) => {
 
     const {borderWidth, children, button} = props;
     const [css, theme] = useStyletron();
+    const sub = useRef();
     
     return (
         children ?
@@ -87,9 +88,20 @@ export const ActionMenu = (props) => {
                     }
                 }}
                 content={({close}) => {
+                    
+                    //* unsub from previous render's sub
+                    if (!!sub.current) {
+                        sub.current.unsubscribe();
+                    }
 
-                    //* the close method pass into content is different on every render so we need to capture it
-                    bus.onCloseAllDialogs(close);
+                    //* the close method pass into content is different on every render so we need to re-capture it
+                    sub.current = bus.onCloseAllDialogs(() => {
+                        //* clear previous sub
+                        sub.current.unsubscribe();
+                        
+                        close();
+                        }
+                    );
 
                     return <div>{children}</div>
                 }}
