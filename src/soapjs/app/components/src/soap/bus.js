@@ -42,7 +42,9 @@ const subscribe = function(channel, schema, callback, conversationId) {
     callback: callback,
   });
 
-  config.logger.log(`SUBSCRIBED to channel: ${channel}, topic: ${topic}`);
+  if (channel !== "ui") {
+    config.logger.log(`SUBSCRIBED to channel: ${channel}, topic: ${topic}`);
+  }
 
   return sub;
 };
@@ -67,10 +69,10 @@ export default {
     validateArgs([{ conversationId }, types.string]);
 
     postal.unsubscribeFor(s => s.topic === `#.${conversationId}`);
-
-    config.logger.log(
-      `UNSUBSCRIBED to all messages in conversation: ${conversationId}`,
-    );
+    
+      config.logger.log(
+          `UNSUBSCRIBED to all messages in conversation: ${conversationId}`,
+      );
   },
 
   channels: {
