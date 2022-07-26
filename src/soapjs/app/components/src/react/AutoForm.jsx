@@ -52,7 +52,7 @@ export function AutoForm(props) {
     const [command, setCommand] = useState(undefined);
     const [sendCommand, setSendCommand] = useState(false);
 
-    const isInitialSubmit = (sendCommand && submitted === false);
+    const isInitialSubmit = (sendCommand && !submitted);
 
     useEffect(() => {
         if (submitted) {
@@ -100,6 +100,7 @@ export function AutoForm(props) {
         if (isInitialSubmit) { //* without isInitialSubmit you get an infinite loop after submitting
             //* only submit it once, even if it fails
             setSubmitted(true);
+            setShowLoader(false);
         }
     }
 
@@ -136,7 +137,7 @@ export function AutoForm(props) {
 
     async function onSubmit(formValues) {
 
-        try {
+        
 
             setShowLoader(true);
 
@@ -168,9 +169,7 @@ export function AutoForm(props) {
             setCommand(command);
             setSendCommand(true);
 
-        } finally {
-            setShowLoader(false);
-        }
+        
 
         function mutateFormValuesIntoAnonymousCommandObject(obj, formDataEvent) {
 
