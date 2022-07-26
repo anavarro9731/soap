@@ -25,11 +25,12 @@ export const useAuth = () => {
     const configLoaded = useIsConfigLoaded("useAuth.js");
 
     useEffect(() => {
+        let mounted = true;
         (async () => {
 
             if (config.debugSystemState) console.warn("values at useAuth's useEffectHook", "configLoaded:" + configLoaded,  "isLoading:" + isLoading, "isAuthenticated:" + isAuthenticated);
 
-            if (configLoaded) {
+            if (configLoaded && mounted) {
                 if (config.auth0) {
                     if (!isLoading) {
                         if (isAuthenticated) {
@@ -49,6 +50,7 @@ export const useAuth = () => {
                 }
             }
         })();
+        return () =>  mounted = false;
     }, [refreshIndex, isLoading, isAuthenticated, configLoaded]);
 
     function setAuthenticated(idToken, accessToken, username) {
