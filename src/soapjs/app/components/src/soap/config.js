@@ -14,44 +14,44 @@ const isTest = process.env.NODE_ENV === 'test';
 globalThis.Soap = {showStackTraceInConsoleLogs : false, forceConsoleLogging: false};
 
 const _logger = (function () { 
-    //* the IIFE used is so that calls to this, e.g. the "this.appInsights" expression will consider this to be the object-literal being constructed rather than the calling context
-    return {
+    
+    const l = {
         enabled: true,
         appInsights: null,
-        showStackTraceInConsoleLogs : false,
-        log: (logMsg, logObject, important) => {
+        showStackTraceInConsoleLogs : false
+    };
+    l.log = (logMsg, logObject, important) => {
+        if (l.enabled || globalThis.Soap.forceConsoleLogging === true) {
+            if (typeof logMsg === types.object) logMsg = logMsg.toString();
+            if (typeof logObject === types.object) logObject = JSON.parse(JSON.stringify(logObject, null, 2)); //* clone it to protect from mutation 
 
-            if (this.enabled || globalThis.Soap.forceConsoleLogging === true) {
-                if (typeof logMsg === types.object) logMsg = logMsg.toString();
-                if (typeof logObject === types.object) logObject = JSON.parse(JSON.stringify(logObject, null, 2)); //* clone it to protect from mutation 
+            validateArgs(
+                [{msg: logMsg}, types.string],
+                [{important}, types.boolean, optional]
+            );
 
-                validateArgs(
-                    [{msg: logMsg}, types.string],
-                    [{important}, types.boolean, optional]
-                );
+            const stackTrace = (l.showStackTraceInConsoleLogs || globalThis.Soap.showStackTraceInConsoleLogs) ? new Error().stack.substring(5) : null;
+            if (logObject === undefined) {
+                !!important ? console.warn(logMsg) : console.log(logMsg);
+            } else {
+                !!important ? console.warn(logMsg, logObject, stackTrace) : console.log(logMsg, logObject, stackTrace)
+            }
 
-                const stackTrace = (this.showStackTraceInConsoleLogs || globalThis.Soap.showStackTraceInConsoleLogs) ? new Error().stack.substring(5) : null;
-                if (logObject === undefined) {
-                    !!important ? console.warn(logMsg) : console.log(logMsg);
-                } else {
-                    !!important ? console.warn(logMsg, logObject, stackTrace) : console.log(logMsg, logObject, stackTrace)
+            if (!!important && !isTest) {
+
+                if (!l.appInsights) {
+                    l.appInsights = new ApplicationInsights({
+                        config: {
+                            instrumentationKey: vars().appInsightsKey
+                        }
+                    });
+                    l.appInsights.loadAppInsights();
                 }
-
-                if (!!important && !isTest) {
-
-                    if (!this.appInsights) {
-                        this.appInsights = new ApplicationInsights({
-                            config: {
-                                instrumentationKey: vars().appInsightsKey
-                            }
-                        });
-                        this.appInsights.loadAppInsights();
-                    }
-                    this.appInsights.trackTrace({message: logMsg});
-                }
+                l.appInsights.trackTrace({message: logMsg});
             }
         }
-    }
+    };
+    return l;
 })();
 
 let _sendMode = "httpdirect";

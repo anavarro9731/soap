@@ -1,5 +1,4 @@
 import {useCallback, useEffect, useState} from 'react';
-import useGlobalState from "@vighnesh153/use-global-state";
 import {useAuth0} from '@auth0/auth0-react';
 import config from "../soap/config";
 import {useIsConfigLoaded} from "./systemStateHooks";
@@ -12,8 +11,8 @@ export const useAuth = (callerName) => {
     is a mystery
      */
     const [tokens, setTokens] = useState(null);      
-    const [ready, setReady] = useGlobalState(false);
-
+    const [ready, setReady] = useState(false);
+    
     const {
         isLoading,
         isAuthenticated,
@@ -42,7 +41,11 @@ export const useAuth = (callerName) => {
                 "authEnabledInConfig:" + authEnabledInConfig,
                 "tokensSet:" + !!tokens, x);
 
-            if (configLoaded) {
+            if (configLoaded && !ready) {  /* because we are using global state, "ready" can be set by other components,
+            and we wouldn't pick it up, that would mean that when our component runs it might proceed to setstate such as ready again,
+            and that would then cause errors on the other components that are unmounted but were listening to the global state! 
+            or at least thats my assumption, but when i switched to global state i started getting a lot of mem leak errors,
+            and adding !ready solved that. !ready should really be checked anyway so it makes good sense. */  
                 if (authEnabledInConfig) {
                     if (!isLoading) {
                         if (isAuthenticated) {
@@ -53,6 +56,7 @@ export const useAuth = (callerName) => {
                             const access_token = await getAccessTokenSilently();
                             setTokensInConfig(id_token, access_token, user.sub);
                             setTokens({id_token, access_token});
+                            
                         }
                         //* if this is called and isAuthenticated is false, it would mean there was an error in Auth0 authenticating user
                         setReady (true);
@@ -68,10 +72,8 @@ export const useAuth = (callerName) => {
             }
         })();
         
-        return function()  {
-        }}
-    , 
-    [refreshIndex, isLoading, isAuthenticated, configLoaded]
+        return () =>  {
+        }},  [refreshIndex, isLoading, isAuthenticated, configLoaded, ready]
     );
 
     const setTokensInConfig = useCallback((idToken, accessToken, username) => {
