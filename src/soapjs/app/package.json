@@ -11,7 +11,9 @@
     "styletron-react": "6.0.2"
   },
   "devDependencies": {
-    "parcel": "2.0.1"
+    "os-browserify": "^0.3.0",
+    "parcel": "2.0.1",
+    "path-browserify": "^1.0.1"
   },
   "source": "index.html",
   "alias": {
@@ -21,6 +23,6 @@
   "browserslist": "last 2 versions or > 0.5% and not dead and supports es6-module",
   "scripts": {
     "serve": "parcel",
-    "build": "parcel build --public-url ./ --no-scope-hoist"  
+    "build": "parcel build --public-url ./ --no-scope-hoist"
   }
 }
