@@ -39,7 +39,7 @@ export const useAuth = (callerName) => {
                 "isLoading:" + isLoading, 
                 "isAuthenticated:" + isAuthenticated,
                 "authEnabledInConfig:" + authEnabledInConfig,
-                "tokensSet:" + !!tokens, x);
+                "tokens", tokens, x);
 
             if (configLoaded && !ready) {  /* because we are using global state, "ready" can be set by other components,
             and we wouldn't pick it up, that would mean that when our component runs it might proceed to setstate such as ready again,
@@ -73,7 +73,7 @@ export const useAuth = (callerName) => {
         })();
         
         return () =>  {
-        }},  [refreshIndex, isLoading, isAuthenticated, configLoaded, ready]
+        }},  [refreshIndex, isLoading, isAuthenticated, configLoaded, ready, tokens]
     );
 
     const setTokensInConfig = useCallback((idToken, accessToken, username) => {
@@ -90,13 +90,13 @@ export const useAuth = (callerName) => {
     
     const setTokensForceFully = useCallback((identityToken, accessToken, userName) => {
         setTokensInConfig(identityToken, accessToken, userName);
-        setTokens({idToken, accessToken});
+        setTokens({id_token: identityToken, access_token: accessToken});
         setReady(true);
     },[]);
     
     return {
-        idToken : tokens?.idToken,
-        accessToken : tokens?.accessToken,
+        idToken : tokens?.id_token,
+        accessToken : tokens?.access_token,
         authEnabled: authEnabledInConfig,
         authReady: ready,
         setTokensForceFully,

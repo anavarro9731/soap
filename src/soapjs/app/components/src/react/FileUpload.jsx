@@ -67,7 +67,11 @@ export function FileUpload (props) {
             if (value !== null && value.objectUrl === undefined && authReady) {
                 setIsLoading(true);
                 const endpoint = `${config.vars.functionAppRoot}/GetBlob`;
-                let response = await fetch(`${endpoint}?id=${encodeURI(value.id)}&it=${idToken}`);
+                const url = `${endpoint}?id=${encodeURI(value.id)}&it=${idToken}`;
+                if (config.debugSystemState) {
+                    console.warn("Fetching Blob at: " + url);
+                }
+                let response = await fetch(url);
                 const blob = await response.blob();
                 const blobInfo = {
                     id: value.id,
