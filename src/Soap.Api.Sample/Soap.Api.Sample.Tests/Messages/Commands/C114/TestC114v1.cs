@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C114
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages.Commands.C114
 {
     using System;
     using System.Linq;
@@ -35,7 +36,8 @@
         [Fact]
         public async void ItShouldDeleteTheEntry()
         {
-            (await Result.DataStore.ReadById<TestData>(testDataId)).Active.Should().BeFalse();
+            //* john doe has hard delete permissions
+            (await Result.DataStore.ReadById<TestData>(testDataId)).Should().BeNull();
         }
         
         [Fact]

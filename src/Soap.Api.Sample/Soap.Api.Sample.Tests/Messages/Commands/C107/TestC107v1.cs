@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C107
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages.Commands.C107
 {
     using System;
     using System.Collections.Generic;

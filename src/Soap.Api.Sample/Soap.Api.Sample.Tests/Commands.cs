@@ -17,7 +17,6 @@
             };
 
         public static C101v1_UpgradeTheDatabase UpgradeTheDatabaseToV1 => new C101v1_UpgradeTheDatabase(ReleaseVersions.V1);
-
-        public static C101v1_UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101v1_UpgradeTheDatabase(ReleaseVersions.V2);
+        public static C102v1_GetServiceState GetServiceState => new C102v1_GetServiceState();
     }
 }

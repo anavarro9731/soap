@@ -16,4 +16,8 @@
         public static readonly Guid JaneDoeWithNoPermissions = Guid.NewGuid();
         
     }
+    
+    public static class Ext {
+        public static string ToIdaamId(this Guid id) => $"idaam|{id.ToString()}";
+    }
 }

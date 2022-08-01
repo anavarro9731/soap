@@ -1,3 +1,4 @@
+//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Models.Aggregates
 {
     using System;

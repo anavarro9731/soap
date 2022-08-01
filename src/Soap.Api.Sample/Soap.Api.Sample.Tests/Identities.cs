@@ -25,7 +25,7 @@
                 new List<RoleInstance>(),
                 new UserProfile
                 {
-                    IdaamProviderId = Ids.JaneDoeWithNoPermissions.ToIdaam(),
+                    IdaamProviderId = Ids.JaneDoeWithNoPermissions.ToIdaamId(),
                     Email = "janedoe@mycomputer.com",
                     id = Ids.JaneDoeWithNoPermissions,
                     FirstName = "Jane",
@@ -50,7 +50,7 @@
                                   .ToList(),
                 new UserProfile
                 {
-                    IdaamProviderId = Ids.JohnDoeWithAllPermissions.ToIdaam(),
+                    IdaamProviderId = Ids.JohnDoeWithAllPermissions.ToIdaamId(),
                     Email = "johndoe@mycomputer.com",
                     id = Ids.JohnDoeWithAllPermissions,
                     FirstName = "John",
@@ -67,7 +67,7 @@
                                   .ToList(),
                 new UserProfile
                 {
-                    IdaamProviderId = Ids.ApiPermissionsOnly.ToIdaam(),
+                    IdaamProviderId = Ids.ApiPermissionsOnly.ToIdaamId(),
                     Email = "apipermissions@mycomputer.com",
                     id = Ids.ApiPermissionsOnly,
                     FirstName = "Api",

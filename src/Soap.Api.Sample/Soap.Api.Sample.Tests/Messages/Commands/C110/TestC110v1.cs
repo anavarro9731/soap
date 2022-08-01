@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C110
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages.Commands.C110
 {
     using System;
     using System.Linq;

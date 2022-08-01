@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.Commands.C109
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages.Commands.C109
 {
     using System.Linq;
     using FluentAssertions;

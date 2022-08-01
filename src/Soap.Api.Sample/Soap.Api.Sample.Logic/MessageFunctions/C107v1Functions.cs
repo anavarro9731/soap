@@ -1,4 +1,5 @@
-﻿
+﻿//* ##REMOVE-IN-COPY##
+
 namespace Soap.Api.Sample.Logic.MessageFunctions
 {
     using System.Threading.Tasks;

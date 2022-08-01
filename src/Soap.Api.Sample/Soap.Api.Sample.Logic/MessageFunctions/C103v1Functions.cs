@@ -1,4 +1,6 @@
-﻿namespace Soap.Api.Sample.Logic.MessageFunctions
+﻿//* ##REMOVE-IN-COPY##
+
+namespace Soap.Api.Sample.Logic.MessageFunctions
 {
     using System.Threading.Tasks;
     using Soap.Api.Sample.Logic.Processes;

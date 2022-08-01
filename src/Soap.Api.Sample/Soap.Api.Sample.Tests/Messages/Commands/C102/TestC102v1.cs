@@ -1,4 +1,4 @@
-﻿//* ##REMOVE-IN-COPY##
+﻿
 namespace Soap.Api.Sample.Tests.Messages.Commands.C102
 {
     using System.Linq;

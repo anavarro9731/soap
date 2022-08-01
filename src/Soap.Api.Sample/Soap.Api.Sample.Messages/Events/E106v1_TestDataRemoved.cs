@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Messages.Events
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Messages.Events
 {
     using System;
     using FluentValidation;

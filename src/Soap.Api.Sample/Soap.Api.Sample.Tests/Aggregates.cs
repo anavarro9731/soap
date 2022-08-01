@@ -9,15 +9,15 @@ namespace Soap.Api.Sample.Tests
     public static class Aggregates
     {
         public static UserProfile DarthVader =>
-            new UserProfile { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader, IdaamProviderId = Ids.DarthVader.ToIdaam()};
+            new UserProfile { UserName = "darth.vader", FirstName = "David", LastName = "Prowse", id = Ids.DarthVader, IdaamProviderId = Ids.DarthVader.ToIdaamId()};
 
         public static UserProfile HanSolo =>
-            new UserProfile { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo, IdaamProviderId = Ids.HanSolo.ToIdaam()};
+            new UserProfile { UserName = "hans.solo", FirstName = "Harrison", LastName = "Ford", id = Ids.HanSolo, IdaamProviderId = Ids.HanSolo.ToIdaamId()};
 
         public static UserProfile LukeSkywalker =>
-            new UserProfile { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker, IdaamProviderId = Ids.LukeSkywalker.ToIdaam()};
+            new UserProfile { UserName = "luke.skywalker", FirstName = "Mark", LastName = "Hamill", id = Ids.LukeSkywalker, IdaamProviderId = Ids.LukeSkywalker.ToIdaamId()};
 
         public static UserProfile PrincessLeia =>
-            new UserProfile { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia, IdaamProviderId = Ids.PrincessLeia.ToIdaam()};
+            new UserProfile { UserName = "leia.organa", FirstName = "Carrie", LastName = "Fisher", id = Ids.PrincessLeia, IdaamProviderId = Ids.PrincessLeia.ToIdaamId()};
     }
 }

@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.StatefulProcesses
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.StatefulProcesses
 {
     using System;
     using System.Linq;

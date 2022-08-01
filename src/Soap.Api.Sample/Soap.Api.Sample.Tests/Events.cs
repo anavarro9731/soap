@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests
+﻿
+namespace Soap.Api.Sample.Tests
 {
     using System;
     using Soap.Api.Sample.Constants;

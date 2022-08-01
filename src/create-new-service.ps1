@@ -228,6 +228,8 @@ del Class1.cs
 dotnet nuget add source $SoapFeedUri
 dotnet add package Soap.Config -s $SoapFeedUri
 cd $ConfigRepoRoot
+dotnet new sln -n Config
+Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object { dotnet sln add $_.FullName }
 
 Log "Creating Azure Devops Project"
 az devops project create --organization $AzureDevopsOrganisationUrl --name $AzureDevopsName --detect false
@@ -252,19 +254,24 @@ Log "Creating Client App"
 
 Set-Location $PSScriptRoot
 $sourceAppDir = "$PSScriptRoot\soapjs\app"
+Copy-Item "$sourceAppDir\" "$ServiceRoot\app\"
+Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##" 
 Copy-Item "$sourceAppDir\index.service-template.js" "$ServiceRoot\app\index.js"
 Copy-Item "$sourceAppDir\.npmrc" "$ServiceRoot\app\"
 Copy-Item "$sourceAppDir\package.json" "$ServiceRoot\app\"
 Copy-Item "$sourceAppDir\index.html" "$ServiceRoot\app\"
 Copy-Item "$sourceAppDir\soap-vars.js" "$ServiceRoot\app\"
-Copy-Item "$sourceAppDir\" "$ServiceRoot\app\"
-Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
+
+
 
 Log "Creating Server App"
 
 Set-Location $PSScriptRoot
-$Excluded = @('bin', 'obj', 'published')
-Copy-Item .\Soap.Api.Sample\**.* "$ServiceRoot" -Recurse -Force
+
+New-Item -ItemType Directory -Force -Path $ServiceRoot
+Copy-Item .\Soap.Api.Sample\* "$ServiceRoot" -Recurse -Force -Exclude $Excluded
+@('bin', 'obj', 'published') | foreach{ Get-ChildItem -Path $ServiceRoot -Include $_ -Recurse -Force | Remove-Item -Force -Recurse }
+
 Copy-Item .\pwsh-bootstrap.ps1 "$ServiceRoot" -Force
 Copy-Item .\configure-local-environment.ps1 "$ServiceRoot" -Force
 Copy-Item .\new-message.ps1 "$ServiceRoot" -Force
@@ -277,6 +284,8 @@ Set-Location $ServiceRoot
 Log "Customizing Project Files"
 
 Replace-TextWithinALineOfPwshBootstrap '"Soap.Api.Sample\Soap.Api.Sample.Afs"' "`"$ServiceName.Afs`""
+Replace-TextWithinALineOfPwshBootstrap '"Soap.Api.Sample\Soap.Api.Sample.Messages"' "`"$ServiceName.Messages`""
+
 Get-ChildItem -Filter "*Soap.Api.Sample*" -Recurse | Where {$_.FullName -notlike "*\obj\*"} | Where {$_.FullName -notlike "*\bin\*"} |  Rename-Item -NewName {$_.name -replace "Soap.Api.Sample","$ServiceName" }
 Get-ChildItem -Recurse -File -Include *.cs,*.csproj,*.ps1,*.js,*.jsx | ForEach-Object {
 	(Get-Content $_).replace('Soap.Api.Sample',"$ServiceName") | Set-Content $_
@@ -311,6 +320,7 @@ Get-ChildItem -Recurse -File -Filter "*.csproj" | ForEach-Object {
 }
 
 Log "Configuring Pwsh-Bootstrap Script"
+
 
 #* remove all library projects (which will now be referenced from the soap feed)
 Remove-ConfigLine '"Soap.Idaam"' ""
@@ -347,9 +357,12 @@ Copy-Item "$PSScriptRoot\..\.gitignore" "$ServiceRoot\"
 
 Log "Uploading Repo"
 
+Set-Location $ServiceRoot
+
 git add -A
 git commit -m "initial"
 git remote add origin "$AzureDevopsOrganisationUrl$AzureDevopsName/_git/$AzureDevopsName"
+
 Run -PrepareNewVersion -forceVersion 0.1.0-alpha -Push SILENT
 
 Log-Step "Creating Pipeline"

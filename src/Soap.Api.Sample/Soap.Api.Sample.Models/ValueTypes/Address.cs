@@ -1,3 +1,4 @@
+//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Models.ValueTypes
 {
     public class Address

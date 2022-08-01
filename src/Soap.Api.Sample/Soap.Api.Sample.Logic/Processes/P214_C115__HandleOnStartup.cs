@@ -5,7 +5,6 @@
         using System.Collections.Generic;
         using System.Threading.Tasks;
         using DataStore.Interfaces.LowLevel.Permissions;
-        using Soap.Api.Sample.Afs.Security;
         using Soap.Api.Sample.Messages.Commands;
         using Soap.Api.Sample.Models.Aggregates;
         using Soap.Context.Context;

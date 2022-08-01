@@ -1,4 +1,3 @@
-//* ##REMOVE-IN-COPY##
 namespace Soap.Api.Sample.Tests.Messages.Commands.C101
 {
     using System.Linq;
@@ -10,9 +9,9 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C101
     using Xunit.Abstractions;
     using Commands = Soap.Api.Sample.Tests.Commands;
 
-    public class TestC101UpgradingTheDatabaseOnlyOnce : Test
+    public class TestC101UpgradingTheDatabase : Test
     {
-        public TestC101UpgradingTheDatabaseOnlyOnce(ITestOutputHelper outputHelper)
+        public TestC101UpgradingTheDatabase(ITestOutputHelper outputHelper)
             : base(outputHelper)
         {
             TestMessage(Commands.UpgradeTheDatabaseToV1, Identities.JohnDoeAllPermissions).Wait();

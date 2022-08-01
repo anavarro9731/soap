@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests.Messages.Commands.MessageFailedAllRetries
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests.Messages.Commands.MessageFailedAllRetries
 {
     using System.Linq;
     using System.Threading.Tasks;

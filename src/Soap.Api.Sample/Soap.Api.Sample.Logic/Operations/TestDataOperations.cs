@@ -1,3 +1,5 @@
+//* ##REMOVE-IN-COPY##
+
 namespace Soap.Api.Sample.Logic.Operations
 {
     using System;

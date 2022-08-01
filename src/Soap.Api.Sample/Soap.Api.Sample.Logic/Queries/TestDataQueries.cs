@@ -1,4 +1,6 @@
-﻿namespace Soap.Api.Sample.Logic.Queries
+﻿//* ##REMOVE-IN-COPY##
+
+namespace Soap.Api.Sample.Logic.Queries
 {
     using System;
     using System.Collections.Generic;

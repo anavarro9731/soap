@@ -1,4 +1,5 @@
-﻿namespace Soap.Api.Sample.Tests
+﻿//* ##REMOVE-IN-COPY##
+namespace Soap.Api.Sample.Tests
 {
     using System;
 
@@ -19,9 +20,6 @@
 
         public static readonly Guid DarthVader = Guid.NewGuid();
     }
-    
-    public static class Ext {
-        public static string ToIdaam(this Guid id) => $"idaam|{id.ToString()}";
-    }
+
     
 }

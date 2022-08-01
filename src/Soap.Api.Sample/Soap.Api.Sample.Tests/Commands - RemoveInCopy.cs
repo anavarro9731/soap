@@ -2,6 +2,7 @@
 namespace Soap.Api.Sample.Tests
 {
     using System;
+    using Soap.Api.Sample.Constants;
     using Soap.Api.Sample.Messages.Commands;
     using Soap.Interfaces.Messages;
     using Soap.Utility.Functions.Extensions;
@@ -21,8 +22,8 @@ namespace Soap.Api.Sample.Tests
                 x.Headers.SetMessageId(messageId ?? Ids.C104CompletesSuccessfully);
                 });
         
-        public static C102v1_GetServiceState GetServiceState => new C102v1_GetServiceState();
-
+        
+        public static C101v1_UpgradeTheDatabase UpgradeTheDatabaseToV2 => new C101v1_UpgradeTheDatabase(ReleaseVersions.V2);
         
     }
     

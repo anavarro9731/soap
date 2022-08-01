@@ -1,4 +1,4 @@
-﻿//* ##REMOVE-IN-COPY##
+﻿
 namespace Soap.Api.Sample.Messages.Events
 {
     using CircuitBoard;
