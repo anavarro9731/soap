@@ -251,13 +251,12 @@ CreateOrClean-Directory $ServiceRoot
 Log "Creating Client App"
 
 Set-Location $PSScriptRoot
-$Excluded = @('.cache','dist','node_modules','srv.ps1','package.json.apponly','package.json.withsoap','yarn**.*')
-$sourceAppDir = "$PSScriptRoot\soapjs\app"
-$folders = Get-ChildItem -Path $sourceAppDir | Where {($_.PSIsContainer) -and ($Excluded -notcontains $_.Name)}
-foreach ($f in $folders){
-	Copy-Item -Path $sourceAppDir\$($f.Name) -Destination $ServiceRoot\app\$($f.Name) -Recurse -Force
-}
-Copy-Item "$sourceAppDir\*.*" "$ServiceRoot\app\" -Exclude $Excluded
+Copy-Item "$sourceAppDir\index.service-template.js" "$ServiceRoot\app\index.js"
+Copy-Item "$sourceAppDir\.npmrc" "$ServiceRoot\app\"
+Copy-Item "$sourceAppDir\package.json" "$ServiceRoot\app\"
+Copy-Item "$sourceAppDir\index.html" "$ServiceRoot\app\"
+Copy-Item "$sourceAppDir\soap-vars.js" "$ServiceRoot\app\"
+Copy-Item "$sourceAppDir\" "$ServiceRoot\app\"
 Set-Content -Path "$ServiceRoot\app\.env" -Value "##RUN configure-local-environment SCRIPT TO POPULATE##"
 
 Log "Creating Server App"

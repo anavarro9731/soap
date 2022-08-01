@@ -12,15 +12,15 @@ You can get the latest version of powershell [here](https://github.com/PowerShel
 Then run the following commands from a PWSH x86 *Elevated* command prompt
 `Set-ExecutionPolicy Unrestricted` to allow all scripts to run.
 
-###Install Chocolatey
+### Install Chocolatey
 ```
 Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 ```
-###Install Jetbrains Rider 
+### Install Jetbrains Rider 
 ```
 choco install jetbrains-rider
 ```
-###Install Azure CLI and extensions
+### Install Azure CLI and extensions
 ```
 choco install azure-cli
 ```
@@ -28,7 +28,7 @@ close and reopen powershell
 ```
 az extension add --name azure-devops
 ```
-###Install GIT
+### Install GIT
 ```
 choco install git
 ```
@@ -40,7 +40,7 @@ git config --global user.email johndoe@example.com
 you need to be sure that these props are set globally
 because the projects created/managed by script do not
 set them
-###Install Client-side tools
+### Install Client-side tools
 ```
 choco install nodejs
 ```
@@ -48,12 +48,12 @@ close and reopen powershell
 ```
 npm install -g yarn
 ```
-###Install Local Dev tools
+### Install Local Dev tools
 ```
 lodctr /R (corrupted perf counters will cause azurite emulator errors, run this command twice in succession)
 npm install -g azurite
 ```
-###Install DotNet 3.1
+### Install DotNet 3.1
 ```
 https://dotnet.microsoft.com/download
 or via choco install 
@@ -138,10 +138,8 @@ az devops configure --defaults organization=https://YOURORGANIZATION/`
 `
 
 test with `az devops project list --detect false` the detect may be needed whenever the current folder is an 
-azure devops git repo as those credentials and org will always trump what you enter on CLI without it 
+azure devops git repo as those credentials and org will always trump what you enter on CLI without it
 
-cls
-~~~~
 Now goto the directory where the Soap repo was created
 be aware that in powershell 
 
@@ -152,7 +150,7 @@ with the required services which will occur after the script finishes and the az
 15-20 mins.
 
 
-###Running Locally
+### Running Locally
 
 1. Open Rider and Install the following Rider plugins from the File -> Settings -> Plugins window:
 - https://plugins.jetbrains.com/plugin/9525--env-files-support
