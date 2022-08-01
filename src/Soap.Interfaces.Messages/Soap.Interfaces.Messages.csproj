@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>11.6.0-alpha</Version>
+    <Version>11.6.0</Version>
     <TargetFrameworks>netcoreapp3.1;netstandard1.4;netstandard2.0;netstandard2.1</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
