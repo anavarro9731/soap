@@ -251,6 +251,7 @@ CreateOrClean-Directory $ServiceRoot
 Log "Creating Client App"
 
 Set-Location $PSScriptRoot
+$sourceAppDir = "$PSScriptRoot\soapjs\app"
 Copy-Item "$sourceAppDir\index.service-template.js" "$ServiceRoot\app\index.js"
 Copy-Item "$sourceAppDir\.npmrc" "$ServiceRoot\app\"
 Copy-Item "$sourceAppDir\package.json" "$ServiceRoot\app\"
@@ -313,6 +314,7 @@ Log "Configuring Pwsh-Bootstrap Script"
 
 #* remove all library projects (which will now be referenced from the soap feed)
 Remove-ConfigLine '"Soap.Idaam"' ""
+Remove-ConfigLine '"Soap.Client"' ""
 Remove-ConfigLine '"Soap.Bus"' ""
 Remove-ConfigLine '"Soap.Config"' ""
 Remove-ConfigLine '"Soap.Context"' ""
