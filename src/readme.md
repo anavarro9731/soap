@@ -624,9 +624,6 @@ It is not enabled by default and is optional. To enable this follow these steps:
 #### Setup
 
 1. Create auth0 account (free level is fine)
-    1. Change the universal login to the new style from the Branding Menu, here you can set your company logo
-       and configure any other specifics that will apply to all services
-    1. Enable MFA from the left-nav if desired
 1. Create 3 tenant(s) in that account
     1. yourorganisation-dev
     1. yourorganisation-vnext
@@ -641,6 +638,10 @@ In each tenant create a machine-machine application called "Enterprise Admin", a
 4. Auth0EnterpriseAdminClientId = "GMOVi8eS__SAMPLE-CLIENT-ID__ZIi4w7ZMEj";
 5. Auth0NewUserConnection = "User-Database-Connection";
 6. AuthLevel = AuthLevel.AuthenticateOnly;
+
+There are 4 possible values for the AuthLevel: 
+None, AuthenticationOnly, ApiAndDbAuthOptIn, ApiAndDbAuthOptOut.
+See the [AuthLevel.cs](Soap.Interfaces/Authlevel.cs) file for details on what these mean. 
 
 **WARNING:** This clientSecret must be guarded with utmost protection, together with the clientid
 these are the keys to the castle for the entire service enterprise. The config repo should have azure
@@ -668,41 +669,62 @@ file.
 
 After that consider the following
 
-#### Authorisation 
-
-Each message will now be protected by default and require that the
-user have permission to send it. You can give a user permissions directly, or via a role,
-using the Auth0 portal. Permissions in the form of "ENVKEY:execute:messagename" will be created
-automatically from the list of messages in the system and synced during deployment as a
-step of the health check. Simply assign them using the self-explanatory portal features
-to give users access. If you remove a message from the [SecurityInfo](Soap.Api.Sample/Soap.Api.Sample.Afs/SecurityInfo.cs)
-class it will automatically be removed from any assigned roles or users when that version
-is deployed.
-
-For messages which should not require any auth you can add the AuthorisationNotRequired attribute 
-to those messages and they will be allowed regardless of Auth0 state.
-
-#### Frontend Aspects
-
-The <Login /> control in index.js will now render the appropriate controls for login and logout capability
-If you are not ever planning on using Auth you can safely remove the control altogether.
-
 #### Authentication
 
-Is performed automatically by the API when a message is received. 
-The Auth0 Permissions and/or UserProfile are stored in the `Meta` property of any Process.
+Is performed automatically by the API when a message is received
+if the AuthLevel is not equal to `None` and the message is not marked with the
+`AuthenticationNotRequired` attribute.
 
-Auth0 stores some basic information about the user as expressed in the `IUserProfile` 
-interface and this interface is then implemented in the starter project as the  `UserProfile` 
+The Auth0 UserProfile and Identity can be access from the `Meta` property of any Process.
+
+Auth0 stores some basic information about the user as expressed in the `IUserProfile`
+interface and this interface is then implemented in the starter project as the  `UserProfile`
 class. A class implementing IUserProfile and IAggregate must be passed to the
 [receive function](Soap.Api.Sample/Soap.Api.Sample.Afs/BuiltIn.cs) function on
-receipt of a message and this is then used to create/update the user profile based on the 
+receipt of a message and this is then used to create/update the user profile based on the
 data in Auth0. This data is stored in the service database alongside any other aggregates
 and in that respect is not different than any other datatype except that it is synced automatically
 with the data in the token whenever you make an API call. Feel free to
-add any properties to the UserProfile class and commit those updates 
-via an `ProfileOperation : Operations<UserProfile>` class, however changing value in any fields 
-of the implemented `IUserProfile` interface will be overwritten each time the user makes a call.      
+add any properties to the UserProfile class and commit those updates
+via an `ProfileOperation : Operations<UserProfile>` class, however changing value in any fields
+of the implemented `IUserProfile` interface will be overwritten each time the user makes a call.
+
+
+#### Authorisation 
+
+Is performed automatically by the API when a message is received
+if the AuthLevel is not equal to `None` or `AuthenticationOnly` and the message is not marked with the
+`AuthorisationNotRequired` attribute.
+
+Each message will now be protected by default and require that the
+user have permission to send it. 
+
+Permissions correspond to messages. Permissions are grouped in to ApiPermissions.
+Api Permissions are grouped into Roles. Roles are then assigned to users.
+
+You can find the definitions of ApiPermissions in the [ApiPermissions.cs](Soap.Api.Sample/Soap.Api.Sample.Logic/ApiPermissions.cs) file.
+You can find the definitions of Roles in the [Roles.cs](Soap.Api.Sample/Soap.Api.Sample.Logic/Roles.cs) file.
+
+Roles will be created automatically from the list of messages in the system and synced during deployment as a
+step of the health check. Removing a role from the source code will remove it from
+the Auth0 when the system is deployed.
+
+You can give a user permissions via a role, using the Auth0 portal
+if you are not using DbPermissions, but you should never attempt to give a user
+raw permissions via the portal. We cannot disable this, but SOAP expects all permissions to
+be inferred directly from roles. 
+
+Furthermore if you are using Db Permissions (_see [DataStore](https://github.com/anavarro9731/DataStore) library for details_) you can only assign roles via the
+`IDAAM` object available in a Process. Attempting to assign roles through the portal
+when you are using Db Permissions will corrupt the users profile and create unexpected results.
+
+You can find various helper methods regarding role assigment and permissions in 2 places
+in the framework. 1. On the `Meta` object in Processes 2. On the `IDAAM` in Processes. 
+
+#### Frontend Aspects
+
+If AuthEnabled is not set to `None`. The <Login /> control in index.js will now render the appropriate controls for login and logout capability
+If you are not ever planning on using Auth you can safely remove the control altogether.
 
 #### Inter-Service Messages
 
@@ -712,7 +734,7 @@ When you send a command either from the frontend or the backend it will have 3 a
 3. IdentityChain, this is a list of identifiable parties whose security context this message or it's ancestors
    have passed through, back to the original message that started the chain. The original message in the chain will
    always be from one of a the following possible sources:
-   1. An event you have subscribed to, which always starts a new chain
+   1. An event you have subscribed to.
    2. A command from the UI
    3. A command or event sent from a third party to an explicit integration endpoint
    4. A message sent from the health check
@@ -723,6 +745,7 @@ The IdentityChain allows the recipient service to work out if the current securi
 that of the original message. How could that have happened you might wonder? It can happen when a command is
 sent from a service and the user specifies when they call the Send command and
 they set the forceUseServiceLevelAuthority parameter to true. e.g. `Send(command, forceUseServiceLevelAuthority: true)`
+
 The other way is if the context in which the message being sent does not have any active identity e.g. an Event
 then the service can be configured in these cases to always choose to send the message in the context of the 
 service rather than without no access token through the config property 'UseServiceLevelAuthorityInTheAbsenceOfASecurityContext'.
@@ -769,8 +792,9 @@ The tests follow a standard, Arrange/Given, Act/When, Assert/Then pattern.
 
 In the Arrange section you will add Aggregates to the database and/or send Commands 
 and Events into the pipeline which will execute logic and then in turn modify the database.
-You do this with one of two helper methods `SetupTestBySendingAMessage` or `SetupTestByAddingAnAggregate`
-Both approaches are useful in setting up a test scenario's environment and while 
+You do this with helper methods such `SetupTestBySendingAMessage`, `SetupTestByAddingAnAggregate`,
+or `SetupTestByAddingABlobStorageEntry`
+These approaches are useful in setting up a test scenario's environment and while 
 this is too short a guide to detail the pros and cons of each a mixture is often best.
 
 In the Act section you will send a Command, Event, or Query into the pipeline and this is the message being tested.
@@ -794,19 +818,22 @@ For the above scenarios we have different approaches to asserting the changes.
   queried using the `Result.Bus` class
 
 * For database changes done via we have an InMemoryDatabase whose post-message state can be queried
-  using teh `Result.Datastore` class
+  using the `Result.Datastore` class
+* 
+* For blob storage changes done via we have an InMemoryStorageProvider whose state can be queried
+  using the `Result.BlobStorage` class
 
-* For other I/O bound calls such as in third parties we use a technique called “wedge-testing”.
-  Wedge-testing works a bit like a mock on a function call, but it does not require us to have an
-  interface to mock on that we have to pass down through the layers of code, and is therefore ideal for working
-  with 3rd party and legacy code where we want to disrupt the code as little as possible. It is similar to mock
-  but works by collecting a special "event" when the IO/bound code is about to execute. This event is then passed to
-  the function which calls the I/O bound code. In a test scenario, this event data is never passed and instead
-  a result specific in the test setup is return instead. In production the event data is passed to the
-  I/O bound call and execution continues normally. You can see an example of this being used internally
-  to "gate" the calls to the blob storage API [here](Soap.Context/BlobStorage/BlobStorage.cs) and you can
-  see the required setup in a test [here](Soap.Api.Sample/Soap.Api.Sample.Tests/Messages/Commands/C105/TestC105v1.cs)
-  and [here](Soap.Api.Sample/Soap.Api.Sample.Tests/Messages/Commands/C106/TestC106v1.cs)
+  For other I/O bound calls such as in third parties we use a technique called “wedge-testing”.
+    Wedge-testing works a bit like a mock on a function call, but it does not require us to have an
+    interface to mock on that we have to pass down through the layers of code, and is therefore ideal for working
+    with 3rd party and legacy code where we want to disrupt the code as little as possible. It is similar to mock
+    but works by collecting a special "event" when the IO/bound code is about to execute. This event is then passed to
+    the function which calls the I/O bound code. In a test scenario, this event data is never passed and instead
+    a result specific in the test setup is return instead. In production the event data is passed to the
+    I/O bound call and execution continues normally. You can see an example of this being used internally
+    to "gate" the calls to the blob storage API [here](Soap.Context/BlobStorage/BlobStorage.cs) where you see the
+    use of the `CollectAndForward` method. To setup a "Mock" to respond to the "gated" call you use the
+   `setupMocks:` argument of the `TestMessage` method.
 
 * For notifications there is a notifications property `Result.Notifications`
 
@@ -895,11 +922,13 @@ Run -CreateRelease is the script you use when you want to create a new release b
 You run this script from the master branch and it has the following effects
 1. It creates a new release branch with the correct version based on the current version of the master branch.
    (This could be a Major or Minor release)
- 2. It asks if you want this new branch to be pushed right away triggering the update of the environment
+2. It asks if you want this new branch to be pushed right away triggering the update of the environment
 In most cases you would say yes. One important note is that if this is the first ever release branch pushing
-    it will trigger the creation of all the release environment infrastructure which can take some time.
-    3. It properly increments the master branch moving it ahead of the new release branch 
-  4. It returns you to the master branch
+   it will trigger the creation of all the release environment infrastructure which can take some time.
+   3. It properly increments the master branch moving it ahead of the new release branch 
+3. It returns you to the master branch
+
+Publishing to Live is currently done manually through an Azure Slot Swap on the Release environment function app and associated resources.
 
 #### Hotfixes
 
@@ -910,7 +939,3 @@ will be changed to 1.1.1 where the last 1 is considered as the first hotfix to 1
 There is only one release environment and in the event that you are testing a hotfix and a new
 release at the same time it will be a last-in-wins situation as to whose version is published at 
 any given moment.
-
-#### Publishing to Production
-
-TODO
