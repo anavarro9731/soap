@@ -48,6 +48,7 @@ namespace Soap.Idaam
         public IdaamProvider(ApplicationConfig config)
         {
             this.config = config;
+            
         }
         
         public async Task<string> GetUiApplicationClientId(Assembly messagesAssembly)
@@ -158,7 +159,7 @@ namespace Soap.Idaam
 
         }
         
-        //* assign the Auth0 role
+        
         static async Task<string> GetRoleId(ManagementApiClient client, string roleName)
         {
             var page = await client.Roles.GetAllAsync(
@@ -408,7 +409,52 @@ namespace Soap.Idaam
                     AppMetadata = appMetaData
                 });
         }
-        
+
+        public async Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId)
+        {
+            var client = await GetManagementApiClientCached();
+            
+            if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions)
+            {
+                /* in this case we ignore role metadata and read the auth0 api assigned roles
+                 This also means that if you are not using db permissions you could still assign roles 
+                 using the portal. However, if you do that switching later to use DbPermissions will mean
+                 you role metadata is not in sync with the Auth0 role assignments */
+            
+                var auth0Roles = await RetrieveUsersRolesOnePageAtATime(idaamProviderUserId, client, 0, new List<Auth0.ManagementApi.Models.Role>());
+                
+                return auth0Roles.Select(x => new RoleInstance()
+                {
+                    RoleKey = x.Name.SubstringAfter("builtin:")
+                }).ToList();
+            }
+            else
+            {
+                var user = await client.Users.GetAsync(idaamProviderUserId);
+            
+                AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
+
+                return appMetaData.Roles;
+            }
+            
+            static async Task<List<global::Auth0.ManagementApi.Models.Role>> RetrieveUsersRolesOnePageAtATime(
+                string idaamProviderUserId,
+                ManagementApiClient client,
+                int pageNo,
+                List<global::Auth0.ManagementApi.Models.Role> roles)
+            {
+                var page = await client.Users.GetRolesAsync(idaamProviderUserId, new PaginationInfo(pageNo, 50, true));
+                
+                roles.AddRange(page.ToList());
+
+                var thereAreMoreItems = page.Paging.Total == page.Paging.Limit;
+                return thereAreMoreItems switch
+                {
+                    true => await RetrieveUsersRolesOnePageAtATime(idaamProviderUserId, client, ++pageNo, roles),
+                    _ => roles
+                };
+            }
+        }
         
         public async Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string bearerToken, ApiMessage apiMessage, ISecurityInfo securityInfo)
         {
@@ -437,7 +483,7 @@ namespace Soap.Idaam
 
                     var principal = tokenHandler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
                     
-                    GetRoles(principal, out IHaveRoles roleContainer);
+                    GetRolesFromApiToken(principal, out IHaveRoles roleContainer);
 
                     var identityPermissions = ClaimsExtractor.GetAppropriateClaimsFromAccessToken(securityInfo, roleContainer, apiMessage);
                     
@@ -455,7 +501,7 @@ namespace Soap.Idaam
             }
             
 
-            void GetRoles(ClaimsPrincipal claimsPrincipal, out IHaveRoles roleInstances)
+            void GetRolesFromApiToken(ClaimsPrincipal claimsPrincipal, out IHaveRoles roleInstances)
             {
                 var claim = claimsPrincipal.Claims.Single(x => x.Type == "https://soap.idaam/app_metadata");
                 var jsonAppMetaData = claim.Value;
@@ -465,7 +511,10 @@ namespace Soap.Idaam
                                                            .ToList();
                 if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions)
                 {
-                    /* in this case we ignore role metadata and read the auth0 api assigned roles */
+                    /* in this case we ignore role metadata and read the auth0 api assigned roles
+                     This also means that if you are not using db permissions you could still assign roles 
+                     using the portal. However, if you do that switching later to use DbPermissions will mean
+                     you role metadata is not in sync with the Auth0 role assignments */
 
                     roleInstances = new AppMetaData()
                     {
@@ -985,7 +1034,7 @@ namespace Soap.Idaam
             }
         }
 
-        async Task<ManagementApiClient> GetManagementApiClientCached()
+        public async Task<ManagementApiClient> GetManagementApiClientCached()
         {
             var mgmtToken = await GetManagementApiTokenViaHttp(this.config);
 
