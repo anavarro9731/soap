@@ -163,5 +163,14 @@ namespace Soap.Idaam
 
             return Task.CompletedTask;
         }
+
+        public Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId)
+        {
+            Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
+
+            var identity = this.identities[idaamProviderUserId];
+
+            return Task.FromResult(identity.Roles);
+        }
     }
 }

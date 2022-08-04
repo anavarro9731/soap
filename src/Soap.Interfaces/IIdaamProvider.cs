@@ -59,6 +59,7 @@ namespace Soap.Interfaces
         {
             public bool Blocked { get; init; } = default;
         }
-        
+
+        Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId);
     }
 }
