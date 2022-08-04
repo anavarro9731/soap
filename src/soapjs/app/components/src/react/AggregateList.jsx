@@ -3,7 +3,8 @@ import {H5} from "baseui/typography";
 import React from "react";
 import {Button, KIND, SIZE} from "baseui/button";
 import bus from "../soap/bus";
-import {ArrayTableTop, EntityMenu} from "./Tables";
+import {EntityMenu} from "./EntityMenu";
+import {ArrayTableTop} from "./Tables";
 import {CenterSpinner} from "./CenterSpinner";
 import {optional, types, validateArgs} from "../soap/util";
 

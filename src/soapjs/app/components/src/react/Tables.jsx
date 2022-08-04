@@ -8,18 +8,6 @@ import {FileView} from "./FileView";
 import {Label2, Label3} from "baseui/typography";
 import DOMPurify from "dompurify";
 
-export class EntityMenu {
-    constructor(viewAction, actions) {
-
-        validateArgs(
-             //viewAction > (entity) => action or [(entity) => component]
-            [{actions}, [types.function], optional] //(entity) => {}
-        );
-
-        this.viewAction = viewAction;
-        this.actions = actions;
-    }
-}
 
 export function ObjectTableNested(props) {
     const {propertyKey, object, propertyRenderer, hiddenFields, expandedFields, entityMenus} = props;

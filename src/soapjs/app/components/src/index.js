@@ -21,6 +21,7 @@ export { ActionDrawer } from './react/ActionDrawer';
 export { ActionMenu, PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewLink, ViewLinkButton } from './react/ActionMenu';
 export { ActionModal } from './react/ActionModal';
 export { AggregateList } from './react/AggregateList';
-export { EntityMenu, ObjectTableTop, ArrayTableTop } from './react/Tables';
+export { EntityMenu } from './react/EntityMenu';
+export { ObjectTableTop, ArrayTableTop } from './react/Tables';
 export { AggregateView } from './react/AggregateView';
 export { CenterSpinner } from './react/CenterSpinner';
