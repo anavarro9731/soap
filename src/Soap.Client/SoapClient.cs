@@ -89,8 +89,8 @@
 
                 SetCommonHeaders(command, options, headers, messageId);
 
-                command.Headers.SetQueueName(command.GetType().Assembly.GetName().Name + ".inmemory");
-                
+                command.Headers.SetQueueName(command.GetType().Assembly.GetName().Name + "." + options.EnvironmentPartitionKey);
+
                 var result = await Send(
                                  command,
                                  options?.BusSessionId,
@@ -108,9 +108,11 @@
                     OptionsBase options1)
                 {
                     if (sessionId == Guid.Empty)
+                    {
                         throw new ArgumentOutOfRangeException(
                             $"{nameof(BusOptions.BusSessionId)} cannot be empty guid. Leave it blank or set another Guid");
-                    
+                    }
+
                     sessionId = sessionId ?? Guid.NewGuid();
 
                     var serialisedCommand = SerialiseCommand(sendCommand);
@@ -215,13 +217,31 @@
             headers.SetSchema(commandToSend.GetType().FullName);
         }
 
+        private void PrepareHeaders(ref ApiCommand command, OptionsBase options)
+        {
+            command.Validate(); //* run any user-defined validations on the interface
+
+            List<Enumeration> headers = command.Headers;
+
+            var messageId = Guid.NewGuid();
+
+            SetCommonHeaders(command, options, headers, messageId);
+        }
+
         public class BusOptions : OptionsBase
         {
             /* when sent by the Soap.Bus this is the "Unit Of Work" id used to track all messages sent in that UOW.
              here we have similar concept. All Messages sent with the same UOW id will be processed in order. */
             public Guid? BusSessionId;
 
+            public string EnvironmentPartitionKey;
+
             public DateTimeOffset? ScheduleAt;
+
+            public BusOptions()
+            {
+                if (this.TestMode) this.EnvironmentPartitionKey = "inmemory";
+            }
         }
 
         public class BusSendResult : SendResultBase
@@ -245,7 +265,7 @@
             public SignalRSessionInfo SignalRSession;
 
             public bool TestMode;
-            
+
             public class Auth
             {
                 public Auth(string accessToken, string identityToken, string username)
