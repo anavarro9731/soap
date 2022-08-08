@@ -20,10 +20,6 @@ namespace Soap.Interfaces
         Task<string> AddUser(AddUserArgs args);
 
         Task<string> BlockUser(string idaamProviderId);
-        
-        Task<string> UnblockUser(string idaamProviderId);
-
-        Task<string> UpdateUserProfile(string idaamProvider, IIdaamProvider.UpdateUserArgs updateUserArgs);
 
         Task ChangeUserPassword(string idaamProviderId, string newPassword);
 
@@ -31,11 +27,21 @@ namespace Soap.Interfaces
 
         Task<User> GetLimitedUserProfileFromIdentityToken(string idToken);
 
+        Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId);
+
+        Task<List<User>> GetUserProfileFromIdentityServerByEmail(string emailAddress);
+        
+        Task<User> GetUserProfileFromIdentityServer(string idaamProviderId);
+
         Task RemoveRoleFromUser(string idaamProviderUserId, Role role);
 
         Task RemoveScopeFromUserRole(string idaamProviderUserId, Role role, AggregateReference scopeReferenceToRemove);
 
         Task RemoveUser(string idaamProviderId);
+
+        Task<string> UnblockUser(string idaamProviderId);
+
+        Task<string> UpdateUserProfile(string idaamProvider, UpdateUserArgs updateUserArgs);
 
         public class User : IdaamProviderProfile
         {
@@ -54,12 +60,10 @@ namespace Soap.Interfaces
 
             public bool VerifyEmail { get; init; } = true;
         }
-        
+
         public record UpdateUserArgs(IUserProfile Profile, bool VerifyEmail)
         {
             public bool Blocked { get; init; } = default;
         }
-
-        Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId);
     }
 }

@@ -135,6 +135,11 @@ namespace Soap.Idaam
                         }));
         }
 
+        public Task<IIdaamProvider.User> GetUserProfileFromIdentityServer(string idaamProviderId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task RemoveRoleFromUser(string idaamProviderUserId, Role role)
         {
             Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
@@ -171,6 +176,11 @@ namespace Soap.Idaam
             var identity = this.identities[idaamProviderUserId];
 
             return Task.FromResult(identity.Roles);
+        }
+
+        public Task<List<IIdaamProvider.User>> GetUserProfileFromIdentityServerByEmail(string emailAddress)
+        {
+            throw new NotImplementedException();
         }
     }
 }

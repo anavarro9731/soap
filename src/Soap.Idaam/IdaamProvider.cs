@@ -271,13 +271,34 @@ namespace Soap.Idaam
 
         /* if we can get everything we need by decrypting the token, using method GetLimitedUserProfileFromIdentityToken instead,
         we will do it that way to avoid the http call, especially if we'd have to do it on every azf call, if not we might have to do this */
-        public async Task<User> GetUserProfileFromIdentityServer(string idaamProviderId)
+        public async Task<IIdaamProvider.User> GetUserProfileFromIdentityServer(string idaamProviderId)
         {
             ManagementApiClient client = await GetManagementApiClientCached();
 
             var user = await client.Users.GetAsync(idaamProviderId);
 
-            return user;
+            return user.Map(x => new IIdaamProvider.User()
+            {
+                Email = x.Email,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                IdaamProviderId = x.UserId
+            });
+        }
+        
+        public async Task<List<IIdaamProvider.User>> GetUserProfileFromIdentityServerByEmail(string emailAddress)
+        {
+            ManagementApiClient client = await GetManagementApiClientCached();
+
+            var users = await client.Users.GetUsersByEmailAsync(emailAddress);
+
+            return users.Select(x => new IIdaamProvider.User()
+            {
+                Email = x.Email,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                IdaamProviderId = x.UserId
+            }).ToList();
         }
         
         public async Task<IIdaamProvider.User> GetLimitedUserProfileFromIdentityToken(string idToken)
