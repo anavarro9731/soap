@@ -217,7 +217,7 @@
             headers.SetSchema(commandToSend.GetType().FullName);
         }
 
-        private void PrepareHeaders(ref ApiCommand command, OptionsBase options)
+        public void PrepareHeaders(ref ApiCommand command, OptionsBase options)
         {
             command.Validate(); //* run any user-defined validations on the interface
 
