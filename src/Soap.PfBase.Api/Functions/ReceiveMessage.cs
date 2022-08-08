@@ -14,12 +14,62 @@ namespace Soap.PfBase.Api.Functions
     using Microsoft.Extensions.Logging;
     using Soap.Context.MessageMapping;
     using Soap.Interfaces;
+    using Soap.Interfaces.Messages;
     using Soap.Utility;
     using Soap.Utility.Enums;
+    using Soap.Utility.Functions.Extensions;
 
     public static partial class PlatformFunctions
     {
         
+        public static async Task HandleMessage<TUserProfile>(
+            ApiMessage message,
+            MapMessagesToFunctions messageFunctionRegistration,
+            ISecurityInfo securityInfo,
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            ILogger log,
+            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
+        {
+            Serilog.ILogger logger = null;
+            try
+            {
+                message.Op(
+                    x =>
+                        {
+                        x.Headers.SetSchema(message.GetType().FullName);
+                        if (x.Headers.GetMessageId() == Guid.Empty) x.Headers.SetMessageId(Guid.NewGuid());
+                        x.Headers.SetTimeOfCreationAtOrigin();
+                        });
+                
+                AzureFunctionContext.CreateLogger(out logger);
+
+                AzureFunctionContext.LoadAppConfig(out var appConfig);
+
+                var result = await AzureFunctionContext.Execute<TUserProfile>(
+                                 message.ToJson(SerialiserIds.ApiBusMessage),
+                                 messageFunctionRegistration,
+                                 message.Headers.GetMessageId().ToString(),
+                                 message.GetType().ToShortAssemblyTypeName(),
+                                 securityInfo,
+                                 logger,
+                                 appConfig,
+                                 signalRBinding, 
+                                 dataStoreOptions);
+
+                if (result.Success == false)
+                {
+                    ExceptionDispatchInfo.Capture(result.UnhandledError).Throw();
+                }
+            }
+            catch (Exception e)
+            {
+                logger?.Fatal(
+                    e,
+                    $"Could not execute function {nameof(HandleMessage)} for message type ${message.GetType().ToShortAssemblyTypeName()} with id {message.Headers.GetMessageId().ToString()}");
+                log.LogCritical(e.ToString());
+            }
+        }
+
         public static async Task HandleMessage<TUserProfile>(
             string body,
             string messageId,
