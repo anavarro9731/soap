@@ -67,6 +67,21 @@
             SignalRConnectionInfo connectionInfo) =>
             connectionInfo;
 
+        
+        [FunctionName("ReceiveMessageSignalR")]
+        public static async Task ReceiveMessageSignalR(
+            [SignalRTrigger(hubName: "Soap", 
+                category: "messages", 
+                "ReceiveMessageSignalR",
+                ConnectionStringSetting = "AzureSignalRConnectionString")] InvocationContext invocationContext,
+            [SignalRParameter]string body, [SignalRParameter]string id, [SignalRParameter]string type, ILogger logger,
+            [SignalR(HubName = "Soap", ConnectionStringSetting = "AzureSignalRConnectionString")]
+            IAsyncCollector<SignalRMessage> signalRBinding,
+            ILogger log)
+        {
+            await PlatformFunctions.HandleMessage<UserProfile>(body, id, type, new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log);
+        }
+        
         [FunctionName("PrintSchema")]
         public static IActionResult PrintSchema(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)]
