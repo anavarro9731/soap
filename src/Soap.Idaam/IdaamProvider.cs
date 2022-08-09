@@ -435,7 +435,7 @@ namespace Soap.Idaam
         {
             var client = await GetManagementApiClientCached();
             
-            if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions)
+            if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions || this.config.AuthLevel == AuthLevel.AuthenticateOnly)
             {
                 /* in this case we ignore role metadata and read the auth0 api assigned roles
                  This also means that if you are not using db permissions you could still assign roles 
@@ -449,7 +449,8 @@ namespace Soap.Idaam
                     RoleKey = x.Name.SubstringAfter("builtin:")
                 }).ToList();
             }
-            else
+
+            if(this.config.AuthLevel.ApiPermissionsRequired)
             {
                 var user = await client.Users.GetAsync(idaamProviderUserId);
             
@@ -457,7 +458,9 @@ namespace Soap.Idaam
 
                 return appMetaData.Roles;
             }
-            
+
+            return new List<RoleInstance>();
+
             static async Task<List<global::Auth0.ManagementApi.Models.Role>> RetrieveUsersRolesOnePageAtATime(
                 string idaamProviderUserId,
                 ManagementApiClient client,
