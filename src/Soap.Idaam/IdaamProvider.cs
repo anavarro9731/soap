@@ -78,7 +78,7 @@ namespace Soap.Idaam
                                    IncludeFields = true,
                                    Fields = "client_id,name"
                                },
-                               new PaginationInfo(pageNo, 50, true));
+                               new PaginationInfo(pageNo, 100, true));
                 if (page.Any(app => app.Name == appName))
                 {
                     return page.Single(app => app.Name == appName).ClientId;
@@ -366,7 +366,7 @@ namespace Soap.Idaam
 
             static async Task<bool> ProcessPageOfApiServerResults(ManagementApiClient client, int pageNo, string apiId)
             {
-                var page = await client.ResourceServers.GetAllAsync(new PaginationInfo(pageNo, 50, true));
+                var page = await client.ResourceServers.GetAllAsync(new PaginationInfo(pageNo, 100, true));
                 if (page.Any(server => server.Identifier == apiId))
                 {
                     return true;
@@ -467,7 +467,7 @@ namespace Soap.Idaam
                 int pageNo,
                 List<global::Auth0.ManagementApi.Models.Role> roles)
             {
-                var page = await client.Users.GetRolesAsync(idaamProviderUserId, new PaginationInfo(pageNo, 50, true));
+                var page = await client.Users.GetRolesAsync(idaamProviderUserId, new PaginationInfo(pageNo, 100, true));
                 
                 roles.AddRange(page.ToList());
 
@@ -925,7 +925,7 @@ namespace Soap.Idaam
                         int pageNo,
                         List<Permission> permissions)
                     {
-                        var page = await client.Roles.GetPermissionsAsync(role, new PaginationInfo(pageNo, 50, true));
+                        var page = await client.Roles.GetPermissionsAsync(role, new PaginationInfo(pageNo, 100, true));
 
                         permissions.AddRange(page.ToList());
 
@@ -954,7 +954,7 @@ namespace Soap.Idaam
                         int pageNo,
                         List<global::Auth0.ManagementApi.Models.Role> roles)
                     {
-                        var page = await client.Roles.GetAllAsync(new GetRolesRequest(), new PaginationInfo(pageNo, 50, true));
+                        var page = await client.Roles.GetAllAsync(new GetRolesRequest(), new PaginationInfo(pageNo, 100, true));
 
                         roles.AddRange(page.ToList());
 
