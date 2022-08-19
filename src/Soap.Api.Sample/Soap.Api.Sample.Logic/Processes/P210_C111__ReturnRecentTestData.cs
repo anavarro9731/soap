@@ -38,44 +38,44 @@ namespace Soap.Api.Sample.Logic.Processes
                                     E105_Html = e.HtmlOptionalMultiline,
                                     E105_Label = e.StringOptionalMultiline,
                                     E105_CreatedAt = e.Created,
-                                    E105_CChild = e.CChild?.Map(c => new E105v1_GotRecentTestData.ChildC()
+                                    E105_Country = e.Country?.Map(c => new E105v1_GotRecentTestData.Country()
                                     {
-                                        E105_BChildren = c.BChildren?.Select(b => new E105v1_GotRecentTestData.ChildB()
+                                        E105_Cities = c.Cities?.Select(b => new E105v1_GotRecentTestData.City()
                                         {
-                                            E105_BChildBool = b.Bool,
-                                            E105_BChildId = b.id,
-                                            E105_BChildLong = b.Long,
-                                            E105_BChildString = b.String
-                                        }).ToList() ?? new List<E105v1_GotRecentTestData.ChildB>(),
-                                        E105_BChild = c.BChild?.Map(b => new E105v1_GotRecentTestData.ChildB()
+                                            E105_HasCathedral = b.Bool,
+                                            E105_CityId = b.id,
+                                            E105_Population = b.Long,
+                                            E105_Name = b.String
+                                        }).ToList() ?? new List<E105v1_GotRecentTestData.City>(),
+                                        E105_CapitalCity = c.CapitalCity?.Map(b => new E105v1_GotRecentTestData.City()
                                         {
-                                            E105_BChildId = b.id,
-                                            E105_BChildBool = b.Bool,
-                                            E105_BChildLong = b.Long,
-                                            E105_BChildString = b.String
+                                            E105_CityId = b.id,
+                                            E105_HasCathedral = b.Bool,
+                                            E105_Population = b.Long,
+                                            E105_Name = b.String
                                         }),
-                                        E105_CChildId = c.id,
-                                        E105_CChildString = c.String
+                                        E105_CountryId = c.id,
+                                        E105_CountryName = c.String
                                     }),
-                                    E105_CChildren = e.CChildren?.Select(c => new E105v1_GotRecentTestData.ChildC()
+                                    E105_Countries = e.Countries?.Select(c => new E105v1_GotRecentTestData.Country()
                                     {
-                                        E105_BChildren = c.BChildren?.Select(b => new E105v1_GotRecentTestData.ChildB()
+                                        E105_Cities = c.Cities?.Select(b => new E105v1_GotRecentTestData.City()
                                         {
-                                            E105_BChildBool = b.Bool,
-                                            E105_BChildId = b.id,
-                                            E105_BChildLong = b.Long,
-                                            E105_BChildString = b.String
-                                        }).ToList() ?? new List<E105v1_GotRecentTestData.ChildB>(),
-                                        E105_BChild = c.BChild?.Map(b => new E105v1_GotRecentTestData.ChildB()
+                                            E105_HasCathedral = b.Bool,
+                                            E105_CityId = b.id,
+                                            E105_Population = b.Long,
+                                            E105_Name = b.String
+                                        }).ToList() ?? new List<E105v1_GotRecentTestData.City>(),
+                                        E105_CapitalCity = c.CapitalCity?.Map(b => new E105v1_GotRecentTestData.City()
                                         {
-                                            E105_BChildId = b.id,
-                                            E105_BChildBool = b.Bool,
-                                            E105_BChildLong = b.Long,
-                                            E105_BChildString = b.String
+                                            E105_CityId = b.id,
+                                            E105_HasCathedral = b.Bool,
+                                            E105_Population = b.Long,
+                                            E105_Name = b.String
                                         }),
-                                        E105_CChildId = c.id,
-                                        E105_CChildString = c.String
-                                    }).ToList() ?? new List<E105v1_GotRecentTestData.ChildC>()
+                                        E105_CountryId = c.id,
+                                        E105_CountryName = c.String
+                                    }).ToList() ?? new List<E105v1_GotRecentTestData.Country>()
                                 }))
                     };
 

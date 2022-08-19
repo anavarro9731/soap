@@ -74,7 +74,7 @@ export function ArrayTable(props) {
         //* PRINT TO SCREEN
         return PrintRows(rows, titleComponentArray);
 
-    }
+    } else return  null;
 
     function PrintRows(rows, titleComponentArray) {
 

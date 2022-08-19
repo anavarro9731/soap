@@ -6,9 +6,9 @@ namespace Soap.Api.Sample.Models.Entities
 
     public class TestChildC : Entity
     {
-        public TestChildB BChild { get; set; }
+        public TestChildB CapitalCity { get; set; }
 
-        public List<TestChildB> BChildren { get; set; }
+        public List<TestChildB> Cities { get; set; }
 
         public string String { get; set; }
     }

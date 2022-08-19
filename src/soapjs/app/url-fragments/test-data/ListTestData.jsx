@@ -60,9 +60,8 @@ export function ListTestData() {
 
                                </>
                            }}
-                           expandedFields={["e105_BChildren"]}
-
-                           hiddenFields={["e105_BChildId", "e105_BChildLong"]}
+                           expandedFields={[]}
+                           hiddenFields={[]}
                            title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}
             />
 

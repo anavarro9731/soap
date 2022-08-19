@@ -13,34 +13,34 @@ namespace Soap.Api.Sample.Messages.Events
         {
         }
 
-        public class ChildB
+        public class City
         {
-            public bool? E105_BChildBool { get; set; }
+            public bool? E105_HasCathedral { get; set; }
 
-            public Guid? E105_BChildId { get; set; }
+            public Guid? E105_CityId { get; set; }
 
-            public long? E105_BChildLong { get; set; }
+            public long? E105_Population { get; set; }
 
-            public string E105_BChildString { get; set; }
+            public string E105_Name { get; set; }
             
         }
 
-        public class ChildC
+        public class Country
         {
-            public ChildB E105_BChild { get; set; } = new ChildB();
+            public City E105_CapitalCity { get; set; } = new City();
 
-            public List<ChildB> E105_BChildren { get; set; } = new List<ChildB>();
+            public List<City> E105_Cities { get; set; } = new List<City>();
 
-            public Guid? E105_CChildId { get; set; }
+            public Guid? E105_CountryId { get; set; }
 
-            public string E105_CChildString { get; set; }
+            public string E105_CountryName { get; set; }
         }
 
         public class TestData
         {
-            public ChildC E105_CChild { get; set; } = new ChildC();
+            public Country E105_Country { get; set; } = new Country();
             
-            public List<ChildC> E105_CChildren { get; set; } = new List<ChildC>();
+            public List<Country> E105_Countries { get; set; } = new List<Country>();
 
             public string E105_Html { get; set; }
             

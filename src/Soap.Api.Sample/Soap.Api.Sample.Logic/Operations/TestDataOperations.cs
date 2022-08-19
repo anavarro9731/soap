@@ -76,15 +76,15 @@ namespace Soap.Api.Sample.Logic.Operations
                                                    PostCodesMultiOptionalKeys = newState.C107_PostCodesMultiOptional.SelectedKeys,
                                                    PostCodesSingleOptionalKey = newState.C107_PostCodesSingleOptional.SelectedKeys.SingleOrDefault(),
                                                    Hashtags = newState.C107_HashtagsOptional?.SelectedKeys ?? new List<string>(),
-                                                   CChild = new TestChildC
+                                                   Country = new TestChildC
                                                    {
-                                                       BChild = new TestChildB
+                                                       CapitalCity = new TestChildB
                                                        {
                                                            Bool = true,
                                                            Long = 123456789,
                                                            String = "123 Anywhere St."
                                                        },
-                                                       BChildren = Enumerable.Range(1, 10)
+                                                       Cities = Enumerable.Range(1, 10)
                                                                              .Select(
                                                                                  x => new TestChildB
                                                                                  {
@@ -95,17 +95,17 @@ namespace Soap.Api.Sample.Logic.Operations
                                                                              .ToList(),
                                                        String = "C String"
                                                    },
-                                                   CChildren = Enumerable.Range(1, 10)
+                                                   Countries = Enumerable.Range(1, 10)
                                                                          .Select(
                                                                              x => new TestChildC
                                                                              {
-                                                                                 BChild = new TestChildB
+                                                                                 CapitalCity = new TestChildB
                                                                                  {
                                                                                      Bool = true,
                                                                                      Long = 123456789,
                                                                                      String = "456 Anywhere St."
                                                                                  },
-                                                                                 BChildren = Enumerable.Range(1, 10)
+                                                                                 Cities = Enumerable.Range(1, 10)
                                                                                      .Select(
                                                                                          x => new TestChildB
                                                                                          {

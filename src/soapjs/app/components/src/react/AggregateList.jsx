@@ -7,7 +7,7 @@ import {ArrayTable} from "./Tables";
 import {CenterSpinner} from "./CenterSpinner";
 import {optional, types, validateArgs} from "../soap/util";
 import {CreatePrimaryActionsMenu} from "./ActionMenu";
-import {StyledRoot} from "baseui/table-semantic";
+
 
 export function AggregateList(props) {
 
@@ -64,9 +64,10 @@ export function AggregateList(props) {
         <Grid gridMaxWidth={1200}>
             <Cell span={12}>
                 {(typeof title === typeof "") ? (<H5>
-                    {title}&nbsp;
-                    {CreatePrimaryActionsMenu("root", entityMenus)}
-                    {headerControls()}
+                    {CreatePrimaryActionsMenu("root", entityMenus)}&nbsp;
+                    {headerControls()}&nbsp;
+                    {title}
+                    
                 </H5>) : <>{title}{headerControls()}</>}
             </Cell>
             <Cell span={12}>
