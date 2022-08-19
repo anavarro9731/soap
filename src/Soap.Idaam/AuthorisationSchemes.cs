@@ -248,13 +248,15 @@ namespace Soap.Idaam
             var accessToken = message.Headers.GetAccessToken();
             var idToken = message.Headers.GetIdentityToken();
 
-            var identityClaims = await idaamProvider.GetAppropriateClaimsFromAccessToken(accessToken, message, securityInfo);
-
-            setClaims(identityClaims);
-
             var userProfile = await idaamProvider.GetLimitedUserProfileFromIdentityToken(idToken);
             
             setProfile(userProfile);
+            
+            var identityClaims = await idaamProvider.GetAppropriateClaimsFromAccessToken(accessToken, userProfile.IdaamProviderId, message, securityInfo);
+
+            setClaims(identityClaims);
+
+            
             
         }
     }

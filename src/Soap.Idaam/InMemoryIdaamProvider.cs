@@ -105,7 +105,11 @@ namespace Soap.Idaam
             throw new NotImplementedException();
         }
 
-        public Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string accessToken, ApiMessage apiMessage, ISecurityInfo securityInfo)
+        public Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(
+            string accessToken,
+            string idaamProviderId,
+            ApiMessage apiMessage,
+            ISecurityInfo securityInfo)
         {
             var exists = this.identities.Any(x => x.Value.AccessToken == accessToken);
 

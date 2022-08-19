@@ -112,12 +112,21 @@ namespace Soap.Idaam
         {
             var client = await GetManagementApiClientCached();
             GetApiName(this.config, out string apiName);
-            var user = await client.Users.GetAsync(idaamProviderUserId);
             
+            await AddRoleToMetaData(idaamProviderUserId, role, scopeReferencesToAdd, client);
+
+            await AddAuth0AssignedRoleToUser(client, role, apiName, idaamProviderUserId);
+
+        }
+
+        private static async Task AddRoleToMetaData(string idaamProviderUserId, Role role, List<AggregateReference> scopeReferencesToAdd, ManagementApiClient client)
+        {
+            var user = await client.Users.GetAsync(idaamProviderUserId);
+
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
             scopeReferencesToAdd ??= new List<AggregateReference>();
-            
+
             //*add if completely new
             var existingRole = appMetaData.Roles.SingleOrDefault(x => x.RoleKey == role.Key);
             if (existingRole == null)
@@ -143,20 +152,24 @@ namespace Soap.Idaam
                              idaamProviderUserId,
                              new UserUpdateRequest()
                              {
-                                 AppMetadata = appMetaData 
+                                 AppMetadata = appMetaData
                              });
+        }
 
-            //* rate limiting!
+        private static async Task AddAuth0AssignedRoleToUser(ManagementApiClient client, Role role, string apiName, string idaamProviderUserId)
+        {
+            //* task can cause rate limiting if happens in quick succession
             var getRoleId = GetRoleId(client, role.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName));
+                
             string roleId = await getRoleId;
-            
+
+            //* pretty sure reassigning an already existing role causes no problem
             await client.Users.AssignRolesAsync(
                 idaamProviderUserId,
                 new AssignRolesRequest()
                 {
                     Roles = new[] { roleId }
                 });
-
         }
         
         
@@ -365,6 +378,13 @@ namespace Soap.Idaam
             var client = await GetManagementApiClientCached();
             GetApiName(this.config, out string apiName);
             
+            await RemoveRoleFromMetaData(idaamProviderUserId, roleToRemove, client);
+
+            await RemoveAuth0AssignedRoleFromUser(client, roleToRemove, apiName, idaamProviderUserId);
+        }
+
+        private static async Task RemoveRoleFromMetaData(string idaamProviderUserId, Role roleToRemove, ManagementApiClient client)
+        {
             var user = await client.Users.GetAsync(idaamProviderUserId);
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
@@ -377,14 +397,17 @@ namespace Soap.Idaam
                 idaamProviderUserId,
                 new UserUpdateRequest()
                 {
-                    AppMetadata = appMetaData 
+                    AppMetadata = appMetaData
                 });
+        }
 
-            
-            //* rate limiting!
+        private static async Task RemoveAuth0AssignedRoleFromUser(ManagementApiClient client, Role roleToRemove, string apiName, string idaamProviderUserId)
+        {
+            //* task can cause rate limiting when happens in quick succession 
             var getRoleId = GetRoleId(client, roleToRemove.AsAuth0Name(EnvVars.EnvironmentPartitionKey, apiName));
+                
             var roleId = await getRoleId;
-            
+
             await client.Users.RemoveRolesAsync(
                 idaamProviderUserId,
                 new AssignRolesRequest()
@@ -456,7 +479,11 @@ namespace Soap.Idaam
             }
         }
         
-        public async Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string bearerToken, ApiMessage apiMessage, ISecurityInfo securityInfo)
+        public async Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(
+            string bearerToken,
+            string idaamProviderId,
+            ApiMessage apiMessage,
+            ISecurityInfo securityInfo)
         {
             {
                 var openIdConfig = await GetOpenIdConfig($"{this.config.Auth0TenantDomain}");
@@ -482,8 +509,10 @@ namespace Soap.Idaam
                     //* will validate formation and signature by default
 
                     var principal = tokenHandler.ValidateToken(bearerToken, validationParameters, out var validatedToken);
+
+                    var client = await GetManagementApiClientCached();
                     
-                    GetRolesFromApiToken(principal, out IHaveRoles roleContainer);
+                    IHaveRoles roleContainer = await GetRolesFromApiToken(client, principal);
 
                     var identityPermissions = ClaimsExtractor.GetAppropriateClaimsFromAccessToken(securityInfo, roleContainer, apiMessage);
                     
@@ -501,14 +530,19 @@ namespace Soap.Idaam
             }
             
 
-            void GetRolesFromApiToken(ClaimsPrincipal claimsPrincipal, out IHaveRoles roleInstances)
+            async Task<IHaveRoles> GetRolesFromApiToken(ManagementApiClient client, ClaimsPrincipal claimsPrincipal)
             {
-                var claim = claimsPrincipal.Claims.Single(x => x.Type == "https://soap.idaam/app_metadata");
+                IHaveRoles roleInstances;
+                var claim = claimsPrincipal.Claims.SingleOrDefault(x => x.Type == "https://soap.idaam/app_metadata");
+                Guard.Against(claim == null, "Cannot find any metadata associated with this user's record in the IDAAM provider");
                 var jsonAppMetaData = claim.Value;
-                var metaData = JsonConvert.DeserializeObject<AppMetaData>(jsonAppMetaData);
+                var metaData = JsonConvert.DeserializeObject<AppMetaData>(jsonAppMetaData);  //* could be empty on creation as far as i can imagine
                 var auth0ApiAssignedRoles = claimsPrincipal.Claims.Where(c => c.Type == "https://soap.idaam/roles" && c.Value.Contains("builtin:"))
                                                            .Select(x => x.Value.SubstringAfter("builtin:"))
                                                            .ToList();
+                
+                await SyncRoles(securityInfo, client, metaData, auth0ApiAssignedRoles, idaamProviderId);
+
                 if (this.config.AuthLevel == AuthLevel.AuthoriseApiPermissions)
                 {
                     /* in this case we ignore role metadata and read the auth0 api assigned roles
@@ -530,10 +564,39 @@ namespace Soap.Idaam
                 {
                     roleInstances = metaData;    
                 }
-                
+
+                return roleInstances;
+
             }
-            
-            
+
+            static async Task SyncRoles(ISecurityInfo securityInfo, ManagementApiClient managementApiClient, AppMetaData metaData, List<string> auth0ApiAssignedRoles, string idaamProviderUserId)
+            {
+                /* it could be, either because health check has removed some builtin roles, or because you removed roles manually from the user
+                 that the role metadata will be out of sync with the roles assigned directly to the user in the portal. this sync
+                 will correct that on the login of the user and bring them back into sync */
+                
+                
+                //* remove role from metadata that dont exist in system or in the auth0 roles assigned to the user
+                foreach (var metaDataRole in metaData.Roles)
+                {
+                    if (auth0ApiAssignedRoles.All(assignedRoleKey => assignedRoleKey != metaDataRole.RoleKey) //*  removed manually in the portal
+                        || securityInfo.BuiltInRoles.All(builtInRole => builtInRole.Key != metaDataRole.RoleKey)) //* removed by health check
+                    {
+                        await RemoveRoleFromMetaData(idaamProviderUserId, new Role(metaDataRole.RoleKey, string.Empty), managementApiClient);
+                    }
+                }
+                
+                /* add apiassigned roles to the metadata with default scope, that were assigned using the portal to the metadata */
+                foreach (var auth0ApiAssignedRoleKey in auth0ApiAssignedRoles)
+                {
+                    if (metaData.Roles.All(r => r.RoleKey != auth0ApiAssignedRoleKey))
+                    {
+                        /* this will add to metadata and to auth role list, but if it already exists in the auth0 roles
+                        list it will just ignore that part, adding only to the metadata which is what we need */
+                        await AddRoleToMetaData(idaamProviderUserId, new Role(auth0ApiAssignedRoleKey, string.Empty), (List<AggregateReference>)null, managementApiClient);
+                    }
+                }
+            }
         }
 
         static async Task CreateRoleOnServer(ManagementApiClient client, string apiId, string apiName, Interfaces.Role role)
@@ -597,7 +660,7 @@ namespace Soap.Idaam
 
         static string GetUiAppName(string apiName, out string appName) => appName = $"{apiName}.ui";
 
-        public string GetApiClient()
+        public string GetApiClientId()
         {
             GetApiId(this.config, out var id);
             return id;
