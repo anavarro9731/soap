@@ -68,7 +68,7 @@ export function AggregateList(props) {
                     {headerControls()}&nbsp;
                     {title}
                     
-                </H5>) : <>{title}{headerControls()}</>}
+                </H5>) : <>{CreatePrimaryActionsMenu("root", entityMenus)}&nbsp;{headerControls()}</>}
             </Cell>
             <Cell span={12}>
                 {aggregates ?

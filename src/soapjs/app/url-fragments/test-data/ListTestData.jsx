@@ -39,8 +39,8 @@ export function ListTestData() {
                         (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>,
                         (entity) => <RemoveTestData entity={{id: entity.e105_Id, label: entity.e105_Label}}/>
                     ]),
-                    "e105_CChild": new EntityMenu((entity) => alert(entity), []),
-                    "e105_CChildren-ArrayItems": new EntityMenu([(entity) => <EditTestData/>, (entity) =>
+                    "e105_CapitalCity": new EntityMenu((entity) => alert(entity), []),
+                    "e105_Cities-ArrayItems": new EntityMenu([(entity) => <EditTestData/>, (entity) =>
                         <EditTestData/>], [
                         (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
                     ])
@@ -62,6 +62,7 @@ export function ListTestData() {
                            }}
                            expandedFields={[]}
                            hiddenFields={[]}
+                           headerColumns={["e105_Label", "e105_Name"]}
                            title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}
             />
 

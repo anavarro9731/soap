@@ -586,7 +586,7 @@ namespace Soap.Idaam
                     }
                 }
                 
-                /* add apiassigned roles to the metadata with default scope, that were assigned using the portal to the metadata */
+                /* add api assigned roles to the metadata with default scope, that were assigned using the portal to the metadata */
                 foreach (var auth0ApiAssignedRoleKey in auth0ApiAssignedRoles)
                 {
                     if (metaData.Roles.All(r => r.RoleKey != auth0ApiAssignedRoleKey))

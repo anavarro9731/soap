@@ -35,28 +35,9 @@ namespace Soap.Api.Sample.Logic.Processes
                                 {
                                     E105_Guid = e.Guid,
                                     E105_Id = e.id,
-                                    E105_Html = e.HtmlOptionalMultiline,
-                                    E105_Label = e.StringOptionalMultiline,
+                                    E105_Html = "TESTHTML",
+                                    E105_Label = "TESTLABEL",
                                     E105_CreatedAt = e.Created,
-                                    E105_Country = e.Country?.Map(c => new E105v1_GotRecentTestData.Country()
-                                    {
-                                        E105_Cities = c.Cities?.Select(b => new E105v1_GotRecentTestData.City()
-                                        {
-                                            E105_HasCathedral = b.Bool,
-                                            E105_CityId = b.id,
-                                            E105_Population = b.Long,
-                                            E105_Name = b.String
-                                        }).ToList() ?? new List<E105v1_GotRecentTestData.City>(),
-                                        E105_CapitalCity = c.CapitalCity?.Map(b => new E105v1_GotRecentTestData.City()
-                                        {
-                                            E105_CityId = b.id,
-                                            E105_HasCathedral = b.Bool,
-                                            E105_Population = b.Long,
-                                            E105_Name = b.String
-                                        }),
-                                        E105_CountryId = c.id,
-                                        E105_CountryName = c.String
-                                    }),
                                     E105_Countries = e.Countries?.Select(c => new E105v1_GotRecentTestData.Country()
                                     {
                                         E105_Cities = c.Cities?.Select(b => new E105v1_GotRecentTestData.City()

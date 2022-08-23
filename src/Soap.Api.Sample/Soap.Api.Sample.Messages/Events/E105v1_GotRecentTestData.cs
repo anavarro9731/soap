@@ -38,8 +38,6 @@ namespace Soap.Api.Sample.Messages.Events
 
         public class TestData
         {
-            public Country E105_Country { get; set; } = new Country();
-            
             public List<Country> E105_Countries { get; set; } = new List<Country>();
 
             public string E105_Html { get; set; }
