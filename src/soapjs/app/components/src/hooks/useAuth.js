@@ -1,17 +1,14 @@
 import {useCallback, useEffect, useState} from 'react';
 import {useAuth0} from '@auth0/auth0-react';
+import useGlobalState from "@vighnesh153/use-global-state";
 import config from "../soap/config";
 import {useIsConfigLoaded} from "./systemStateHooks";
 import {optional, types, validateArgs} from "../soap/util";
 
 export const useAuth = (callerName) => {
-
-    /* i had these as 2 separate state vars, but when setting them in sequence i was getting mem leaks that I can't explain
-    presumably due to a render in between. but why it seems to lose the ref to the owner at that exact moment every time
-    is a mystery
-     */
-    const [tokens, setTokens] = useState(null);      
-    const [ready, setReady] = useState(false);
+    
+    const [tokens, setTokens] = useGlobalState(null);      
+    const [ready, setReady] = useGlobalState(false);
     
     const {
         isLoading,
