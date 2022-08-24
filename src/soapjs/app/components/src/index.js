@@ -20,6 +20,6 @@ export { Login, ProtectedRoute } from './react/Login';
 export { ActionDrawer } from './react/ActionDrawer';
 export { ActionMenu, PrimaryActionMenu, SecondaryActionMenu, PrimaryActionMenuButton, SecondaryActionMenuButton, ViewLink, ViewLinkButton } from './react/ActionMenu';
 export { ActionModal } from './react/ActionModal';
-export { AggregateList } from './react/AggregateList';
+export { AggregateList, AggregateView } from './react/AggregateList';
 export { EntityMenu } from './react/EntityMenu';
 export { CenterSpinner } from './react/CenterSpinner';

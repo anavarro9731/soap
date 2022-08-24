@@ -1,10 +1,9 @@
-import {AggregateList, AggregateView, EntityMenu, getIdOfMessageEntity, useEvent, useQuery} from "@soap/modules";
+import {AggregateList, EntityMenu, getIdOfMessageEntity, useEvent, useQuery} from "@soap/modules";
 import React, {Fragment, useCallback} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
 import {EditTestData} from "./drawers/EditTestData";
 import {RemoveTestData} from "./modals/RemoveTestData";
-import {StatefulPopover} from "baseui/popover";
-import {Button, SIZE} from "baseui/button";
+
 
 export function ListTestData() {
 
@@ -35,37 +34,25 @@ export function ListTestData() {
                     "root": new EntityMenu(null, [
                         () => <CreateTestData/>
                     ]),
-                    "root-ArrayItems": new EntityMenu(entity => location.href = "#/test-data/view/" + entity.e105_Id, [
+                    "root-Items": new EntityMenu(entity => location.href = "#/test-data/view/" + entity.e105_Id, [
                         (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>,
                         (entity) => <RemoveTestData entity={{id: entity.e105_Id, label: entity.e105_Label}}/>
                     ]),
                     "e105_CapitalCity": new EntityMenu((entity) => alert(entity), []),
-                    "e105_Cities-ArrayItems": new EntityMenu([(entity) => <EditTestData/>, (entity) =>
+                    "e105_Cities-Items": new EntityMenu([(entity) => <EditTestData/>, (entity) =>
                         <EditTestData/>], [
                         (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
                     ])
                 }
             }
                            propertyRenderer={{
-                               "e105_CChild": (value) => <>
-                                   <StatefulPopover
-                                       content={() => (
-                                           <AggregateView title={"test"} aggregate={value}/>
-                                       )}
-                                       returnFocus
-                                       autoFocus
-                                   >
-                                       <Button size={SIZE.compact}>Pbis</Button>
-                                   </StatefulPopover>
-
-                               </>
+                               "e105_Guid": (value) => <>{"REPLACED"}</>
                            }}
-                           expandedFields={[]}
+                           expandedFields={["root","e105_Cities-Items"]}
+                           expandedFieldsFirstObjectOnly={[]}
                            hiddenFields={[]}
                            headerColumns={["e105_Label", "e105_Name"]}
                            title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}
             />
-
-            {/*<AggregateView title="An Aggregate" aggregate={e105?.e105_TestData[0]} refreshFunction={() => refresh()}/>*/}
         </Fragment>);
 }

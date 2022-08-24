@@ -3,11 +3,20 @@ import {H5} from "baseui/typography";
 import React from "react";
 import {Button, KIND, SIZE} from "baseui/button";
 import bus from "../soap/bus";
-import {ArrayTable} from "./Tables";
+import {ArrayRenderer} from "./ArrayRenderer";
 import {CenterSpinner} from "./CenterSpinner";
 import {optional, types, validateArgs} from "../soap/util";
 import {CreatePrimaryActionsMenu} from "./ActionMenu";
 
+
+export function AggregateView(props) {
+    
+    const { expandedFieldsFirstObjectOnly = [] } = props; 
+    const newProps = { expandedFieldsFirstObjectOnly : ["root", ...expandedFieldsFirstObjectOnly], aggregates : [props.aggregate],  ...props, dataType: "object" };
+    delete newProps.aggregate;
+    //* console.log(newProps);
+    return AggregateList(newProps);
+}
 
 export function AggregateList(props) {
 
@@ -21,7 +30,8 @@ export function AggregateList(props) {
         expandedFieldsFirstObjectOnly = [],
         headerColumns = [],
         refreshFunction,
-        backFunction
+        backFunction,
+        dataType
     } = props;
 
     validateArgs(
@@ -72,11 +82,16 @@ export function AggregateList(props) {
             </Cell>
             <Cell span={12}>
                 {aggregates ?
-                        <ArrayTable entityMenus={entityMenus} arrayOfObjects={aggregates} hiddenFields={hiddenFields}
-                                    headerColumns={headerColumns}
-                                    expandedFields={expandedFields}
-                                    expandedFieldsFirstObjectOnly={expandedFieldsFirstObjectOnly}
-                                    propertyRenderer={propertyRenderer} propertyKey={"root"}/>
+                        <ArrayRenderer entityMenus={entityMenus}
+                                       arrayOfObjects={aggregates}
+                                       hiddenFields={hiddenFields}
+                                       headerColumns={headerColumns}
+                                       expandedFields={expandedFields}
+                                       expandedFieldsFirstObjectOnly={expandedFieldsFirstObjectOnly}
+                                       propertyRenderer={propertyRenderer}
+                                       propertyKey={"root"}
+                                       dataType={dataType}
+                        />
                     :
                     <CenterSpinner/>}
             </Cell>

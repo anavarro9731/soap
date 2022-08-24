@@ -1,7 +1,6 @@
 import {useQuery, CenterSpinner, AggregateView} from "@soap/modules";
 import React from "react";
 import {useParams} from "react-router-dom";
-import {AggregateList} from "../../components/src";
 
 export function ViewTestData() {
 
@@ -16,7 +15,13 @@ export function ViewTestData() {
 
     if (data) {
         return (
-            <AggregateList title="Test Data" aggregates={[data]} refresh={refresh}/>
+            <AggregateView title="Test Data" aggregate={data} refresh={refresh}
+                           propertyRenderer={{
+                               "e102_Decimal": (value) => <>{"REPLACED"}</>
+                           }}
+                           hiddenFields={["e102_Guid"]}
+            
+            />
         );
     } else {
         return <CenterSpinner/>;
