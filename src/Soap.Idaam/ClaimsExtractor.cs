@@ -18,7 +18,7 @@ namespace Soap.Idaam
 
             foreach (var role in identity.Roles)
             {
-                var roleDef = securityInfo.BuiltInRoles.SingleOrDefault(x => x.Key == role.RoleKey);
+                var roleDef = securityInfo.BuiltInRoles.SingleOrDefault(x => x.Key == role.RoleKey.ToLower());
                 Guard.Against(roleDef == null, "Cannot find a builtin role that matches the roles obtained from the token. You may have outdated metadata in the user's IDAAM record.");
                 var apiPermissionDefsForThisRole = securityInfo.ApiPermissions.Where(x => roleDef.ApiPermissions.Contains(x)).ToList();
 

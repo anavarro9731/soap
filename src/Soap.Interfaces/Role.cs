@@ -19,7 +19,7 @@
 
         public Role(string key, string value, string apiId = null)
         {
-            Key = key;
+            Key = key.ToLower();
             Value = value;
             this.apiIdOfServiceThatOwnsThisRole = apiId;
         }

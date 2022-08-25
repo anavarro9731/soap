@@ -128,13 +128,13 @@ namespace Soap.Idaam
             scopeReferencesToAdd ??= new List<AggregateReference>();
 
             //*add if completely new
-            var existingRole = appMetaData.Roles.SingleOrDefault(x => x.RoleKey == role.Key);
+            var existingRole = appMetaData.Roles.SingleOrDefault(x => x.RoleKey == role.Key.ToLower());
             if (existingRole == null)
             {
                 appMetaData.Roles.Add(
                     new RoleInstance()
                     {
-                        RoleKey = role.Key,
+                        RoleKey = role.Key.ToLower(),
                         ScopeReferences = scopeReferencesToAdd
                     });
             }
@@ -388,9 +388,9 @@ namespace Soap.Idaam
             var user = await client.Users.GetAsync(idaamProviderUserId);
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
-            if (appMetaData.Roles.Exists(x => x.RoleKey == roleToRemove.Key))
+            if (appMetaData.Roles.Exists(x => x.RoleKey == roleToRemove.Key.ToLower()))
             {
-                appMetaData.Roles = appMetaData.Roles.Where(role => role.RoleKey != roleToRemove.Key).ToList();
+                appMetaData.Roles = appMetaData.Roles.Where(role => role.RoleKey != roleToRemove.Key.ToLower()).ToList();
             }
 
             await client.Users.UpdateAsync(
@@ -422,8 +422,8 @@ namespace Soap.Idaam
             var user = await client.Users.GetAsync(idaamProviderUserId);
             AppMetaData appMetaData = ((JObject)user.AppMetadata)?.ToObject<AppMetaData>() ?? new AppMetaData();
 
-            Guard.Against(!appMetaData.Roles.Exists(x => x.RoleKey == role.Key), "User does not have the role the requested change is for");
-            appMetaData.Roles.Single(x => x.RoleKey == role.Key).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
+            Guard.Against(!appMetaData.Roles.Exists(x => x.RoleKey == role.Key.ToLower()), "User does not have the role the requested change is for");
+            appMetaData.Roles.Single(x => x.RoleKey == role.Key.ToLower()).ScopeReferences.RemoveAll(x => x == scopeReferenceToRemove);
 
             await client.Users.UpdateAsync(
                 idaamProviderUserId,
