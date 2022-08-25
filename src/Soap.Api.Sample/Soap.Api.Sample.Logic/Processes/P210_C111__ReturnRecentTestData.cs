@@ -55,7 +55,7 @@ namespace Soap.Api.Sample.Logic.Processes
                                             E105_Name = b.String
                                         }),
                                         E105_CountryId = c.id,
-                                        E105_CountryName = c.String
+                                        E105_Name2 = c.String
                                     }).ToList() ?? new List<E105v1_GotRecentTestData.Country>()
                                 }))
                     };

@@ -89,7 +89,7 @@ export function AggregateList(props) {
                                        expandedFields={expandedFields}
                                        expandedFieldsFirstObjectOnly={expandedFieldsFirstObjectOnly}
                                        propertyRenderer={propertyRenderer}
-                                       propertyKey={"root"}
+                                       propertyKey={"root-Items"}
                                        dataType={dataType}
                         />
                     :

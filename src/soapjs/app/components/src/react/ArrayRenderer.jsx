@@ -34,10 +34,9 @@ export function ArrayRenderer(props) {
         headerColumns,
         dataType = DataTypes.ObjectArray
     } = props;
-
-    const childrenPropertyKey = propertyKey + "-Items";
-    const childrenHaveMenu = entityMenus && entityMenus[childrenPropertyKey];
-    const isRoot = propertyKey === "root";
+    
+    const hasMenu = entityMenus && entityMenus[propertyKey];
+    const isRoot = propertyKey === "root-Items";
     
     {
         if (arrayOfObjects.length > 0) {
@@ -50,12 +49,12 @@ export function ArrayRenderer(props) {
             //* if there are none use the object type as a placeholder
             if (titleColumns.length === 0) titleColumns.push("$type");
             //* create an array to hold the components, and a column for the left side control
-            let titleComponentArray = ["CTRL"];
+            let titleComponentArray = [" "];
             for (const titleColumn of titleColumns) { //* respecting the order specified in the incoming prop array
                 //* add a column
                 titleComponentArray.push(ConvertObjectKeyToLabel(titleColumn));
             }
-            if (childrenHaveMenu) titleComponentArray.push("CTRL"); //* add column for controls at the end
+            if (hasMenu) titleComponentArray.push(" "); //* add column for controls at the end
 
 
             //* BUILD THE DATA ROWS
@@ -141,11 +140,12 @@ export function ArrayRenderer(props) {
                 <tbody>
                 {rows.items.map((r, i) => {
                     if (rows.dataType === DataTypes.Object) {
-                        return PrintObjectPanel(r.panelObject, colSpan, isRoot, rows.dataType);
+                        return PrintObjectPanel(r.panelObject, colSpan);
                     } else {
+                        const isLastRow = i === rows.items.length-1;
                         return expandedRows.includes(i)
-                            ? [PrintHeaderRow(r, rows.dataType), PrintObjectPanel(r.panelObject, colSpan, isRoot, rows.dataType)]
-                            : PrintHeaderRow(r, rows.dataType)
+                            ? [PrintHeaderRow(r, isLastRow), PrintObjectPanel(r.panelObject, colSpan)]
+                            : PrintHeaderRow(r, isLastRow)
                     }
                 })}
                 </tbody>
@@ -154,20 +154,21 @@ export function ArrayRenderer(props) {
 
     }
     
-    function PrintHeaderRow(rowObject) {
+    function PrintHeaderRow(rowObject, isLastRow) {
         
         const {rowComponentArray, panelObject, rowIndex } = rowObject;
-
-        if (childrenHaveMenu) rowComponentArray.push(<div style={{display: "flex"}}>
-            {CreateViewButton(childrenPropertyKey, entityMenus, panelObject)}
-            {CreateTertiaryActionsMenu(childrenPropertyKey, entityMenus, panelObject)}
+        
+        //* add controls to the end
+        if (hasMenu) rowComponentArray.push(<div style={{display: "flex"}}>
+            {CreateViewButton(propertyKey, entityMenus, panelObject)}
+            {CreateTertiaryActionsMenu(propertyKey, entityMenus, panelObject)}
         </div>);
 
         return (
 
             <StyledTableBodyRow key={uuidv4()}>
                 {dataType === DataTypes.PrimitiveArray ? null :
-                    <StyledTableBodyCell>
+                    <StyledTableBodyCell style={isLastRow && !isRoot ? {borderBottomWidth:"0px"} : {}}>
                         {expandedRows.includes(rowIndex) ?
                             <Button size={SIZE.mini} kind={KIND.secondary} shape={SHAPE.circle} onClick={() => {
                                 setExpandedRows(oldArray => oldArray.filter(x => x !== rowIndex));
@@ -176,35 +177,44 @@ export function ArrayRenderer(props) {
                                 setExpandedRows(oldArray => [rowIndex, ...oldArray]);
                             }}>+</Button>}
                     </StyledTableBodyCell>}
-                {rowComponentArray.map(component => <StyledTableBodyCell key={uuidv4()}>{component}</StyledTableBodyCell>)}
+                {rowComponentArray.map(component => <StyledTableBodyCell key={uuidv4()} style={isLastRow && !isRoot ? {borderBottomWidth:"0px"} : {}}>{component}</StyledTableBodyCell>)}
             </StyledTableBodyRow>
         );
     }
 
     function PrintTitleRow(titleStringArray) {
         
-        return (<StyledTableHeadRow>{titleStringArray.map(columnName => <StyledTableHeadCell key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
+        return (<StyledTableHeadRow style={{zIndex:0}} >{titleStringArray.map(columnName => <StyledTableHeadCell key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
     }
 
     function PrintObjectPanel(panelObject, colSpan) {
+
+        const entries = Object.entries(panelObject);
         
         return !!panelObject ? (
             <StyledTableBodyRow key={uuidv4()}>
-                <StyledTableBodyCell colSpan={colSpan}>
+                <StyledTableBodyCell colSpan={colSpan} style={{borderBottomWidth:"0px"}}>
                     <StyledTable>
                         <tbody>
-                        {Object.entries(panelObject).map(kvPair => {
-
+                        
+                            {
+                                //* add controls to the top
+                                (hasMenu && dataType === DataTypes.Object) ? (<StyledTableBodyCell  style={{borderBottomWidth:"0px"}}><div style={{display: "flex"}}>
+                                    {CreateViewButton(propertyKey, entityMenus, panelObject)}
+                                    {CreateTertiaryActionsMenu(propertyKey, entityMenus, panelObject)}
+                                </div></StyledTableBodyCell>) : null
+                            }
+                            
+                        {entries.map((kvPair, i) => {
+                            const isLastRow = i === entries.length-1;
                             const [key, value] = kvPair;
-
+                            
                             return  (
                                 <StyledTableBodyRow key={uuidv4()}>
-
-                                    {isRoot && dataType === DataTypes.Object ? null : <StyledTableBodyCell>
+                                    {isRoot && dataType === DataTypes.Object ? null : <StyledTableBodyCell  style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
                                     {ConvertObjectKeyToLabel(key)}
                                 </StyledTableBodyCell>}
-                                
-                                    <StyledTableBodyCell>
+                                    <StyledTableBodyCell style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
                                     {HandleProperty(key, value)}
                                 </StyledTableBodyCell>
                             </StyledTableBodyRow>);
@@ -303,8 +313,10 @@ export function ArrayRenderer(props) {
         return Array.from(key.substring(key.indexOf("_") + 1)).map(z => convertPascalToPhrase(z));
 
         function convertPascalToPhrase(pascal) {
-            const result = pascal.replace(/([A-Z])/g, " $1");
-            return result.charAt(0).toUpperCase() + result.slice(1);
+            let result = pascal.replace(/([A-Z])/g, " $1");
+            result = result.charAt(0).toUpperCase() + result.slice(1);
+            result = result.replace(/\d+$/, "");
+            return result;
         }
     }
 

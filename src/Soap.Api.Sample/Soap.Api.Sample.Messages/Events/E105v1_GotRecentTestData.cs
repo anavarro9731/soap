@@ -33,7 +33,7 @@ namespace Soap.Api.Sample.Messages.Events
 
             public Guid? E105_CountryId { get; set; }
 
-            public string E105_CountryName { get; set; }
+            public string E105_Name2 { get; set; }
         }
 
         public class TestData
