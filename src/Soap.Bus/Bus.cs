@@ -125,6 +125,7 @@
                     CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility, contextMessage.Headers.GetMessageId())
                 });
 
+            
             static IBusClient.EventVisibilityFlags GetDefaultVisibility(ApiMessage contextMessage)
             {
                 var eventVisibility = new IBusClient.EventVisibilityFlags();
@@ -168,6 +169,7 @@
                 new QueuedCommandToSend
                 {
                     CommandToSend = commandToSend,
+                    DeferUntil = scheduledAt,
                     CommitClosure = async () => await BusClient.Send(commandToSend, contextMessage.Headers.GetMessageId(), scheduledAt)
                 });
         }

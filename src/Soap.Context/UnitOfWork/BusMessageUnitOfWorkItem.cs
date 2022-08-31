@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Azure.Storage.Blobs.Models;
     using CircuitBoard;
     using DataStore.Interfaces;
     using Newtonsoft.Json;
@@ -13,9 +14,10 @@
 
     public class BusMessageUnitOfWorkItem : SerialisableObject
     {
-        public BusMessageUnitOfWorkItem(ApiMessage x, IBusClient.EventVisibilityFlags eventVisibility)
+        public BusMessageUnitOfWorkItem(ApiMessage x, IBusClient.EventVisibilityFlags eventVisibility, DateTimeOffset? deferUntil)
             : base(x)
         {
+            DeferUntil = deferUntil;
             MessageId = x.Headers.GetMessageId();
             EventVisibility = eventVisibility;
         }
@@ -27,6 +29,9 @@
 
         [JsonProperty]
         public Guid MessageId { get; internal set; }
+        
+        [JsonProperty]
+        public DateTimeOffset? DeferUntil { get; internal set; }
         
         [JsonProperty]
         public IBusClient.EventVisibilityFlags EventVisibility { get; internal set; }

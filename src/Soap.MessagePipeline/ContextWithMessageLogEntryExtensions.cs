@@ -292,14 +292,20 @@
                 which is why we call the underlying busclient rather than the bus */
                 var incompleteCommands =
                     await unitOfWork.BusCommandMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
-                var commands = incompleteCommands.Select(x => x.Deserialise<ApiCommand>()).ToList();
-                
-                commands.ForEach(async i => await busClient.Send(i, contextMessageId));
+                var commands = incompleteCommands.Select(x => new { Command = x.Deserialise<ApiCommand>(), x.DeferUntil }).ToList();
 
+                foreach (var i in commands)
+                {
+                    await busClient.Send(i.Command, contextMessageId, i.DeferUntil);
+                }
+                
                 var incompleteEvents = await unitOfWork.BusEventMessages.WhereAsync(async x => !await x.IsComplete(dataStore));
                 var events = incompleteEvents.Select(x => new { Event = x.Deserialise<ApiEvent>(), Visibility = x.EventVisibility }).ToList();
-                events.ForEach(async x => await busClient.Publish(x.Event, x.Visibility, contextMessageId));
-                
+
+                foreach (var i in events)
+                {
+                    await busClient.Publish(i.Event, i.Visibility, contextMessageId);
+                }
             }
 
             static async Task<List<UnitOfWorkExtensions.Record>> WaitForAllRecords(
@@ -606,11 +612,11 @@
                     switch (queuedStateChange)
                     {
                         case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedCommandToSend)):
-                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend, null));
+                            u.BusCommandMessages.Add(new BusMessageUnitOfWorkItem(((QueuedCommandToSend)b1).CommandToSend, null, ((QueuedCommandToSend)b1).DeferUntil));
                             break;
 
                         case IQueuedBusOperation b1 when b1.GetType().InheritsOrImplements(typeof(QueuedEventToPublish)):
-                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish, ((QueuedEventToPublish)b1).EventVisibility));
+                            u.BusEventMessages.Add(new BusMessageUnitOfWorkItem(((QueuedEventToPublish)b1).EventToPublish, ((QueuedEventToPublish)b1).EventVisibility, null));
                             break;
 
                         case IQueuedDataStoreWriteOperation d1 when d1.GetType().InheritsOrImplements(typeof(QueuedCreateOperation<>)):
