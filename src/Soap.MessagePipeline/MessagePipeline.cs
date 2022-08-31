@@ -77,7 +77,15 @@
             async Task ProcessMessage(ContextWithMessageLogEntry context)
             {
                 var msg = context.Message;
-
+                
+                //TODO needs testing
+                // if (context.MessageLogEntry.ProcessingComplete)
+                // {
+                //     //* just skip over message you have already received
+                //     context.Logger.Information("Skipping message with id " + context.MessageLogEntry.id + " it has already been processed.");
+                //     return;
+                // }
+                //
                 var result = await context.AttemptToFinishAnUnfinishedUnitOfWork();
 
                 switch (result)

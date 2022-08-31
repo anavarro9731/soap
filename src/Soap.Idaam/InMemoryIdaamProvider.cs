@@ -4,7 +4,6 @@ namespace Soap.Idaam
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using DataStore.Interfaces.LowLevel;
     using DataStore.Interfaces.LowLevel.Permissions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
@@ -77,39 +76,26 @@ namespace Soap.Idaam
 
         public Task<string> AddUser(IIdaamProvider.AddUserArgs args)
         {
-            Guard.Against(
-                this.identities.ContainsKey(args.Profile.IdaamProviderId),
-                "This IDAAM user already exists, you cannot add it a second time.");
-            this.identities.Add(args.Profile.IdaamProviderId, new TestIdentity(new List<RoleInstance>(), args.Profile));
+            Guard.Against(args.Profile.IdaamProviderId != null, "IDAAM provider ID must be null when adding");
+            
+            var clone = args.Profile.Clone();
+            clone.IdaamProviderId = "idaam|" + DateTime.UtcNow.Ticks;
+            this.identities.Add(args.Profile.IdaamProviderId, new TestIdentity(new List<RoleInstance>(), clone));
 
-            return Task.FromResult(args.Profile.IdaamProviderId);
+            return Task.FromResult(clone.IdaamProviderId);
         }
 
         public Task<string> BlockUser(string idaamProviderId)
         {
-            return Task.FromResult(idaamProviderId);
-        }
-
-        public Task<string> UnblockUser(string idaamProviderId)
-        {
-            return Task.FromResult(idaamProviderId);
-        }
-
-        public Task<string> UpdateUserProfile(string idaamProviderId, IIdaamProvider.UpdateUserArgs updateUserArgs)
-        {
-            if (this.identities.ContainsKey(idaamProviderId))
-            {
-                var user = this.identities[idaamProviderId];
-                user.UserProfile.Email = updateUserArgs.Profile.Email;
-                user.UserProfile.FirstName = updateUserArgs.Profile.FirstName;
-                user.UserProfile.LastName = updateUserArgs.Profile.LastName;
-            }
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
             
             return Task.FromResult(idaamProviderId);
         }
 
         public Task ChangeUserPassword(string idaamProviderId, string newPassword)
         {
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
+            
             return Task.CompletedTask;
         }
 
@@ -124,7 +110,6 @@ namespace Soap.Idaam
             return Task.FromResult(ClaimsExtractor.GetAppropriateClaimsFromAccessToken(securityInfo, identity, apiMessage));
         }
 
-      
         public Task<IIdaamProvider.User> GetLimitedUserProfileFromIdentityToken(string idToken)
         {
             var exists = this.identities.Any(x => x.Value.IdToken(this.bootstrapVariables.EncryptionKey) == idToken);
@@ -143,17 +128,36 @@ namespace Soap.Idaam
                         }));
         }
 
+        public Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId)
+        {
+            Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
+
+            var identity = this.identities[idaamProviderUserId];
+
+            return Task.FromResult(identity.Roles);
+        }
+
         public Task<IIdaamProvider.User> GetUserProfileFromIdentityServer(string idaamProviderId)
         {
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
+            
             var user = this.identities[idaamProviderId];
-                var result = new IIdaamProvider.User()
-                {
-                    Email = user.UserProfile.Email,
-                    FirstName = user.UserProfile.FirstName,
-                    LastName = user.UserProfile.LastName,
-                    IdaamProviderId = user.UserProfile.IdaamProviderId,
-                };
-                return Task.FromResult(result);
+            var result = new IIdaamProvider.User
+            {
+                Email = user.UserProfile.Email,
+                FirstName = user.UserProfile.FirstName,
+                LastName = user.UserProfile.LastName,
+                IdaamProviderId = user.UserProfile.IdaamProviderId
+            };
+            return Task.FromResult(result);
+        }
+
+        public Task<List<IIdaamProvider.User>> GetUserProfileFromIdentityServerByEmail(string emailAddress)
+        {
+            var user = GetUserByEmail(emailAddress);
+            var result = new List<IIdaamProvider.User>();
+            if (user != null) result.Add(user);
+            return Task.FromResult(result);
         }
 
         public Task RemoveRoleFromUser(string idaamProviderUserId, Role role)
@@ -180,26 +184,30 @@ namespace Soap.Idaam
 
         public Task RemoveUser(string idaamProviderId)
         {
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
+            
             this.identities.Remove(idaamProviderId);
 
             return Task.CompletedTask;
         }
 
-        public Task<List<RoleInstance>> GetRolesForAUser(string idaamProviderUserId)
+        public Task<string> UnblockUser(string idaamProviderId)
         {
-            Guard.Against(!this.identities.ContainsKey(idaamProviderUserId), $"An IDAAM user with ID {idaamProviderUserId} does not exist.");
-
-            var identity = this.identities[idaamProviderUserId];
-
-            return Task.FromResult(identity.Roles);
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
+            
+            return Task.FromResult(idaamProviderId);
         }
 
-        public Task<List<IIdaamProvider.User>> GetUserProfileFromIdentityServerByEmail(string emailAddress)
+        public Task<string> UpdateUserProfile(string idaamProviderId, IIdaamProvider.UpdateUserArgs updateUserArgs)
         {
-            var user = GetUserByEmail(emailAddress);
-            var result = new List<IIdaamProvider.User>();
-            if (user != null) result.Add(user);
-            return Task.FromResult(result);
+            Guard.Against(!this.identities.ContainsKey(idaamProviderId), $"An IDAAM user with ID {idaamProviderId} does not exist.");
+
+            var user = this.identities[idaamProviderId];
+            user.UserProfile.Email = updateUserArgs.Profile.Email;
+            user.UserProfile.FirstName = updateUserArgs.Profile.FirstName;
+            user.UserProfile.LastName = updateUserArgs.Profile.LastName;
+
+            return Task.FromResult(idaamProviderId);
         }
 
         private IIdaamProvider.User GetUserByEmail(string emailAddress)
@@ -208,12 +216,12 @@ namespace Soap.Idaam
 
             if (user.Value != null)
             {
-                return new IIdaamProvider.User()
+                return new IIdaamProvider.User
                 {
                     Email = user.Value.UserProfile.Email,
                     FirstName = user.Value.UserProfile.FirstName,
                     LastName = user.Value.UserProfile.LastName,
-                    IdaamProviderId = user.Value.UserProfile.IdaamProviderId,
+                    IdaamProviderId = user.Value.UserProfile.IdaamProviderId
                 };
             }
 
