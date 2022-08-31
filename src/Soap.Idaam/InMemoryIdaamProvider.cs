@@ -145,7 +145,15 @@ namespace Soap.Idaam
 
         public Task<IIdaamProvider.User> GetUserProfileFromIdentityServer(string idaamProviderId)
         {
-            throw new NotImplementedException();
+            var user = this.identities[idaamProviderId];
+                var result = new IIdaamProvider.User()
+                {
+                    Email = user.UserProfile.Email,
+                    FirstName = user.UserProfile.FirstName,
+                    LastName = user.UserProfile.LastName,
+                    IdaamProviderId = user.UserProfile.IdaamProviderId,
+                };
+                return Task.FromResult(result);
         }
 
         public Task RemoveRoleFromUser(string idaamProviderUserId, Role role)
