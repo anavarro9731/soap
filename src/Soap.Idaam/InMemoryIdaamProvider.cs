@@ -80,7 +80,7 @@ namespace Soap.Idaam
             
             var clone = args.Profile.Clone();
             clone.IdaamProviderId = "idaam|" + DateTime.UtcNow.Ticks;
-            this.identities.Add(args.Profile.IdaamProviderId, new TestIdentity(new List<RoleInstance>(), clone));
+            this.identities.Add(clone.IdaamProviderId, new TestIdentity(new List<RoleInstance>(), clone));
 
             return Task.FromResult(clone.IdaamProviderId);
         }
