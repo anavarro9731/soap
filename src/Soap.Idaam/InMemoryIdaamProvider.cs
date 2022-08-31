@@ -87,22 +87,30 @@ namespace Soap.Idaam
 
         public Task<string> BlockUser(string idaamProviderId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(idaamProviderId);
         }
 
         public Task<string> UnblockUser(string idaamProviderId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(idaamProviderId);
         }
 
-        public Task<string> UpdateUserProfile(string idaamProvider, IIdaamProvider.UpdateUserArgs updateUserArgs)
+        public Task<string> UpdateUserProfile(string idaamProviderId, IIdaamProvider.UpdateUserArgs updateUserArgs)
         {
-            throw new NotImplementedException();
+            if (this.identities.ContainsKey(idaamProviderId))
+            {
+                var user = this.identities[idaamProviderId];
+                user.UserProfile.Email = updateUserArgs.Profile.Email;
+                user.UserProfile.FirstName = updateUserArgs.Profile.FirstName;
+                user.UserProfile.LastName = updateUserArgs.Profile.LastName;
+            }
+            
+            return Task.FromResult(idaamProviderId);
         }
 
         public Task ChangeUserPassword(string idaamProviderId, string newPassword)
         {
-            throw new NotImplementedException();
+            return Task.CompletedTask;
         }
 
         public Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string accessToken, ApiMessage apiMessage, ISecurityInfo securityInfo)
@@ -180,7 +188,28 @@ namespace Soap.Idaam
 
         public Task<List<IIdaamProvider.User>> GetUserProfileFromIdentityServerByEmail(string emailAddress)
         {
-            throw new NotImplementedException();
+            var user = GetUserByEmail(emailAddress);
+            var result = new List<IIdaamProvider.User>();
+            if (user != null) result.Add(user);
+            return Task.FromResult(result);
+        }
+
+        private IIdaamProvider.User GetUserByEmail(string emailAddress)
+        {
+            var user = this.identities.SingleOrDefault(x => x.Value?.UserProfile?.Email == emailAddress);
+
+            if (user.Value != null)
+            {
+                return new IIdaamProvider.User()
+                {
+                    Email = user.Value.UserProfile.Email,
+                    FirstName = user.Value.UserProfile.FirstName,
+                    LastName = user.Value.UserProfile.LastName,
+                    IdaamProviderId = user.Value.UserProfile.IdaamProviderId,
+                };
+            }
+
+            return null;
         }
     }
 }
