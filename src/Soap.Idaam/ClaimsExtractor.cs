@@ -7,6 +7,7 @@ namespace Soap.Idaam
     using DataStore.Interfaces.LowLevel.Permissions;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
 
     public class ClaimsExtractor
     {
@@ -17,7 +18,8 @@ namespace Soap.Idaam
 
             foreach (var role in identity.Roles)
             {
-                var roleDef = securityInfo.BuiltInRoles.Single(x => x.Key == role.RoleKey);
+                var roleDef = securityInfo.BuiltInRoles.SingleOrDefault(x => x.Key == role.RoleKey.ToLower());
+                Guard.Against(roleDef == null, "Cannot find a builtin role that matches the roles obtained from the token. You may have outdated metadata in the user's IDAAM record.");
                 var apiPermissionDefsForThisRole = securityInfo.ApiPermissions.Where(x => roleDef.ApiPermissions.Contains(x)).ToList();
 
                 /* the user gets API permissions for ALL roles they have, In production the provider

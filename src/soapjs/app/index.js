@@ -10,7 +10,7 @@ import {Route, Switch} from "react-router-dom";
 import TestData from './url-fragments/test-data/Index'
 
 addTranslations(translations);
-config.sendMode = "signalr";
+
 
 function Index() {
     return (

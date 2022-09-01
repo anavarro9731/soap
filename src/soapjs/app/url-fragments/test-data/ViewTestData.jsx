@@ -15,7 +15,13 @@ export function ViewTestData() {
 
     if (data) {
         return (
-            <AggregateView title="Test Data" aggregate={data} refresh={refresh}/>
+            <AggregateView title="Test Data" aggregate={data} refresh={refresh}
+                           propertyRenderer={{
+                               "e102_Decimal": (value) => <>{"REPLACED"}</>
+                           }}
+                           hiddenFields={["e102_Guid"]}
+            
+            />
         );
     } else {
         return <CenterSpinner/>;

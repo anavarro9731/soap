@@ -27,9 +27,9 @@ namespace Soap.Api.Sample.Models.Aggregates
 
         public decimal? DecimalOptional { get; set; }
 
-        public TestChildC CChild { get; set; } 
+        public TestChildC Country { get; set; } 
 
-        public List<TestChildC> CChildren { get; set; }
+        public List<TestChildC> Countries { get; set; }
 
         public BlobMeta File { get; set; }
 

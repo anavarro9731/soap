@@ -4,6 +4,95 @@ import {Button, KIND, SIZE} from "baseui/button";
 
 import React, {useEffect, useRef} from 'react';
 import bus from "../soap/bus";
+import {optional, types, uuidv4, validateArgs} from "../soap/util";
+
+
+export function CreatePrimaryActionsMenu(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+    if (entityMenus && entityMenus[propertyKey]?.actions) {
+        const actions = entityMenus[propertyKey]?.actions;
+
+        return (<PrimaryActionMenu>
+            {actions.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+        </PrimaryActionMenu>);
+    } else {
+        return null;
+    }
+}
+
+export function CreateSecondaryActionsMenu(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+    if (entityMenus && entityMenus[propertyKey]?.actions) {
+        const actions = entityMenus[propertyKey]?.actions;
+
+        return (<SecondaryActionMenu>
+            {actions.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+        </SecondaryActionMenu>);
+    } else {
+        return null;
+    }
+}
+
+export function CreateTertiaryActionsMenu(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+    if (entityMenus && entityMenus[propertyKey]?.actions && entityMenus[propertyKey]?.actions.every(action => action(entity) !== undefined)) {
+        const actions = entityMenus[propertyKey]?.actions;
+
+        return (<TertiaryActionMenu>
+            {actions.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+        </TertiaryActionMenu>);
+    } else {
+        return null;
+    }
+}
+
+export function CreateViewButton(propertyKey, entityMenus, entity) {
+
+    validateArgs(
+        [{propertyKey}, types.string],
+        [{entityMenus}, types.object, optional],
+        [{entity}, types.object, optional]
+    );
+
+    if (entityMenus && entityMenus[propertyKey]?.viewAction) {
+        const viewAction = entityMenus[propertyKey]?.viewAction;
+
+        if (viewAction instanceof Array) {
+            return (<ViewLink>
+                {viewAction.map(action => <div key={uuidv4()}>{action(entity)}</div>)}
+            </ViewLink>);
+        } else {
+            return (<Button kind={KIND.secondary} size={SIZE.compact}  overrides={{
+                BaseButton: {
+                    style: {
+                        fontSize:"x-large",
+                        paddingLeft:"5px",
+                        paddingRight: "5px"
+                    }
+                }
+            }}
+                            onClick={() => viewAction(entity)}>{"\uD83D\uDC41"}</Button>);
+        }
+    } else {
+        return null;
+    }
+}
+
 
 export const PrimaryActionMenuButton =(props) => <Button kind={KIND.primary} size={SIZE.compact} {...props} />;
 export function PrimaryActionMenu(props) {

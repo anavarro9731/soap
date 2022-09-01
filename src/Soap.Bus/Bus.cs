@@ -180,6 +180,7 @@
                 new QueuedCommandToSend
                 {
                     CommandToSend = commandToSend,
+                    DeferUntil = scheduledAt,
                     CommitClosure = async () => await BusClient.Send(commandToSend, contextMessage.Headers.GetMessageId(), scheduledAt)
                 });
         }

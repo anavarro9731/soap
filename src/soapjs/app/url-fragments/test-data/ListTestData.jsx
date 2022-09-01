@@ -1,10 +1,9 @@
-import {AggregateList, AggregateView, useEvent, useQuery, EntityMenu, getIdOfMessageEntity} from "@soap/modules";
-import React, {Fragment, useCallback, useState} from "react";
+import {AggregateList, EntityMenu, getIdOfMessageEntity, useEvent, useQuery} from "@soap/modules";
+import React, {Fragment, useCallback} from "react";
 import {CreateTestData} from "./drawers/CreateTestData";
 import {EditTestData} from "./drawers/EditTestData";
 import {RemoveTestData} from "./modals/RemoveTestData";
-import {StatefulPopover} from "baseui/popover";
-import {Button, SIZE} from "baseui/button";
+
 
 export function ListTestData() {
 
@@ -14,15 +13,15 @@ export function ListTestData() {
         }
     });
 
-    const receiver = useCallback( () => {
+    const receiver = useCallback(() => {
         refresh();
-    },[]);
-        
+    }, []);
+
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E106v1_TestDataRemoved",
         onEventReceived: receiver
     });
-    
+
     useEvent({
         eventName: "Soap.Api.Sample.Messages.Events.E104v1_TestDataUpserted",
         onEventReceived: receiver
@@ -35,36 +34,25 @@ export function ListTestData() {
                     "root": new EntityMenu(null, [
                         () => <CreateTestData/>
                     ]),
-                    "root-ArrayItems": new EntityMenu(entity => location.href = "#/test-data/view/" + entity.e105_Id, [
+                    "root-Items": new EntityMenu(entity => location.href = "#/test-data/view/" + entity.e105_Id, [
                         (entity) => <EditTestData id={getIdOfMessageEntity(entity)}/>,
-                        (entity) => <RemoveTestData entity={{id: entity.e105_Id , label: entity.e105_Label}}/>
+                        (entity) => <RemoveTestData entity={{id: entity.e105_Id, label: entity.e105_Label}}/>
                     ]),
-                    "e105_CChild": new EntityMenu((entity) => alert(entity), [
-                        
-                    ]),
-                    "e105_CChildren-ArrayItems": new EntityMenu( [(entity)=> <EditTestData />, (entity) => <EditTestData />], [
-                        (entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>,
-                    ])
+                    "e105_CapitalCity": new EntityMenu((entity) => alert(entity)),
+                    "e105_Cities-Items": new EntityMenu(
+                        [(entity) => <EditTestData/>, (entity) => <EditTestData/>], 
+                        [(entity) => <button onClick={() => alert(JSON.stringify(entity))}>Show JSON</button>]
+                    )
                 }
             }
                            propertyRenderer={{
-                               "e105_CChild": (value) =><>
-                                   <StatefulPopover
-                                       content={() => (
-                                           <AggregateView title={"test"} aggregate={value} />
-                                       )}
-                                       returnFocus
-                                       autoFocus
-                                   >
-                                       <Button size={SIZE.compact}>Pbis</Button>
-                                   </StatefulPopover>
-                                   
-                               </>
+                               "e105_Guid": (value) => <>{"REPLACED"}</>
                            }}
-                           expandedFields={["e105_BChildren"]}
-                           hiddenFields={["e105_BChildId", "e105_BChildLong"]}
-                           title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}/>
-
-            <AggregateView title="An Aggregate" aggregate={e105?.e105_TestData[0]} refreshFunction={() => refresh()}/>
+                           expandedFields={["root"]}
+                           expandedFieldsFirstObjectOnly={["e105_Cities-Items"]}
+                           hiddenFields={[]}
+                           headerColumns={["e105_Label", "e105_Name"]}
+                           title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}
+            />
         </Fragment>);
 }

@@ -149,8 +149,8 @@
                         //*
                         var existingProfiles = (await dataStore.Read<TUserProfile>());
                         var existingProfileIds = existingProfiles.Select(x => x.id);
-                        foreach (var testIdentity in TestIdentities
-                                     .Where(identity => !existingProfileIds.Contains(identity.UserProfile.id)))
+                        foreach (var testIdentity in TestIdentities 
+                                     .Where(identity => !existingProfileIds.Contains(identity.UserProfile.id))) //* multiple runs to consider
                         {
                             var newProfile = new TUserProfile();
                             testIdentity.UserProfile.CastOrError<TUserProfile>().CopyProperties(newProfile);

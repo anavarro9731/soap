@@ -100,6 +100,7 @@ namespace Soap.PfBase.Api.Functions
 
                 if (result.Success == false)
                 {
+                    
                     ExceptionDispatchInfo.Capture(result.UnhandledError).Throw();
                 }
             }

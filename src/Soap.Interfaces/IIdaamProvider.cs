@@ -23,7 +23,11 @@ namespace Soap.Interfaces
 
         Task ChangeUserPassword(string idaamProviderId, string newPassword);
 
-        Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(string bearerToken, ApiMessage apiMessage, ISecurityInfo securityInfo);
+        Task<IdentityClaims> GetAppropriateClaimsFromAccessToken(
+            string bearerToken,
+            string idaamProviderId,
+            ApiMessage apiMessage,
+            ISecurityInfo securityInfo);
 
         Task<User> GetLimitedUserProfileFromIdentityToken(string idToken);
 
