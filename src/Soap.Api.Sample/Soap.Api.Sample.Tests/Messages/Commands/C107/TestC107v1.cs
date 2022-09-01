@@ -89,5 +89,11 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C107
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E104v1_TestDataUpserted>();
             Result.MessageBus.WsEventsPublished.Single().As<E104v1_TestDataUpserted>().E104_TestDataId.Should().Be(testDataId);
         }
+        
+        [Fact]
+        public void ItShouldNotSendToAQueue()
+        {
+            Result.MessageBus.BusEventsSentDirectToQueue.Should().BeEmpty();
+        }
     }
 }

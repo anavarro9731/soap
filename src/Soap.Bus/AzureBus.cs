@@ -38,6 +38,8 @@
         }
 
         public List<ApiEvent> BusEventsPublished { get; } = new List<ApiEvent>();
+        
+        public List<ApiEvent> BusEventsSentDirectToQueue { get; } = new List<ApiEvent>();
 
         public List<ApiCommand> CommandsSent { get; } = new List<ApiCommand>();
 
@@ -77,11 +79,30 @@
                 await BusBroadcastToAllSubscribers();
                 BusEventsPublished.Add(publishEvent.Clone());
             }
+            
+            if (eventVisibility.HasFlag(nameof(IBusClient.EventVisibility.SendDirectToQueue)))
+            {
+                await SendDirectEvent(publishEvent);
+                BusEventsSentDirectToQueue.Add(publishEvent.Clone());
+            }
 
             async Task SendWsReply(ApiEvent apiEvent)
             {
                 await this.signalRBinding.AddAsync(
                     CreateNewSignalRMessage(apiEvent).Op(s => { s.ConnectionId = apiEvent.Headers.GetSessionId(); }));
+            }
+            
+            async Task SendDirectEvent(ApiEvent apiEvent)
+            {
+                var queueName = apiEvent.Headers.GetQueue();
+                
+                var sender = serviceBusSenders.GetOrAdd(queueName, (key) => serviceBusClient.CreateSender(key));
+
+                var messageJson = apiEvent.ToJson(SerialiserIds.ApiBusMessage);
+            
+                var queueMessage = CreateBusMessage(apiEvent, messageJson, sessionId);
+
+                await sender.SendMessageAsync(queueMessage);
             }
 
             async Task SendWsBroadcast(ApiEvent apiEvent) =>
@@ -145,7 +166,7 @@
             CommandsSent.Add(sendCommand.Clone());
         }
         
-        public static ServiceBusMessage CreateBusMessage(ApiCommand sendCommand, string messageJson, Guid sessionId)
+        public static ServiceBusMessage CreateBusMessage(ApiMessage message, string messageJson, Guid sessionId)
         {
             /*
              ******************** IF YOU CHANGE THE LOGIC IN THIS METHOD CHANGE THE COPY IN SOAP.CLIENT ****************************
@@ -155,9 +176,9 @@
             
             var queueMessage = new ServiceBusMessage(Encoding.Default.GetBytes(messageJson))
             {
-                MessageId = sendCommand.Headers.GetMessageId().ToString(),
-                Subject = sendCommand.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
-                CorrelationId = sendCommand.Headers.GetStatefulProcessId().ToString(),
+                MessageId = message.Headers.GetMessageId().ToString(),
+                Subject = message.GetType().ToShortAssemblyTypeName(), //* required by clients for quick deserialisation rather than parsing JSON $type
+                CorrelationId = message.Headers.GetStatefulProcessId().ToString(),
                 SessionId = sessionId.ToString()
             };
             return queueMessage;

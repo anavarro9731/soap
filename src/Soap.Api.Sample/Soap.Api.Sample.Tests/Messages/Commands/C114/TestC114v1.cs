@@ -55,5 +55,11 @@ namespace Soap.Api.Sample.Tests.Messages.Commands.C114
             Result.MessageBus.WsEventsPublished.Single().Should().BeOfType<E106v1_TestDataRemoved>();
             Result.MessageBus.WsEventsPublished.Single().As<E106v1_TestDataRemoved>().E106_TestDataId.Should().Be(testDataId);
         }
+        
+        [Fact]
+        public void ItShouldNotSendToAQueue()
+        {
+            Result.MessageBus.BusEventsSentDirectToQueue.Should().BeEmpty();
+        }
     }
 }

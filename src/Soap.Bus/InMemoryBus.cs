@@ -24,6 +24,8 @@
 
         public List<ApiEvent> BusEventsPublished { get; } = new List<ApiEvent>();
 
+        public List<ApiEvent> BusEventsSentDirectToQueue { get; } = new List<ApiEvent>();
+
         public List<ApiEvent> WsEventsPublished { get; } = new List<ApiEvent>(); //TODO write a test
 
         public Task Publish(ApiEvent publishEvent, IBusClient.EventVisibilityFlags eventVisibility, Guid sessionId)
@@ -35,6 +37,11 @@
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllWebSocketClientsWithNoConversationId))
             {
                 WsEventsPublished.Add(publishEvent.Clone());
+            }
+
+            if (eventVisibility.HasFlag(IBusClient.EventVisibility.SendDirectToQueue))
+            {
+                BusEventsSentDirectToQueue.Add(publishEvent.Clone());
             }
 
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions))

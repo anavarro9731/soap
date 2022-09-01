@@ -16,6 +16,8 @@
 
         List<ApiEvent> BusEventsPublished { get; }
         
+        List<ApiEvent> BusEventsSentDirectToQueue { get; }
+        
         List<ApiEvent> WsEventsPublished { get; }
         
         Task CommitChanges();

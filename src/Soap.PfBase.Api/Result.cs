@@ -13,5 +13,7 @@
         public List<ApiCommand> CommandsSent { get; set; } = new List<ApiCommand>();
 
         public List<ApiEvent> PublishedMessages { get; set; } = new List<ApiEvent>();
+        
+        public List<ApiEvent> EventsSentDirectToQueue { get; set; } = new List<ApiEvent>();
     }
 }

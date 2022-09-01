@@ -11,6 +11,7 @@ namespace Soap.Api.Sample.Logic
             Register(new C103v1Functions());
             Register(new C104v1Functions());
             Register(new C107v1Functions());
+            Register(new C108v1Functions());
             Register(new C109v1Functions());
             Register(new C110v1Functions());
             Register(new C111v1Functions());
@@ -18,6 +19,7 @@ namespace Soap.Api.Sample.Logic
             Register(new C112v1Functions());
             Register(new C113v1Functions());
             Register(new C114v1Functions());
+            
         }
     }
 }

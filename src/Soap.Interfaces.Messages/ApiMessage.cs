@@ -130,7 +130,7 @@
             identitychain should always be present on inter-service events, as there is always at least one identifiable party, the service
             access token not present on events            
             stateful process id optionally present when stateful process is involved    
-            queue name n/a
+            queue name should be set if sending direct
             blob id only present on large messages
             sas token only present on large events
             */

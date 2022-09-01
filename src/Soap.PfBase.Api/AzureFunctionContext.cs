@@ -189,6 +189,7 @@
                             x.Success = true;
                             x.PublishedMessages.AddRange(bus.BusEventsPublished);
                             x.CommandsSent.AddRange(bus.CommandsSent);
+                            x.EventsSentDirectToQueue.AddRange(bus.BusEventsSentDirectToQueue);
 
                             return x;
                         }

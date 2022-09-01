@@ -11,6 +11,7 @@
     using Serilog;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
+    using Soap.Utility;
     using Soap.Utility.Functions.Extensions;
     using Soap.Utility.Functions.Operations;
 
@@ -47,6 +48,8 @@
 
         public List<ApiEvent> BusEventsPublished => BusClient.BusEventsPublished;
 
+        public List<ApiEvent> BusEventsSentDirectToQueue => BusClient.BusEventsSentDirectToQueue;
+        
         public List<ApiCommand> CommandsSent => BusClient.CommandsSent;
 
         public byte MaximumNumberOfRetries { get; }
@@ -74,7 +77,7 @@
             eventToPublish.Validate();
             eventToPublish.RequiredNotNullOrThrow();
             eventToPublish = eventToPublish.Clone(); //* i think this was so no client can modify it afterwards
-            eventVisibility ??= GetDefaultVisibility(contextMessage);
+            eventVisibility ??= GetDefaultVisibility(contextMessage, eventToPublish);
 
             if (eventVisibility.HasFlag(IBusClient.EventVisibility.ReplyToWebSocketSender))
             {
@@ -96,6 +99,10 @@
                     eventToPublish.Headers.SetCommandConversationId(contextMessage.Headers.GetCommandConversationId().Value);    
                 }
             }
+
+            Guard.Against(string.IsNullOrEmpty(contextMessage.Headers.GetQueue()) && 
+                          eventVisibility.HasFlag(IBusClient.EventVisibility.SendDirectToQueue), 
+                "Outgoing message was set to send to queue, but the sender has not set a queue header, ignoring");
 
             eventToPublish.Validate();
             eventToPublish.RequiredNotNullOrThrow();
@@ -125,7 +132,7 @@
                     CommitClosure = async () => await BusClient.Publish(eventToPublish, eventVisibility, contextMessage.Headers.GetMessageId())
                 });
 
-            static IBusClient.EventVisibilityFlags GetDefaultVisibility(ApiMessage contextMessage)
+            static IBusClient.EventVisibilityFlags GetDefaultVisibility(TContextMessage contextMessage, ApiEvent @event)
             {
                 var eventVisibility = new IBusClient.EventVisibilityFlags();
 
@@ -133,6 +140,11 @@
                 {
                     eventVisibility.AddFlag(IBusClient.EventVisibility.ReplyToWebSocketSender);
                 }
+
+                if (!string.IsNullOrEmpty(@event.Headers.GetQueue()))
+                {
+                    eventVisibility.AddFlag(IBusClient.EventVisibility.SendDirectToQueue);
+                } 
 
                 eventVisibility.AddFlag(IBusClient.EventVisibility.BroadcastToAllBusSubscriptions);
 

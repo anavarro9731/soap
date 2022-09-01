@@ -12,6 +12,8 @@
 
         List<ApiEvent> BusEventsPublished { get; }
         
+        List<ApiEvent> BusEventsSentDirectToQueue { get; }
+        
         List<ApiEvent> WsEventsPublished { get; }
         
         
@@ -32,6 +34,11 @@
             public static EventVisibility ReplyToWebSocketSender = Create(
                 nameof(ReplyToWebSocketSender),
                 "Web Socket Sender (via ConversationId");
+            
+            public static EventVisibility SendDirectToQueue = Create(
+                nameof(SendDirectToQueue),
+                "Send Direct To Queue (via QueueName");
+
         }
 
         public class EventVisibilityFlags : EnumerationFlags
@@ -50,6 +57,7 @@
                     throw new CircuitException(
                         "Cannot send to all web socket clients and the message sender at the same time. These options are mutually exclusive, please choose one or the other.");
                 }
+                
                 EnumerationFlagsMethods.AddFlag(this, eventVisibility);
             }
         }
