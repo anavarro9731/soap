@@ -100,7 +100,7 @@
                 }
             }
 
-            Guard.Against(string.IsNullOrEmpty(contextMessage.Headers.GetQueue()) && 
+            Guard.Against(string.IsNullOrEmpty(eventToPublish.Headers.GetQueue()) && 
                           eventVisibility.HasFlag(IBusClient.EventVisibility.SendDirectToQueue), 
                 "Outgoing message was set to send to queue, but the sender has not set a queue header, ignoring");
 
