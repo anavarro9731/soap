@@ -35,7 +35,7 @@
                 await adminClient.CreateQueueAsync(
                     new CreateQueueOptions(queueName)
                     {
-                        RequiresSession = true,
+                        RequiresSession = true
                     });
 
             }

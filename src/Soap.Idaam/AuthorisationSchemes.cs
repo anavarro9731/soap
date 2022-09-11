@@ -160,7 +160,8 @@ namespace Soap.Idaam
                         IdaamProviderId = userProfile.IdaamProviderId,
                         Email = userProfile.Email,
                         FirstName = userProfile.FirstName,
-                        LastName = userProfile.LastName
+                        LastName = userProfile.LastName,
+                        
                     };
 
                     return await dataStore.Create(newUser);

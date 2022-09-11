@@ -37,7 +37,7 @@
 
         public string AppId { get; set; }
 
-        public string ApplicationVersion => Assembly.GetEntryAssembly().GetName().Version.ToString();
+        public string ApplicationVersion => Assembly.GetCallingAssembly().GetName().Version.ToString();
 
         public AuthLevel AuthLevel { get; set; } = AuthLevel.None;
 
