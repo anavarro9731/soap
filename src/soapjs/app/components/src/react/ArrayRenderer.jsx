@@ -64,7 +64,7 @@ export function ArrayRenderer(props) {
             };
 
             //*  if this key is listed in the expanded keys prop, always expand the row
-            console.warn(1, propertyKey, initialExpansionCalculated, expandedRows, expandedFields, expandedFieldsFirstObjectOnly);
+            //console.warn(1, propertyKey, initialExpansionCalculated, expandedRows, expandedFields, expandedFieldsFirstObjectOnly);
             if (!initialExpansionCalculated) {
                 if (expandedFields.includes(propertyKey)) {
                     const arrayOfAllIndexes = [...Array(arrayOfObjects.length).keys()];
@@ -166,7 +166,7 @@ export function ArrayRenderer(props) {
 
         return (
 
-            <StyledTableBodyRow key={uuidv4()}>
+            <StyledTableBodyRow key={uuidv4()}  >
                 {dataType === DataTypes.PrimitiveArray ? null :
                     <StyledTableBodyCell style={isLastRow && !isRoot ? {borderBottomWidth:"0px"} : {}}>
                         {expandedRows.includes(rowIndex) ?
@@ -184,7 +184,7 @@ export function ArrayRenderer(props) {
 
     function PrintTitleRow(titleStringArray) {
         
-        return (<StyledTableHeadRow style={{zIndex:0}} >{titleStringArray.map(columnName => <StyledTableHeadCell key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
+        return (<StyledTableHeadRow  >{titleStringArray.map(columnName => <StyledTableHeadCell style={{zIndex:0}} key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
     }
 
     function PrintObjectPanel(panelObject, colSpan) {

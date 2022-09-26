@@ -47,16 +47,7 @@ export function AggregateList(props) {
 
     function headerControls() {
         return (<>
-            {backFunction ?
-                <Button overrides={{
-                    BaseButton: {
-                        style: ({$theme}) => ({
-                            marginLeft: "10px"
-                        })
-                    }
-                }} kind={KIND.minimal} onClick={() =>
-                    backFunction()
-                }>Back</Button> : null}
+           
             {refreshFunction ?
                 <Button overrides={{
                     BaseButton: {
@@ -64,21 +55,34 @@ export function AggregateList(props) {
                             marginLeft: "10px"
                         })
                     }
-                }} kind={KIND.secondary} size={SIZE.compact} onClick={() => {
+                }} kind={KIND.minimal} size={SIZE.compact} onClick={() => {
                     bus.closeAllDialogs();
                     refreshFunction();
-                }}>Refresh List</Button> : null}</>);
+                }}>Refresh</Button> : null}  {backFunction ?
+            <Button overrides={{
+                BaseButton: {
+                    style: ({$theme}) => ({
+                        marginLeft: "10px"
+                    })
+                }
+            }} kind={KIND.minimal}  size={SIZE.compact}  onClick={() =>
+                backFunction()
+            }>Back</Button> : null} / </>);
+    }
+    
+    function getEntity() {
+        return !!aggregates && dataType === "object" ? aggregates[0] : undefined;
     }
 
     return (
         <Grid gridMaxWidth={1200}>
             <Cell span={12}>
                 {(typeof title === typeof "") ? (<H5>
-                    {CreatePrimaryActionsMenu("root", entityMenus)}&nbsp;
+                    {CreatePrimaryActionsMenu("root", entityMenus, getEntity())}&nbsp;
                     {headerControls()}&nbsp;
                     {title}
                     
-                </H5>) : <>{CreatePrimaryActionsMenu("root", entityMenus)}&nbsp;{headerControls()}</>}
+                </H5>) : <>{CreatePrimaryActionsMenu("root", entityMenus, getEntity())}&nbsp;{headerControls()}</>}
             </Cell>
             <Cell span={12}>
                 {aggregates ?

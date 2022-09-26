@@ -1,6 +1,8 @@
 import {useQuery, CenterSpinner, AggregateView} from "@soap/modules";
 import React from "react";
 import {useParams} from "react-router-dom";
+import {RemoveTestData} from "./modals/RemoveTestData";
+import {EntityMenu} from "../../components/src";
 
 export function ViewTestData() {
 
@@ -19,7 +21,20 @@ export function ViewTestData() {
                            propertyRenderer={{
                                "e102_Decimal": (value) => <>{"REPLACED"}</>
                            }}
+                           entityMenus={
+                               {
+                                   "root": new EntityMenu(null,
+                                   [
+                                       (entity) => {
+                                        return (<RemoveTestData afterSubmitHref="#/test-data" entity={{id: entity.e102_TestData.e102_Guid, label: entity.e102_TestData.e102_String}} />)
+                                       }
+                                   ])
+                                   
+                               }}
+                           
                            hiddenFields={["e102_Guid"]}
+                           refreshFunction={() => refresh()}
+                           backFunction={() => location.href = "#/test-data/"}
             
             />
         );

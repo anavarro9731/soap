@@ -4,15 +4,24 @@ import {Modal, ModalBody, ModalButton, ModalFooter, ModalHeader} from "baseui/mo
 import {useAuth} from "../hooks/useAuth";
 import {useCommand} from "../hooks/useCommand";
 import bus from "../soap/bus";
+import {optional, types, validateArgs} from "../soap/util";
+import {CenterSpinner} from "./CenterSpinner";
 
 export function ActionModal(props) {
 
-    const {title, auth, children, command} = props;
-
+    const {title, afterSubmitHref, cancelText, submitText, auth, children, command} = props;
+    
+    validateArgs(
+        [{afterSubmitHref}, types.string, optional],
+        [{cancelText}, types.string, optional],
+        [{submitText}, types.string, optional]
+    )
+    
     const {requireAuth} = useAuth("ActionModal");
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [useCommandArgs, setUseCommandArgs] = useState({command, sendCommand: false});
-
+    const [submitted, setSubmitted] = useState(false);
+    
     useCommand(useCommandArgs.command, useCommandArgs.sendCommand);
 
     const [closeDialogs, setCloseDialogs] = useState(false);
@@ -21,9 +30,12 @@ export function ActionModal(props) {
         if(closeDialogs) {
             bus.closeAllDialogs();
         }
+        if (submitted) {
+            location.href=afterSubmitHref;
+        }
     });
     
-    return (<Fragment>
+    return submitted ? <CenterSpinner/> : (<Fragment>
         <Button style={{width:"100%"}} size={SIZE.compact} kind={KIND.secondary} onClick={() => {
             if (auth) {
                 requireAuth(() => {
@@ -47,11 +59,11 @@ export function ActionModal(props) {
             <ModalFooter>
                 <ModalButton kind={KIND.secondary} size={SIZE.compact} onClick={
                     () => {
-                        setModalIsOpen(false);
-                        setCloseDialogs(true);
+                        setModalIsOpen(false); 
+                        setCloseDialogs(true); 
                     }
                 }>
-                    No
+                    {cancelText ?? "No"}
                 </ModalButton>
                 <ModalButton kind={KIND.secondary} size={SIZE.compact} onClick={
                     () => {
@@ -59,10 +71,14 @@ export function ActionModal(props) {
                             ...current,
                             sendCommand: true
                         }));
-                        setCloseDialogs(true);
+                        
+                            setCloseDialogs(true);  
+                            setSubmitted(true);
+                        
+                        
                     }
                 }>
-                    Yes
+                    {submitText ?? "Yes"}
                 </ModalButton>
             </ModalFooter>
         </Modal>

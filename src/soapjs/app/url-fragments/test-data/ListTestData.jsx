@@ -52,7 +52,9 @@ export function ListTestData() {
                            expandedFieldsFirstObjectOnly={["e105_Cities-Items"]}
                            hiddenFields={[]}
                            headerColumns={["e105_Label", "e105_Name"]}
-                           title="Recent Test Data" aggregates={e105?.e105_TestData} refreshFunction={() => refresh()}
+                           title="Recent Test Data" 
+                           aggregates={e105?.e105_TestData} 
+                           refreshFunction={() => refresh()}
             />
         </Fragment>);
 }
