@@ -1,5 +1,11 @@
     [cmdletbinding()]
     param([switch]$PackAndPublish, [switch]$ConfigureLocalEnvironment, [switch] $CreateNewService, [switch]$ReleaseMode)
+   
+    #[System.Environment]::SetEnvironmentVariable('nuget-api-key', "X")
+    #[System.Environment]::SetEnvironmentVariable('ado-pat', "X")
+    #[System.Environment]::SetEnvironmentVariable('az-clientid', "X")
+    #[System.Environment]::SetEnvironmentVariable('az-clientsecret', "X")
+    #[System.Environment]::SetEnvironmentVariable('az-tenantid', "X")
 
     if ($PackAndPublish) {
         
@@ -47,10 +53,3 @@
         -Arg_PathOnDisk "c:\source"
         
     }
-
-    #[System.Environment]::SetEnvironmentVariable('nuget-api-key', "X")
-    #[System.Environment]::SetEnvironmentVariable('ado-pat', "X")
-    #[System.Environment]::SetEnvironmentVariable('az-clientid', "X")
-    #[System.Environment]::SetEnvironmentVariable('az-clientsecret', "X")
-    #[System.Environment]::SetEnvironmentVariable('az-tenantid', "X")
-   

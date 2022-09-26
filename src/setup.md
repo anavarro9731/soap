@@ -277,6 +277,7 @@ is to edit the DEV/Config.cs file and for the db connection set the Container an
 - Be careful about accidentally upgrade the Azure Functions Runtime to a version that doesn't support your current configuration. It's easy todo because upgrading the Core Tools plugin in Rider will upgrade the runtime too.
 - if you get node-gyp errors while running yarn install check this page https://github.com/nodejs/node-gyp#on-windows you may need to install python and vs build tools for mspackr-extract to work
 - 401 and 404 mean the same thing, bad PAT when you get an error saying it can't read the config from the service. check the local.settings.json file
-- If you get an error when accessing the API about not being able to compile the config due to the wrong
-version of System.Runtime dll, make sure you are not running the wrong version of Azure functions core tools.
+- If you get an error when accessing the API about not being able to compile the config due to the wrong version of System.Runtime dll, make sure you are not running the wrong version of Azure functions core tools.
   Reread the instructions about that above and you can check in Rider -> Settings -> Azure -> Functions
+- If you get an error about Azure Web Jobs Storage not being set in local.settings.json when you start function app, particularly after running configure local env script.  The solution was to right-click on local.settings.json, go to properties, change "Copy to Output directory" from "Do not copy" to "Copy always". 
+- 
