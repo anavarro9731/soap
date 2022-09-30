@@ -152,7 +152,7 @@ Function CreateOrClean-Directory ([string] $Directory) {
 
 Function Get-HealthCheckUrl([string] $AzureDevopsName) {
 	$FunctionAppName = $AzureDevopsName.ToLower() -replace '[^a-z0-9]', '' #* FRAGILE must match Pack-And-Publish logic
-	return "https://$FunctionAppName-##ENVSUFFIX##.azurewebsites.net/api/CheckHealth"
+	return "https://$FunctionAppName##ENVSUFFIX##.azurewebsites.net/api/CheckHealth"
 }
 
 Test-PreReqs
