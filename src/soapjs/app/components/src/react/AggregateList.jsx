@@ -12,7 +12,7 @@ import {CreatePrimaryActionsMenu} from "./ActionMenu";
 export function AggregateView(props) {
     
     const { expandedFieldsFirstObjectOnly = [] } = props; 
-    const newProps = { expandedFieldsFirstObjectOnly : ["root", ...expandedFieldsFirstObjectOnly], aggregates : [props.aggregate],  ...props, dataType: "object" };
+    const newProps = { expandedFieldsFirstObjectOnly : ["root", ...expandedFieldsFirstObjectOnly], aggregates : (!!props.aggregate ? [props.aggregate] : []),  ...props, dataType: "object" };
     delete newProps.aggregate;
     //* console.log(newProps);
     return AggregateList(newProps);
@@ -59,7 +59,7 @@ export function AggregateList(props) {
                     bus.closeAllDialogs();
                     refreshFunction();
                 }}>Refresh</Button> : null}  {backFunction ?
-            <Button overrides={{
+            <><Button overrides={{
                 BaseButton: {
                     style: ({$theme}) => ({
                         marginLeft: "10px"
@@ -67,7 +67,7 @@ export function AggregateList(props) {
                 }
             }} kind={KIND.minimal}  size={SIZE.compact}  onClick={() =>
                 backFunction()
-            }>Back</Button> : null} / </>);
+            }>Back</Button> / </> : null} </>);
     }
     
     function getEntity() {
@@ -82,7 +82,7 @@ export function AggregateList(props) {
                     {headerControls()}&nbsp;
                     {title}
                     
-                </H5>) : <>{CreatePrimaryActionsMenu("root", entityMenus, getEntity())}&nbsp;{headerControls()}</>}
+                </H5>) : <>{CreatePrimaryActionsMenu("root", entityMenus, getEntity())}&nbsp;{headerControls()}{title ?? ""}</>}
             </Cell>
             <Cell span={12}>
                 {aggregates ?

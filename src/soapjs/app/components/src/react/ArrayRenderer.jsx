@@ -66,11 +66,11 @@ export function ArrayRenderer(props) {
             //*  if this key is listed in the expanded keys prop, always expand the row
             //console.warn(1, propertyKey, initialExpansionCalculated, expandedRows, expandedFields, expandedFieldsFirstObjectOnly);
             if (!initialExpansionCalculated) {
-                if (expandedFields.includes(propertyKey)) {
+                if (expandedFields.includes(`${propertyKey}-Items`)) {
                     const arrayOfAllIndexes = [...Array(arrayOfObjects.length).keys()];
                     
                     setExpandedRows(arrayOfAllIndexes);
-                } else if (expandedFieldsFirstObjectOnly.includes(propertyKey)) {
+                } else if (expandedFieldsFirstObjectOnly.includes(`${propertyKey}-Items`)) {
                     setExpandedRows([0]);
                 }
                 setInitialExpansionCalculated(true);
@@ -211,9 +211,9 @@ export function ArrayRenderer(props) {
                             
                             return  (
                                 <StyledTableBodyRow key={uuidv4()}>
-                                    {isRoot && dataType === DataTypes.Object ? null : <StyledTableBodyCell  style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
+                                    <StyledTableBodyCell  style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
                                     {ConvertObjectKeyToLabel(key)}
-                                </StyledTableBodyCell>}
+                                </StyledTableBodyCell>
                                     <StyledTableBodyCell style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
                                     {HandleProperty(key, value)}
                                 </StyledTableBodyCell>
@@ -232,7 +232,7 @@ export function ArrayRenderer(props) {
         
         if (propertyRenderer &&
             propertyRenderer[propertyKey]) {
-            return propertyRenderer[propertyKey]();
+            return propertyRenderer[propertyKey](propertyValue);
         } else {
             if (propertyValue instanceof Array) {
                 
