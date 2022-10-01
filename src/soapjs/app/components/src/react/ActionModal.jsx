@@ -30,7 +30,7 @@ export function ActionModal(props) {
         if(closeDialogs) {
             bus.closeAllDialogs();
         }
-        if (submitted) {
+        if (submitted && !!afterSubmitHref) {
             location.href=afterSubmitHref;
         }
     });

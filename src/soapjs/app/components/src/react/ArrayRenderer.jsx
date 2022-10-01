@@ -144,8 +144,11 @@ export function ArrayRenderer(props) {
                         return PrintObjectPanel(r.panelObject, colSpan, hiddenFields, headerColumns);
                     } else {
                         const isLastRow = i === rows.items.length - 1;
-                        const filteredEntries = Object.entries(r.panelObject).filter(x => !hiddenFields.includes(x[0]) && !headerColumns.includes(x[0]));
-                        const hasNoObjectPanelFieldsLeftAfterFiltration = filteredEntries.length === 0;
+                        let hasNoObjectPanelFieldsLeftAfterFiltration = true; //* DataTypes.PrimitiveArray default 
+                        if (rows.dataType === DataTypes.ObjectArray) {
+                            const filteredEntries = Object.entries(r.panelObject).filter(x => !hiddenFields.includes(x[0]) && !headerColumns.includes(x[0]));
+                            hasNoObjectPanelFieldsLeftAfterFiltration = filteredEntries.length === 0;    
+                        }
                         return expandedRows.includes(i)
                             ? [PrintHeaderRow(r, isLastRow, hasNoObjectPanelFieldsLeftAfterFiltration), PrintObjectPanel(r.panelObject, colSpan, hiddenFields, headerColumns)]
                             : PrintHeaderRow(r, isLastRow, hasNoObjectPanelFieldsLeftAfterFiltration)
@@ -176,7 +179,10 @@ export function ArrayRenderer(props) {
             <StyledTableBodyRow key={uuidv4()}>
                 {dataType === DataTypes.PrimitiveArray ? null :
                     <StyledTableBodyCell $style={{
-                        padding: "0.5em 1em",
+                        paddingLeft: "16px",
+                        paddingRight: "16px",
+                        paddingTop: "8px",
+                        paddingBottom: "8px",
                         borderBottomWidth: isLastRowOfList ? "0px" : "1px",
                         background: isExpanded ? "darkgrey" : "white",
                         ":hover": {
@@ -193,7 +199,10 @@ export function ArrayRenderer(props) {
                                 }}>+</Button>}
                     </StyledTableBodyCell>}
                 {rowComponentArray.map(component => <StyledTableBodyCell key={uuidv4()} $style={{
-                    padding: "0.5em 1em",
+                    paddingLeft: "16px",
+                    paddingRight: "16px",
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
                     borderBottomWidth: isLastRowOfList ? "0px" : "1px",
                     background: isExpanded ? "darkgrey" : "white",
                     ":hover": {
@@ -220,7 +229,10 @@ export function ArrayRenderer(props) {
                 <StyledTableBodyCell colSpan={colSpan} $style={{
                     borderBottomWidth: "0px",
                     backgroundColor: "lightgrey",
-                    padding: "0px"
+                    paddingLeft: "0px",
+                    paddingRight: "0px",
+                    paddingTop: "0px",
+                    paddingBottom: "0px",
                 }}>
                     {
                         //* add controls to the top
@@ -275,16 +287,22 @@ export function ArrayRenderer(props) {
         } else {
             if (propertyValue instanceof Array) {
 
-                return (<StatefulPanel title={<span style={{fontWeight: "normal"}}>{propertyValue.length} items</span>}
+                return (<StatefulPanel initialState={{ expanded: expandedFields.includes(propertyKey) }}  title={<span style={{fontWeight: "normal"}}>{propertyValue.length} items</span>}
                                        overrides={{
                                            Header: {
                                                style: ({$theme}) => ({
-                                                   padding: "7px"
+                                                   paddingLeft: "7px",
+                                                   paddingTop: "7px",
+                                                   paddingRight: "7px",
+                                                   paddingBottom: "7px",
                                                })
                                            },
                                            Content: {
                                                style: ({$theme}) => ({
-                                                   padding: "10 0 0 0px",
+                                                   paddingLeft: "10px",
+                                                   paddingTop: "0px",
+                                                   paddingRight: "0px",
+                                                   paddingBottom: "0px",
                                                })
                                            }
                                        }}><ArrayRenderer propertyKey={propertyKey + "-Items"}

@@ -2,7 +2,7 @@
   "name": "soap-app-sample",
   "version": "1.0.0",
   "dependencies": {
-    "@soap/modules": "1.548.0",
+    "@soap/modules": "1.556.0",
     "baseui": "10.12.1",
     "react": "16.14.0",
     "react-dom": "16.14.0",
@@ -11,9 +11,7 @@
     "styletron-react": "6.0.2"
   },
   "devDependencies": {
-    "os-browserify": "^0.3.0",
-    "parcel": "2.0.1",
-    "path-browserify": "^1.0.1"
+    "parcel": "2.0.1"
   },
   "source": "index.html",
   "alias": {

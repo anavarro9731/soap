@@ -11,10 +11,8 @@ import {CreatePrimaryActionsMenu} from "./ActionMenu";
 
 export function AggregateView(props) {
     
-    const { expandedFieldsFirstObjectOnly = [] } = props; 
-    const newProps = { expandedFieldsFirstObjectOnly : ["root", ...expandedFieldsFirstObjectOnly], aggregates : (!!props.aggregate ? [props.aggregate] : []),  ...props, dataType: "object" };
-    delete newProps.aggregate;
-    //* console.log(newProps);
+    const { expandedFieldsFirstObjectOnly = [], aggregate, ...rest } = props;
+    const newProps = { expandedFieldsFirstObjectOnly : ["root", ...expandedFieldsFirstObjectOnly], aggregates : (!!aggregate ? [aggregate] : undefined), ...rest, dataType: "object" };
     return AggregateList(newProps);
 }
 
