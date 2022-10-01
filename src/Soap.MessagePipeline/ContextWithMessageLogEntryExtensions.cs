@@ -377,7 +377,7 @@
 
             async Task AddThisFailureToTheMessageLog()
             {
-                //TODO this is failing on errirs to log and throwing another error
+                //TODO this is failing on errors to log and throwing another error
                 //- in-place update, unlikely to be used, better safe than sorry
                 var logEntry = context.MessageLogEntry;
                 logEntry.AddFailedAttempt(exceptionInfo);
@@ -386,6 +386,7 @@
                     {
                     o.ProvidePartitionKeyValues(WeekInterval.FromUtcNow());
                     o.DisableOptimisticConcurrency();
+                    o.BypassSecurity("internal admin");
                     }); //etag has changed
             }
 

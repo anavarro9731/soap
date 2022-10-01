@@ -50,8 +50,8 @@ export function ListTestData() {
                            }}
                            expandedFields={["root"]}
                            expandedFieldsFirstObjectOnly={["e105_Cities-Items"]}
-                           hiddenFields={[]}
-                           headerColumns={["e105_Label", "e105_Name"]}
+                           hiddenFields={["e105_HasCathedral", "e105_CityId", "e105_Population"]}
+                           headerColumns={["e105_Label", "e105_Name", "e105_Name2"]}
                            title="Recent Test Data" 
                            aggregates={e105?.e105_TestData} 
                            refreshFunction={() => refresh()}

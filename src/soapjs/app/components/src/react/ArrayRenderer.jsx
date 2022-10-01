@@ -11,6 +11,9 @@ import {
     StyledTableHeadRow
 } from "baseui/table-semantic";
 import {uuidv4} from "../soap/util";
+import {StatefulPanel} from "baseui/accordion";
+import { styled } from "styletron-react";
+
 
 const DataTypes = {
     PrimitiveArray : "primitive-array",
@@ -86,9 +89,7 @@ export function ArrayRenderer(props) {
                     rowComponentArray: [],
                     panelObject: null,
                 };
-
-
-
+                
                 //* when you render the row, if the contents are a base type treat differently
                 if (rows.dataType === DataTypes.PrimitiveArray) {
                     //* base type arrays are not object so they have no properties with keys
@@ -103,58 +104,61 @@ export function ArrayRenderer(props) {
                     }
 
                     //* BUILD OBJECT PANEL
-                    const panelObj = removeHiddenFields(obj, hiddenFields);
+                    const panelObj = removeExcludedFields(obj);
+                    
                     if (!!panelObj) rowObject.panelObject = panelObj;
                 }
 
                 rows.items.push(rowObject);
             }
 
-            //* PRINT TO SCREEN
-            
-
             // if (propertyKey === "e105_Countries-ArrayItems") { //useful callsite for debugging
             //     console.log("a",titleComponentArray, "b",titleColumns, "c",rows, "d",arrayOfObjects);
             // }
+
             
-            return PrintRows(propertyKey, titleComponentArray, rows);
+            //* PRINT TO SCREEN
+
+            return PrintRows(propertyKey, titleComponentArray, rows, hiddenFields, headerColumns);
 
         } else return null;
         
     }
 
-    function removeHiddenFields(obj, hiddenFields) {
-        const hiddenFieldsEx = [...hiddenFields, "$type", "headers", "validate", "types",]; //* validate, types, headers would be present if the root event was passed in
+    function removeExcludedFields(obj) {
+        const hiddenFieldsEx = ["$type", "headers", "validate", "types",]; //* validate, types, headers would be present if the root event was passed in
         const objEntries = Object.entries(obj).filter(([key, _]) => !hiddenFieldsEx.includes(key)); //* select the fields not excluded from each object
         return objEntries.length > 0 ? Object.fromEntries(objEntries) : null;
     }
 
-    function PrintRows(propertyKey, titleComponentArray, rows) {
+    function PrintRows(propertyKey, titleComponentArray, rows, hiddenFields, headerColumns) {
         
         const colSpan = titleComponentArray.length;
 
-        return (<StyledTable>
+        return (<><StyledTable>
                 <thead>
                 {rows.dataType === DataTypes.ObjectArray ? PrintTitleRow(titleComponentArray) : null}
                 </thead>
                 <tbody>
                 {rows.items.map((r, i) => {
                     if (rows.dataType === DataTypes.Object) {
-                        return PrintObjectPanel(r.panelObject, colSpan);
+                        return PrintObjectPanel(r.panelObject, colSpan, hiddenFields, headerColumns);
                     } else {
                         const isLastRow = i === rows.items.length-1;
+                        const filteredEntries = Object.entries(r.panelObject).filter(x => !hiddenFields.includes(x[0]) && !headerColumns.includes(x[0]));
+                        const hasNoObjectPanelFieldsLeftAfterFiltration = filteredEntries.length === 0;
                         return expandedRows.includes(i)
-                            ? [PrintHeaderRow(r, isLastRow), PrintObjectPanel(r.panelObject, colSpan)]
-                            : PrintHeaderRow(r, isLastRow)
+                            ? [PrintHeaderRow(r, isLastRow, hasNoObjectPanelFieldsLeftAfterFiltration), PrintObjectPanel(r.panelObject, colSpan, hiddenFields, headerColumns)]
+                            : PrintHeaderRow(r, isLastRow, hasNoObjectPanelFieldsLeftAfterFiltration)
                     }
                 })}
                 </tbody>
-            </StyledTable>
+            </StyledTable></>
         );
 
     }
     
-    function PrintHeaderRow(rowObject, isLastRow) {
+    function PrintHeaderRow(rowObject, isLastRow, hasNoObjectPanel) {
         
         const {rowComponentArray, panelObject, rowIndex } = rowObject;
         
@@ -164,12 +168,23 @@ export function ArrayRenderer(props) {
             {CreateTertiaryActionsMenu(propertyKey, entityMenus, panelObject)}
         </div>);
 
+        const isExpanded = expandedRows.includes(rowIndex);
+        const isLastRowOfList = isLastRow && !isRoot;
+        
+        
         return (
 
-            <StyledTableBodyRow key={uuidv4()}  >
-                {dataType === DataTypes.PrimitiveArray ? null :
-                    <StyledTableBodyCell style={isLastRow && !isRoot ? {borderBottomWidth:"0px"} : {}}>
-                        {expandedRows.includes(rowIndex) ?
+            <StyledTableBodyRow key={uuidv4()}>
+                {dataType === DataTypes.PrimitiveArray || hasNoObjectPanel ===  true  ? null :
+                    <StyledTableBodyCell $style={{
+                        padding: "0.5em 1em",
+                        borderBottomWidth : isLastRowOfList ? "0px" : "1px",
+                        background: isExpanded ? "darkgrey" : "white",
+                        ":hover": {
+                            background: isExpanded ? "darkgrey":  "white"
+                        }
+                    }}>
+                        { isExpanded ?
                             <Button size={SIZE.mini} kind={KIND.secondary} shape={SHAPE.circle} onClick={() => {
                                 setExpandedRows(oldArray => oldArray.filter(x => x !== rowIndex));
                             }}>-</Button> :
@@ -177,50 +192,73 @@ export function ArrayRenderer(props) {
                                 setExpandedRows(oldArray => [rowIndex, ...oldArray]);
                             }}>+</Button>}
                     </StyledTableBodyCell>}
-                {rowComponentArray.map(component => <StyledTableBodyCell key={uuidv4()} style={isLastRow && !isRoot ? {borderBottomWidth:"0px"} : {}}>{component}</StyledTableBodyCell>)}
+                {rowComponentArray.map(component => <StyledTableBodyCell  key={uuidv4()} $style={{
+                    padding: "0.5em 1em",
+                    borderBottomWidth : isLastRowOfList ? "0px" : "1px",
+                    background: isExpanded ? "darkgrey" : "white",
+                    ":hover": {
+                        background: isExpanded ? "darkgrey":  "white"
+                    }
+                }}>{component}</StyledTableBodyCell>)}
             </StyledTableBodyRow>
         );
     }
 
     function PrintTitleRow(titleStringArray) {
         
-        return (<StyledTableHeadRow  >{titleStringArray.map(columnName => <StyledTableHeadCell style={{zIndex:0}} key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
+        return (<StyledTableHeadRow>{titleStringArray.map(columnName => <StyledTableHeadCell style={{zIndex:0}} key={uuidv4()}>{columnName}</StyledTableHeadCell>)}</StyledTableHeadRow>);
     }
 
-    function PrintObjectPanel(panelObject, colSpan) {
+    function PrintObjectPanel(panelObject, colSpan, hiddenFields, headerColumns) {
 
         const entries = Object.entries(panelObject);
+        const filteredEntries = entries.filter(x => !hiddenFields.includes(x[0]) && !headerColumns.includes(x[0]));
         
         return !!panelObject ? (
             <StyledTableBodyRow key={uuidv4()}>
-                <StyledTableBodyCell colSpan={colSpan} style={{borderBottomWidth:"0px"}}>
-                    <StyledTable>
-                        <tbody>
-                        
-                            {
-                                //* add controls to the top
-                                (hasMenu && dataType === DataTypes.Object) ? (<StyledTableBodyCell  style={{borderBottomWidth:"0px"}}><div style={{display: "flex"}}>
-                                    {CreateViewButton(propertyKey, entityMenus, panelObject)}
-                                    {CreateTertiaryActionsMenu(propertyKey, entityMenus, panelObject)}
-                                </div></StyledTableBodyCell>) : null
-                            }
-                            
-                        {entries.map((kvPair, i) => {
+                <StyledTableBodyCell colSpan={colSpan} $style={{
+                    borderBottomWidth : "0px",
+                    backgroundColor: "lightgrey",
+                    padding: "0px"
+                }}>
+                    {
+                        //* add controls to the top
+                        (hasMenu && dataType === DataTypes.Object) ? (<div style={{display: "flex"}}>
+                            {CreateViewButton(propertyKey, entityMenus, panelObject)}
+                            {CreateTertiaryActionsMenu(propertyKey, entityMenus, panelObject)}
+                        </div>) : null
+                    }
+                    {filteredEntries.length > 0 ?
+                        (<StyledTable>
+                        <tbody>                         
+                        {filteredEntries.map((kvPair, i) => {
                             const isLastRow = i === entries.length-1;
                             const [key, value] = kvPair;
                             
                             return  (
                                 <StyledTableBodyRow key={uuidv4()}>
-                                    <StyledTableBodyCell  style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
+                                    <StyledTableBodyCell $style={{
+                                        borderBottomWidth : isLastRow ? "0px" : "1px",
+                                        ":hover": {
+                                            background: "lightgrey"
+                                        },
+                                        backgroundColor:"lightgrey"
+                                    }} >
                                     {ConvertObjectKeyToLabel(key)}
                                 </StyledTableBodyCell>
-                                    <StyledTableBodyCell style={isLastRow ? {borderBottomWidth:"0px"} : {}}>
+                                    <StyledTableBodyCell $style={{
+                                        borderBottomWidth : isLastRow ? "0px" : "1px",
+                                        ":hover": {
+                                            background: "lightgrey"
+                                        },
+                                        backgroundColor:"lightgrey"
+                                    }}>
                                     {HandleProperty(key, value)}
                                 </StyledTableBodyCell>
                             </StyledTableBodyRow>);
                         })}
                         </tbody>
-                    </StyledTable>
+                    </StyledTable>) : null}
                 </StyledTableBodyCell>
             </StyledTableBodyRow>
         ) : null;
@@ -236,7 +274,17 @@ export function ArrayRenderer(props) {
         } else {
             if (propertyValue instanceof Array) {
                 
-                return <ArrayRenderer propertyKey={propertyKey + "-Items"}
+                return (<StatefulPanel title={<span style={{fontWeight:"normal"}}>{propertyValue.length} items</span>} overrides={{
+                    Header: {
+                        style: ({$theme}) => ({
+                        padding: "7px"
+                    })},
+                    Content : {
+                        style: ({$theme}) => ({
+                            padding: "10 0 0 0px",
+                        }) 
+                }
+                }}><ArrayRenderer propertyKey={propertyKey + "-Items"}
                                       arrayOfObjects={propertyValue}
                                       propertyRenderer={propertyRenderer}
                                       entityMenus={entityMenus}
@@ -245,7 +293,7 @@ export function ArrayRenderer(props) {
                                       expandedFieldsFirstObjectOnly={expandedFieldsFirstObjectOnly}
                                       headerColumns={headerColumns}
                                       dataType={getArrayDataType(propertyValue)}
-                />;
+                /></StatefulPanel>);
             } else if (IsChildObject(propertyValue)) {
                 return <ArrayRenderer propertyKey={propertyKey}
                                       arrayOfObjects={[propertyValue]}
@@ -314,7 +362,7 @@ export function ArrayRenderer(props) {
 
         function convertPascalToPhrase(pascal) {
             let result = pascal.replace(/([A-Z])/g, " $1");
-            result = result.charAt(0).toUpperCase() + result.slice(1);
+            result = result.charAt(0) + result.slice(1);
             result = result.replace(/\d+$/, "");
             return result;
         }
