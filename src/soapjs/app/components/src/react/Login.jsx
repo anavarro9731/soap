@@ -5,6 +5,8 @@ import {useAuth} from "../hooks/useAuth";
 import {Button, KIND, SIZE} from "baseui/button";
 import DebugLayer from "./DebugLayer";
 import config from '../soap/config'
+import {optional, types, validateArgs} from "../soap/util";
+
 
 export const Login = (props) => {
     
@@ -113,26 +115,34 @@ export const Login = (props) => {
     }
 };
 
-export const ProtectedRoute = ({component, ...args}) => {
+const ProtectedRouteInternal = (props) => {
+    
+        const {authReady, authEnabled, component, path} = props;
+        //* rendering this comp causes a full render multiple times of the component in the route
+        // as long as the route below is only rendered once it should be ok
 
-    const {authReady, authEnabled} = useAuth("ProtectedRoute");
+        validateArgs(
+            [{component}, types.function, optional],
+            [{authReady}, types.boolean, optional],
+            [{authEnabled}, types.boolean, optional],
+            [{path}, types.string]
+        )
+    
+        if (authReady) {
+            if (authEnabled) {
+                return (<Route component={withAuthenticationRequired(component, {
+                    returnTo: window.location.href
+                })} path={path} />);
 
-    if (authReady) {
-        if (authEnabled) {
-            return (<Route component={withAuthenticationRequired(component, {
-                returnTo: window.location.href
-            })} {...args} />);
+            } else {
+                return (<Route component={component} path={path} />);
+            }
         } else {
-            return (<Route component={component} {...args} />);
+            return null;
         }
-    } else {
-        return null;
-    }
-
 };
 
-
-
+export const ProtectedRoute = React.memo(ProtectedRouteInternal, (prevProps, nextProps) => prevProps.authReady === nextProps.authReady);
 
     
 

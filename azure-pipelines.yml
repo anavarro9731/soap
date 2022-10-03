@@ -36,16 +36,16 @@ steps:
   - pwsh: |
       $branchName = $Env:BUILD_SOURCEBRANCHNAME
       $envSuffix = ""
-      if ($branchName -eq 'master' {
-        $envSuffix = "-vnext" 
+      if ($branchName -eq 'master') {
+        $envSuffix = "-vnext"
       } else {
         $version = Get-Content -Path .\.version -Raw
-        $notLiveTagged = $(git log --simplify-by-decoration --decorate --pretty=oneline "$committish" | Select-String "tag: v$version") -eq $null)
+        $notLiveTagged = $(git log --simplify-by-decoration --decorate --pretty=oneline "$committish" | Select-String "tag: v$version") -eq $null
         if ($notLiveTagged) {
           $envSuffix = "-rel"
-        }        
-      } 
-      $url = "$(healthcheck-url)"
+        }
+      }
+  $url = "$(healthcheck-url)"
       $url2 = $url.Replace('##ENVSUFFIX##',$envSuffix)
       Write-Host "Checking $url2"
       Start-Sleep -Seconds 20
