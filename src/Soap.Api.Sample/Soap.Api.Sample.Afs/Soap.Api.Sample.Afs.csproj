@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>V3</AzureFunctionsVersion>
-    <Version>11.25.0-alpha</Version>
+    <Version>11.25.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <!-- removing this direct reference causes errors even if the assembly is inherited -->
