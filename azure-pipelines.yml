@@ -45,7 +45,7 @@ steps:
           $envSuffix = "-rel"
         }
       }
-  $url = "$(healthcheck-url)"
+      $url = "$(healthcheck-url)"
       $url2 = $url.Replace('##ENVSUFFIX##',$envSuffix)
       Write-Host "Checking $url2"
       Start-Sleep -Seconds 20
