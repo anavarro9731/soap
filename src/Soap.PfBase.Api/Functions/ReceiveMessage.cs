@@ -13,6 +13,7 @@ namespace Soap.PfBase.Api.Functions
     using Microsoft.Azure.WebJobs.Extensions.SignalRService;
     using Microsoft.Extensions.Logging;
     using Soap.Context.MessageMapping;
+    using Soap.Idaam;
     using Soap.Interfaces;
     using Soap.Interfaces.Messages;
     using Soap.Utility;
@@ -28,7 +29,7 @@ namespace Soap.PfBase.Api.Functions
             ISecurityInfo securityInfo,
             IAsyncCollector<SignalRMessage> signalRBinding,
             ILogger log,
-            DataStoreOptions dataStoreOptions = null) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
+            DataStoreOptions dataStoreOptions = null, bool forceServiceLevelAuthority = false) where TUserProfile : class, IHaveIdaamProviderId, IUserProfile, IAggregate, new()
         {
             Serilog.ILogger logger = null;
             try
@@ -40,11 +41,24 @@ namespace Soap.PfBase.Api.Functions
                         if (x.Headers.GetMessageId() == Guid.Empty) x.Headers.SetMessageId(Guid.NewGuid());
                         x.Headers.SetTimeOfCreationAtOrigin();
                         });
-                
+
                 AzureFunctionContext.CreateLogger(out logger);
 
                 AzureFunctionContext.LoadAppConfig(out var appConfig);
 
+                if (forceServiceLevelAuthority)
+                {
+                    message.Op(
+                        x =>
+                            {
+                                var sla = AuthorisationSchemes.GetServiceLevelAuthority(appConfig);
+                                message.Headers.SetIdentityChain(sla.IdentityChainSegment);
+                                message.Headers.SetIdentityToken(sla.IdentityToken);
+                                message.Headers.SetAccessToken(sla.AccessToken);
+                            });
+                }
+
+                
                 var result = await AzureFunctionContext.Execute<TUserProfile>(
                                  message.ToJson(SerialiserIds.ApiBusMessage),
                                  messageFunctionRegistration,
