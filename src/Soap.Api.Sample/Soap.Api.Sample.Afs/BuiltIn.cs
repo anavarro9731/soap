@@ -22,6 +22,17 @@
 
     public static class BuiltIn
     {
+        [FunctionName("TimerTrigger")]
+        public static async Task Run(
+            [TimerTrigger("0 2 * * *", RunOnStartup = true)]TimerInfo myTimer, 
+            [SignalR(HubName = "QSees", ConnectionStringSetting = "AzureSignalRConnectionString")]
+            IAsyncCollector<SignalRMessage> signalRBinding, 
+            ILogger log) //* 2am every day 
+        {
+            
+            await PlatformFunctions.HandleMessage<UserProfile>(new C116v1_TruncateMessageLog(), new MessageFunctionRegistration(), new SecurityInfo(), signalRBinding, log, DataStoreOptions.Create(), forceServiceLevelAuthority:true);
+        }
+        
         [FunctionName("AddBlob")]
         public static async Task<IActionResult> AddBlob(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)]

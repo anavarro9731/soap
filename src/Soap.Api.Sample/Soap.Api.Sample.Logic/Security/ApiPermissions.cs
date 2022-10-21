@@ -14,9 +14,7 @@ namespace Soap.Api.Sample.Logic.Security
         
         The pattern for permission keys is data/operation.
          */
-
         
-        //* there are other builtin in messages like C102UpgradeDb and C115OnStartup but these should not be executed except when the health check is run
         public static readonly ApiPermission BuiltInMessages = new ApiPermission("builtin-messages", "BuiltIn Messages")
         {
             DeveloperPermissions = new List<string>
@@ -26,7 +24,8 @@ namespace Soap.Api.Sample.Logic.Security
                 nameof(C102v1_GetServiceState),
                 nameof(C103v1_StartPingPong),
                 nameof(E100v1_Pong),
-                nameof(C115v1_OnStartup)
+                nameof(C115v1_OnStartup),
+                nameof(C116v1_TruncateMessageLog)
             },
             Description = "BuiltIn Messages That Can Be Executed By A User"
         };
