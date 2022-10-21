@@ -9,7 +9,7 @@
     <ProjectReference Include="..\Soap.NotificationServer\Soap.NotificationServer.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DataStore" Version="16.25.0" />
-    <PackageReference Include="DataStore.Providers.CosmosDb" Version="16.25.0" />
+    <PackageReference Include="DataStore" Version="16.26.0" />
+    <PackageReference Include="DataStore.Providers.CosmosDb" Version="16.26.0" />
   </ItemGroup>
 </Project>
