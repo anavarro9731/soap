@@ -117,7 +117,7 @@ export const Login = (props) => {
 };
 
 const ProtectedRouteInternal = (props) => {
-        console.warn(4,props);
+        
         const {authReady, authEnabled, component, path} = props;
         //* rendering this comp causes a full render multiple times of the component in the route
         // as long as the route below is only rendered once it should be ok
